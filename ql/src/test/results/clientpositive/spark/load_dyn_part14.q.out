@@ -200,7 +200,6 @@ select key, value from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part14
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
   select 'k1' as key, cast(null as string) as value from src limit 2

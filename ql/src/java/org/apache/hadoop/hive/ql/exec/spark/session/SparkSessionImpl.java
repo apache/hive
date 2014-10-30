@@ -21,6 +21,7 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.SparkClient;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public int submit(DriverContext driverContext, SparkWork sparkWork) {
+  public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
     sparkClient = SparkClient.getInstance(driverContext.getCtx().getConf());
     return sparkClient.execute(driverContext, sparkWork);

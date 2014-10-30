@@ -101,7 +101,6 @@ PREHOOK: query: insert into table part select * from part_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_staging
 PREHOOK: Output: default@part
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert into table part select * from part_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_staging
@@ -233,13 +232,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -260,6 +259,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -278,6 +279,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -292,18 +295,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -311,19 +314,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -515,17 +518,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
-                      Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       value expressions: p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                       auto parallelism: true
@@ -546,6 +549,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -564,6 +569,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -579,17 +586,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 649 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
-                      Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -609,6 +616,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -627,6 +636,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -648,16 +659,16 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     auto parallelism: true
@@ -665,18 +676,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -684,19 +695,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), (_col5 - _wcol0) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -827,13 +838,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -854,6 +865,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -872,6 +885,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -886,19 +901,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1080,13 +1095,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -1107,6 +1122,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1125,6 +1142,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1139,18 +1158,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -1158,19 +1177,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1364,13 +1383,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -1391,6 +1410,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1409,6 +1430,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1423,18 +1446,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -1442,19 +1465,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), (_col5 - _wcol2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1658,13 +1681,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -1685,6 +1708,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1703,6 +1728,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1717,23 +1744,23 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     outputColumnNames: _col2, _col1, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
-                        Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: true
         Reducer 3 
@@ -1743,12 +1770,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   auto parallelism: true
@@ -1757,19 +1784,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _wcol0 (type: int), _wcol1 (type: int), _col2 (type: int), (_col2 - _wcol2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1918,17 +1945,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 649 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
-                      Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -1948,6 +1975,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1966,6 +1995,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -1981,13 +2012,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -2008,6 +2039,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2026,6 +2059,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2046,17 +2081,17 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2076,22 +2111,22 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       isSamplingPred: false
                       predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                         auto parallelism: true
@@ -2223,17 +2258,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 649 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
-                      Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: true
             Path -> Alias:
@@ -2253,6 +2288,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2271,6 +2308,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2286,13 +2325,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -2313,6 +2352,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2331,6 +2372,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2351,17 +2394,17 @@ STAGE PLANS:
                   0 
                   1 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
                 outputColumnNames: _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col12 (type: int), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2381,22 +2424,22 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       isSamplingPred: false
                       predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                         auto parallelism: true
@@ -2537,15 +2580,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
                       sort order: ++-
                       Map-reduce partition columns: p_mfgr (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -2566,6 +2609,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2584,6 +2629,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2598,18 +2645,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       sort order: ++-
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -2617,19 +2664,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2810,15 +2857,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string)
                       sort order: ++
                       Map-reduce partition columns: p_mfgr (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -2839,6 +2886,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2857,6 +2906,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -2871,18 +2922,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -2890,19 +2941,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3087,13 +3138,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -3114,6 +3165,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3132,6 +3185,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3146,18 +3201,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -3165,19 +3220,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3372,13 +3427,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
                     sort order: +++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -3399,6 +3454,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3417,6 +3474,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3431,16 +3490,16 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: +++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -3448,18 +3507,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -3467,19 +3526,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3694,13 +3753,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -3721,6 +3780,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3739,6 +3800,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -3753,18 +3816,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -3772,19 +3835,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: bigint), _wcol1 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4076,17 +4139,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 649 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
-                      Statistics: Num rows: 325 Data size: 1300 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       tag: 1
                       auto parallelism: true
             Path -> Alias:
@@ -4106,6 +4169,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4124,6 +4189,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4139,13 +4206,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -4166,6 +4233,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4184,6 +4253,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4204,12 +4275,12 @@ STAGE PLANS:
                   0 {VALUE._col0} {VALUE._col1} {VALUE._col4} {VALUE._col6}
                   1 
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col2 (type: string)
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                   auto parallelism: true
@@ -4217,19 +4288,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: bigint), _col7 (type: double), _wcol3 (type: double), _col5 (type: int), (_col5 - _wcol4) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 357 Data size: 1430 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4249,22 +4320,22 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
                       isSamplingPred: false
                       predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                         auto parallelism: true
@@ -4394,13 +4465,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -4421,6 +4492,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4439,6 +4512,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4453,23 +4528,23 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     outputColumnNames: _col2, _col1, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
-                        Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: true
         Reducer 3 
@@ -4479,17 +4554,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 2 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4662,23 +4737,23 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 12 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
                     expressions: p_mfgr (type: string), p_brand (type: string), p_retailprice (type: double)
                     outputColumnNames: p_mfgr, p_brand, p_retailprice
-                    Statistics: Num rows: 12 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(p_retailprice)
                       keys: p_mfgr (type: string), p_brand (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 12 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 12 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         value expressions: _col2 (type: double)
                         auto parallelism: true
@@ -4699,6 +4774,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4717,6 +4794,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -4736,16 +4815,16 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col0 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                     auto parallelism: true
@@ -4754,14 +4833,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
                     auto parallelism: true
@@ -4769,19 +4848,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), _wcol0 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 6 Data size: 1298 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5133,13 +5212,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -5160,6 +5239,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -5178,6 +5259,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -5192,26 +5275,26 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     auto parallelism: true
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                     outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: true
@@ -5219,14 +5302,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
                     sort order: +++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _wcol0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     auto parallelism: true
@@ -5234,19 +5317,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), _wcol1 (type: int), _wcol2 (type: int), _wcol3 (type: double), _wcol4 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 2
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5271,19 +5354,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), _wcol0 (type: int), _wcol1 (type: int), _wcol2 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5378,8 +5461,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 PREHOOK: Output: default@part_4
 PREHOOK: Output: default@part_5
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from noop(on part 
 partition by p_mfgr 
 order by p_name) 
@@ -5639,13 +5720,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_mfgr (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -5666,6 +5747,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -5684,6 +5767,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -5698,16 +5783,16 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -5715,18 +5800,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -5734,19 +5819,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5992,13 +6077,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_mfgr (type: string)
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6019,6 +6104,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6037,6 +6124,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6051,14 +6140,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                     sort order: ++++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6066,14 +6155,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col2 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6081,18 +6170,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -6100,19 +6189,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6341,13 +6430,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
                     sort order: ++++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6368,6 +6457,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6386,6 +6477,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6400,14 +6493,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col2 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6415,18 +6508,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -6434,19 +6527,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6687,13 +6780,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
                     sort order: ++++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6714,6 +6807,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6732,6 +6827,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -6746,14 +6843,14 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col2 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -6761,16 +6858,16 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -6778,18 +6875,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -6797,19 +6894,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -7081,13 +7178,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
                     sort order: ++++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -7108,6 +7205,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -7126,6 +7225,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -7140,16 +7241,16 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col2 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -7157,18 +7258,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -7176,19 +7277,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -7426,13 +7527,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
                     sort order: ++++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
                     value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                     auto parallelism: true
@@ -7453,6 +7554,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.part
                     numFiles 1
+                    numRows 26
+                    rawDataSize 16042
                     serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -7471,6 +7574,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.part
                       numFiles 1
+                      numRows 26
+                      rawDataSize 16042
                       serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -7485,16 +7590,16 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   PTF Operator
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
                       sort order: ++++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col9 (type: bigint), _col10 (type: string), _col11 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
                       auto parallelism: true
@@ -7502,18 +7607,18 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                       auto parallelism: true
@@ -7521,19 +7626,19 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
-                Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
-                  Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _wcol0 (type: int), _wcol1 (type: int), _col5 (type: int), _wcol2 (type: bigint), _wcol2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 4 Data size: 2597 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat

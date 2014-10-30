@@ -109,7 +109,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@noskew
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table noskew as select a.* from src a join src b on a.key=b.key order by a.key limit 30
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src

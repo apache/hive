@@ -25,14 +25,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounter;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounterGroup;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
-import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobStateListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.SimpleSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -151,7 +150,7 @@ public class SparkClient implements Serializable {
     return sparkConf;
   }
 
-  public int execute(DriverContext driverContext, SparkWork sparkWork) {
+  public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Context ctx = driverContext.getCtx();
     HiveConf hiveConf = (HiveConf) ctx.getConf();
     refreshLocalResources(sparkWork, hiveConf);
@@ -159,49 +158,35 @@ public class SparkClient implements Serializable {
 
     // Create temporary scratch dir
     Path emptyScratchDir;
-    try {
-      emptyScratchDir = ctx.getMRTmpPath();
-      FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
-      fs.mkdirs(emptyScratchDir);
-    } catch (IOException e) {
-      LOG.error("Error launching map-reduce job", e);
-      return 5;
-    }
+    emptyScratchDir = ctx.getMRTmpPath();
+    FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
+    fs.mkdirs(emptyScratchDir);
 
     SparkCounters sparkCounters = new SparkCounters(sc, hiveConf);
+    List<String> prefixes = sparkWork.getRequiredCounterPrefix();
+    // register spark counters before submit spark job.
+    if (prefixes != null) {
+      for (String prefix : prefixes) {
+        sparkCounters.createCounter(prefix, StatsSetupConst.ROW_COUNT);
+        sparkCounters.createCounter(prefix, StatsSetupConst.RAW_DATA_SIZE);
+      }
+    }
     SparkReporter sparkReporter = new SparkReporter(sparkCounters);
 
     // Generate Spark plan
     SparkPlanGenerator gen =
       new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir, sparkReporter);
-    SparkPlan plan;
-    try {
-      plan = gen.generate(sparkWork);
-    } catch (Exception e) {
-      LOG.error("Error generating Spark Plan", e);
-      return 2;
-    }
+    SparkPlan plan = gen.generate(sparkWork);
 
     // Execute generated plan.
-    try {
-      JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
-      // We use Spark RDD async action to submit job as it's the only way to get jobId now.
-      JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-      // An action may trigger multi jobs in Spark, we only monitor the latest job here
-      // until we found that Hive does trigger multi jobs.
-      List<Integer> jobIds = future.jobIds();
-      // jobIds size is always bigger than or equal with 1.
-      int jobId = jobIds.get(jobIds.size() - 1);
-      SimpleSparkJobStatus sparkJobStatus = new SimpleSparkJobStatus(
-       jobId, jobStateListener, jobProgressListener);
-      SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
-      monitor.startMonitor();
-    } catch (Exception e) {
-      LOG.error("Error executing Spark Plan", e);
-      return 1;
-    }
-
-    return 0;
+    JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
+    // We use Spark RDD async action to submit job as it's the only way to get jobId now.
+    JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
+    // As we always use foreach action to submit RDD graph, it would only trigger on job.
+    int jobId = future.jobIds().get(0);
+    SimpleSparkJobStatus sparkJobStatus =
+      new SimpleSparkJobStatus(jobId, jobStateListener, jobProgressListener, sparkCounters);
+    return new SparkJobRef(jobId, sparkJobStatus);
   }
 
   /**

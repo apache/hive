@@ -171,8 +171,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1@ds=111
 PREHOOK: Output: default@dest2@ds=111
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value

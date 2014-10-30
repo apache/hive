@@ -154,7 +154,6 @@ PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@dest_j1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT subq.key1, z.value
 FROM

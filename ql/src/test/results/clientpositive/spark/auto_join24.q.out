@@ -11,7 +11,6 @@ SELECT a.key, count(1) FROM src a group by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tst1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE tst1
 SELECT a.key, count(1) FROM src a group by a.key
 POSTHOOK: type: QUERY
@@ -41,28 +40,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 17 Data size: 1791 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 9 Data size: 948 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 9 Data size: 948 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 17 Data size: 1791 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 9 Data size: 948 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 9 Data size: 948 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 155 Data size: 743 Basic stats: COMPLETE Column stats: NONE
                       value expressions: cnt (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -73,11 +72,11 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 9 Data size: 1042 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 170 Data size: 817 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col1 (type: int)
                   outputColumnNames: _col1
-                  Statistics: Num rows: 9 Data size: 1042 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 170 Data size: 817 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col1)
                     mode: hash

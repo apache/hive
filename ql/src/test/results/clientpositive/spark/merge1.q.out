@@ -144,7 +144,6 @@ select key, count(1) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table dest1
 select key, count(1) from src group by key
 POSTHOOK: type: QUERY
@@ -497,7 +496,6 @@ PREHOOK: query: insert overwrite table test_src partition(ds='101') select * fro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_src@ds=101
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -508,7 +506,6 @@ PREHOOK: query: insert overwrite table test_src partition(ds='102') select * fro
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_src@ds=102
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -541,14 +538,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_src
-                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -622,7 +619,6 @@ PREHOOK: Input: default@test_src
 PREHOOK: Input: default@test_src@ds=101
 PREHOOK: Input: default@test_src@ds=102
 PREHOOK: Output: default@dest1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table dest1 select key from test_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src
@@ -656,14 +652,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_src
-                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -737,7 +733,6 @@ PREHOOK: Input: default@test_src
 PREHOOK: Input: default@test_src@ds=101
 PREHOOK: Input: default@test_src@ds=102
 PREHOOK: Output: default@dest1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table dest1 select key from test_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src

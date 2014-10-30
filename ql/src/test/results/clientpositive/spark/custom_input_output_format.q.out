@@ -61,7 +61,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE src1_rot13_iof SELECT * FROM src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@src1_rot13_iof
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE src1_rot13_iof SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1

@@ -30,7 +30,6 @@ PREHOOK: query: insert overwrite table table_desc1 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc1 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -41,7 +40,6 @@ PREHOOK: query: insert overwrite table table_desc2 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc2 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -78,28 +76,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
-                      Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value (type: string)
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
-                      Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -108,9 +106,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 2 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 45 Data size: 478 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 2 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 45 Data size: 478 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash

@@ -127,7 +127,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest_j1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT  x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY

@@ -18,7 +18,6 @@ PREHOOK: query: insert overwrite table tbl1 select * from src where key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl1 select * from src where key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -29,7 +28,6 @@ PREHOOK: query: insert overwrite table tbl2 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -60,22 +58,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
                     sort order: +
                     Map-reduce partition columns: key (type: int)
-                    Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 45 Data size: 180 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
                     sort order: +
                     Map-reduce partition columns: key (type: int)
-                    Statistics: Num rows: 45 Data size: 180 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -84,9 +82,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 49 Data size: 198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 49 Data size: 198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -136,7 +134,6 @@ PREHOOK: query: insert overwrite table tbl2 select * from src where key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -167,22 +164,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 520 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
                     sort order: +
                     Map-reduce partition columns: key (type: int)
-                    Statistics: Num rows: 520 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 189 Data size: 1891 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 45 Data size: 180 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: int)
                     sort order: +
                     Map-reduce partition columns: key (type: int)
-                    Statistics: Num rows: 45 Data size: 180 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -191,9 +188,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 572 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 207 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 572 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 207 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash

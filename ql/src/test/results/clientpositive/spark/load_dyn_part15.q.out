@@ -19,7 +19,6 @@ SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@load_dyn_part15_test
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key)
 SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key
 POSTHOOK: type: QUERY

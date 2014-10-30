@@ -26,7 +26,6 @@ PREHOOK: query: insert overwrite table table_asc select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_asc
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_asc select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -37,7 +36,6 @@ PREHOOK: query: insert overwrite table table_desc select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

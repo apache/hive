@@ -107,7 +107,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_CTAS1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -152,8 +151,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	106                 
 #### A masked pattern was here ####
 	 	 
@@ -256,7 +255,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas2 as select * from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -301,8 +299,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	10                  
+	rawDataSize         	96                  
 	totalSize           	106                 
 #### A masked pattern was here ####
 	 	 
@@ -405,7 +403,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -450,8 +447,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	10                  
+	rawDataSize         	120                 
 	totalSize           	199                 
 #### A masked pattern was here ####
 	 	 
@@ -515,8 +512,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	10                  
+	rawDataSize         	120                 
 	totalSize           	199                 
 #### A masked pattern was here ####
 	 	 
@@ -620,7 +617,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas4
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -665,8 +661,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	10                  
+	rawDataSize         	96                  
 	totalSize           	106                 
 #### A masked pattern was here ####
 	 	 
@@ -887,7 +883,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas5
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -905,7 +900,6 @@ PREHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_ctas6
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -917,7 +911,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@nzhang_ctas6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_ctas7
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: create table nzhang_ctas7 as select key, `to` from nzhang_ctas6
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nzhang_ctas6

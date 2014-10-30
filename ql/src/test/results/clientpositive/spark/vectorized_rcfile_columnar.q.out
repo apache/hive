@@ -27,7 +27,6 @@ INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@columntable
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10
 POSTHOOK: type: QUERY

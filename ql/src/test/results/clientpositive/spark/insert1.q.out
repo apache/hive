@@ -22,7 +22,6 @@ PREHOOK: query: insert overwrite table insert1 select a.key, a.value from insert
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert2
 PREHOOK: Output: default@insert1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert2
@@ -367,7 +366,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE result SELECT 'db2_insert1' FROM default.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: db2@result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE result SELECT 'db2_insert1' FROM default.src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -377,7 +375,6 @@ PREHOOK: query: INSERT INTO TABLE result SELECT 'db2_insert2' FROM default.src L
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: db2@result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT INTO TABLE result SELECT 'db2_insert2' FROM default.src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -417,7 +414,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: db1@result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -427,7 +423,6 @@ PREHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: db1@result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

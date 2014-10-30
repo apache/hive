@@ -26,7 +26,6 @@ PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
 PREHOOK: Output: default@tgt_rc_merge_test
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test
@@ -37,7 +36,6 @@ PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
 PREHOOK: Output: default@tgt_rc_merge_test
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test

@@ -23,7 +23,6 @@ select 'a','b' from dual
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dual
 PREHOOK: Output: default@test_tbl
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert into table test_tbl
 select 'a','b' from dual
 POSTHOOK: type: QUERY

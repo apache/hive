@@ -42,7 +42,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=4 or key=2000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -53,7 +52,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=484 or key=3000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -96,7 +94,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=2000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -107,7 +104,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=3000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -146,7 +142,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -157,7 +152,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -192,7 +186,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=1000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -203,7 +196,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=1000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -240,7 +232,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=1000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -251,7 +242,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=1000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -262,7 +252,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=1000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -291,7 +280,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=1000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -302,7 +290,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=1000 or key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -313,7 +300,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=1000 or key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -341,7 +327,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -352,7 +337,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -363,7 +347,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -390,7 +373,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=00000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -401,7 +383,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -412,7 +393,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -439,7 +419,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -450,7 +429,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_2 select * from smb_bucket_input where key=4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input
@@ -461,7 +439,6 @@ PREHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_input
 PREHOOK: Output: default@smb_bucket4_3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table smb_bucket4_3 select * from smb_bucket_input where key=5000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_input

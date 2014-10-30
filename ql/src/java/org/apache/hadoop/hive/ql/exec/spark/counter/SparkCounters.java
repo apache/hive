@@ -21,6 +21,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -44,6 +46,7 @@ import org.apache.spark.api.java.JavaSparkContext;
  * 3. Hive could only get Counter value at driver side.
  */
 public class SparkCounters implements Serializable {
+  private static final Log LOG = LogFactory.getLog(SparkCounters.class);
 
   private Map<String, SparkCounterGroup> sparkCounterGroups;
 
@@ -90,20 +93,22 @@ public class SparkCounters implements Serializable {
   public void increment(String groupName, String counterName, long value) {
     SparkCounter counter = getGroup(groupName).getCounter(counterName);
     if (counter == null) {
-      throw new RuntimeException(
+      LOG.error(
         String.format("counter[%s, %s] has not initialized before.", groupName, counterName));
+    } else {
+      counter.increment(value);
     }
-    counter.increment(value);
   }
 
   public long getValue(String groupName, String counterName) {
     SparkCounter counter = getGroup(groupName).getCounter(counterName);
     if (counter == null) {
-      throw new RuntimeException(
+      LOG.error(
         String.format("counter[%s, %s] has not initialized before.", groupName, counterName));
+      return 0;
+    } else {
+      return counter.getValue();
     }
-
-    return counter.getValue();
   }
 
   public SparkCounter getCounter(String groupName, String counterName) {
@@ -126,5 +131,30 @@ public class SparkCounters implements Serializable {
 
   public Map<String, SparkCounterGroup> getSparkCounterGroups() {
     return sparkCounterGroups;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    Map<String, SparkCounterGroup> groups = getSparkCounterGroups();
+    if (groups != null) {
+      for(Map.Entry<String, SparkCounterGroup> groupEntry : groups.entrySet()) {
+        String groupName = groupEntry.getKey();
+        SparkCounterGroup group = groupEntry.getValue();
+        sb.append(groupName).append("\n");
+        Map<String, SparkCounter> counters = group.getSparkCounters();
+        for (Map.Entry<String, SparkCounter> counterEntry : counters.entrySet()) {
+          String counterName = counterEntry.getKey();
+          SparkCounter counter = counterEntry.getValue();
+          sb.append("\t")
+            .append(counterName)
+            .append(": ")
+            .append(counter.getValue())
+            .append("\n");
+        }
+      }
+    }
+
+    return sb.toString();
   }
 }

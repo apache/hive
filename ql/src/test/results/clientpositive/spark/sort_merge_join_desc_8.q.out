@@ -58,7 +58,6 @@ PREHOOK: query: insert overwrite table table_desc1 select key, value from src so
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc1 select key, value from src sort by key DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -69,7 +68,6 @@ PREHOOK: query: insert overwrite table table_desc2 select key, value from src so
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc2 select key, value from src sort by key DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -80,7 +78,6 @@ PREHOOK: query: insert overwrite table table_desc3 select key, value, concat(val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc3 select key, value, concat(value,"_2") as value2 from src sort by key, value, value2 DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -92,7 +89,6 @@ PREHOOK: query: insert overwrite table table_desc4 select key, concat(value,"_2"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@table_desc4
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table table_desc4 select key, concat(value,"_2") as value2 from src sort by key, value2 DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -127,28 +123,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 9 Data size: 901 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -157,9 +153,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 9 Data size: 991 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 9 Data size: 991 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 91 Data size: 969 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -235,28 +231,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 34 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key is not null and value2 is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 517 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value2 (type: string)
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value2 (type: string)
-                      Statistics: Num rows: 3 Data size: 601 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 41 Data size: 517 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 53 Data size: 10718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 10218 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key is not null and value2 is not null) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 808 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 837 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string), value2 (type: string)
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value2 (type: string)
-                      Statistics: Num rows: 4 Data size: 808 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 41 Data size: 837 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -265,9 +261,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 4 Data size: 888 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 45 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 4 Data size: 888 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 45 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash

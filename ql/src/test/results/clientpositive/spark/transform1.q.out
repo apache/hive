@@ -72,7 +72,6 @@ select array(1,2,3) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@transform1_t2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table transform1_t2
 select array(1,2,3) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -98,21 +97,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: transform1_t2
-                  Statistics: Num rows: -1 Data size: 6 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: '012' (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: -1 Data size: 6 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                     Transform Operator
                       command: cat
                       output info:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      Statistics: Num rows: -1 Data size: 6 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: -1 Data size: 6 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

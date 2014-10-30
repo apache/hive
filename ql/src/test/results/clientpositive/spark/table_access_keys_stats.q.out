@@ -260,8 +260,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t2
 PREHOOK: Output: default@t3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 Operator:GBY_2
 Table:default@t1
 Keys:key

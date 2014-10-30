@@ -135,7 +135,6 @@ select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as valu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmptable
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tmptable
 select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  

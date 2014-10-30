@@ -113,8 +113,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -256,8 +254,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -399,8 +395,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -542,8 +536,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -713,8 +705,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
@@ -877,8 +867,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
@@ -1041,8 +1029,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
@@ -1205,8 +1191,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
@@ -1372,8 +1356,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -1565,8 +1547,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -1758,8 +1738,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -1951,8 +1929,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -3154,8 +3130,6 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -3401,8 +3375,6 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -3648,8 +3620,6 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -3895,8 +3865,6 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: Output: default@src_multi1
 PREHOOK: Output: default@src_multi2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20

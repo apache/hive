@@ -185,7 +185,7 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>counter</value>
+  <value>fs</value>
   <description>The default storatge that stores temporary hive statistics. Currently, jdbc, hbase and counter type is supported</description>
 </property>
 
