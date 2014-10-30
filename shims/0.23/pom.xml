@@ -123,6 +123,12 @@
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
      <version>${hadoop-23.version}</version>
+     <exclusions>
+       <exclusion>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+       </exclusion>
+     </exclusions>
    </dependency>
    <dependency>
      <groupId>org.apache.tez</groupId>

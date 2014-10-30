@@ -85,7 +85,6 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             maxReducers, false);
         LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
         desc.setNumReducers(numReducers);
-        desc.setAutoParallel(true);
       }
     } else {
       LOG.info("Number of reducers determined to be: " + desc.getNumReducers());

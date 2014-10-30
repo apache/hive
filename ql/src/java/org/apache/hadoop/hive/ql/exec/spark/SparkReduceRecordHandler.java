@@ -410,7 +410,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
       }
 
       reducer.close(abort);
-      ReportStats rps = new ReportStats(rp);
+      ReportStats rps = new ReportStats(rp, jc);
       reducer.preorderMap(rps);
 
     } catch (Exception e) {

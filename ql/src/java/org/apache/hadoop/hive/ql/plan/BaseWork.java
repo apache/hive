@@ -140,11 +140,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return returnSet;
   }
 
-  public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
-    return scratchColumnVectorTypes;
-
-  }
-
   public Map<String, Map<Integer, String>> getAllScratchColumnVectorTypeMaps() {
     return allScratchColumnVectorTypeMaps;
   }
