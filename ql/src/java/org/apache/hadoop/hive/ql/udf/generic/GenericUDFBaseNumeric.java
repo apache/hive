@@ -294,7 +294,7 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert (children.length == 2);
+    assert (children.length == 2) : opDisplayName + " with " + children.length + " children";
     return "(" + children[0] + " " + opDisplayName + " " + children[1] + ")";
   }
 
