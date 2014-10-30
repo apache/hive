@@ -10241,13 +10241,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      //        be supported and would require additional checks similar to IsQuery?
      boolean isSupportedType =
          qb.getIsQuery() || qb.isCTAS() || cboCtx.type == PreCboCtx.Type.INSERT;
-     boolean result = isSupportedRoot && isSupportedType && createVwDesc == null;
+     boolean noBadTokens = HiveOptiqUtil.validateASTForUnsupportedTokens(ast);
+     boolean result = isSupportedRoot && isSupportedType && createVwDesc == null && noBadTokens;
      if (!result) {
        if (needToLogMessage) {
          String msg = "";
          if (!isSupportedRoot) msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
          if (!isSupportedType) msg += "is not a query, CTAS, or insert; ";
          if (createVwDesc != null) msg += "has create view; ";
+         if (!noBadTokens) msg += "has unsupported tokens; ";
 
          if (msg.isEmpty()) msg += "has some unspecified limitations; ";
          LOG.info("Not invoking CBO because the statement " + msg.substring(0, msg.length() - 2));
