@@ -34,7 +34,7 @@ metastore() {
   fi
   if [[ -n "$SENTRY_HOME" ]]
   then
-    for f in ${SENTRY_HOME}/lib/*.jar; do
+    for f in ${SENTRY_HOME}/lib/*.jar ${SENTRY_HOME}/lib/plugins/*.jar; do
       export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${f}
     done
   fi
