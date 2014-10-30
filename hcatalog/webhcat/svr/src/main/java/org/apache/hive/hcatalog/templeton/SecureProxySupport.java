@@ -121,9 +121,9 @@ public class SecureProxySupport {
     if (isEnabled) {
       args.add("-D");
       args.add("hive.metastore.token.signature=" + getHcatServiceStr());
-      args.add("-D");
-      args.add("proxy.user.name=" + user);
     }
+    args.add("-D");
+    args.add("proxy.user.name=" + user);
   }
 
   class TokenWrapper {
@@ -140,6 +140,7 @@ public class SecureProxySupport {
     ugi.doAs(new PrivilegedExceptionAction<Object>() {
       public Object run() throws IOException {
         FileSystem fs = FileSystem.get(conf);
+        //todo: according to JavaDoc this seems like private API: addDelegationToken should be used
         twrapper.token = fs.getDelegationToken(ugi.getShortUserName());
         return null;
       }
