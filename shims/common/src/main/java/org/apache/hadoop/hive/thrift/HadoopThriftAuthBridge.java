@@ -99,12 +99,15 @@ public class HadoopThriftAuthBridge {
   }
 
   public static abstract class Server {
+    public enum ServerMode {
+      HIVESERVER2, METASTORE
+    };
     public abstract TTransportFactory createTransportFactory(Map<String, String> saslProps) throws TTransportException;
     public abstract TProcessor wrapProcessor(TProcessor processor);
     public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
     public abstract InetAddress getRemoteAddress();
     public abstract void startDelegationTokenSecretManager(Configuration conf,
-        Object hmsHandler) throws IOException;
+        Object hmsHandler, ServerMode smode) throws IOException;
     public abstract String getDelegationToken(String owner, String renewer)
         throws IOException, InterruptedException;
     public abstract String getDelegationTokenWithService(String owner, String renewer, String service)

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
@@ -98,7 +99,7 @@ public class HiveAuthFactory {
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
         // start delegation token manager
         try {
-          saslServer.startDelegationTokenSecretManager(conf, null);
+          saslServer.startDelegationTokenSecretManager(conf, null, ServerMode.HIVESERVER2);
         } catch (IOException e) {
           throw new TTransportException("Failed to start token manager", e);
         }

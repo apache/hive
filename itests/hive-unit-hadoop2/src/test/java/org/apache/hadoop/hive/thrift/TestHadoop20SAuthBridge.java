@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -98,9 +99,9 @@ public class TestHadoop20SAuthBridge extends TestCase {
       }
 
       @Override
-      public void startDelegationTokenSecretManager(Configuration conf, Object hms)
+      public void startDelegationTokenSecretManager(Configuration conf, Object hms, ServerMode sm)
       throws IOException{
-        super.startDelegationTokenSecretManager(conf, hms);
+        super.startDelegationTokenSecretManager(conf, hms, sm);
         isMetastoreTokenManagerInited = true;
       }
 
