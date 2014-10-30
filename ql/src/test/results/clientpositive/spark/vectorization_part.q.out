@@ -10,7 +10,6 @@ PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') se
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@alltypesorc_part@ds=2011
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
@@ -31,7 +30,6 @@ PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') se
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@alltypesorc_part@ds=2012
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc

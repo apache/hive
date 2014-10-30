@@ -105,6 +105,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       execContext.setLocalWork(localWork);
 
       MapredContext.init(true, new JobConf(jc));
+      MapredContext.get().setReporter(reporter);
 
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);

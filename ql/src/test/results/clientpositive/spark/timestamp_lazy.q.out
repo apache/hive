@@ -14,7 +14,6 @@ PREHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_lazy
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

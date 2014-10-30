@@ -553,8 +553,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t2
 PREHOOK: Output: default@t3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
 INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube

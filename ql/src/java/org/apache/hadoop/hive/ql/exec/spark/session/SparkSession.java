@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 public interface SparkSession {
@@ -32,7 +33,7 @@ public interface SparkSession {
    * @param driverContext
    * @param sparkWork
    */
-  public int submit(DriverContext driverContext, SparkWork sparkWork);
+  public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception;
 
   /**
    * Is the session open and ready to submit jobs?

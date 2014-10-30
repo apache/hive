@@ -10,7 +10,6 @@ PREHOOK: query: insert overwrite table tmp select key, cast(key + 1 as int), key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmp
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tmp select key, cast(key + 1 as int), key +2, key+3, key+4, cast(key+5 as int), key+6, key+7, key+8, key+9, key+10, cast(key+11 as int) from src where key = 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -65,7 +64,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 126 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col11 is not null and (col11 = 111)) (type: boolean)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE

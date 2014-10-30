@@ -34,7 +34,6 @@ PREHOOK: query: insert overwrite table tbl1 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl1 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -45,7 +44,6 @@ PREHOOK: query: insert overwrite table tbl2 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -56,7 +54,6 @@ PREHOOK: query: insert overwrite table tbl3 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl3 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -67,7 +64,6 @@ PREHOOK: query: insert overwrite table tbl4 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl4
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tbl4 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -109,15 +105,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -135,15 +131,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -154,12 +150,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -168,9 +164,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -258,28 +254,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -289,9 +285,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -328,12 +324,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -381,28 +377,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Map 6 
             Map Operator Tree:
@@ -426,12 +422,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -440,9 +436,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -512,15 +508,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(key) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -538,15 +534,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(key) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -557,9 +553,9 @@ STAGE PLANS:
                   0 
                   1 
                   2 
-                Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -629,41 +625,41 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -674,9 +670,9 @@ STAGE PLANS:
                   0 
                   1 
                   2 
-                Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -747,41 +743,41 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
                       sort order: +
                       Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -792,12 +788,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -806,9 +802,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -879,15 +875,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -905,15 +901,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -924,12 +920,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -938,9 +934,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -1010,15 +1006,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(key) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1036,15 +1032,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(key) (type: double)
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(key) (type: double)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1055,9 +1051,9 @@ STAGE PLANS:
                   0 
                   1 
                   2 
-                Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -1127,41 +1123,41 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1172,9 +1168,9 @@ STAGE PLANS:
                   0 
                   1 
                   2 
-                Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 1599 Data size: 6397 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -1245,41 +1241,41 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1453 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 727 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: value (type: string)
                       sort order: +
                       Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 29 Data size: 2906 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
                       Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 14 Data size: 1479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -1290,12 +1286,12 @@ STAGE PLANS:
                   0 {VALUE._col0}
                   1 
                 outputColumnNames: _col1
-                Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -1304,9 +1300,9 @@ STAGE PLANS:
                 condition expressions:
                   0 
                   1 
-                Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash

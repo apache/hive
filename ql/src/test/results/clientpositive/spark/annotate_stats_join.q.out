@@ -74,7 +74,6 @@ PREHOOK: query: analyze table emp compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 PREHOOK: Output: default@emp
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: analyze table emp compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp
@@ -83,7 +82,6 @@ PREHOOK: query: analyze table dept compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dept
 PREHOOK: Output: default@dept
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: analyze table dept compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dept
@@ -92,7 +90,6 @@ PREHOOK: query: analyze table loc compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc
 PREHOOK: Output: default@loc
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: analyze table loc compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc
@@ -172,29 +169,29 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: deptname (type: string)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: lastname (type: string), locid (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -205,14 +202,14 @@ STAGE PLANS:
                   0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1}
                   1 {KEY.reducesinkkey0} {VALUE._col0}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7
-                Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -247,28 +244,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dept
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and deptname is not null) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), deptname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), deptname (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: emp
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and lastname is not null) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), lastname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), lastname (type: string)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: locid (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -279,17 +276,17 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey1} {KEY.reducesinkkey0} {VALUE._col0}
                   1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7
-                Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col1 = _col6) and (_col0 = _col7)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                    Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -320,28 +317,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and deptname is not null) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), deptname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), deptname (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and lastname is not null) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), lastname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), lastname (type: string)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: locid (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -352,14 +349,14 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey1} {KEY.reducesinkkey0} {VALUE._col0}
                   1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7
-                Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -394,28 +391,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dept
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and deptname is not null) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), deptname (type: string), deptname (type: string)
                       sort order: +++
                       Map-reduce partition columns: deptid (type: int), deptname (type: string), deptname (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: emp
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and lastname is not null) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), lastname (type: string), lastname (type: string)
                       sort order: +++
                       Map-reduce partition columns: deptid (type: int), lastname (type: string), lastname (type: string)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: locid (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -426,17 +423,17 @@ STAGE PLANS:
                   0 {KEY.reducesinkkey1} {KEY.reducesinkkey0} {VALUE._col0}
                   1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7
-                Statistics: Num rows: 5 Data size: 544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 2134 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (((_col1 = _col6) and (_col0 = _col7)) and (_col7 = _col0)) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -471,43 +468,43 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: deptname (type: string)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e1
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: lastname (type: string), locid (type: int)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: e
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: lastname (type: string), locid (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -520,14 +517,14 @@ STAGE PLANS:
                   1 {KEY.reducesinkkey0} {VALUE._col0}
                   2 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13
-                Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 658 Data size: 192794 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string), _col11 (type: string), _col12 (type: int), _col13 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                  Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 658 Data size: 192794 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 658 Data size: 192794 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -560,43 +557,43 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: deptname (type: string)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int)
                       sort order: +
                       Map-reduce partition columns: deptid (type: int)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: lastname (type: string), locid (type: int)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: l
-                  Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: locid is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: locid (type: int)
                       sort order: +
                       Map-reduce partition columns: locid (type: int)
-                      Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: state (type: string), zip (type: bigint), year (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -609,14 +606,14 @@ STAGE PLANS:
                   1 {KEY.reducesinkkey0} {VALUE._col0}
                   2 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13, _col14
-                Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 47 Data size: 13912 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string), _col11 (type: string), _col12 (type: int), _col13 (type: bigint), _col14 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 47 Data size: 13912 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 47 Data size: 13912 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -651,42 +648,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  Statistics: Num rows: 0 Data size: 68 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and deptname is not null) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), deptname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), deptname (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e
-                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 48 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptid is not null and lastname is not null) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: deptid (type: int), lastname (type: string)
                       sort order: ++
                       Map-reduce partition columns: deptid (type: int), lastname (type: string)
-                      Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: locid (type: int)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: l
-                  Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (locid is not null and state is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: locid (type: int), state (type: string)
                       sort order: ++
                       Map-reduce partition columns: locid (type: int), state (type: string)
-                      Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: zip (type: bigint), year (type: int)
         Reducer 2 
             Reduce Operator Tree:
@@ -699,14 +696,14 @@ STAGE PLANS:
                   1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                   2 {KEY.reducesinkkey1} {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
                 outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13, _col14
-                Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string), _col11 (type: string), _col12 (type: int), _col13 (type: bigint), _col14 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 11 Data size: 1089 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

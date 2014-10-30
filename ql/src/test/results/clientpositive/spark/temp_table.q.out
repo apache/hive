@@ -63,7 +63,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@foo
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -134,7 +133,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bar
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
@@ -170,14 +168,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: foo
-          Statistics: Num rows: 14 Data size: 2856 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 14 Data size: 2856 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 247 Data size: 2609 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 10
-              Statistics: Num rows: 10 Data size: 2040 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: select * from foo limit 10
@@ -247,13 +245,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 28 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -299,7 +297,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE baz SELECT * from foo
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo
 PREHOOK: Output: default@baz
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE baz SELECT * from foo
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
@@ -326,7 +323,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE bay SELECT * FROM src ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@bay
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE bay SELECT * FROM src ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -389,7 +385,6 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@foo
 PREHOOK: Output: database:two
 PREHOOK: Output: two@foo
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM default.foo
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@foo

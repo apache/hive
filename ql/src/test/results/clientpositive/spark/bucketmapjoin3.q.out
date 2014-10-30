@@ -422,7 +422,6 @@ PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
@@ -450,7 +449,6 @@ select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
 PREHOOK: Output: default@bucketmapjoin_hash_result_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_1
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
@@ -469,7 +467,6 @@ PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
@@ -497,7 +494,6 @@ select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
 PREHOOK: Output: default@bucketmapjoin_hash_result_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
@@ -784,8 +780,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
                           numFiles 1
-                          numRows -1
-                          rawDataSize -1
+                          numRows 564
+                          rawDataSize 10503
                           serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -817,8 +813,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numRows -1
-                rawDataSize -1
+                numRows 564
+                rawDataSize 10503
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -841,7 +837,6 @@ PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
@@ -869,7 +864,6 @@ select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
 PREHOOK: Output: default@bucketmapjoin_hash_result_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
@@ -888,7 +882,6 @@ PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
@@ -916,7 +909,6 @@ select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
 PREHOOK: Output: default@bucketmapjoin_hash_result_2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY

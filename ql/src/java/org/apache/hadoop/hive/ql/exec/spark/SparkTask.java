@@ -30,9 +30,12 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -47,6 +50,7 @@ public class SparkTask extends Task<SparkWork> {
   private static final long serialVersionUID = 1L;
   private transient JobConf job;
   private transient ContentSummary inputSummary;
+  private SparkCounters sparkCounters;
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
@@ -64,8 +68,8 @@ public class SparkTask extends Task<SparkWork> {
       printConfigInfo();
       sparkSessionManager = SparkSessionManagerImpl.getInstance();
       sparkSession = SessionState.get().getSparkSession();
-      
-      // Spark configurations are updated close the existing session 
+
+      // Spark configurations are updated close the existing session
       if(conf.getSparkConfigUpdated()){
         sparkSessionManager.closeSession(sparkSession);
         sparkSession =  null;
@@ -73,12 +77,21 @@ public class SparkTask extends Task<SparkWork> {
       }
       sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
       SessionState.get().setSparkSession(sparkSession);
-      rc = sparkSession.submit(driverContext, getWork());
+      SparkWork sparkWork = getWork();
+      String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+      if (statsImpl.equalsIgnoreCase("counter")) {
+        sparkWork.setRequiredCounterPrefix(SparkUtilities.getRequiredCounterPrefix(this, db));
+      }
+      SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
+      sparkCounters = jobRef.getSparkJobStatus().getCounter();
+      SparkJobMonitor monitor = new SparkJobMonitor(jobRef.getSparkJobStatus());
+      monitor.startMonitor();
+      console.printInfo(sparkCounters.toString());
+      rc = 0;
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);
       return 1;
-    }
-    finally {
+    } finally {
       if (sparkSession != null && sparkSessionManager != null) {
         rc = close(rc);
         try {
@@ -152,6 +165,10 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return result;
+  }
+
+  public SparkCounters getSparkCounters() {
+    return sparkCounters;
   }
 
   /**

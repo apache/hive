@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+
 import java.util.Map;
 
 /**
@@ -31,5 +33,7 @@ public interface SparkJobStatus {
   public int[] getStageIds();
 
   public Map<String, SparkStageProgress> getSparkStageProgress();
+
+  public SparkCounters getCounter();
 
 }

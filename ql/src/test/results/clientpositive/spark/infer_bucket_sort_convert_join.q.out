@@ -20,7 +20,6 @@ SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: -- Tests a join which is converted to a map join, the output should be neither bucketed nor sorted
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
 SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
@@ -55,8 +54,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	1028                
+	rawDataSize         	10968               
 	totalSize           	11996               
 #### A masked pattern was here ####
 	 	 
@@ -78,7 +77,6 @@ SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
 -- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 
@@ -115,8 +113,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	1028                
+	rawDataSize         	10968               
 	totalSize           	11996               
 #### A masked pattern was here ####
 	 	 

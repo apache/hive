@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
@@ -40,15 +41,18 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
   private int jobId;
   private JobStateListener jobStateListener;
   private JobProgressListener jobProgressListener;
+  private SparkCounters sparkCounters;
 
   public SimpleSparkJobStatus(
     int jobId,
     JobStateListener stateListener,
-    JobProgressListener progressListener) {
+    JobProgressListener progressListener,
+    SparkCounters sparkCounters) {
 
     this.jobId = jobId;
     this.jobStateListener = stateListener;
     this.jobProgressListener = progressListener;
+    this.sparkCounters = sparkCounters;
   }
 
   @Override
@@ -109,6 +113,11 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
       }
     }
     return stageProgresses;
+  }
+
+  @Override
+  public SparkCounters getCounter() {
+    return sparkCounters;
   }
 
   private List<StageInfo> getStageInfo(int stageId) {

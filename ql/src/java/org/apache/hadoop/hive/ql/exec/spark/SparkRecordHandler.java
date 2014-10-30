@@ -48,6 +48,7 @@ public abstract class SparkRecordHandler {
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
     jc = job;
     MapredContext.init(false, new JobConf(jc));
+    MapredContext.get().setReporter(reporter);
 
     oc = output;
     rp = reporter;

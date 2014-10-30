@@ -71,7 +71,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@avro_dec
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec

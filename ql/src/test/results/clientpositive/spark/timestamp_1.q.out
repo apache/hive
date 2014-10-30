@@ -23,7 +23,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select cast('2011-01-01 01:01:01' as timestamp) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -107,7 +106,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -191,7 +189,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.1' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -275,7 +272,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.0001' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -359,7 +355,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.000100000' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -443,7 +438,6 @@ PREHOOK: query: insert overwrite table timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table timestamp_1
   select '2011-01-01 01:01:01.001000011' from src tablesample (1 rows)
 POSTHOOK: type: QUERY

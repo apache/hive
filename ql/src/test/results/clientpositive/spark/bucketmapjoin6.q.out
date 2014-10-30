@@ -22,7 +22,6 @@ PREHOOK: query: insert overwrite table tmp1 select * from src where key < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmp1
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tmp1 select * from src where key < 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -33,7 +32,6 @@ PREHOOK: query: insert overwrite table tmp2 select * from src where key < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmp2
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tmp2 select * from src where key < 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -55,7 +53,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp1
 PREHOOK: Input: default@tmp2
 PREHOOK: Output: default@tmp3
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: insert overwrite table tmp3
   select /*+ MAPJOIN(l) */ i.a, i.b, l.b
   from tmp1 i join tmp2 l ON i.a = l.a
