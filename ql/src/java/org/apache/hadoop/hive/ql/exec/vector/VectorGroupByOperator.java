@@ -76,8 +76,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext = null;
 
-  private String fileKey;
-
   // The above members are initialized by the constructor and must not be
   // transient.
   //---------------------------------------------------------------------------
@@ -756,7 +754,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
 
     vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/_GROUPBY_");
-    fileKey = vOutContext.getFileKey();
   }
 
   public VectorGroupByOperator() {
@@ -796,7 +793,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
           vrbCtx = new VectorizedRowBatchCtx();
-          vrbCtx.init(hconf, fileKey, (StructObjectInspector) outputObjInspector);
+          vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
           outputBatch = vrbCtx.createVectorizedRowBatch();
           vectorColumnAssign = VectorColumnAssignFactory.buildAssigners(
               outputBatch, outputObjInspector, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
