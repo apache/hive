@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -52,14 +51,6 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   
   private static final long serialVersionUID = 1L;
 
-  private int tagLen;
-  
-  private transient VectorizedRowBatch outputBatch;  
-  private transient VectorizationContext vOutContext = null;
-  private transient VectorizedRowBatchCtx vrbCtx = null;  
-  
-  private String fileKey;
-
   private VectorExpression[] bigTableValueExpressions;
 
   private VectorExpression[] bigTableFilterExpressions;
@@ -67,6 +58,16 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   private VectorExpression[] keyExpressions;
 
   private VectorExpressionWriter[] keyOutputWriters;
+
+  private VectorizationContext vOutContext;
+
+  // The above members are initialized by the constructor and must not be
+  // transient.
+  //---------------------------------------------------------------------------
+
+  private transient VectorizedRowBatch outputBatch;  
+
+  private transient VectorizedRowBatchCtx vrbCtx = null;
 
   private transient VectorHashKeyWrapperBatch keyWrapperBatch;
 
@@ -98,7 +99,6 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     numAliases = desc.getExprs().size();
     posBigTable = (byte) desc.getPosBigTable();
     filterMaps = desc.getFilterMap();
-    tagLen = desc.getTagLength();
     noOuterJoin = desc.isNoOuterJoin();
 
     // Must obtain vectorized equivalents for filter and value expressions
@@ -117,7 +117,6 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     // We are making a new output vectorized row batch.
     vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/SMB_JOIN_" + desc.getBigTableAlias());
-    this.fileKey = vOutContext.getFileKey();
   }
   
   @Override
@@ -135,7 +134,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     super.initializeOp(hconf);
 
     vrbCtx = new VectorizedRowBatchCtx();
-    vrbCtx.init(hconf, this.fileKey, (StructObjectInspector) this.outputObjInspector);
+    vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
     
     outputBatch = vrbCtx.createVectorizedRowBatch();
     
@@ -272,10 +271,8 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
     Object[] values = (Object[]) row;
     VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
     if (null == vcas) {
-      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getAllColumnVectorMaps(hconf);
-      Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
       vcas = VectorColumnAssignFactory.buildAssigners(
-          outputBatch, outputOI, columnMap, conf.getOutputColumnNames());
+          outputBatch, outputOI, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
       outputVectorAssigners.put(outputOI, vcas);
     }
     for (int i = 0; i < values.length; ++i) {

@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -53,19 +52,16 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
    */
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Vectorizaiton context key
-   * Used to retrieve column map from the MapTask scratch
-   */
-  private String fileKey;
-  private int tagLen;
-
   private VectorExpression[] keyExpressions;
-  private transient VectorHashKeyWrapperBatch keyWrapperBatch;
-  private transient VectorExpressionWriter[] keyOutputWriters;
 
   private VectorExpression[] bigTableFilterExpressions;
   private VectorExpression[] bigTableValueExpressions;
+  
+  private VectorizationContext vOutContext;
+
+  // The above members are initialized by the constructor and must not be
+  // transient.
+  //---------------------------------------------------------------------------
 
   private transient VectorizedRowBatch outputBatch;
   private transient VectorExpressionWriter[] valueWriters;
@@ -76,8 +72,9 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
   //
   private transient int batchIndex;
   private transient VectorHashKeyWrapper[] keyValues;
-  
-  private transient VectorizationContext vOutContext = null;
+  private transient VectorHashKeyWrapperBatch keyWrapperBatch;
+  private transient VectorExpressionWriter[] keyOutputWriters;
+
   private transient VectorizedRowBatchCtx vrbCtx = null;
   
   public VectorMapJoinOperator() {
@@ -96,7 +93,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     numAliases = desc.getExprs().size();
     posBigTable = (byte) desc.getPosBigTable();
     filterMaps = desc.getFilterMap();
-    tagLen = desc.getTagLength();
     noOuterJoin = desc.isNoOuterJoin();
 
     Map<Byte, List<ExprNodeDesc>> filterExpressions = desc.getFilters();
@@ -113,7 +109,6 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     // We are making a new output vectorized row batch.
     vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/MAP_JOIN_" + desc.getBigTableAlias());
-    this.fileKey = vOutContext.getFileKey();
   }
 
   @Override
@@ -124,7 +119,7 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     keyOutputWriters = VectorExpressionWriterFactory.getExpressionWriters(keyDesc);
 
     vrbCtx = new VectorizedRowBatchCtx();
-    vrbCtx.init(hconf, this.fileKey, (StructObjectInspector) this.outputObjInspector);
+    vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) this.outputObjInspector);
 
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
@@ -193,10 +188,8 @@ public class VectorMapJoinOperator extends MapJoinOperator implements Vectorizat
     Object[] values = (Object[]) row;
     VectorColumnAssign[] vcas = outputVectorAssigners.get(outputOI);
     if (null == vcas) {
-      Map<String, Map<String, Integer>> allColumnMaps = Utilities.getAllColumnVectorMaps(hconf);
-      Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
       vcas = VectorColumnAssignFactory.buildAssigners(
-          outputBatch, outputOI, columnMap, conf.getOutputColumnNames());
+          outputBatch, outputOI, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
       outputVectorAssigners.put(outputOI, vcas);
     }
     for (int i=0; i<values.length; ++i) {
