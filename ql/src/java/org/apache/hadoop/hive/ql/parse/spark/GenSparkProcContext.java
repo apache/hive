@@ -18,20 +18,13 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -48,6 +41,14 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * GenSparkProcContext maintains information about the tasks and operators
@@ -100,6 +101,9 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   // map that says which mapjoin belongs to which work item
   public final Map<MapJoinOperator, List<BaseWork>> mapJoinWorkMap;
 
+  // a map to keep track of which MapWork item holds which SMBMapJoinOp
+  public final Map<SMBMapJoinOperator, MapWork> smbJoinWorkMap;
+
   // a map to keep track of which root generated which work
   public final Map<Operator<?>, BaseWork> rootToWorkMap;
 
@@ -134,13 +138,6 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   // This is necessary as sometimes semantic analyzer's mapping is different than operator's own alias.
   public final Map<String, Operator<? extends OperatorDesc>> topOps;
 
-  // Keep track of the current table alias (from last TableScan)
-  public String currentAliasId;
-
-  // Keep track of the current Table-Scan.
-  public TableScanOperator currentTs;
-
-
   @SuppressWarnings("unchecked")
   public GenSparkProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -158,6 +155,7 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, SparkEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
+    this.smbJoinWorkMap = new LinkedHashMap<SMBMapJoinOperator, MapWork>();
     this.mapJoinWorkMap = new LinkedHashMap<MapJoinOperator, List<BaseWork>>();
     this.rootToWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.childToWorkMap = new LinkedHashMap<Operator<?>, List<BaseWork>>();
