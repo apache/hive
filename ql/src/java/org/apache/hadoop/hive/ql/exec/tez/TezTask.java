@@ -50,6 +50,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -360,7 +361,10 @@ public class TezTask extends Task<TezWork> {
     Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
     if (additionalLr != null) {
       for (LocalResource lr: additionalLr) {
-        resourceMap.put(utils.getBaseName(lr), lr);
+        if (lr.getType() == LocalResourceType.FILE) {
+          // TEZ AM will only localize FILE (no script operators in the AM)
+          resourceMap.put(utils.getBaseName(lr), lr);
+        }
       }
     }
 
