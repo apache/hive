@@ -128,6 +128,12 @@ public class OperationLog {
 
     void remove() {
       try {
+        if (in != null) {
+          in.close();
+        }
+        if (out != null) {
+          out.close();
+        }
         FileUtils.forceDelete(file);
         isRemoved = true;
       } catch (Exception e) {
