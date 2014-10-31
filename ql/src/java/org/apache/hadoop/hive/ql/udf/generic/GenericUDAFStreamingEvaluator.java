@@ -67,7 +67,7 @@ public abstract class GenericUDAFStreamingEvaluator<T1> extends
   @Override
   public ObjectInspector init(Mode m, ObjectInspector[] parameters)
       throws HiveException {
-    throw new HiveException(getClass().getSimpleName() + ": init not supported");
+    return wrappedEval.init(m, parameters);
   }
 
   @Override
