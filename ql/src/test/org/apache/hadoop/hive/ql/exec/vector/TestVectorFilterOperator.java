@@ -106,7 +106,7 @@ public class TestVectorFilterOperator {
 
     VectorizedRowBatch vrg = fdr.getNext();
 
-    vfo.processOp(vrg, 0);
+    vfo.getConditionEvaluator().evaluate(vrg);
 
     //Verify
     int rows = 0;
