@@ -64,7 +64,7 @@ public class TestUseDatabase extends TestCase {
 
     String tmpDir = System.getProperty("test.tmp.dir");
     File dir = new File(tmpDir + "/hive-junit-" + System.nanoTime());
-    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '" + dir.getAbsolutePath() + "'");
+    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '" + dir.toURI().getPath() + "'");
     assertEquals(0, response.getResponseCode());
     assertNull(response.getErrorMessage());
 
