@@ -18,21 +18,14 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -49,15 +42,21 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * GenSparkUtils is a collection of shared helper methods to produce SparkWork
@@ -94,7 +93,7 @@ public class GenSparkUtils {
     return unionWork;
   }
 
-  public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork) {
+  public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork) throws SemanticException {
     Preconditions.checkArgument(!root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be non-empty");
 
@@ -128,8 +127,17 @@ public class GenSparkUtils {
     }
 
     if (reduceWork.getReducer() instanceof JoinOperator) {
-      //reduce-side join
+      //reduce-side join, use MR-style shuffle
       edgeProp.setMRShuffle();
+    }
+
+    //If its a FileSink to bucketed files, also use MR-style shuffle to get compatible taskId for bucket-name
+    FileSinkOperator fso = getChildOperator(reduceWork.getReducer(), FileSinkOperator.class);
+    if (fso != null) {
+      String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT);
+      if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
+        edgeProp.setMRShuffle();
+      }
     }
 
     sparkWork.connect(
@@ -158,7 +166,12 @@ public class GenSparkUtils {
   }
 
   public MapWork createMapWork(GenSparkProcContext context, Operator<?> root,
-      SparkWork sparkWork, PrunedPartitionList partitions) throws SemanticException {
+    SparkWork sparkWork, PrunedPartitionList partitions) throws SemanticException {
+    return createMapWork(context, root, sparkWork, partitions, false);
+  }
+
+  public MapWork createMapWork(GenSparkProcContext context, Operator<?> root,
+      SparkWork sparkWork, PrunedPartitionList partitions, boolean deferSetup) throws SemanticException {
     Preconditions.checkArgument(root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be empty");
     MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
@@ -170,7 +183,9 @@ public class GenSparkUtils {
             root.getClass().getName());
     String alias = ((TableScanOperator)root).getConf().getAlias();
 
-    setupMapWork(mapWork, context, partitions, root, alias);
+    if (!deferSetup) {
+      setupMapWork(mapWork, context, partitions, root, alias);
+    }
 
     // add new item to the Spark work
     sparkWork.add(mapWork);
@@ -322,27 +337,17 @@ public class GenSparkUtils {
     return true;
   }
 
-
-  /**
-   * Is an operator of the given class a child of the given operator.  This is more flexible
-   * than GraphWalker to tell apart subclasses such as SMBMapJoinOp vs MapJoinOp that have a common name.
-   * @param op parent operator to start search
-   * @param klazz given class
-   * @return
-   * @throws SemanticException
-   */
-  public static Operator<?> getChildOperator(Operator<?> op, Class klazz) throws SemanticException {
+  public static <T> T getChildOperator(Operator<?> op, Class<T> klazz) throws SemanticException {
     if (klazz.isInstance(op)) {
-      return op;
+      return (T) op;
     }
     List<Operator<?>> childOperators = op.getChildOperators();
     for (Operator<?> childOp : childOperators) {
-      Operator result = getChildOperator(childOp, klazz);
+      T result = getChildOperator(childOp, klazz);
       if (result != null) {
         return result;
       }
     }
     return null;
   }
-
 }

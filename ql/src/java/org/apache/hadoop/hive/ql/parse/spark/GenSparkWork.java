@@ -18,36 +18,40 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 /**
  * GenSparkWork separates the operator tree into spark tasks.
@@ -102,6 +106,26 @@ public class GenSparkWork implements NodeProcessor {
 
     SparkWork sparkWork = context.currentTask.getWork();
 
+
+    if (GenSparkUtils.getChildOperator(root, DummyStoreOperator.class) != null) {
+      /*
+       *  SMB join case:
+       *
+       *   (Big)   (Small)  (Small)
+       *    TS       TS       TS
+       *     \       |       /
+       *       \     DS     DS
+       *         \   |    /
+       *          SMBJoinOP
+       *
+       * Only create MapWork rooted at TS of big table.
+       * If there are dummy-store operators anywhere in TS's children path, then this is for the small tables.
+       * No separate Map-Task need to be created for small table TS, as they will be read by the MapWork of the big-table.
+       */
+      return null;
+    }
+    SMBMapJoinOperator smbOp = (SMBMapJoinOperator) GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
+
     // Right now the work graph is pretty simple. If there is no
     // Preceding work we have a root and will generate a map
     // vertex. If there is a preceding work we will generate
@@ -119,7 +143,18 @@ public class GenSparkWork implements NodeProcessor {
     } else {
       // create a new vertex
       if (context.preceedingWork == null) {
-        work = utils.createMapWork(context, root, sparkWork, null);
+        if (smbOp != null) {
+          //This logic is for SortMergeBucket MapJoin case.
+          //This MapWork (of big-table, see above..) is later initialized by SparkMapJoinFactory processor, so don't initialize it here.
+          //Just keep track of it in the context, for later processing.
+          work = utils.createMapWork(context, root, sparkWork, null, true);
+          if (context.smbJoinWorkMap.get(smbOp) != null) {
+            throw new SemanticException("Each SMBMapJoin should be associated only with one Mapwork");
+          }
+          context.smbJoinWorkMap.put(smbOp, (MapWork) work);
+        } else {
+          work = utils.createMapWork(context, root, sparkWork, null);
+        }
       } else {
         work = utils.createReduceWork(context, root, sparkWork);
       }
@@ -284,8 +319,16 @@ public class GenSparkWork implements NodeProcessor {
           edgeProp.setShuffleSort();
         }
         if (rWork.getReducer() instanceof JoinOperator) {
-          //reduce-side join
+          //reduce-side join, use MR-style shuffle
           edgeProp.setMRShuffle();
+        }
+        //If its a FileSink to bucketed files, also use MR-style shuffle to get compatible taskId for bucket-name
+        FileSinkOperator fso = GenSparkUtils.getChildOperator(rWork.getReducer(), FileSinkOperator.class);
+        if (fso != null) {
+          String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT);
+          if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
+            edgeProp.setMRShuffle();
+          }
         }
         sparkWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);

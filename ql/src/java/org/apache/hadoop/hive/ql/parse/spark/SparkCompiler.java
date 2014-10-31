@@ -17,27 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -54,6 +42,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
@@ -61,8 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkMapJoinOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -73,6 +61,17 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
  *
@@ -179,6 +178,20 @@ public class SparkCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
+    ogw.startWalking(topNodes, null);
+
+
+
+    // ------------------- Second Pass -----------------------
+    // SMB Join optimizations to add the "localWork" and bucketing data structures to MapWork.
+    opRules.clear();
+    opRules.put(new TypeRule(SMBMapJoinOperator.class),
+       SparkSortMergeJoinFactory.getTableScanMapJoin());
+
+    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
     // we need to clone some operator plans and remove union operators still
