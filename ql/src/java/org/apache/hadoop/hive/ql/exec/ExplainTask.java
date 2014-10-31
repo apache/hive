@@ -924,7 +924,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return "EXPLAIN";
   }
 
-  @Override
   public List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
