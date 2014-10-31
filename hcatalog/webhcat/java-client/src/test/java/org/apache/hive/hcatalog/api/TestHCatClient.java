@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -107,13 +108,17 @@ public class TestHCatClient {
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
+    hcatConf = new HiveConf(TestHCatClient.class);
+    if (Shell.WINDOWS) {
+      WindowsPathUtil.convertPathsFromWindowsToHdfs(hcatConf);
+    }
+
     Thread t = new Thread(new RunMS(msPort));
     t.start();
     Thread.sleep(10000);
 
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
-    hcatConf = new HiveConf(TestHCatClient.class);
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
       + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
