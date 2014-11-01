@@ -386,7 +386,7 @@ public class HiveConf extends Configuration {
         "testing only."),
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200,
         "Minimum number of worker threads in the Thrift server's pool."),
-    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 100000,
+    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
     METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
