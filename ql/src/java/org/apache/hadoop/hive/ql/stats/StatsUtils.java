@@ -18,14 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -89,8 +84,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestamp
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StatsUtils {
 
@@ -1011,12 +1012,10 @@ public class StatsUtils {
     if (colExprMap != null  && rowSchema != null) {
       for (ColumnInfo ci : rowSchema.getSignature()) {
         String outColName = ci.getInternalName();
-        outColName = StatsUtils.stripPrefixFromColumnName(outColName);
         String outTabAlias = ci.getTabAlias();
         ExprNodeDesc end = colExprMap.get(outColName);
         ColStatistics colStat = getColStatisticsFromExpression(conf, parentStats, end);
         if (colStat != null) {
-          outColName = StatsUtils.stripPrefixFromColumnName(outColName);
           colStat.setColumnName(outColName);
           colStat.setTableAlias(outTabAlias);
         }
@@ -1070,7 +1069,6 @@ public class StatsUtils {
       ExprNodeColumnDesc encd = (ExprNodeColumnDesc) end;
       colName = encd.getColumn();
       tabAlias = encd.getTabAlias();
-      colName = stripPrefixFromColumnName(colName);
 
       if (encd.getIsPartitionColOrVirtualCol()) {
 
@@ -1300,21 +1298,6 @@ public class StatsUtils {
   }
 
   /**
-   * Remove KEY/VALUE prefix from column name
-   * @param colName
-   *          - column name
-   * @return column name
-   */
-  public static String stripPrefixFromColumnName(String colName) {
-    String stripedName = colName;
-    if (colName.startsWith("KEY") || colName.startsWith("VALUE")) {
-      // strip off KEY./VALUE. from column name
-      stripedName = colName.split("\\.")[1];
-    }
-    return stripedName;
-  }
-
-  /**
    * Returns fully qualified name of column
    * @param tabName
    * @param colName
@@ -1363,38 +1346,42 @@ public class StatsUtils {
   }
 
   /**
-   * Try to get fully qualified column name from expression node
+   * Get fully qualified column name from output key column names and column expression map
    * @param keyExprs
-   *          - expression nodes
+   *          - output key names
    * @param map
    *          - column expression map
    * @return list of fully qualified names
    */
-  public static List<String> getFullQualifedColNameFromExprs(List<ExprNodeDesc> keyExprs,
+  public static List<String> getFullyQualifedReducerKeyNames(List<String> keyExprs,
       Map<String, ExprNodeDesc> map) {
     List<String> result = Lists.newArrayList();
     if (keyExprs != null) {
-      for (ExprNodeDesc end : keyExprs) {
-        String outColName = null;
-        for (Map.Entry<String, ExprNodeDesc> entry : map.entrySet()) {
-          if (entry.getValue().isSame(end)) {
-            outColName = entry.getKey();
-            outColName = stripPrefixFromColumnName(outColName);
+      for (String key : keyExprs) {
+        String colName = key;
+        ExprNodeDesc end = map.get(colName);
+        // if we couldn't get expression try prepending "KEY." prefix to reducer key column names
+        if (end == null) {
+          colName = Utilities.ReduceField.KEY.toString() + "." + key;
+          end = map.get(colName);
+          if (end == null) {
+            continue;
           }
         }
         if (end instanceof ExprNodeColumnDesc) {
           ExprNodeColumnDesc encd = (ExprNodeColumnDesc) end;
-          if (outColName == null) {
-            outColName = encd.getColumn();
-            outColName = stripPrefixFromColumnName(outColName);
-          }
           String tabAlias = encd.getTabAlias();
-          result.add(getFullyQualifiedColumnName(tabAlias, outColName));
+          result.add(getFullyQualifiedColumnName(tabAlias, colName));
         } else if (end instanceof ExprNodeGenericFuncDesc) {
           ExprNodeGenericFuncDesc enf = (ExprNodeGenericFuncDesc) end;
-          List<String> cols = getFullQualifedColNameFromExprs(enf.getChildren(), map);
-          String joinedStr = Joiner.on(".").skipNulls().join(cols);
-          result.add(joinedStr);
+          String tabAlias = "";
+          for (ExprNodeDesc childEnd : enf.getChildren()) {
+            if (childEnd instanceof  ExprNodeColumnDesc) {
+              tabAlias = ((ExprNodeColumnDesc) childEnd).getTabAlias();
+              break;
+            }
+          }
+          result.add(getFullyQualifiedColumnName(tabAlias, colName));
         } else if (end instanceof ExprNodeConstantDesc) {
           ExprNodeConstantDesc encd = (ExprNodeConstantDesc) end;
           result.add(encd.getValue().toString());
@@ -1438,5 +1425,15 @@ public class StatsUtils {
         HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
         conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
     return memory;
+  }
+
+  /**
+   * negative number of rows or data sizes are invalid. It could be because of
+   * long overflow in which case return Long.MAX_VALUE
+   * @param val - input value
+   * @return Long.MAX_VALUE if val is negative else val
+   */
+  public static long getMaxIfOverflow(long val) {
+    return val < 0 ? Long.MAX_VALUE : val;
   }
 }
