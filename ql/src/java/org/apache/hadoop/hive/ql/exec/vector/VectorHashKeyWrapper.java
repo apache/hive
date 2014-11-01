@@ -161,27 +161,36 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void duplicateTo(VectorHashKeyWrapper clone) {
-    clone.longValues = longValues.clone();
-    clone.doubleValues = doubleValues.clone();
+    clone.longValues = (longValues.length > 0) ? longValues.clone() : EMPTY_LONG_ARRAY;
+    clone.doubleValues = (doubleValues.length > 0) ? doubleValues.clone() : EMPTY_DOUBLE_ARRAY;
     clone.isNull = isNull.clone();
 
-    // Decimal128 requires deep clone
-    clone.decimalValues = new Decimal128[decimalValues.length];
-    for(int i = 0; i < decimalValues.length; ++i) {
-      clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+    if (decimalValues.length > 0) {
+      // Decimal128 requires deep clone
+      clone.decimalValues = new Decimal128[decimalValues.length];
+      for (int i = 0; i < decimalValues.length; ++i) {
+        clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+      }
+    } else {
+      clone.decimalValues = EMPTY_DECIMAL_ARRAY;
     }
 
-    clone.byteValues = new byte[byteValues.length][];
-    clone.byteStarts = new int[byteValues.length];
-    clone.byteLengths = byteLengths.clone();
-    for (int i = 0; i < byteValues.length; ++i) {
-      // avoid allocation/copy of nulls, because it potentially expensive. branch instead.
-      if (!isNull[longValues.length + doubleValues.length + i]) {
-        clone.byteValues[i] = Arrays.copyOfRange(
-            byteValues[i],
-            byteStarts[i],
-            byteStarts[i] + byteLengths[i]);
+    if (byteLengths.length > 0) {
+      clone.byteValues = new byte[byteValues.length][];
+      clone.byteStarts = new int[byteValues.length];
+      clone.byteLengths = byteLengths.clone();
+      for (int i = 0; i < byteValues.length; ++i) {
+        // avoid allocation/copy of nulls, because it potentially expensive.
+        // branch instead.
+        if (!isNull[longValues.length + doubleValues.length + i]) {
+          clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
+              byteStarts[i], byteStarts[i] + byteLengths[i]);
+        }
       }
+    } else {
+      clone.byteValues = EMPTY_BYTES_ARRAY;
+      clone.byteStarts = EMPTY_INT_ARRAY;
+      clone.byteLengths = EMPTY_INT_ARRAY;
     }
     clone.hashcode = hashcode;
     assert clone.equals(this);
