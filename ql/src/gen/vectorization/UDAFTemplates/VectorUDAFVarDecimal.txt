@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -86,12 +86,12 @@ public class <ClassName> extends VectorAggregateExpression {
         variance = 0f;
       }
 
-      public void updateValueWithCheckAndInit(Decimal128 value, short scale) {
+      public void updateValueWithCheckAndInit(HiveDecimalWritable value, short scale) {
         if (this.isNull) {
           this.init();
         }
 
-        double dval = value.doubleValue();
+        double dval = value.getHiveDecimal().doubleValue();
         this.sum += dval;
         this.count += 1;
         if(this.count > 1) {
@@ -100,8 +100,8 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       }
 
-      public void updateValueNoCheck(Decimal128 value, short scale) {
-        double dval = value.doubleValue();
+      public void updateValueNoCheck(HiveDecimalWritable value, short scale) {
+        double dval = value.getHiveDecimal().doubleValue();
         this.sum += dval;
         this.count += 1;
         double t = this.count*dval - this.sum;
@@ -176,7 +176,7 @@ public class <ClassName> extends VectorAggregateExpression {
         return;
       }
 
-      Decimal128[] vector = inputVector.vector;
+      HiveDecimalWritable[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
         if (inputVector.noNulls || !inputVector.isNull[0]) {
@@ -209,7 +209,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void  iterateRepeatingNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        Decimal128 value,
+        HiveDecimalWritable value,
         short scale,
         int batchSize) {
 
@@ -225,7 +225,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateSelectionHasNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         boolean[] isNull,
@@ -238,7 +238,7 @@ public class <ClassName> extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          Decimal128 value = vector[i];
+          HiveDecimalWritable value = vector[i];
           myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
@@ -247,7 +247,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateSelectionNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         int[] selected) {
@@ -257,7 +257,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        Decimal128 value = vector[selected[i]];
+        HiveDecimalWritable value = vector[selected[i]];
         myagg.updateValueWithCheckAndInit(value, scale);
       }
     }
@@ -265,7 +265,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateNoSelectionHasNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         boolean[] isNull) {
@@ -276,7 +276,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
           i);
-          Decimal128 value = vector[i];
+          HiveDecimalWritable value = vector[i];
           myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
@@ -285,7 +285,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateNoSelectionNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize) {
 
@@ -294,7 +294,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        Decimal128 value = vector[i];
+        HiveDecimalWritable value = vector[i];
         myagg.updateValueWithCheckAndInit(value, scale);
       }
     }
@@ -316,7 +316,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       Aggregation myagg = (Aggregation)agg;
 
-      Decimal128[] vector = inputVector.vector;
+      HiveDecimalWritable[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
         if (inputVector.noNulls) {
@@ -340,7 +340,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void  iterateRepeatingNoNulls(
         Aggregation myagg,
-        Decimal128 value,
+        HiveDecimalWritable value,
         short scale,
         int batchSize) {
 
@@ -357,7 +357,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateSelectionHasNulls(
         Aggregation myagg,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         boolean[] isNull,
@@ -366,7 +366,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          Decimal128 value = vector[i];
+          HiveDecimalWritable value = vector[i];
           myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
@@ -374,7 +374,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateSelectionNoNulls(
         Aggregation myagg,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         int[] selected) {
@@ -383,7 +383,7 @@ public class <ClassName> extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      Decimal128 value = vector[selected[0]];
+      HiveDecimalWritable value = vector[selected[0]];
       myagg.updateValueWithCheckAndInit(value, scale);
 
       // i=0 was pulled out to remove the count > 1 check in the loop
@@ -396,14 +396,14 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoSelectionHasNulls(
         Aggregation myagg,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize,
         boolean[] isNull) {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          Decimal128 value = vector[i];
+          HiveDecimalWritable value = vector[i];
           myagg.updateValueWithCheckAndInit(value, scale);
         }
       }
@@ -411,7 +411,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoSelectionNoNulls(
         Aggregation myagg,
-        Decimal128[] vector,
+        HiveDecimalWritable[] vector,
         short scale,
         int batchSize) {
 
@@ -419,7 +419,7 @@ public class <ClassName> extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      Decimal128 value = vector[0];
+      HiveDecimalWritable value = vector[0];
       myagg.updateValueWithCheckAndInit(value, scale);
 
       // i=0 was pulled out to remove count > 1 check

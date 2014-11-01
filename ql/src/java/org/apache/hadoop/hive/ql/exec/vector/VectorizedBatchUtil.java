@@ -481,8 +481,7 @@ public class VectorizedBatchUtil {
       if (writableCol != null) {
         dcv.isNull[rowIndex] = false;
         HiveDecimalWritable wobj = (HiveDecimalWritable) writableCol;
-        dcv.vector[rowIndex].update(wobj.getHiveDecimal().unscaledValue(),
-            (short) wobj.getScale());
+        dcv.set(rowIndex, wobj);
       } else {
         setNullColIsNullValue(dcv, rowIndex);
       }

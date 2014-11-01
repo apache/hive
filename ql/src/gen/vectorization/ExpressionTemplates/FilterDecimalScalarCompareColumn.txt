@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 
 /**
  * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of decimal
@@ -33,9 +35,9 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private Decimal128 value;
+  private HiveDecimal value;
 
-  public <ClassName>(Decimal128 value, int colNum) {
+  public <ClassName>(HiveDecimal value, int colNum) {
     this.colNum = colNum;
     this.value = value;
   }
@@ -52,7 +54,7 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -63,7 +65,7 @@ public class <ClassName> extends VectorExpression {
       if (inputColVector.isRepeating) {
 
         // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!(value.compareTo(vector[0]) <OperatorSymbol> 0)) {
+        if (!(DecimalUtil.compare(value, vector[0]) <OperatorSymbol> 0)) {
 
           // Entire batch is filtered out.
           batch.size = 0;
@@ -72,7 +74,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (value.compareTo(vector[i]) <OperatorSymbol> 0) {
+          if (DecimalUtil.compare(value, vector[i]) <OperatorSymbol> 0) {
             sel[newSize++] = i;
           }
         }
@@ -80,7 +82,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (value.compareTo(vector[i]) <OperatorSymbol> 0) {
+          if (DecimalUtil.compare(value, vector[i]) <OperatorSymbol> 0) {
             sel[newSize++] = i;
           }
         }
@@ -94,7 +96,7 @@ public class <ClassName> extends VectorExpression {
 
         // All must be selected otherwise size would be zero. Repeating property will not change.
         if (!nullPos[0]) {
-          if (!(value.compareTo(vector[0]) <OperatorSymbol> 0)) {
+          if (!(DecimalUtil.compare(value, vector[0]) <OperatorSymbol> 0)) {
 
             // Entire batch is filtered out.
             batch.size = 0;
@@ -107,7 +109,7 @@ public class <ClassName> extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (value.compareTo(vector[i]) <OperatorSymbol> 0) {
+           if (DecimalUtil.compare(value, vector[i]) <OperatorSymbol> 0) {
              sel[newSize++] = i;
            }
           }
@@ -119,7 +121,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (value.compareTo(vector[i]) <OperatorSymbol> 0) {
+            if (DecimalUtil.compare(value, vector[i]) <OperatorSymbol> 0) {
               sel[newSize++] = i;
             }
           }
@@ -140,22 +142,6 @@ public class <ClassName> extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public Decimal128 getValue() {
-    return value;
-  }
-
-  public void setValue(Decimal128 value) {
-    this.value = value;
   }
 
   @Override

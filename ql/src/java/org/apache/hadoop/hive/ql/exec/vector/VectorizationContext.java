@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -868,7 +869,7 @@ public class VectorizationContext {
     case FLOAT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).doubleValue());
     case DECIMAL:
-      VectorExpression ve = new ConstantVectorExpression(outCol, (Decimal128) constantValue);
+      VectorExpression ve = new ConstantVectorExpression(outCol, (HiveDecimal) constantValue);
       // Set type name with decimal precision, scale, etc.
       ve.setOutputType(typeName);
       return ve;
@@ -1237,9 +1238,9 @@ public class VectorizationContext {
       ((IDoubleInExpr) expr).setInListValues(inValsD);
     } else if (isDecimalFamily(colType)) {
       cl = (mode == Mode.FILTER ? FilterDecimalColumnInList.class : DecimalColumnInList.class);
-      Decimal128[] inValsD = new Decimal128[childrenForInList.size()];
+      HiveDecimal[] inValsD = new HiveDecimal[childrenForInList.size()];
       for (int i = 0; i != inValsD.length; i++) {
-        inValsD[i] = (Decimal128) getVectorTypeScalarValue(
+        inValsD[i] = (HiveDecimal) getVectorTypeScalarValue(
             (ExprNodeConstantDesc)  childrenForInList.get(i));
       }
       expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION, returnType);
@@ -1287,44 +1288,43 @@ public class VectorizationContext {
     return null;
   }
 
-  private Decimal128 castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
+  private HiveDecimal castConstantToDecimal(Object scalar, TypeInfo type) throws HiveException {
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) type;
-    String typename = type.getTypeName();
-    Decimal128 d = new Decimal128();
     int scale = HiveDecimalUtils.getScaleForType(ptinfo);
+    String typename = type.getTypeName();
+    HiveDecimal rawDecimal;
     switch (ptinfo.getPrimitiveCategory()) {
     case FLOAT:
-      float floatVal = ((Float) scalar).floatValue();
-      d.update(floatVal, (short) scale);
+      rawDecimal = HiveDecimal.create(String.valueOf((Float) scalar));
       break;
     case DOUBLE:
-      double doubleVal = ((Double) scalar).doubleValue();
-      d.update(doubleVal, (short) scale);
+      rawDecimal = HiveDecimal.create(String.valueOf((Double) scalar));
       break;
     case BYTE:
-      byte byteVal = ((Byte) scalar).byteValue();
-      d.update(byteVal, (short) scale);
+      rawDecimal = HiveDecimal.create((Byte) scalar);
       break;
     case SHORT:
-      short shortVal = ((Short) scalar).shortValue();
-      d.update(shortVal, (short) scale);
+      rawDecimal = HiveDecimal.create((Short) scalar);
       break;
     case INT:
-      int intVal = ((Integer) scalar).intValue();
-      d.update(intVal, (short) scale);
+      rawDecimal = HiveDecimal.create((Integer) scalar);
       break;
     case LONG:
-      long longVal = ((Long) scalar).longValue();
-      d.update(longVal, (short) scale);
+      rawDecimal = HiveDecimal.create((Long) scalar);
       break;
     case DECIMAL:
-      HiveDecimal decimalVal = (HiveDecimal) scalar;
-      d.update(decimalVal.unscaledValue(), (short) scale);
+      rawDecimal = (HiveDecimal) scalar;
       break;
     default:
-      throw new HiveException("Unsupported type "+typename+" for cast to Decimal128");
+      throw new HiveException("Unsupported type " + typename + " for cast to HiveDecimal");
     }
-    return d;
+    if (rawDecimal == null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Casting constant scalar " + scalar + " to HiveDecimal resulted in null");
+      }
+      return null;
+    }
+    return rawDecimal;
   }
 
   private String castConstantToString(Object scalar, TypeInfo type) throws HiveException {
@@ -1391,7 +1391,7 @@ public class VectorizationContext {
     if (child instanceof ExprNodeConstantDesc) {
      // Return a constant vector expression
       Object constantValue = ((ExprNodeConstantDesc) child).getValue();
-      Decimal128 decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
+      HiveDecimal decimalValue = castConstantToDecimal(constantValue, child.getTypeInfo());
       return getConstantVectorExpression(decimalValue, returnType, Mode.PROJECTION);
     } else if (child instanceof ExprNodeNullDesc) {
       return getConstantVectorExpression(null, returnType, Mode.PROJECTION);
@@ -1801,10 +1801,7 @@ public class VectorizationContext {
         return 0;
       }
     } else if (decimalTypePattern.matcher(constDesc.getTypeString()).matches()) {
-      HiveDecimal hd = (HiveDecimal) constDesc.getValue();
-      Decimal128 dvalue = new Decimal128();
-      dvalue.update(hd.unscaledValue(), (short) hd.scale());
-      return dvalue;
+      return (HiveDecimal) constDesc.getValue();
     } else {
       return constDesc.getValue();
     }

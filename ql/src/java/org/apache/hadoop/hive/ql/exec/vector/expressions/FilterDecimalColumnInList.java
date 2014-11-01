@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.HashSet;
 
@@ -31,10 +32,10 @@ import java.util.HashSet;
 public class FilterDecimalColumnInList extends VectorExpression implements IDecimalInExpr {
   private static final long serialVersionUID = 1L;
   private int inputCol;
-  private Decimal128[] inListValues;
+  private HiveDecimal[] inListValues;
 
   // The set object containing the IN list.
-  private transient HashSet<Decimal128> inSet;
+  private transient HashSet<HiveDecimal> inSet;
 
   public FilterDecimalColumnInList() {
     super();
@@ -57,8 +58,8 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
     }
 
     if (inSet == null) {
-      inSet = new HashSet<Decimal128>(inListValues.length);
-      for (Decimal128 val : inListValues) {
+      inSet = new HashSet<HiveDecimal>(inListValues.length);
+      for (HiveDecimal val : inListValues) {
         inSet.add(val);
       }
     }
@@ -67,7 +68,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -80,7 +81,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
 
-        if (!(inSet.contains(vector[0]))) {
+        if (!(inSet.contains(vector[0].getHiveDecimal()))) {
           //Entire batch is filtered out.
           batch.size = 0;
         }
@@ -88,7 +89,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (inSet.contains(vector[i])) {
+          if (inSet.contains(vector[i].getHiveDecimal())) {
             sel[newSize++] = i;
           }
         }
@@ -96,7 +97,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (inSet.contains(vector[i])) {
+          if (inSet.contains(vector[i].getHiveDecimal())) {
             sel[newSize++] = i;
           }
         }
@@ -111,7 +112,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         //All must be selected otherwise size would be zero
         //Repeating property will not change.
         if (!nullPos[0]) {
-          if (!inSet.contains(vector[0])) {
+          if (!inSet.contains(vector[0].getHiveDecimal())) {
 
             //Entire batch is filtered out.
             batch.size = 0;
@@ -124,7 +125,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (inSet.contains(vector[i])) {
+           if (inSet.contains(vector[i].getHiveDecimal())) {
              sel[newSize++] = i;
            }
           }
@@ -136,7 +137,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (inSet.contains(vector[i])) {
+            if (inSet.contains(vector[i].getHiveDecimal())) {
               sel[newSize++] = i;
             }
           }
@@ -167,11 +168,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
     return null;
   }
 
-  public Decimal128[] getInListValues() {
-    return this.inListValues;
-  }
-
-  public void setInListValues(Decimal128[] a) {
+  public void setInListValues(HiveDecimal[] a) {
     this.inListValues = a;
   }
 }

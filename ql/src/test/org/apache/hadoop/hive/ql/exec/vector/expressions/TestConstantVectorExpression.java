@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -43,7 +43,7 @@ public class TestConstantVectorExpression {
     ConstantVectorExpression doubleCve = new ConstantVectorExpression(1, 17.34);
     String str = "alpha";
     ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes());
-    Decimal128 decVal = new Decimal128(25.8, (short) 1);
+    HiveDecimal decVal = HiveDecimal.create("25.8");
     ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal);
     ConstantVectorExpression nullCve = new ConstantVectorExpression(4, "string", true);
     
@@ -85,12 +85,12 @@ public class TestConstantVectorExpression {
     assertTrue(bcv.length[0] == alphaBytes.length);
     assertTrue(sameFirstKBytes(alphaBytes, bcv.vector[0], alphaBytes.length)); 
 
-    assertTrue(25.8 == dv.vector[0].doubleValue());
+    assertTrue(25.8 == dv.vector[0].getHiveDecimal().doubleValue());
     // Evaluation of the decimal Constant Vector Expression after the vector is
     // modified.    
-    ((DecimalColumnVector) (vrg.cols[3])).vector[0] = new Decimal128(39.7, (short) 1);
+    ((DecimalColumnVector) (vrg.cols[3])).vector[0].set(HiveDecimal.create("39.7"));
     decimalCve.evaluate(vrg);
-    assertTrue(25.8 == dv.vector[0].doubleValue());    
+    assertTrue(25.8 == dv.vector[0].getHiveDecimal().doubleValue());    
   }
   
   private boolean sameFirstKBytes(byte[] o1, byte[] o2, int k) {

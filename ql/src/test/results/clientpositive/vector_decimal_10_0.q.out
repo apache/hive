@@ -1,0 +1,105 @@
+PREHOOK: query: DROP TABLE IF EXISTS decimal_txt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS decimal_txt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS decimal
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS decimal
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE decimal_txt (dec decimal)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_txt
+POSTHOOK: query: CREATE TABLE decimal_txt (dec decimal)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE decimal_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@decimal_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE decimal_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@decimal_txt
+PREHOOK: query: CREATE TABLE DECIMAL STORED AS ORC AS SELECT * FROM decimal_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@decimal_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL
+POSTHOOK: query: CREATE TABLE DECIMAL STORED AS ORC AS SELECT * FROM decimal_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@decimal_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL
+PREHOOK: query: EXPLAIN
+SELECT dec FROM DECIMAL order by dec
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT dec FROM DECIMAL order by dec
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal
+            Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0))
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: decimal(10,0))
+                sort order: +
+                Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(10,0))
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT dec FROM DECIMAL order by dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dec FROM DECIMAL order by dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal
+#### A masked pattern was here ####
+NULL
+1000000000
+PREHOOK: query: DROP TABLE DECIMAL_txt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_txt
+PREHOOK: Output: default@decimal_txt
+POSTHOOK: query: DROP TABLE DECIMAL_txt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_txt
+POSTHOOK: Output: default@decimal_txt
+PREHOOK: query: DROP TABLE DECIMAL
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal
+PREHOOK: Output: default@decimal
+POSTHOOK: query: DROP TABLE DECIMAL
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal
+POSTHOOK: Output: default@decimal

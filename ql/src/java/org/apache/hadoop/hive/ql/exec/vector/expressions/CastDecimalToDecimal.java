@@ -52,9 +52,8 @@ public class CastDecimalToDecimal extends VectorExpression {
    * at position i in the respective vectors.
    */
   protected void convert(DecimalColumnVector outV, DecimalColumnVector inV, int i) {
-    outV.vector[i].update(inV.vector[i]);
-    outV.vector[i].changeScaleDestructive(outV.scale);
-    outV.checkPrecisionOverflow(i);
+    // The set routine enforces precision and scale.
+    outV.vector[i].set(inV.vector[i]);
   }
 
   /**

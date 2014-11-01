@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -152,18 +151,12 @@ public class VectorColumnAssignFactory {
 
   private static abstract class VectorDecimalColumnAssign
   extends VectorColumnAssignVectorBase<DecimalColumnVector> {
+
     protected void assignDecimal(HiveDecimal value, int index) {
-      outCol.vector[index].update(value.unscaledValue(), (byte) value.scale());
-    }
-  
-    protected void assignDecimal(Decimal128 value, int index) {
-      outCol.vector[index].update(value);
+      outCol.set(index, value);
     }
     protected void assignDecimal(HiveDecimalWritable hdw, int index) {
-        byte[] internalStorage = hdw.getInternalStorage();
-        int scale = hdw.getScale();
-  
-        outCol.vector[index].fastUpdateFromInternalStorage(internalStorage, (short)scale);
+      outCol.set(index, hdw);
     }
   }
 

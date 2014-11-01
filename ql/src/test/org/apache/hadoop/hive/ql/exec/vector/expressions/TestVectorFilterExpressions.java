@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -830,8 +830,7 @@ public class TestVectorFilterExpressions {
   @Test
   public void testFilterDecimalColEqualDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
-    Decimal128 scalar = new Decimal128();
-    scalar.update("-3.30", (short) 2);
+    HiveDecimal scalar = HiveDecimal.create("-3.30");
     VectorExpression expr = new FilterDecimalColEqualDecimalScalar(0, scalar);
     expr.evaluate(b);
 
@@ -876,8 +875,7 @@ public class TestVectorFilterExpressions {
   @Test
   public void testFilterDecimalScalarEqualDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
-    Decimal128 scalar = new Decimal128();
-    scalar.update("-3.30", (short) 2);
+    HiveDecimal scalar = HiveDecimal.create("-3.30");
     VectorExpression expr = new FilterDecimalScalarEqualDecimalColumn(scalar, 0);
     expr.evaluate(b);
 
@@ -982,8 +980,7 @@ public class TestVectorFilterExpressions {
   @Test
   public void testFilterDecimalColLessScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
-    Decimal128 scalar = new Decimal128();
-    scalar.update("0", (short) 2);
+    HiveDecimal scalar = HiveDecimal.create("0");
     VectorExpression expr = new FilterDecimalColLessDecimalScalar(0, scalar);
     expr.evaluate(b);
 
@@ -999,8 +996,7 @@ public class TestVectorFilterExpressions {
   @Test
   public void testFilterDecimalScalarGreaterThanColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch1DecimalCol();
-    Decimal128 scalar = new Decimal128();
-    scalar.update("0", (short) 2);
+    HiveDecimal scalar = HiveDecimal.create("0");
     VectorExpression expr = new FilterDecimalScalarGreaterDecimalColumn(scalar, 0);
     expr.evaluate(b);
 
@@ -1030,9 +1026,9 @@ public class TestVectorFilterExpressions {
     VectorizedRowBatch b = new VectorizedRowBatch(1);
     DecimalColumnVector v0;
     b.cols[0] = v0 = new DecimalColumnVector(18, 2);
-    v0.vector[0].update("1.20", (short) 2);
-    v0.vector[1].update("-3.30", (short) 2);
-    v0.vector[2].update("0", (short) 2);
+    v0.vector[0].set(HiveDecimal.create("1.20"));
+    v0.vector[1].set(HiveDecimal.create("-3.30"));
+    v0.vector[2].set(HiveDecimal.create("0"));
 
     b.size = 3;
     return b;
@@ -1042,14 +1038,14 @@ public class TestVectorFilterExpressions {
     VectorizedRowBatch b = new VectorizedRowBatch(2);
     DecimalColumnVector v0, v1;
     b.cols[0] = v0 = new DecimalColumnVector(18, 2);
-    v0.vector[0].update("1.20", (short) 2);
-    v0.vector[1].update("-3.30", (short) 2);
-    v0.vector[2].update("0", (short) 2);
+    v0.vector[0].set(HiveDecimal.create("1.20"));
+    v0.vector[1].set(HiveDecimal.create("-3.30"));
+    v0.vector[2].set(HiveDecimal.create("0"));
 
     b.cols[1] = v1 = new DecimalColumnVector(18, 2);
-    v1.vector[0].update("-1", (short) 2);
-    v1.vector[1].update("-3.30", (short) 2);
-    v1.vector[2].update("10", (short) 2);
+    v1.vector[0].set(HiveDecimal.create("-1.00"));
+    v1.vector[1].set(HiveDecimal.create("-3.30"));
+    v1.vector[2].set(HiveDecimal.create("10.00"));
 
     b.size = 3;
     return b;
