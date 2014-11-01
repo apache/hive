@@ -187,7 +187,7 @@ public class TypeConverter {
       throw new RuntimeException("Unsupported Type : " + type.getTypeName());
     }
 
-    return convertedType;
+    return dtFactory.createTypeWithNullability(convertedType, true);
   }
 
   public static RelDataType convert(ListTypeInfo lstType,
