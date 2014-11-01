@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -151,10 +152,19 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       conf.setVar(ConfVars.HIVEADDEDJARS, Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR));
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
-      OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredLocalWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
-      Utilities.serializePlan(plan, out, conf);
+
+      OutputStream out = null;
+      try {
+        out = FileSystem.getLocal(conf).create(planPath);
+        Utilities.serializePlan(plan, out, conf);
+        out.close();
+        out = null;
+      } finally {
+        IOUtils.closeQuietly(out);
+      }
+
 
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent")) ? "-nolog" : "";
 
