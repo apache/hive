@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.Arrays;
 
@@ -61,7 +61,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -119,27 +119,6 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   public String getOutputType() {
     return outputType;
   }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getDecimalPlaces() {
-    return decimalPlaces;
-  }
-
-  public void setDecimalPlaces(int decimalPlaces) {
-    this.decimalPlaces = decimalPlaces;
-  }
-
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {

@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -37,10 +39,10 @@ public class <ClassName> extends VectorExpression {
   private int colNum;
 
   // The comparison is of the form "column BETWEEN leftValue AND rightValue"
-  private Decimal128 leftValue;
-  private Decimal128 rightValue;
+  private HiveDecimal leftValue;
+  private HiveDecimal rightValue;
 
-  public <ClassName>(int colNum, Decimal128 leftValue, Decimal128 rightValue) {
+  public <ClassName>(int colNum, HiveDecimal leftValue, HiveDecimal rightValue) {
     this.colNum = colNum;
     this.leftValue = leftValue;
     this.rightValue = rightValue;
@@ -60,7 +62,7 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -72,7 +74,7 @@ public class <ClassName> extends VectorExpression {
 
         // All must be selected otherwise size would be zero.
         // Repeating property will not change.
-        if (<OptionalNot>(vector[0].compareTo(leftValue) < 0 || vector[0].compareTo(rightValue) > 0)) {
+        if (<OptionalNot>(DecimalUtil.compare(vector[0], leftValue) < 0 || DecimalUtil.compare(vector[0], rightValue) > 0)) {
 
           // Entire batch is filtered out.
           batch.size = 0;
@@ -81,7 +83,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (<OptionalNot>(leftValue.compareTo(vector[i]) <= 0 && vector[i].compareTo(rightValue) <= 0)) {
+          if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
             sel[newSize++] = i;
           }
         }
@@ -89,7 +91,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (<OptionalNot>(leftValue.compareTo(vector[i]) <= 0 && vector[i].compareTo(rightValue) <= 0)) {
+          if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
             sel[newSize++] = i;
           }
         }
@@ -104,7 +106,7 @@ public class <ClassName> extends VectorExpression {
         // All must be selected otherwise size would be zero.
         // Repeating property will not change.
         if (!nullPos[0]) {
-          if (<OptionalNot>(vector[0].compareTo(leftValue) < 0 || vector[0].compareTo(rightValue) > 0)) {
+          if (<OptionalNot>(DecimalUtil.compare(vector[0], leftValue) < 0 || DecimalUtil.compare(vector[0], rightValue) > 0)) {
 
             // Entire batch is filtered out.
             batch.size = 0;
@@ -117,7 +119,7 @@ public class <ClassName> extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-            if (<OptionalNot>(leftValue.compareTo(vector[i]) <= 0 && vector[i].compareTo(rightValue) <= 0)) {
+            if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
              sel[newSize++] = i;
             }
           }
@@ -129,7 +131,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (<OptionalNot>(leftValue.compareTo(vector[i]) <= 0 && vector[i].compareTo(rightValue) <= 0)) {
+            if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
               sel[newSize++] = i;
             }
           }
@@ -150,30 +152,6 @@ public class <ClassName> extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public Decimal128 getLeftValue() {
-    return leftValue;
-  }
-
-  public void setLeftValue(Decimal128 value) {
-    this.leftValue = value;
-  }
-
-  public Decimal128 getRightValue() {
-    return rightValue;
-  }
-
-  public void setRightValue(Decimal128 value) {
-    this.leftValue = value;
   }
 
   @Override

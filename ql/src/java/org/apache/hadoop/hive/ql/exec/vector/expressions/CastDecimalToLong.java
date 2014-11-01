@@ -37,6 +37,6 @@ public class CastDecimalToLong extends FuncDecimalToLong {
 
   @Override
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
-    outV.vector[i] = inV.vector[i].longValue();
+    outV.vector[i] = inV.vector[i].getHiveDecimal().longValue();
   }
 }

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -44,7 +44,7 @@ public class ConstantVectorExpression extends VectorExpression {
   protected long longValue = 0;
   private double doubleValue = 0;
   private byte[] bytesValue = null;
-  private Decimal128 decimalValue = null;
+  private HiveDecimal decimalValue = null;
   private boolean isNullValue = false;
 
   private Type type;
@@ -85,7 +85,7 @@ public class ConstantVectorExpression extends VectorExpression {
     setBytesValue(value.getValue().getBytes());
   }
 
-  public ConstantVectorExpression(int outputColumn, Decimal128 value) {
+  public ConstantVectorExpression(int outputColumn, HiveDecimal value) {
     this(outputColumn, "decimal");
     setDecimalValue(value);
   }
@@ -137,7 +137,7 @@ public class ConstantVectorExpression extends VectorExpression {
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
-      dcv.vector[0].update(decimalValue);
+      dcv.vector[0].set(decimalValue);
     } else {
       dcv.isNull[0] = true;
     }
@@ -191,7 +191,7 @@ public class ConstantVectorExpression extends VectorExpression {
     this.bytesValueLength = bytesValue.length;
   }
 
-  public void setDecimalValue(Decimal128 decimalValue) {
+  public void setDecimalValue(HiveDecimal decimalValue) {
     this.decimalValue = decimalValue;
   }
 

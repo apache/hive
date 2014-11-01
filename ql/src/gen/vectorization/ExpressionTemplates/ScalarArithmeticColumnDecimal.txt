@@ -24,7 +24,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 
 /**
  * Generated from template ScalarArithmeticColumnDecimal.txt, which covers binary arithmetic 
@@ -35,10 +36,10 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private Decimal128 value;
+  private HiveDecimal value;
   private int outputColumn;
 
-  public <ClassName>(Decimal128 value, int colNum, int outputColumn) {
+  public <ClassName>(HiveDecimal value, int colNum, int outputColumn) {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
@@ -64,7 +65,7 @@ public class <ClassName> extends VectorExpression {
     outputColVector.noNulls = inputColVector.noNulls;
     outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
     
     // return immediately if batch is empty
     if (n == 0) {
@@ -125,26 +126,6 @@ public class <ClassName> extends VectorExpression {
   @Override
   public int getOutputColumn() {
     return outputColumn;
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-  
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public Decimal128 getValue() {
-    return value;
-  }
-
-  public void setValue(Decimal128 value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
   }
 
   @Override

@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.HashSet;
 
@@ -32,11 +33,11 @@ import java.util.HashSet;
 public class DecimalColumnInList extends VectorExpression implements IDecimalInExpr {
   private static final long serialVersionUID = 1L;
   private int inputCol;
-  private Decimal128[] inListValues;
+  private HiveDecimal[] inListValues;
   private int outputColumn;
 
   // The set object containing the IN list.
-  private transient HashSet<Decimal128> inSet;
+  private transient HashSet<HiveDecimal> inSet;
 
   public DecimalColumnInList() {
     super();
@@ -60,8 +61,8 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
     }
 
     if (inSet == null) {
-      inSet = new HashSet<Decimal128>(inListValues.length);
-      for (Decimal128 val : inListValues) {
+      inSet = new HashSet<HiveDecimal>(inListValues.length);
+      for (HiveDecimal val : inListValues) {
         inSet.add(val);
       }
     }
@@ -72,7 +73,7 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNulls = outputColVector.isNull;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
     long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
@@ -87,16 +88,16 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
 
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-        outputVector[0] = inSet.contains(vector[0]) ? 1 : 0;
+        outputVector[0] = inSet.contains(vector[0].getHiveDecimal()) ? 1 : 0;
         outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = inSet.contains(vector[i]) ? 1 : 0;
+          outputVector[i] = inSet.contains(vector[i].getHiveDecimal()) ? 1 : 0;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = inSet.contains(vector[i]) ? 1 : 0;
+          outputVector[i] = inSet.contains(vector[i].getHiveDecimal()) ? 1 : 0;
         }
       }
     } else {
@@ -105,7 +106,7 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
         //All must be selected otherwise size would be zero
         //Repeating property will not change.
         if (!nullPos[0]) {
-          outputVector[0] = inSet.contains(vector[0]) ? 1 : 0;
+          outputVector[0] = inSet.contains(vector[0].getHiveDecimal()) ? 1 : 0;
           outNulls[0] = false;
         } else {
           outNulls[0] = true;
@@ -116,14 +117,14 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
           int i = sel[j];
           outNulls[i] = nullPos[i];
           if (!nullPos[i]) {
-            outputVector[i] = inSet.contains(vector[i]) ? 1 : 0;
+            outputVector[i] = inSet.contains(vector[i].getHiveDecimal()) ? 1 : 0;
           }
         }
       } else {
         System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            outputVector[i] = inSet.contains(vector[i]) ? 1 : 0;
+            outputVector[i] = inSet.contains(vector[i].getHiveDecimal()) ? 1 : 0;
           }
         }
       }
@@ -148,11 +149,7 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
     return null;
   }
 
-  public Decimal128[] getInListValues() {
-    return this.inListValues;
-  }
-
-  public void setInListValues(Decimal128[] a) {
+  public void setInListValues(HiveDecimal[] a) {
     this.inListValues = a;
   }
 }
