@@ -92,10 +92,10 @@ public class AvroSerDe extends AbstractSerDe {
 
     final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS);
+    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
 
-    if (properties.getProperty(AvroSerdeUtils.SCHEMA_LITERAL) != null
-        || properties.getProperty(AvroSerdeUtils.SCHEMA_URL) != null
+    if (properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()) != null
+        || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
       schema = determineSchemaOrReturnErrorSchema(properties);
@@ -104,28 +104,8 @@ public class AvroSerDe extends AbstractSerDe {
       columnNames = Arrays.asList(columnNameProperty.split(","));
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
-      List<String> columnComments;
-      if (columnCommentProperty.isEmpty()) {
-        columnComments = new ArrayList<String>();
-      } else {
-        columnComments = Arrays.asList(columnCommentProperty.split(","));
-        LOG.info("columnComments is " + columnCommentProperty);
-      }
-      if (columnNames.size() != columnTypes.size()) {
-        throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +
-            "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
-            columnTypes);
-      }
-
-      final String tableName = properties.getProperty(TABLE_NAME);
-      final String tableComment = properties.getProperty(TABLE_COMMENT);
-      TypeInfoToSchema typeInfoToSchema = new TypeInfoToSchema();
-      schema = typeInfoToSchema.convert(columnNames, columnTypes, columnComments,
-          properties.getProperty(AvroSerdeUtils.SCHEMA_NAMESPACE),
-          properties.getProperty(AvroSerdeUtils.SCHEMA_NAME, tableName),
-          properties.getProperty(AvroSerdeUtils.SCHEMA_DOC, tableComment));
-
-      properties.setProperty(AvroSerdeUtils.SCHEMA_LITERAL, schema.toString());
+      schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
+      properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
 
     LOG.info("Avro schema is " + schema);
@@ -133,7 +113,8 @@ public class AvroSerDe extends AbstractSerDe {
     if (configuration == null) {
       LOG.info("Configuration null, not inserting schema");
     } else {
-      configuration.set(AvroSerdeUtils.AVRO_SERDE_SCHEMA, schema.toString(false));
+      configuration.set(
+          AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
     }
 
     badSchema = schema.equals(SchemaResolutionProblem.SIGNAL_BAD_SCHEMA);
@@ -142,6 +123,31 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = aoig.getColumnNames();
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+  }
+
+  public static Schema getSchemaFromCols(Properties properties,
+          List<String> columnNames, List<TypeInfo> columnTypes, String columnCommentProperty) {
+    List<String> columnComments;
+    if (columnCommentProperty == null || columnCommentProperty.isEmpty()) {
+      columnComments = new ArrayList<String>();
+    } else {
+      columnComments = Arrays.asList(columnCommentProperty.split(","));
+      LOG.info("columnComments is " + columnCommentProperty);
+    }
+    if (columnNames.size() != columnTypes.size()) {
+      throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +
+          "name and column type differs. columnNames = " + columnNames + ", columnTypes = " +
+          columnTypes);
+    }
+
+    final String tableName = properties.getProperty(TABLE_NAME);
+    final String tableComment = properties.getProperty(TABLE_COMMENT);
+    TypeInfoToSchema typeInfoToSchema = new TypeInfoToSchema();
+    return typeInfoToSchema.convert(columnNames, columnTypes, columnComments,
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_NAMESPACE.getPropName()),
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_NAME.getPropName(), tableName),
+        properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_DOC.getPropName(), tableComment));
+
   }
 
   /**
