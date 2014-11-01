@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 
@@ -38,7 +39,7 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
 
   @Override
   protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
-    outV.vector[i].update(inV.vector[i], outV.scale);
-    outV.checkPrecisionOverflow(i);
+    String s = ((Double) inV.vector[i]).toString();
+    outV.vector[i].set(HiveDecimal.create(s));
   }
 }

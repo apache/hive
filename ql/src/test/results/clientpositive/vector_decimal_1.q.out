@@ -1,0 +1,528 @@
+PREHOOK: query: drop table if exists decimal_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists decimal_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table decimal_1 (t decimal(4,2), u decimal(5), v decimal) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_1
+POSTHOOK: query: create table decimal_1 (t decimal(4,2), u decimal(5), v decimal) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_1
+PREHOOK: query: desc decimal_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@decimal_1
+POSTHOOK: query: desc decimal_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@decimal_1
+t                   	decimal(4,2)        	                    
+u                   	decimal(5,0)        	                    
+v                   	decimal(10,0)       	                    
+PREHOOK: query: insert overwrite table decimal_1
+  select cast('17.29' as decimal(4,2)), 3.1415926BD, 3115926.54321BD from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@decimal_1
+POSTHOOK: query: insert overwrite table decimal_1
+  select cast('17.29' as decimal(4,2)), 3.1415926BD, 3115926.54321BD from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@decimal_1
+POSTHOOK: Lineage: decimal_1.t EXPRESSION []
+POSTHOOK: Lineage: decimal_1.u EXPRESSION []
+POSTHOOK: Lineage: decimal_1.v EXPRESSION []
+PREHOOK: query: explain
+select cast(t as boolean) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as boolean) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToBoolean(t) (type: boolean)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: boolean)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: boolean)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as boolean) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as boolean) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+true
+PREHOOK: query: explain
+select cast(t as tinyint) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as tinyint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToByte(t) (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: tinyint)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: tinyint)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as tinyint) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as tinyint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17
+PREHOOK: query: explain
+select cast(t as smallint) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as smallint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToShort(t) (type: smallint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: smallint)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: smallint)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as smallint) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as smallint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17
+PREHOOK: query: explain
+select cast(t as int) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as int) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(t) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: int)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as int) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as int) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17
+PREHOOK: query: explain
+select cast(t as bigint) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as bigint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToLong(t) (type: bigint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: bigint)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: bigint)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as bigint) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as bigint) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17
+PREHOOK: query: explain
+select cast(t as float) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as float) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToFloat(t) (type: float)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: float)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as float) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as float) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17.29
+PREHOOK: query: explain
+select cast(t as double) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as double) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToDouble(t) (type: double)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: double)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: double)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as double) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as double) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17.29
+PREHOOK: query: explain
+select cast(t as string) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as string) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToString(t) (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as string) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as string) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+17.29
+PREHOOK: query: explain
+select cast(t as timestamp) from decimal_1 order by t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select cast(t as timestamp) from decimal_1 order by t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_1
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: CAST( t AS TIMESTAMP) (type: timestamp)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: timestamp)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: timestamp)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cast(t as timestamp) from decimal_1 order by t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(t as timestamp) from decimal_1 order by t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_1
+#### A masked pattern was here ####
+1969-12-31 16:00:17.29
+PREHOOK: query: drop table decimal_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_1
+PREHOOK: Output: default@decimal_1
+POSTHOOK: query: drop table decimal_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_1
+POSTHOOK: Output: default@decimal_1

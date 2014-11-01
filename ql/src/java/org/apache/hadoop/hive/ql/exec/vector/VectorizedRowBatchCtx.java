@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -539,7 +538,7 @@ public class VectorizedRowBatchCtx {
             dv.isRepeating = true;
           } else {
             HiveDecimal hd = (HiveDecimal) value;
-            dv.vector[0] = new Decimal128(hd.toString(), (short) hd.scale());
+            dv.set(0, hd);
             dv.isRepeating = true;
             dv.isNull[0] = false;      
           }

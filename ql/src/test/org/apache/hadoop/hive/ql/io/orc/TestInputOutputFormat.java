@@ -51,7 +51,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -1466,8 +1465,8 @@ public class TestInputOutputFormat {
       assertEquals("checking double " + i, i, doubleCoulmn.vector[i], 0.0001);
       assertEquals("checking string " + i, new Text(Long.toHexString(i)),
           stringColumn.getWritableObject(i));
-      assertEquals("checking decimal " + i, new Decimal128(i),
-          decimalColumn.vector[i]);
+      assertEquals("checking decimal " + i, HiveDecimal.create(i),
+          decimalColumn.vector[i].getHiveDecimal());
       assertEquals("checking date " + i, i, dateColumn.vector[i]);
       long millis = (long) i * MILLIS_IN_DAY;
       millis -= LOCAL_TIMEZONE.getOffset(millis);

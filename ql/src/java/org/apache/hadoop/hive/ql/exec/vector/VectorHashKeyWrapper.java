@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -40,7 +41,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private static final long[] EMPTY_LONG_ARRAY = new long[0];
   private static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
   private static final byte[][] EMPTY_BYTES_ARRAY = new byte[0][];
-  private static final Decimal128[] EMPTY_DECIMAL_ARRAY = new Decimal128[0];
+  private static final HiveDecimalWritable[] EMPTY_DECIMAL_ARRAY = new HiveDecimalWritable[0];
 
   private long[] longValues;
   private double[] doubleValues;
@@ -49,7 +50,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private int[] byteStarts;
   private int[] byteLengths;
 
-  private Decimal128[] decimalValues;
+  private HiveDecimalWritable[] decimalValues;
 
   private boolean[] isNull;
   private int hashcode;
@@ -58,9 +59,9 @@ public class VectorHashKeyWrapper extends KeyWrapper {
           int byteValuesCount, int decimalValuesCount) {
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
-    decimalValues = decimalValuesCount > 0 ? new Decimal128[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
+    decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
     for(int i = 0; i < decimalValuesCount; ++i) {
-      decimalValues[i] = new Decimal128();
+      decimalValues[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
     }
     if (byteValuesCount > 0) {
       byteValues = new byte[byteValuesCount][];
@@ -87,8 +88,11 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public void setHashKey() {
     hashcode = Arrays.hashCode(longValues) ^
         Arrays.hashCode(doubleValues) ^
-        Arrays.hashCode(decimalValues) ^
         Arrays.hashCode(isNull);
+
+    for (int i = 0; i < decimalValues.length; i++) {
+      hashcode ^= decimalValues[i].getHiveDecimal().hashCode();
+    }
 
     // This code, with branches and all, is not executed if there are no string keys
     for (int i = 0; i < byteValues.length; ++i) {
@@ -166,10 +170,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     clone.isNull = isNull.clone();
 
     if (decimalValues.length > 0) {
-      // Decimal128 requires deep clone
-      clone.decimalValues = new Decimal128[decimalValues.length];
-      for (int i = 0; i < decimalValues.length; ++i) {
-        clone.decimalValues[i] = new Decimal128().update(decimalValues[i]);
+      // Decimal columns use HiveDecimalWritable.
+      clone.decimalValues = new HiveDecimalWritable[decimalValues.length];
+      for(int i = 0; i < decimalValues.length; ++i) {
+        clone.decimalValues[i] = new HiveDecimalWritable(decimalValues[i]);
       }
     } else {
       clone.decimalValues = EMPTY_DECIMAL_ARRAY;
@@ -243,8 +247,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     isNull[longValues.length + doubleValues.length + index] = true;
   }
 
-  public void assignDecimal(int index, Decimal128 value) {
-    decimalValues[index].update(value);
+  public void assignDecimal(int index, HiveDecimalWritable value) {
+    decimalValues[index].set(value);
     isNull[longValues.length + doubleValues.length + byteValues.length + index] = false;
   }
 
@@ -308,7 +312,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return isNull[longValues.length + doubleValues.length + byteValues.length + i];
   }
 
-  public Decimal128 getDecimal(int i) {
+  public HiveDecimalWritable getDecimal(int i) {
     return decimalValues[i];
   }
 }

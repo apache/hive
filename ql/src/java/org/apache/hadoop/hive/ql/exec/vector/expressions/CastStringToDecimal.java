@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -58,14 +59,13 @@ public class CastStringToDecimal extends VectorExpression {
        * making a new string.
        */
       s = new String(inV.vector[i], inV.start[i], inV.length[i], "UTF-8");
-      outV.vector[i].update(s, outV.scale);
+      outV.vector[i].set(HiveDecimal.create(s));
     } catch (Exception e) {
 
       // for any exception in conversion to decimal, produce NULL
       outV.noNulls = false;
       outV.isNull[i] = true;
     }
-    outV.checkPrecisionOverflow(i);
   }
 
   @Override

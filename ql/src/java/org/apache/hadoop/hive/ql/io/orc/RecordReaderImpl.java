@@ -1259,12 +1259,9 @@ class RecordReaderImpl implements RecordReader {
         if (!result.isNull[0]) {
           BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
           short scaleInData = (short) scaleStream.next();
-          result.vector[0].update(bInt, scaleInData);
-
-          // Change the scale to match the schema if the scale in data is different.
-          if (scale != scaleInData) {
-            result.vector[0].changeScaleDestructive((short) scale);
-          }
+          HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
+          dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+          result.set(0, dec);
         }
       } else {
         // result vector has isNull values set, use the same to read scale vector.
@@ -1273,13 +1270,10 @@ class RecordReaderImpl implements RecordReader {
         for (int i = 0; i < batchSize; i++) {
           if (!result.isNull[i]) {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
-            result.vector[i].update(bInt, (short) scratchScaleVector.vector[i]);
-
-            // Change the scale to match the schema if the scale is less than in data.
-            // (HIVE-7373) If scale is bigger, then it leaves the original trailing zeros
-            if (scale < scratchScaleVector.vector[i]) {
-              result.vector[i].changeScaleDestructive((short) scale);
-            }
+            short scaleInData = (short) scratchScaleVector.vector[i];
+            HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
+            dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+            result.set(i, dec);
           }
         }
       }

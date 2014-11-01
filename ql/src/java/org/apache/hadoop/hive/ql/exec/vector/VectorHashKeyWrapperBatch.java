@@ -580,7 +580,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     } else if (klh.decimalIndex >= 0) {
       return kw.getIsDecimalNull(klh.decimalIndex)? null :
           keyOutputWriter.writeValue(
-                kw.getDecimal(klh.decimalIndex));
+                kw.getDecimal(klh.decimalIndex).getHiveDecimal());
     }
     else {
       throw new HiveException(String.format(
