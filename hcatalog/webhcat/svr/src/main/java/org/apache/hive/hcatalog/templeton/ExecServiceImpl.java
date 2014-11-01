@@ -229,15 +229,17 @@ public class ExecServiceImpl implements ExecService {
       watchdog.checkException();
     }
     catch (Exception ex) {
-      LOG.error("Command: " + cmd + " failed:", ex);
+      LOG.error("Command: " + cmd + " failed. res=" + res, ex);
     }
     if(watchdog.killedProcess()) {
       String msg = " was terminated due to timeout(" + timeout + "ms).  See " + AppConfig
               .EXEC_TIMEOUT_NAME + " property"; 
-      LOG.warn("Command: " + cmd + msg);
+      LOG.warn("Command: " + cmd + msg + " res=" + res);
       res.stderr += " Command " + msg; 
     }
-
+    if(res.exitcode != 0) {
+      LOG.info("Command: " + cmd + " failed. res=" + res);
+    }
     return res;
   }
 

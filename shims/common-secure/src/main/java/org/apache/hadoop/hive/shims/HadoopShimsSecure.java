@@ -463,7 +463,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
-    String doAs = conf.get("proxy.user.name");
+    String doAs = System.getenv("HADOOP_USER_NAME");
     if(doAs != null && doAs.length() > 0) {
      /*
       * this allows doAs (proxy user) to be passed along across process boundary where

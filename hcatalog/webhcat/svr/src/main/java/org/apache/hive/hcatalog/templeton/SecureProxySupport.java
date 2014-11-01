@@ -40,7 +40,7 @@ import org.apache.thrift.TException;
 
 /**
  * Helper class to run jobs using Kerberos security.  Always safe to
- * use these methods, it's a noop if security is not enabled.
+ * use these methods, it's a no-op if security is not enabled.
  */
 public class SecureProxySupport {
   private Path tokenPath;
@@ -121,9 +121,9 @@ public class SecureProxySupport {
     if (isEnabled) {
       args.add("-D");
       args.add("hive.metastore.token.signature=" + getHcatServiceStr());
+      args.add("-D");
+      args.add("proxy.user.name=" + user);
     }
-    args.add("-D");
-    args.add("proxy.user.name=" + user);
   }
 
   class TokenWrapper {
