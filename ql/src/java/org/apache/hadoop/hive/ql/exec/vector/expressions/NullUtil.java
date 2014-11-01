@@ -300,18 +300,18 @@ public class NullUtil {
     if (v.noNulls) {
       return;
     } else if (v.isRepeating && v.isNull[0]) {
-      v.vector[0].setNullDataValue();
+      v.setNullDataValue(0);
     } else if (selectedInUse) {
       for (int j = 0; j != n; j++) {
         int i = sel[j];
         if(v.isNull[i]) {
-          v.vector[i].setNullDataValue();
+          v.setNullDataValue(i);
         }
       }
     } else {
       for (int i = 0; i != n; i++) {
         if(v.isNull[i]) {
-          v.vector[i].setNullDataValue();
+          v.setNullDataValue(i);
         }
       }
     }

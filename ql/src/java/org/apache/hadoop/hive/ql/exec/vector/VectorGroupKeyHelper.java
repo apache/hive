@@ -113,9 +113,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       DecimalColumnVector outputColumnVector = (DecimalColumnVector) outputBatch.cols[keyIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
 
-        // Since we store references to Decimal128 instances, we must use the update method instead
+        // Since we store references to HiveDecimalWritable instances, we must use the update method instead
         // of plain assignment.
-        outputColumnVector.vector[outputBatch.size].update(inputColumnVector.vector[0]);
+        outputColumnVector.set(outputBatch.size, inputColumnVector.vector[0]);
       } else {
         outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;
