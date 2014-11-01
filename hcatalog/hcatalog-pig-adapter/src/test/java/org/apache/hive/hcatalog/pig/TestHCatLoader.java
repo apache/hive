@@ -101,12 +101,6 @@ public class TestHCatLoader {
 
   private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
       new HashMap<String, Set<String>>() {{
-        put(IOConstants.AVRO, new HashSet<String>() {{
-          add("testReadDataBasic");
-          add("testReadPartitionedBasic");
-          add("testProjectionsBasic");
-          add("testSchemaLoadPrimitiveTypes");
-        }});
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
           add("testReadDataBasic");
           add("testReadPartitionedBasic");
