@@ -81,9 +81,12 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       }
 
       // Server args
+      int maxMessageSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE);
       TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(serverSocket)
           .processorFactory(processorFactory).transportFactory(transportFactory)
-          .protocolFactory(new TBinaryProtocol.Factory()).executorService(executorService);
+          .protocolFactory(new TBinaryProtocol.Factory())
+          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
+          .executorService(executorService);
 
       // TCP Server
       server = new TThreadPoolServer(sargs);
