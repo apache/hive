@@ -1,6 +1,10 @@
 package org.apache.hive.hcatalog.api;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
+
+import java.util.List;
 
 /**
  * Interface to serialize HCat API elements.
@@ -50,5 +54,25 @@ abstract class MetadataSerializer {
    * @throws HCatException On failure to deserialize (e.g. incompatible serialization format, etc.)
    */
   public abstract HCatPartition deserializePartition(String hcatPartitionStringRep) throws HCatException;
+
+  /**
+   * Serializer for HCatPartitionSpec.
+   * @param hcatPartitionSpec HCatPartitionSpec instance to be serialized.
+   * @return Serialized string-representations.
+   * @throws HCatException On failure to serialize.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract List<String> serializePartitionSpec(HCatPartitionSpec hcatPartitionSpec) throws HCatException;
+
+  /**
+   * Deserializer for HCatPartitionSpec string-representations.
+   * @param hcatPartitionSpecStrings List of strings to be converted into an HCatPartitionSpec.
+   * @return Deserialized HCatPartitionSpec instance.
+   * @throws HCatException On failure to deserialize. (e.g. incompatible serialization format, etc.)
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract HCatPartitionSpec deserializePartitionSpec(List<String> hcatPartitionSpecStrings) throws HCatException;
 
 }

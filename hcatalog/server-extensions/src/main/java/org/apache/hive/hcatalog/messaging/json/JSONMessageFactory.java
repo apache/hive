@@ -19,9 +19,12 @@
 
 package org.apache.hive.hcatalog.messaging.json;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
@@ -87,6 +90,14 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public AddPartitionMessage buildAddPartitionMessage(Table table, PartitionSpecProxy partitionSpec) {
+    return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), getPartitionKeyValues(table, partitionSpec), System.currentTimeMillis()/1000);
+  }
+
+  @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
     return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
         partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
@@ -105,6 +116,18 @@ public class JSONMessageFactory extends MessageFactory {
     List<Map<String, String>> partitionList = new ArrayList<Map<String, String>>(partitions.size());
     for (Partition partition : partitions)
       partitionList.add(getPartitionKeyValues(table, partition));
+    return partitionList;
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  private static List<Map<String, String>> getPartitionKeyValues(Table table, PartitionSpecProxy partitionSpec) {
+    List<Map<String, String>> partitionList = new ArrayList<Map<String, String>>();
+    PartitionSpecProxy.PartitionIterator iterator = partitionSpec.getPartitionIterator();
+    while (iterator.hasNext()) {
+      Partition partition = iterator.next();
+      partitionList.add(getPartitionKeyValues(table, partition));
+    }
     return partitionList;
   }
 }
