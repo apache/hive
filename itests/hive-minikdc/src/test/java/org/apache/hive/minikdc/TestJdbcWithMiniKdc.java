@@ -171,8 +171,8 @@ public class TestJdbcWithMiniKdc {
           MiniHiveKdc.HIVE_TEST_USER_2);
     } catch (SQLException e) {
       // Expected error
-      assertTrue(e.getMessage().contains("Failed to validate proxy privilege"));
-      assertTrue(e.getCause().getCause().getMessage().contains("Failed to validate proxy privilege"));
+      assertTrue(e.getMessage().contains("Error retrieving delegation token for user"));
+      assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
     } finally {
       hs2Conn.close();
     }
