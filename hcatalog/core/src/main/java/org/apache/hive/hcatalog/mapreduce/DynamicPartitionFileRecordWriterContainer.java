@@ -27,11 +27,9 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.Reporter;
@@ -44,14 +42,16 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.hcatalog.common.ErrorType;
 import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Record writer container for tables using dynamic partitioning. See
  * {@link FileOutputFormatContainer} for more information
  */
 class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContainer {
+  private static final Logger LOG = LoggerFactory.getLogger(DynamicPartitionFileRecordWriterContainer.class);
   private final List<Integer> dynamicPartCols;
   private int maxDynamicPartitions;
 
@@ -97,14 +97,36 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
       // TaskInputOutput.
       bwriter.close(reporter);
     }
-    for (Map.Entry<String, org.apache.hadoop.mapred.OutputCommitter> entry : baseDynamicCommitters
-        .entrySet()) {
-      org.apache.hadoop.mapred.TaskAttemptContext currContext = dynamicContexts.get(entry.getKey());
-      OutputCommitter baseOutputCommitter = entry.getValue();
-      if (baseOutputCommitter.needsTaskCommit(currContext)) {
-        baseOutputCommitter.commitTask(currContext);
+
+    TaskCommitContextRegistry.getInstance().register(context, new TaskCommitContextRegistry.TaskCommitterProxy() {
+      @Override
+      public void abortTask(TaskAttemptContext context) throws IOException {
+        for (Map.Entry<String, OutputJobInfo> outputJobInfoEntry : dynamicOutputJobInfo.entrySet()) {
+          String dynKey = outputJobInfoEntry.getKey();
+          OutputJobInfo outputJobInfo = outputJobInfoEntry.getValue();
+          LOG.info("Aborting task-attempt for " + outputJobInfo.getLocation());
+          baseDynamicCommitters.get(dynKey)
+                               .abortTask(dynamicContexts.get(dynKey));
+        }
       }
-    }
+
+      @Override
+      public void commitTask(TaskAttemptContext context) throws IOException {
+        for (Map.Entry<String, OutputJobInfo> outputJobInfoEntry : dynamicOutputJobInfo.entrySet()) {
+          String dynKey = outputJobInfoEntry.getKey();
+          OutputJobInfo outputJobInfo = outputJobInfoEntry.getValue();
+          LOG.info("Committing task-attempt for " + outputJobInfo.getLocation());
+          TaskAttemptContext dynContext = dynamicContexts.get(dynKey);
+          OutputCommitter dynCommitter = baseDynamicCommitters.get(dynKey);
+          if (dynCommitter.needsTaskCommit(dynContext)) {
+            dynCommitter.commitTask(dynContext);
+          }
+          else {
+            LOG.info("Skipping commitTask() for " + outputJobInfo.getLocation());
+          }
+        }
+      }
+    });
   }
 
   @Override
