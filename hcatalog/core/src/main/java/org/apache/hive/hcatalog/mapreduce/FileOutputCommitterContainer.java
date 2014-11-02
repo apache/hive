@@ -118,6 +118,13 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   public void abortTask(TaskAttemptContext context) throws IOException {
     if (!dynamicPartitioningUsed) {
       getBaseOutputCommitter().abortTask(HCatMapRedUtil.createTaskAttemptContext(context));
+    } else {
+      try {
+        TaskCommitContextRegistry.getInstance().abortTask(context);
+      }
+      finally {
+        TaskCommitContextRegistry.getInstance().discardCleanupFor(context);
+      }
     }
   }
 
@@ -127,6 +134,13 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
          //See HCATALOG-499
       FileOutputFormatContainer.setWorkOutputPath(context);
       getBaseOutputCommitter().commitTask(HCatMapRedUtil.createTaskAttemptContext(context));
+    } else {
+      try {
+        TaskCommitContextRegistry.getInstance().commitTask(context);
+      }
+      finally {
+        TaskCommitContextRegistry.getInstance().discardCleanupFor(context);
+      }
     }
   }
 
@@ -136,7 +150,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       return getBaseOutputCommitter().needsTaskCommit(HCatMapRedUtil.createTaskAttemptContext(context));
     } else {
       // called explicitly through FileRecordWriterContainer.close() if dynamic - return false by default
-      return false;
+      return true;
     }
   }
 
