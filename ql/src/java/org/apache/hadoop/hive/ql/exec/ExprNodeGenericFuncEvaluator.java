@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * ExprNodeGenericFuncEvaluator.
  *
@@ -44,6 +47,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
   transient Object rowObject;
   transient ExprNodeEvaluator[] children;
   transient GenericUDF.DeferredObject[] deferredChildren;
+  transient GenericUDF.DeferredObject[] childrenNeedingPrepare;
   transient boolean isEager;
   transient boolean isConstant = false;
 
@@ -71,6 +75,10 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
       if (eager) {
         get();
       }
+    }
+
+    public boolean needsPrepare() {
+      return !(eval instanceof ExprNodeConstantEvaluator || eval instanceof ExprNodeNullEvaluator);
     }
 
     public Object get() throws HiveException {
@@ -113,9 +121,17 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
     deferredChildren = new GenericUDF.DeferredObject[children.length];
+    List<GenericUDF.DeferredObject> childrenNeedingPrepare =
+        new ArrayList<GenericUDF.DeferredObject>(children.length);
     for (int i = 0; i < deferredChildren.length; i++) {
-      deferredChildren[i] = new DeferredExprObject(children[i], isEager);
+      DeferredExprObject deferredExprObject = new DeferredExprObject(children[i], isEager);
+      deferredChildren[i] = deferredExprObject;
+      if (deferredExprObject.needsPrepare()) {
+        childrenNeedingPrepare.add(deferredExprObject);
+      }
     }
+    this.childrenNeedingPrepare =
+        childrenNeedingPrepare.toArray(new GenericUDF.DeferredObject[childrenNeedingPrepare.size()]);
     // Initialize all children first
     ObjectInspector[] childrenOIs = new ObjectInspector[children.length];
     for (int i = 0; i < children.length; i++) {
@@ -163,8 +179,8 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
       return ((ConstantObjectInspector) outputOI).getWritableConstantValue();
     }
     rowObject = row;
-    for (int i = 0; i < deferredChildren.length; i++) {
-      deferredChildren[i].prepare(version);
+    for (GenericUDF.DeferredObject deferredObject : childrenNeedingPrepare) {
+      deferredObject.prepare(version);
     }
     return genericUDF.evaluate(deferredChildren);
   }
