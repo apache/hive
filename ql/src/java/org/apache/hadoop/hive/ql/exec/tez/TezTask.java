@@ -163,7 +163,7 @@ public class TezTask extends Task<TezWork> {
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
-      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf);
+      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf, dag);
 
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);

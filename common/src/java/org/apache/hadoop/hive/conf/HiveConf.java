@@ -1916,7 +1916,15 @@ public class HiveConf extends Configuration {
     TEZ_SMB_NUMBER_WAVES(
         "hive.tez.smb.number.waves",
         (float) 0.5,
-        "The number of waves in which to run the SMB join. Account for cluster being occupied. Ideally should be 1 wave.")
+        "The number of waves in which to run the SMB join. Account for cluster being occupied. Ideally should be 1 wave."),
+    TEZ_EXEC_SUMMARY(
+        "hive.tez.exec.print.summary",
+        false,
+        "Display breakdown of execution steps, for every query executed by the shell."),
+    TEZ_EXEC_INPLACE_PROGRESS(
+        "hive.tez.exec.inplace.progress",
+        true,
+        "Updates tez job execution progress in-place in the terminal.")
     ;
 
     public final String varname;
