@@ -19,15 +19,21 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
@@ -37,12 +43,19 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
@@ -78,10 +91,14 @@ public class SparkTask extends Task<SparkWork> {
       sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
       SessionState.get().setSparkSession(sparkSession);
       SparkWork sparkWork = getWork();
+
+      // We need to pre register spark counters for table statistic collection related query.
       String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-      if (statsImpl.equalsIgnoreCase("counter")) {
-        sparkWork.setRequiredCounterPrefix(SparkUtilities.getRequiredCounterPrefix(this, db));
+      StatsTask statsTask = getStatsTaskInChildTasks(this);
+      if (statsImpl.equalsIgnoreCase("counter") && statsTask != null) {
+        sparkWork.setRequiredCounterPrefix(getRequiredCounterPrefix(statsTask));
       }
+
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       sparkCounters = jobRef.getSparkJobStatus().getCounter();
       SparkJobMonitor monitor = new SparkJobMonitor(jobRef.getSparkJobStatus());
@@ -182,5 +199,107 @@ public class SparkTask extends Task<SparkWork> {
     console.printInfo("  set " + HiveConf.ConfVars.MAXREDUCERS.varname + "=<number>");
     console.printInfo("In order to set a constant number of reducers:");
     console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
+  }
+
+  private List<String> getRequiredCounterPrefix(StatsTask statsTask) throws HiveException, MetaException {
+    List<String> prefixs = new LinkedList<String>();
+    StatsWork statsWork = statsTask.getWork();
+    String prefix = getPrefix(statsWork);
+    List<Partition> partitions = getPartitionsList(statsWork);
+    int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
+
+    if (partitions == null) {
+      prefixs.add(Utilities.getHashedStatsPrefix(prefix, maxPrefixLength));
+    } else {
+      for (Partition partition : partitions) {
+        String prefixWithPartition = Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+        prefixs.add(Utilities.getHashedStatsPrefix(prefixWithPartition, maxPrefixLength));
+      }
+    }
+
+    return prefixs;
+  }
+
+  private String getPrefix(StatsWork work) throws HiveException {
+      String tableName;
+      if (work.getLoadTableDesc() != null) {
+        tableName = work.getLoadTableDesc().getTable().getTableName();
+      } else if (work.getTableSpecs() != null) {
+        tableName = work.getTableSpecs().tableName;
+      } else {
+        tableName = work.getLoadFileDesc().getDestinationCreateTable();
+      }
+    Table table = null;
+    try {
+      table = db.getTable(tableName);
+    } catch (HiveException e) {
+      LOG.warn("Failed to get table:" + tableName);
+      // For CTAS query, table does not exist in this period, just use table name as prefix.
+      return tableName.toLowerCase();
+    }
+    return table.getDbName() + "." + table.getTableName();
+  }
+
+  private static StatsTask getStatsTaskInChildTasks(Task<? extends Serializable> rootTask) {
+
+    List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+    if (childTasks == null) {
+      return null;
+    }
+    for (Task<? extends Serializable> task : childTasks) {
+      if (task instanceof StatsTask) {
+        return (StatsTask)task;
+      } else {
+        Task<? extends Serializable> childTask = getStatsTaskInChildTasks(task);
+        if (childTask instanceof StatsTask) {
+          return (StatsTask)childTask;
+        } else {
+          continue;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private List<Partition> getPartitionsList(StatsWork work) throws HiveException {
+    if (work.getLoadFileDesc() != null) {
+      return null; //we are in CTAS, so we know there are no partitions
+    }
+    Table table;
+    List<Partition> list = new ArrayList<Partition>();
+
+    if (work.getTableSpecs() != null) {
+
+      // ANALYZE command
+      BaseSemanticAnalyzer.tableSpec tblSpec = work.getTableSpecs();
+      table = tblSpec.tableHandle;
+      if (!table.isPartitioned()) {
+        return null;
+      }
+      // get all partitions that matches with the partition spec
+      List<Partition> partitions = tblSpec.partitions;
+      if (partitions != null) {
+        for (Partition partn : partitions) {
+          list.add(partn);
+        }
+      }
+    } else if (work.getLoadTableDesc() != null) {
+
+      // INSERT OVERWRITE command
+      LoadTableDesc tbd = work.getLoadTableDesc();
+      table = db.getTable(tbd.getTable().getTableName());
+      if (!table.isPartitioned()) {
+        return null;
+      }
+      DynamicPartitionCtx dpCtx = tbd.getDPCtx();
+      if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
+        // we could not get dynamic partition information before SparkTask execution.
+      } else { // static partition
+        Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
+        list.add(partn);
+      }
+    }
+    return list;
   }
 }
