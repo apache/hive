@@ -3131,11 +3131,10 @@ public final class Utilities {
 
   public static int estimateReducers(long totalInputFileSize, long bytesPerReducer,
       int maxReducers, boolean powersOfTwo) {
-
-    int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
+    double bytes = Math.max(totalInputFileSize, bytesPerReducer);
+    int reducers = (int) Math.ceil(bytes / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
-
 
     int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
     int reducersPowerTwo = (int)Math.pow(2, reducersLog);
@@ -3175,7 +3174,7 @@ public final class Utilities {
     }
 
     if (highestSamplePercentage >= 0) {
-      totalInputFileSize = Math.min((long) (totalInputFileSize * highestSamplePercentage / 100D)
+      totalInputFileSize = Math.min((long) (totalInputFileSize * (highestSamplePercentage / 100D))
           , totalInputFileSize);
     }
     return totalInputFileSize;
@@ -3199,7 +3198,7 @@ public final class Utilities {
     }
 
     if (highestSamplePercentage >= 0) {
-      totalInputNumFiles = Math.min((long) (totalInputNumFiles * highestSamplePercentage / 100D)
+      totalInputNumFiles = Math.min((long) (totalInputNumFiles * (highestSamplePercentage / 100D))
           , totalInputNumFiles);
     }
     return totalInputNumFiles;
