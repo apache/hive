@@ -171,7 +171,7 @@ public class StatsRulesProcFactory {
           // in case of select(*) the data size does not change
           if (!sop.getConf().isSelectStar() && !sop.getConf().isSelStarNoCompute()) {
             long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
-            stats.setDataSize(StatsUtils.getMaxIfOverflow(dataSize));
+            stats.setDataSize(dataSize);
           }
           sop.setStatistics(stats);
 
@@ -323,8 +323,8 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows += evaluateChildExpr(stats, child, aspCtx, neededCols,
-                fop);
+            newNumRows = StatsUtils.safeAdd(
+                evaluateChildExpr(stats, child, aspCtx, neededCols, fop), newNumRows);
           }
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
@@ -678,9 +678,9 @@ public class StatsRulesProcFactory {
             if (cs != null) {
               long ndv = cs.getCountDistint();
               if (cs.getNumNulls() > 0) {
-                ndv += 1;
+                ndv = StatsUtils.safeAdd(ndv, 1);
               }
-              ndvProduct *= ndv;
+              ndvProduct = StatsUtils.safeMult(ndvProduct, ndv);
             } else {
               if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
                 // the column must be an aggregate column inserted by GBY. We
@@ -715,15 +715,16 @@ public class StatsRulesProcFactory {
             if (mapSideHashAgg) {
               if (containsGroupingSet) {
                 // Case 4: column stats, hash aggregation, grouping sets
-                cardinality = Math.min((parentNumRows * sizeOfGroupingSet) / 2,
-                    ndvProduct * parallelism * sizeOfGroupingSet);
+                cardinality = Math.min(
+                    (StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet)) / 2,
+                    StatsUtils.safeMult(StatsUtils.safeMult(ndvProduct, parallelism), sizeOfGroupingSet));
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 4] STATS-" + gop.toString() + ": cardinality: " + cardinality);
                 }
               } else {
                 // Case 3: column stats, hash aggregation, NO grouping sets
-                cardinality = Math.min(parentNumRows / 2, ndvProduct * parallelism);
+                cardinality = Math.min(parentNumRows / 2, StatsUtils.safeMult(ndvProduct, parallelism));
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 3] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -732,7 +733,7 @@ public class StatsRulesProcFactory {
             } else {
               if (containsGroupingSet) {
                 // Case 6: column stats, NO hash aggregation, grouping sets
-                cardinality = parentNumRows * sizeOfGroupingSet;
+                cardinality = StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet);
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 6] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -759,7 +760,7 @@ public class StatsRulesProcFactory {
 
             if (containsGroupingSet) {
               // Case 8: column stats, grouping sets
-              cardinality = Math.min(parentNumRows, ndvProduct * sizeOfGroupingSet);
+              cardinality = Math.min(parentNumRows, StatsUtils.safeMult(ndvProduct, sizeOfGroupingSet));
 
               if (isDebugEnabled) {
                 LOG.debug("[Case 8] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -790,7 +791,7 @@ public class StatsRulesProcFactory {
 
               if (containsGroupingSet) {
                 // Case 2: NO column stats, NO hash aggregation, grouping sets
-                cardinality = parentNumRows * sizeOfGroupingSet;
+                cardinality = StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet);
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 2] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -902,7 +903,7 @@ public class StatsRulesProcFactory {
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            numEstimatedRows *= cs.getCountDistint();
+            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }
@@ -956,7 +957,7 @@ public class StatsRulesProcFactory {
         long hashEntrySize = gop.javaHashEntryOverHead + avgKeySize + avgValSize;
 
         // estimated hash table size
-        long estHashTableSize = StatsUtils.getMaxIfOverflow(numEstimatedRows * hashEntrySize);
+        long estHashTableSize = StatsUtils.safeMult(numEstimatedRows, hashEntrySize);
 
         if (estHashTableSize < maxMemHashAgg) {
           return true;
@@ -1135,7 +1136,7 @@ public class StatsRulesProcFactory {
               denom = getEasedOutDenominator(distinctVals);
             } else {
               for (Long l : distinctVals) {
-                denom *= l;
+                denom = StatsUtils.safeMult(denom, l);
               }
             }
           } else {
@@ -1211,13 +1212,13 @@ public class StatsRulesProcFactory {
           }
 
           long maxDataSize = parentSizes.get(maxRowIdx);
-          long newNumRows = (long) (joinFactor * maxRowCount * (numParents - 1));
-          long newDataSize = (long) (joinFactor * maxDataSize * (numParents - 1));
+          long newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
+          long newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
           Statistics wcStats = new Statistics();
-          wcStats.setNumRows(StatsUtils.getMaxIfOverflow(newNumRows));
-          wcStats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+          wcStats.setNumRows(newNumRows);
+          wcStats.setDataSize(newDataSize);
           jop.setStatistics(wcStats);
-
+ 
           if (isDebugEnabled) {
             LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
           }
@@ -1336,6 +1337,7 @@ public class StatsRulesProcFactory {
         }
       }
 
+      // No need for overflow checks, assume selectivity is always <= 1.0
       float selMultiParent = 1.0f;
       for(Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
         // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
@@ -1491,7 +1493,7 @@ public class StatsRulesProcFactory {
 
       for (int i = 0; i < rowCountParents.size(); i++) {
         if (i != maxIdx) {
-          result *= rowCountParents.get(i);
+          result = StatsUtils.safeMult(result, rowCountParents.get(i));
         }
       }
 
@@ -1564,7 +1566,7 @@ public class StatsRulesProcFactory {
         long denom = 1;
         for (int i = 0; i < distinctVals.size(); i++) {
           if (i != minIdx) {
-            denom *= distinctVals.get(i);
+            denom = StatsUtils.safeMult(denom, distinctVals.get(i));
           }
         }
         return denom;
@@ -1608,12 +1610,13 @@ public class StatsRulesProcFactory {
             // in the absence of column statistics, compute data size based on
             // based on average row size
             Statistics wcStats = parentStats.clone();
+            limit = StatsUtils.getMaxIfOverflow(limit);
             if (limit <= parentStats.getNumRows()) {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
-              long dataSize = avgRowSize * limit;
-              wcStats.setNumRows(StatsUtils.getMaxIfOverflow(numRows));
-              wcStats.setDataSize(StatsUtils.getMaxIfOverflow(dataSize));
+              long dataSize = StatsUtils.safeMult(avgRowSize, limit);
+              wcStats.setNumRows(numRows);
+              wcStats.setDataSize(dataSize);
             }
             lop.setStatistics(wcStats);
 
