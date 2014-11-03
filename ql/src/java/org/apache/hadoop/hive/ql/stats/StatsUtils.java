@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.stats;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.math.DoubleMath;
+import com.google.common.math.LongMath;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -390,7 +392,7 @@ public class StatsUtils {
       }
 
       if (s <= 0 && rc > 0) {
-        s = rc * avgRowSize;
+        s = safeMult(rc, avgRowSize);
         dataSizes.set(i, s);
       }
     }
@@ -495,7 +497,7 @@ public class StatsUtils {
     long result = 0;
     for (Long l : vals) {
       if (l > 0) {
-        result += l;
+        result = safeAdd(result, l);
       }
     }
     return result;
@@ -1259,6 +1261,7 @@ public class StatsUtils {
       if (cs != null) {
         String colType = cs.getColumnType();
         long nonNullCount = numRows - cs.getNumNulls();
+        double sizeOf = 0;
         if (colType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
             || colType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
             || colType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
@@ -1266,31 +1269,25 @@ public class StatsUtils {
             || colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)
             || colType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)
             || colType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
-
-          result += nonNullCount * cs.getAvgColLen();
+          sizeOf = cs.getAvgColLen();
         } else if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
             || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
             || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
-
           int acl = (int) Math.round(cs.getAvgColLen());
-          result += nonNullCount * JavaDataModel.get().lengthForStringOfLength(acl);
+          sizeOf = JavaDataModel.get().lengthForStringOfLength(acl);
         } else if (colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)) {
-
           int acl = (int) Math.round(cs.getAvgColLen());
-          result += nonNullCount * JavaDataModel.get().lengthForByteArrayOfSize(acl);
+          sizeOf = JavaDataModel.get().lengthForByteArrayOfSize(acl);
         } else if (colType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
-
-          result += nonNullCount * JavaDataModel.get().lengthOfTimestamp();
+          sizeOf = JavaDataModel.get().lengthOfTimestamp();
         } else if (colType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-
-          result += nonNullCount * JavaDataModel.get().lengthOfDecimal();
+          sizeOf = JavaDataModel.get().lengthOfDecimal();
         } else if (colType.equalsIgnoreCase(serdeConstants.DATE_TYPE_NAME)) {
-
-          result += nonNullCount * JavaDataModel.get().lengthOfDate();
+          sizeOf = JavaDataModel.get().lengthOfDate();
         } else {
-
-          result += nonNullCount * cs.getAvgColLen();
+          sizeOf = cs.getAvgColLen();
         }
+        result = safeAdd(result, safeMult(nonNullCount, sizeOf));
       }
     }
 
@@ -1435,5 +1432,29 @@ public class StatsUtils {
    */
   public static long getMaxIfOverflow(long val) {
     return val < 0 ? Long.MAX_VALUE : val;
+  }
+
+  /** Bounded multiplication - overflows become MAX_VALUE */
+  public static long safeMult(long a, double b) {
+    double result = a * b;
+    return (result > Long.MAX_VALUE) ? Long.MAX_VALUE : (long)result;
+  }
+ 
+  /** Bounded addition - overflows become MAX_VALUE */
+  public static long safeAdd(long a, long b) {
+    try {
+      return LongMath.checkedAdd(a, b);
+    } catch (ArithmeticException ex) {
+      return Long.MAX_VALUE;
+    }
+  }
+ 
+  /** Bounded multiplication - overflows become MAX_VALUE */
+  public static long safeMult(long a, long b) {
+    try {
+      return LongMath.checkedMultiply(a, b);
+    } catch (ArithmeticException ex) {
+      return Long.MAX_VALUE;
+    }
   }
 }
