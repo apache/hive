@@ -143,22 +143,23 @@ public class TestParquetTimestampUtils extends TestCase {
     cal.set(Calendar.YEAR,  1968);
     cal.set(Calendar.MONTH, Calendar.MAY);
     cal.set(Calendar.DAY_OF_MONTH, 23);
-    if ((TimeZone.getTimeZone("US/Pacific").inDaylightTime(new Date()))) {
-      cal.set(Calendar.HOUR_OF_DAY, 18);
-    } else {
-      cal.set(Calendar.HOUR_OF_DAY, 17);
-    }
+    cal.set(Calendar.HOUR_OF_DAY, 17);
     cal.set(Calendar.MINUTE, 1);
     cal.set(Calendar.SECOND, 1);
     cal.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
     Timestamp ts = new Timestamp(cal.getTimeInMillis());
     ts.setNanos(1);
 
-    //18:00 PST = 01:00 GMT (if daylight-savings)
-    //17:00 PST = 01:00 GMT (if not daylight savings)
-    //(1*60*60 + 1*60 + 1)*10e9 + 1
+    /**
+     * 17:00 PDT = 00:00 GMT (daylight-savings)
+     * (0*60*60 + 1*60 + 1)*10e9 + 1 = 61000000001, or
+     *
+     * 17:00 PST = 01:00 GMT (if not daylight savings)
+     * (1*60*60 + 1*60 + 1)*10e9 + 1 = 3661000000001
+     */
     NanoTime nt = NanoTimeUtils.getNanoTime(ts);
-    Assert.assertEquals(nt.getTimeOfDayNanos(), 3661000000001L);
+    long timeOfDayNanos = nt.getTimeOfDayNanos();
+    Assert.assertTrue(timeOfDayNanos == 61000000001L || timeOfDayNanos == 3661000000001L);
 
     //in both cases, this will be the next day in GMT
     Assert.assertEquals(nt.getJulianDay(), 2440001);
