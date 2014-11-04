@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +37,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticGroup;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
@@ -103,7 +107,10 @@ public class SparkTask extends Task<SparkWork> {
       sparkCounters = jobRef.getSparkJobStatus().getCounter();
       SparkJobMonitor monitor = new SparkJobMonitor(jobRef.getSparkJobStatus());
       monitor.startMonitor();
-      console.printInfo(sparkCounters.toString());
+      SparkStatistics sparkStatistics = jobRef.getSparkJobStatus().getSparkStatistics();
+      if (LOG.isInfoEnabled() && sparkStatistics != null) {
+        logSparkStatistic(sparkStatistics);
+      }
       rc = 0;
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);
@@ -119,6 +126,19 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return rc;
+  }
+
+  private void logSparkStatistic(SparkStatistics sparkStatistic) {
+    Iterator<SparkStatisticGroup> groupIterator = sparkStatistic.getStatisticGroups();
+    while (groupIterator.hasNext()) {
+      SparkStatisticGroup group = groupIterator.next();
+      LOG.info(group.getGroupName());
+      Iterator<SparkStatistic> statisticIterator = group.getStatistics();
+      while (statisticIterator.hasNext()) {
+        SparkStatistic statistic = statisticIterator.next();
+        LOG.info("\t" + statistic.getName() + ": " + statistic.getValue());
+      }
+    }
   }
 
   /**
