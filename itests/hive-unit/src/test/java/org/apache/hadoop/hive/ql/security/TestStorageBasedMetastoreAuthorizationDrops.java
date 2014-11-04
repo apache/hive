@@ -18,10 +18,15 @@
 
 package org.apache.hadoop.hive.ql.security;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,6 +34,41 @@ import org.junit.Test;
  * Test cases focusing on drop table permission checks
  */
 public class TestStorageBasedMetastoreAuthorizationDrops extends StorageBasedMetastoreTestBase {
+
+  protected static MiniDFSShim dfs = null;
+
+  @Override
+  protected HiveConf createHiveConf() throws Exception {
+    // Hadoop FS ACLs do not work with LocalFileSystem, so set up MiniDFS.
+    HiveConf conf = super.createHiveConf();
+
+    String currentUserName = ShimLoader.getHadoopShims().getUGIForConf(conf).getShortUserName();
+    conf.set("hadoop.proxyuser." + currentUserName + ".groups", "*");
+    conf.set("hadoop.proxyuser." + currentUserName + ".hosts", "*");
+    dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
+    FileSystem fs = dfs.getFileSystem();
+
+    Path warehouseDir = new Path(new Path(fs.getUri()), "/warehouse");
+    fs.mkdirs(warehouseDir);
+    conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS, true);
+
+    // Set up scratch directory
+    Path scratchDir = new Path(new Path(fs.getUri()), "/scratchdir");
+    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, scratchDir.toString());
+
+    return conf;
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    super.tearDown();
+
+    if (dfs != null) {
+      dfs.shutdown();
+      dfs = null;
+    }
+  }
 
   @Test
   public void testDropDatabase() throws Exception {
