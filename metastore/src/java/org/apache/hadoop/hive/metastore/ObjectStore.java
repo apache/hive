@@ -521,17 +521,22 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
+    MetaException ex = null;
+    Database db = null;
     try {
-      return getDatabaseInternal(name);
+      db = getDatabaseInternal(name);
     } catch (MetaException e) {
       // Signature restriction to NSOE, and NSOE being a flat exception prevents us from
       // setting the cause of the NSOE as the MetaException. We should not lose the info
       // we got here, but it's very likely that the MetaException is irrelevant and is
       // actually an NSOE message, so we should log it and throw an NSOE with the msg.
-      LOG.warn("Got a MetaException trying to call getDatabase("
-          +name+"), returning NoSuchObjectException", e);
-      throw new NoSuchObjectException(e.getMessage());
+      ex = e;
     }
+    if (db == null) {
+      LOG.warn("Failed to get database " + name +", returning NoSuchObjectException", ex);
+      throw new NoSuchObjectException(name + (ex == null ? "" : (": " + ex.getMessage())));
+    }
+    return db;
   }
 
   public Database getDatabaseInternal(String name) throws MetaException, NoSuchObjectException {
@@ -2375,7 +2380,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
-      LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+      LOG.warn("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
       if (!allowJdo) {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
