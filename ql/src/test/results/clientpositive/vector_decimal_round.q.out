@@ -1,0 +1,414 @@
+PREHOOK: query: create table decimal_tbl_txt (dec decimal(10,0)) 
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_tbl_txt
+POSTHOOK: query: create table decimal_tbl_txt (dec decimal(10,0)) 
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_tbl_txt
+PREHOOK: query: insert into table decimal_tbl_txt values(101)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@decimal_tbl_txt
+POSTHOOK: query: insert into table decimal_tbl_txt values(101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@decimal_tbl_txt
+POSTHOOK: Lineage: decimal_tbl_txt.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from decimal_tbl_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select * from decimal_tbl_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+101
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_txt order by dec
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_txt order by dec
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_txt
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0)), round(dec, -1) (type: decimal(11,0))
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: decimal(10,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col1 (type: decimal(11,0))
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+101	100
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_txt
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0))
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: round(_col0, (- 1)) (type: decimal(11,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: decimal(10,0))
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_txt
+#### A masked pattern was here ####
+101	100
+PREHOOK: query: create table decimal_tbl_rc (dec decimal(10,0))
+row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_tbl_rc
+POSTHOOK: query: create table decimal_tbl_rc (dec decimal(10,0))
+row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_tbl_rc
+PREHOOK: query: insert into table decimal_tbl_rc values(101)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@decimal_tbl_rc
+POSTHOOK: query: insert into table decimal_tbl_rc values(101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@decimal_tbl_rc
+POSTHOOK: Lineage: decimal_tbl_rc.dec EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from decimal_tbl_rc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from decimal_tbl_rc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+101
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_rc order by dec
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_rc order by dec
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_rc
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0)), round(dec, -1) (type: decimal(11,0))
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: decimal(10,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col1 (type: decimal(11,0))
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+101	100
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_rc
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0))
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: round(_col0, (- 1)) (type: decimal(11,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: decimal(10,0))
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_rc
+#### A masked pattern was here ####
+101	100
+PREHOOK: query: create table decimal_tbl_orc (dec decimal(10,0))
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_tbl_orc
+POSTHOOK: query: create table decimal_tbl_orc (dec decimal(10,0))
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_tbl_orc
+PREHOOK: query: insert into table decimal_tbl_orc values(101)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@decimal_tbl_orc
+POSTHOOK: query: insert into table decimal_tbl_orc values(101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@decimal_tbl_orc
+POSTHOOK: Lineage: decimal_tbl_orc.dec EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from decimal_tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from decimal_tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+101
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_orc order by dec
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_orc order by dec
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_orc
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0)), round(dec, -1) (type: decimal(11,0))
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: decimal(10,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col1 (type: decimal(11,0))
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+101	100
+PREHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: decimal_tbl_orc
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: dec (type: decimal(10,0))
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: round(_col0, (- 1)) (type: decimal(11,0))
+                sort order: +
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: decimal(10,0))
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_tbl_orc
+#### A masked pattern was here ####
+101	100
