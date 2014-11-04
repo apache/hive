@@ -34,8 +34,10 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Shell;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +57,11 @@ public class StorageBasedMetastoreTestBase {
   }
 
   protected HiveConf createHiveConf() throws Exception {
-    return new HiveConf(this.getClass());
+    HiveConf conf = new HiveConf(this.getClass());
+    if (Shell.WINDOWS) {
+      WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
+    }
+    return conf;
   }
 
   @Before
@@ -71,9 +77,8 @@ public class StorageBasedMetastoreTestBase {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         InjectableDummyAuthenticator.class.getName());
 
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
-
     clientHiveConf = createHiveConf();
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), clientHiveConf);
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
