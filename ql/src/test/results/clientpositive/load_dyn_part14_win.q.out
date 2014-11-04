@@ -5,6 +5,8 @@ PREHOOK: query: -- INCLUDE_OS_WINDOWS
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: -- INCLUDE_OS_WINDOWS
 -- included only on  windows because of difference in file name encoding logic
 
@@ -12,18 +14,21 @@ POSTHOOK: query: -- INCLUDE_OS_WINDOWS
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: describe extended nzhang_part14
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part14
 POSTHOOK: query: describe extended nzhang_part14
 POSTHOOK: type: DESCTABLE
-key                 	string              	None                
-value               	string              	None                
+POSTHOOK: Input: default@nzhang_part14
+key                 	string              	                    
+value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-value               	string              	None                
+value               	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
@@ -46,9 +51,6 @@ select key, value from (
   select 'k3' as key, ' ' as value from src limit 2
 ) T
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING TOK_NULL) value)) (TOK_LIMIT 2))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k2' key) (TOK_SELEXPR '' value)) (TOK_LIMIT 2)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k3' key) (TOK_SELEXPR ' ' value)) (TOK_LIMIT 2)))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part14) (TOK_PARTSPEC (TOK_PARTVAL value)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-9, Stage-10
@@ -65,88 +67,79 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery2:t-subquery1-subquery2:src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: 'k2'
-                    type: string
-                    expr: ''
-                    type: string
+              expressions: 'k2' (type: string), '' (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 85000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
+            Number of rows: 2
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
           TableScan
             Union
+              Statistics: Num rows: 6 Data size: 1022 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
+                expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 1
+                  Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.nzhang_part14
-#### A masked pattern was here ####
           TableScan
             Union
+              Statistics: Num rows: 6 Data size: 1022 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
+                expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 1
+                  Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.nzhang_part14
-#### A masked pattern was here ####
           TableScan
             Union
+              Statistics: Num rows: 6 Data size: 1022 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
+                expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  GlobalTableId: 1
+                  Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -179,11 +172,10 @@ STAGE PLANS:
 
   Stage: Stage-4
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
+          TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -192,11 +184,10 @@ STAGE PLANS:
 
   Stage: Stage-6
     Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+      Map Operator Tree:
+          TableScan
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -211,68 +202,67 @@ STAGE PLANS:
 
   Stage: Stage-9
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:t-subquery2:src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: 'k3'
-                    type: string
-                    expr: ' '
-                    type: string
+              expressions: 'k3' (type: string), ' ' (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 85500 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
+            Number of rows: 2
+            Statistics: Num rows: 2 Data size: 342 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-10
     Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery1:t-subquery1-subquery1:src 
+      Map Operator Tree:
           TableScan
             alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions:
-                    expr: 'k1'
-                    type: string
-                    expr: UDFToString(null)
-                    type: string
+              expressions: 'k1' (type: string), UDFToString(null) (type: string)
               outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 85000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
+                Number of rows: 2
+                Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
+            Number of rows: 2
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
 PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
@@ -295,37 +285,35 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_part14@value=%20
+POSTHOOK: Output: default@nzhang_part14@value=%2520
 POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14 PARTITION(value=%20).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 PREHOOK: query: show partitions nzhang_part14
 PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@nzhang_part14
 POSTHOOK: query: show partitions nzhang_part14
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
-value=%20
+POSTHOOK: Input: default@nzhang_part14
+value=%2520
 value=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14
-PREHOOK: Input: default@nzhang_part14@value=%20
+PREHOOK: Input: default@nzhang_part14@value=%2520
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14
-POSTHOOK: Input: default@nzhang_part14@value=%20
+POSTHOOK: Input: default@nzhang_part14@value=%2520
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__
 k1	__HIVE_DEFAULT_PARTITION__
 k2	__HIVE_DEFAULT_PARTITION__
 k2	__HIVE_DEFAULT_PARTITION__
-k3	 
-k3	 
+k3	%20
+k3	%20
