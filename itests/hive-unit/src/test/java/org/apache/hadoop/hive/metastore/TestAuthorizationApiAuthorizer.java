@@ -156,7 +156,7 @@ public abstract class TestAuthorizationApiAuthorizer {
     FunctionInvoker invoker = new FunctionInvoker() {
       @Override
       public void invoke() throws Exception {
-        msc.create_role(new Role());
+        msc.create_role(new Role("role1", 0, "owner"));
       }
     };
     testFunction(invoker);
