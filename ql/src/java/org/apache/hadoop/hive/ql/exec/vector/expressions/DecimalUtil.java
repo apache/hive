@@ -278,6 +278,24 @@ public class DecimalUtil {
     }
   }
 
+  public static void round(int i, HiveDecimal input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input, decimalPlaces));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void round(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input.getHiveDecimal(), decimalPlaces));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
   public static void round(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
     try {
       outputColVector.set(i, RoundUtils.round(input, outputColVector.scale));
