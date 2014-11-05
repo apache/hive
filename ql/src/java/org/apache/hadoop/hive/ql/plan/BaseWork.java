@@ -45,6 +45,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   int tag;
   private final List<String> sortColNames = new ArrayList<String>();
 
+  private MapredLocalWork mrLocalWork;
+
   public BaseWork() {}
 
   public BaseWork(String name) {
@@ -130,6 +132,22 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public void setAllColumnVectorMaps(Map<String, Map<String, Integer>> allColumnVectorMaps) {
     this.allColumnVectorMaps = allColumnVectorMaps;
+  }
+
+  /**
+   * @return the mapredLocalWork
+   */
+  @Explain(displayName = "Local Work")
+  public MapredLocalWork getMapRedLocalWork() {
+    return mrLocalWork;
+  }
+
+  /**
+   * @param mapLocalWork
+   *          the mapredLocalWork to set
+   */
+  public void setMapRedLocalWork(final MapredLocalWork mapLocalWork) {
+    this.mrLocalWork = mapLocalWork;
   }
 
   @Override
