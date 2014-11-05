@@ -26,8 +26,8 @@ insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid
 -- 3 files total
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan;
-desc formatted orc_merge5a partition(year="2000",hour=24);
-desc formatted orc_merge5a partition(year="2001",hour=24);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2000/hour=24/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2001/hour=24/;
 show partitions orc_merge5a;
 select * from orc_merge5a;
 
@@ -44,8 +44,8 @@ insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid
 -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan;
-desc formatted orc_merge5a partition(year="2000",hour=24);
-desc formatted orc_merge5a partition(year="2001",hour=24);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2000/hour=24/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2001/hour=24/;
 show partitions orc_merge5a;
 select * from orc_merge5a;
 
@@ -58,8 +58,8 @@ insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid
 insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan;
-desc formatted orc_merge5a partition(year="2000",hour=24);
-desc formatted orc_merge5a partition(year="2001",hour=24);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2000/hour=24/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2001/hour=24/;
 show partitions orc_merge5a;
 select * from orc_merge5a;
 
@@ -71,8 +71,8 @@ alter table orc_merge5a partition(year="2001",hour=24) concatenate;
 -- 1 file after merging
 analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan;
-desc formatted orc_merge5a partition(year="2000",hour=24);
-desc formatted orc_merge5a partition(year="2001",hour=24);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2000/hour=24/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/year=2001/hour=24/;
 show partitions orc_merge5a;
 select * from orc_merge5a;
 
