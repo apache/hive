@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -39,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
@@ -75,6 +64,16 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -600,8 +599,7 @@ public final class ColumnPrunerProcFactory {
           // revert output cols of SEL(*) to ExprNodeColumnDesc
           String[] tabcol = rr.reverseLookup(col);
           ColumnInfo colInfo = rr.get(tabcol[0], tabcol[1]);
-          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo.getType(),
-              colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
           colList.add(colExpr);
           outputColNames.add(col);
         }

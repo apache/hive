@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * ExprNodeColumnDesc.
@@ -54,6 +55,10 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
   private boolean isSkewedCol;
 
   public ExprNodeColumnDesc() {
+  }
+
+  public ExprNodeColumnDesc(ColumnInfo ci) {
+    this(ci.getType(), ci.getInternalName(), ci.getTabAlias(), ci.getIsVirtualCol());
   }
 
   public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
