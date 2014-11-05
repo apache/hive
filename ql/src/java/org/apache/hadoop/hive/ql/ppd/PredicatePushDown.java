@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
@@ -118,6 +119,9 @@ public class PredicatePushDown implements Transform {
     opRules.put(new RuleRegExp("R9",
       LateralViewJoinOperator.getOperatorName() + "%"),
       OpProcFactory.getLVJProc());
+    opRules.put(new RuleRegExp("R10",
+        ReduceSinkOperator.getOperatorName() + "%"),
+        OpProcFactory.getRSProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
