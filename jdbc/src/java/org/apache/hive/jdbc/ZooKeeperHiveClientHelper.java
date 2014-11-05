@@ -63,8 +63,6 @@ public class ZooKeeperHiveClientHelper {
     String serverNode;
     CuratorFramework zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .sessionTimeoutMs(JdbcConnectionParams.ZOOKEEPER_SESSION_TIMEOUT)
-            .connectionTimeoutMs(JdbcConnectionParams.ZOOKEEPER_CONNECTION_TIMEOUT)
             .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
     zooKeeperClient.start();
     try {

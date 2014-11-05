@@ -43,9 +43,6 @@ public class TestZooKeeperTokenStore extends TestCase {
   private CuratorFramework zkClient = null;
   private int zkPort = -1;
   private ZooKeeperTokenStore ts;
-  // connect timeout large enough for slower test environments
-  private final int connectTimeoutMillis = 30000;
-  private final int sessionTimeoutMillis = 3000;
 
   @Override
   protected void setUp() throws Exception {
@@ -55,10 +52,9 @@ public class TestZooKeeperTokenStore extends TestCase {
     }
     this.zkCluster = new MiniZooKeeperCluster();
     this.zkPort = this.zkCluster.startup(zkDataDir);
-
-    this.zkClient = CuratorFrameworkFactory.builder().connectString("localhost:" + zkPort)
-        .sessionTimeoutMs(sessionTimeoutMillis).connectionTimeoutMs(connectTimeoutMillis)
-        .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+    this.zkClient =
+        CuratorFrameworkFactory.builder().connectString("localhost:" + zkPort)
+            .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
     this.zkClient.start();
   }
 
@@ -74,15 +70,9 @@ public class TestZooKeeperTokenStore extends TestCase {
 
   private Configuration createConf(String zkPath) {
     Configuration conf = new Configuration();
-    conf.set(
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR,
-        "localhost:" + this.zkPort);
-    conf.set(
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
-        zkPath);
-    conf.setLong(
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
-        connectTimeoutMillis);
+    conf.set(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, "localhost:"
+        + this.zkPort);
+    conf.set(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE, zkPath);
     return conf;
   }
 
