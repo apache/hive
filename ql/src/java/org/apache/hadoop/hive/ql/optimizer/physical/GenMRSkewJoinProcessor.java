@@ -310,7 +310,7 @@ public final class GenMRSkewJoinProcessor {
             new FetchWork(tblDir, tableDescList.get(small_alias)));
       }
 
-      newPlan.setMapLocalWork(localPlan);
+      newPlan.setMapRedLocalWork(localPlan);
 
       // construct a map join and set it as the child operator of tblScan_op
       MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory

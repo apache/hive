@@ -122,7 +122,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setChildren(job);
       l4j.info(mo.dump(0));
       // initialize map local work
-      localWork = mrwork.getMapLocalWork();
+      localWork = mrwork.getMapRedLocalWork();
       execContext.setLocalWork(localWork);
 
       MapredContext.init(true, new JobConf(jc));
@@ -214,7 +214,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
 
       if (fetchOperators != null) {
-        MapredLocalWork localWork = mo.getConf().getMapLocalWork();
+        MapredLocalWork localWork = mo.getConf().getMapRedLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
           Operator<? extends OperatorDesc> forwardOp = localWork
               .getAliasToWork().get(entry.getKey());

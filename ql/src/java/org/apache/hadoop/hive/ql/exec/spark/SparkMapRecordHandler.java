@@ -101,7 +101,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       mo.setChildren(job);
       l4j.info(mo.dump(0));
       // initialize map local work
-      localWork = mrwork.getMapLocalWork();
+      localWork = mrwork.getMapRedLocalWork();
       execContext.setLocalWork(localWork);
 
       MapredContext.init(true, new JobConf(jc));

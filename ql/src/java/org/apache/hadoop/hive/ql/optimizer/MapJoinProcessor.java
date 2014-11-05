@@ -212,7 +212,7 @@ public class MapJoinProcessor implements Transform {
     }
 
     // set up local work
-    newWork.getMapWork().setMapLocalWork(newLocalWork);
+    newWork.getMapWork().setMapRedLocalWork(newLocalWork);
     // remove reducer
     newWork.setReduceWork(null);
   }

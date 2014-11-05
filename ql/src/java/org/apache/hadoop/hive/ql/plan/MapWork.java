@@ -85,7 +85,6 @@ public class MapWork extends BaseWork {
   private final Map<String, List<SortCol>> sortedColsByDirectory =
       new HashMap<String, List<SortCol>>();
 
-  private MapredLocalWork mapLocalWork;
   private Path tmpHDFSPath;
 
   private String inputformat;
@@ -194,6 +193,8 @@ public class MapWork extends BaseWork {
         entry.getValue().deriveBaseFileName(entry.getKey());
       }
     }
+
+    MapredLocalWork mapLocalWork = getMapRedLocalWork();
     if (mapLocalWork != null) {
       mapLocalWork.deriveExplainAttributes();
     }
@@ -239,23 +240,6 @@ public class MapWork extends BaseWork {
       final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
   }
-
-  /**
-   * @return the mapredLocalWork
-   */
-  @Explain(displayName = "Local Work")
-  public MapredLocalWork getMapLocalWork() {
-    return mapLocalWork;
-  }
-
-  /**
-   * @param mapLocalWork
-   *          the mapredLocalWork to set
-   */
-  public void setMapLocalWork(final MapredLocalWork mapLocalWork) {
-    this.mapLocalWork = mapLocalWork;
-  }
-
 
   @Explain(displayName = "Split Sample", normalExplain = false)
   public HashMap<String, SplitSample> getNameToSplitSample() {
