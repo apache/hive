@@ -17,14 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.parse.spark;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -52,8 +61,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkMapJoinOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -65,17 +72,6 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
  *
@@ -117,8 +113,8 @@ public class SparkCompiler extends TaskCompiler {
         new SetSparkReducerParallelism());
 
     // TODO: need to research and verify support convert join to map join optimization.
-    opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
-        JoinOperator.getOperatorName() + "%"), new SparkMapJoinOptimizer());
+    //opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
+    //    JoinOperator.getOperatorName() + "%"), new SparkMapJoinOptimizer());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -150,8 +146,8 @@ public class SparkCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
 
-    opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
-        MapJoinOperator.getOperatorName() + "%"), new SparkReduceSinkMapJoinProc());
+    //opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
+    //    MapJoinOperator.getOperatorName() + "%"), new SparkReduceSinkMapJoinProc());
 
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
         FileSinkOperator.getOperatorName() + "%"),
