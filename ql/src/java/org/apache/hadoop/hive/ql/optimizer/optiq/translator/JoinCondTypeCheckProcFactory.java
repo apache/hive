@@ -17,15 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -46,6 +37,15 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * JoinCondTypeCheckProcFactory is used by Optiq planner(CBO) to generate Join Conditions from Join Condition AST.
@@ -99,8 +99,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       if (!qualifiedAccess) {
         colInfo = getColInfo(ctx, null, tableOrCol, expr);
         // It's a column.
-        return new ExprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
-            colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+        return new ExprNodeColumnDesc(colInfo);
       } else if (hasTableAlias(ctx, tableOrCol, expr)) {
         return null;
       } else {
