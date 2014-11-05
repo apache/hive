@@ -23,7 +23,7 @@ insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts fro
 
 -- 3 files total
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 
 set hive.merge.orcfile.stripe.level=true;
@@ -37,7 +37,7 @@ insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts fro
 
 -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 
 set hive.merge.orcfile.stripe.level=false;
@@ -47,7 +47,7 @@ set hive.merge.mapredfiles=false;
 
 insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 
 set hive.merge.orcfile.stripe.level=true;
@@ -56,6 +56,6 @@ alter table orc_merge5b concatenate;
 
 -- 1 file after merging
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 

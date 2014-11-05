@@ -115,42 +115,8 @@ POSTHOOK: Input: default@orcfile_merge3a@ds=2
 POSTHOOK: Output: default@orcfile_merge3b
 POSTHOOK: Lineage: orcfile_merge3b.key SIMPLE [(orcfile_merge3a)orcfile_merge3a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: orcfile_merge3b.value SIMPLE [(orcfile_merge3a)orcfile_merge3a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: DESC FORMATTED orcfile_merge3b
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orcfile_merge3b
-POSTHOOK: query: DESC FORMATTED orcfile_merge3b
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orcfile_merge3b
-# col_name            	data_type           	comment             
-	 	 
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	1000                
-	rawDataSize         	94000               
-	totalSize           	2538                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM orcfile_merge3a

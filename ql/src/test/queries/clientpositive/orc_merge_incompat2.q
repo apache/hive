@@ -32,8 +32,8 @@ insert into table orc_merge5a partition (st) select userid,string1,subtype,decim
 
 analyze table orc_merge5a partition(st=80.0) compute statistics noscan;
 analyze table orc_merge5a partition(st=0.8) compute statistics noscan;
-desc formatted orc_merge5a partition(st=80.0);
-desc formatted orc_merge5a partition(st=0.8);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/st=80.0/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/st=0.8/;
 show partitions orc_merge5a;
 select * from orc_merge5a where userid<=13;
 
@@ -44,8 +44,8 @@ alter table orc_merge5a partition(st=0.8) concatenate;
 
 analyze table orc_merge5a partition(st=80.0) compute statistics noscan;
 analyze table orc_merge5a partition(st=0.8) compute statistics noscan;
-desc formatted orc_merge5a partition(st=80.0);
-desc formatted orc_merge5a partition(st=0.8);
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/st=80.0/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a/st=0.8/;
 show partitions orc_merge5a;
 select * from orc_merge5a where userid<=13;
 

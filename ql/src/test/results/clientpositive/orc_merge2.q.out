@@ -173,49 +173,8 @@ POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=1).key EXPRESSION
 POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESC FORMATTED orcfile_merge2a partition (one='1', two='0', three='2')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orcfile_merge2a
-POSTHOOK: query: DESC FORMATTED orcfile_merge2a partition (one='1', two='0', three='2')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orcfile_merge2a
-# col_name            	data_type           	comment             
-	 	 
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-one                 	string              	                    
-two                 	string              	                    
-three               	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[1, 0, 2]           	 
-Database:           	default             	 
-Table:              	orcfile_merge2a     	 
+Found 1 items
 #### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	true                
-	numFiles            	1                   
-	numRows             	4                   
-	rawDataSize         	376                 
-	totalSize           	320                 
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge2a
