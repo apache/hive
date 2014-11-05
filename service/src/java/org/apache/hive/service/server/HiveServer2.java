@@ -143,9 +143,6 @@ public class HiveServer2 extends CompositeService {
    * @throws Exception
    */
   private void addServerInstanceToZooKeeper(HiveConf hiveConf) throws Exception {
-    int zooKeeperSessionTimeout =
-        hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
-    int connectTimeoutMillis = -1;
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     String instanceURI = getServerInstanceURI(hiveConf);
@@ -155,7 +152,6 @@ public class HiveServer2 extends CompositeService {
     // Use the zooKeeperAclProvider to create appropriate ACLs
     zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .sessionTimeoutMs(zooKeeperSessionTimeout).connectionTimeoutMs(connectTimeoutMillis)
             .aclProvider(zooKeeperAclProvider).retryPolicy(new ExponentialBackoffRetry(1000, 3))
             .build();
     zooKeeperClient.start();
@@ -345,14 +341,10 @@ public class HiveServer2 extends CompositeService {
    */
   static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
     HiveConf hiveConf = new HiveConf();
-    int zooKeeperSessionTimeout =
-        hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
-    int connectTimeoutMillis = -1;
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     CuratorFramework zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
-            .sessionTimeoutMs(zooKeeperSessionTimeout).connectionTimeoutMs(connectTimeoutMillis)
             .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
     zooKeeperClient.start();
     List<String> znodePaths =
