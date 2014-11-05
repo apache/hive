@@ -22,7 +22,7 @@ insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc
 
 -- 5 files total
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 
 set hive.merge.orcfile.stripe.level=true;
@@ -30,6 +30,6 @@ alter table orc_merge5b concatenate;
 
 -- 3 file after merging - all 0.12 format files will be merged and 0.11 files will be left behind
 analyze table orc_merge5b compute statistics noscan;
-desc formatted orc_merge5b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5b/;
 select * from orc_merge5b;
 
