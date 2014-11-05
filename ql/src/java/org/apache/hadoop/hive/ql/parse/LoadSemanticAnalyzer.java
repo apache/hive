@@ -238,6 +238,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // create final load/move work
 
+    boolean preservePartitionSpecs = false;
+
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
       partSpec = new LinkedHashMap<String, String>();
@@ -252,9 +254,14 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
                 getMsg(ts.tableName + ":" + part.getName()));
           }
-          outputs.add(new WriteEntity(part,
-          (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
-              WriteEntity.WriteType.INSERT)));
+          if (isOverWrite){
+            outputs.add(new WriteEntity(part, WriteEntity.WriteType.INSERT_OVERWRITE));
+          } else {
+            outputs.add(new WriteEntity(part, WriteEntity.WriteType.INSERT));
+            // If partition already exists and we aren't overwriting it, then respect
+            // its current location info rather than picking it from the parent TableDesc
+            preservePartitionSpecs = true;
+          }
         } else {
           outputs.add(new WriteEntity(ts.tableHandle,
           (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
@@ -269,6 +276,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
+    if (preservePartitionSpecs){
+      // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but
+      // but preservePartitionSpecs=false(default) here is not sufficient enough
+      // info to set inheritTableSpecs=true
+      loadTableWork.setInheritTableSpecs(false);
+    }
 
     Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
         getOutputs(), loadTableWork, null, true, isLocal), conf);
