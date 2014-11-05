@@ -251,7 +251,7 @@ drop view v3;
 drop view v4;
 
 -- 11. Union All
-select * from t1 union all select * from t2 order by key, c_boolean, value, dt;
+select * from t1 order by key, c_boolean, value, dt union all select * from t2 order by key, c_boolean, value, dt;
 select key from (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r2 where key >=0 order by key;
 select r2.key from (select key, c_int from (select key, c_int from t1 union all select key, c_int from t3 )r1 union all select key, c_int from t3)r2 join   (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r3 on r2.key=r3.key where r3.key >=0 order by r2.key;
 
