@@ -84,7 +84,7 @@ public final class MapJoinFactory {
         Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
             currMapJoinOp.getConf().getAliasBucketFileNameMapping();
         if (aliasBucketFileNameMapping != null) {
-          MapredLocalWork localPlan = plan.getMapLocalWork();
+          MapredLocalWork localPlan = plan.getMapRedLocalWork();
           if (localPlan == null) {
             if (currMapJoinOp instanceof SMBMapJoinOperator) {
               localPlan = ((SMBMapJoinOperator) currMapJoinOp).getConf().getLocalWork();
@@ -106,10 +106,10 @@ public final class MapJoinFactory {
           }
 
           if (currMapJoinOp instanceof SMBMapJoinOperator) {
-            plan.setMapLocalWork(null);
+            plan.setMapRedLocalWork(null);
             ((SMBMapJoinOperator) currMapJoinOp).getConf().setLocalWork(localPlan);
           } else {
-            plan.setMapLocalWork(localPlan);
+            plan.setMapRedLocalWork(localPlan);
           }
           BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
           localPlan.setBucketMapjoinContext(bucketMJCxt);
