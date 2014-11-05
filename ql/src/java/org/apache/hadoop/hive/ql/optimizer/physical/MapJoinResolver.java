@@ -100,7 +100,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         ConditionalTask conditionalTask) throws SemanticException {
       // get current mapred work and its local work
       MapredWork mapredWork = (MapredWork) currTask.getWork();
-      MapredLocalWork localwork = mapredWork.getMapWork().getMapLocalWork();
+      MapredLocalWork localwork = mapredWork.getMapWork().getMapRedLocalWork();
       if (localwork != null) {
         // get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
@@ -135,7 +135,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         MapredLocalWork newLocalWork = localwork.extractDirectWorks(
             localMapJoinProcCtx.getDirectWorks());
         newLocalWork.setDummyParentOp(dummyOps);
-        mapredWork.getMapWork().setMapLocalWork(newLocalWork);
+        mapredWork.getMapWork().setMapRedLocalWork(newLocalWork);
 
         if (localwork.getAliasToFetchWork().isEmpty()) {
           // no alias to stage.. no local task

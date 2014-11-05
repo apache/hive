@@ -83,7 +83,7 @@ public final class SparkSortMergeJoinFactory {
         Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
             currMapJoinOp.getConf().getAliasBucketFileNameMapping();
         if (aliasBucketFileNameMapping != null) {
-          MapredLocalWork localPlan = plan.getMapLocalWork();
+          MapredLocalWork localPlan = plan.getMapRedLocalWork();
           if (localPlan == null) {
             localPlan = currMapJoinOp.getConf().getLocalWork();
           } else {
@@ -98,7 +98,7 @@ public final class SparkSortMergeJoinFactory {
           if (localPlan == null) {
             return;
           }
-          plan.setMapLocalWork(null);
+          plan.setMapRedLocalWork(null);
           currMapJoinOp.getConf().setLocalWork(localPlan);
 
           BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
