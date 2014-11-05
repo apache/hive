@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -83,6 +84,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
               + " Not configured for SSL connection");
         }
         SslContextFactory sslContextFactory = new SslContextFactory();
+        String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
+        LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
+        sslContextFactory.addExcludeProtocols(excludedProtocols);
+        LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = " +
+          Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         connector = new SslSelectChannelConnector(sslContextFactory);
