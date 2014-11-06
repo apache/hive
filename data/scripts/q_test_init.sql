@@ -243,3 +243,79 @@ CREATE TABLE dest4_sequencefile (key STRING COMMENT 'default', value STRING COMM
 STORED AS
 INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat';
+
+
+--
+-- CBO tables
+--
+
+drop table if exists cbo_t1;
+drop table if exists cbo_t2;
+drop table if exists cbo_t3;
+drop table if exists src_cbo;
+drop table if exists part;
+drop table if exists lineitem;
+
+set hive.cbo.enable=true;
+
+create table cbo_t1(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
+create table cbo_t2(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
+create table cbo_t3(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
+
+load data local inpath '../../data/files/cbo_t1.txt' into table cbo_t1 partition (dt='2014');
+load data local inpath '../../data/files/cbo_t2.txt' into table cbo_t2 partition (dt='2014');
+load data local inpath '../../data/files/cbo_t3.txt' into table cbo_t3;
+
+CREATE TABLE part(
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+);
+
+LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
+
+CREATE TABLE lineitem (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      DOUBLE,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DOUBLE,
+                                L_RETURNFLAG    STRING,
+                                L_LINESTATUS    STRING,
+                                l_shipdate      STRING,
+                                L_COMMITDATE    STRING,
+                                L_RECEIPTDATE   STRING,
+                                L_SHIPINSTRUCT  STRING,
+                                L_SHIPMODE      STRING,
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|';
+
+LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem;
+
+create table src_cbo as select * from src;
+
+
+analyze table cbo_t1 partition (dt) compute statistics;
+analyze table cbo_t1 compute statistics for columns key, value, c_int, c_float, c_boolean;
+analyze table cbo_t2 partition (dt) compute statistics;
+analyze table cbo_t2 compute statistics for columns key, value, c_int, c_float, c_boolean;
+analyze table cbo_t3 compute statistics;
+analyze table cbo_t3 compute statistics for columns key, value, c_int, c_float, c_boolean;
+analyze table src_cbo compute statistics;
+analyze table src_cbo compute statistics for columns;
+analyze table part compute statistics;
+analyze table part compute statistics for columns;
+analyze table lineitem compute statistics;
+analyze table lineitem compute statistics for columns;
+
+reset;
+set hive.stats.dbclass=fs;

@@ -1,7 +1,9 @@
 -- SORT_QUERY_RESULTS
 
 -- data setup
-CREATE TABLE part( 
+DROP TABLE IF EXISTS part_subq;
+
+CREATE TABLE part_subq( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -13,7 +15,7 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
+LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq;
 
 -- non agg, non corr
 explain
@@ -45,11 +47,11 @@ set hive.optimize.correlation=false;
 -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
-from part b
+from part_subq b
 group by b.p_mfgr
 having b.p_mfgr in 
    (select p_mfgr 
-    from part
+    from part_subq
     group by p_mfgr
     having max(p_size) - min(p_size) < 20
    )
@@ -60,11 +62,11 @@ set hive.optimize.correlation=true;
 -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
-from part b
+from part_subq b
 group by b.p_mfgr
 having b.p_mfgr in
    (select p_mfgr
-    from part
+    from part_subq
     group by p_mfgr
     having max(p_size) - min(p_size) < 20
    )
@@ -113,8 +115,10 @@ having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.k
 -- non agg, non corr, windowing
 explain
 select p_mfgr, p_name, avg(p_size) 
-from part 
+from part_subq 
 group by p_mfgr, p_name
 having p_name in 
-  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 ;
+
+DROP TABLE part_subq;
