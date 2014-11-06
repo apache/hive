@@ -39,4 +39,5 @@ public interface SparkJobStatus {
 
   public SparkStatistics getSparkStatistics();
 
+  public void cleanup();
 }

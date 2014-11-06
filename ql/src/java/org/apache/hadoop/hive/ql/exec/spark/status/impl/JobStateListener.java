@@ -17,11 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
+import org.apache.spark.executor.TaskMetrics;
 import org.apache.spark.scheduler.JobSucceeded;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerApplicationEnd;
@@ -39,12 +44,14 @@ import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
 import org.apache.spark.scheduler.SparkListenerTaskStart;
 import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
 
-import scala.collection.JavaConversions;
-
 public class JobStateListener implements SparkListener {
 
-  private Map<Integer, SparkJobState> jobIdToStates = new HashMap<Integer, SparkJobState>();
-  private Map<Integer, int[]> jobIdToStageId = new HashMap<Integer, int[]>();
+  private final static Log LOG = LogFactory.getLog(JobStateListener.class);
+
+  private final Map<Integer, SparkJobState> jobIdToStates = Maps.newHashMap();
+  private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
+  private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
+  private final Map<Integer, Map<String, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
 
   @Override
   public void onStageCompleted(SparkListenerStageCompleted stageCompleted) {
@@ -67,19 +74,40 @@ public class JobStateListener implements SparkListener {
   }
 
   @Override
-  public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
-
+  public synchronized void onTaskEnd(SparkListenerTaskEnd taskEnd) {
+    int stageId = taskEnd.stageId();
+    int stageAttemptId = taskEnd.stageAttemptId();
+    String stageIdentifier = stageId + "_" + stageAttemptId;
+    Integer jobId = stageIdToJobId.get(stageId);
+    if (jobId == null) {
+      LOG.warn("Can not find job id for stage[" + stageId + "].");
+    } else {
+      Map<String, List<TaskMetrics>> jobMetrics = allJobMetrics.get(jobId);
+      if (jobMetrics == null) {
+        jobMetrics = Maps.newHashMap();
+        allJobMetrics.put(jobId, jobMetrics);
+      }
+      List<TaskMetrics> stageMetrics = jobMetrics.get(stageIdentifier);
+      if (stageMetrics == null) {
+        stageMetrics = Lists.newLinkedList();
+        jobMetrics.put(stageIdentifier, stageMetrics);
+      }
+      stageMetrics.add(taskEnd.taskMetrics());
+    }
   }
 
   @Override
   public synchronized void onJobStart(SparkListenerJobStart jobStart) {
-    jobIdToStates.put(jobStart.jobId(), SparkJobState.RUNNING);
-    List<Object> ids = JavaConversions.asJavaList(jobStart.stageIds());
-    int[] intStageIds = new int[ids.size()];
-    for(int i=0; i<ids.size(); i++) {
-      intStageIds[i] = (Integer)ids.get(i);
+    int jobId = jobStart.jobId();
+    jobIdToStates.put(jobId, SparkJobState.RUNNING);
+    int size = jobStart.stageIds().size();
+    int[] intStageIds = new int[size];
+    for(int i=0; i< size; i++) {
+      Integer stageId = (Integer) jobStart.stageIds().apply(i);
+      intStageIds[i] = stageId;
+      stageIdToJobId.put(stageId, jobId);
     }
-    jobIdToStageId.put(jobStart.jobId(), intStageIds);
+    jobIdToStageId.put(jobId, intStageIds);
   }
 
   @Override
@@ -133,5 +161,22 @@ public class JobStateListener implements SparkListener {
 
   public synchronized int[] getStageIds(int jobId) {
     return jobIdToStageId.get(jobId);
+  }
+
+  public synchronized  Map<String, List<TaskMetrics>> getJobMetric(int jobId) {
+    return allJobMetrics.get(jobId);
+  }
+
+  public synchronized void cleanup(int jobId) {
+    allJobMetrics.remove(jobId);
+    jobIdToStates.remove(jobId);
+    jobIdToStageId.remove(jobId);
+    Iterator<Map.Entry<Integer, Integer>> iterator = stageIdToJobId.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<Integer, Integer> entry = iterator.next();
+      if (entry.getValue() == jobId) {
+        iterator.remove();
+      }
+    }
   }
 }
