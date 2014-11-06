@@ -1,0 +1,318 @@
+PREHOOK: query: create table stats_src like src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_src
+POSTHOOK: query: create table stats_src like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_src
+PREHOOK: query: insert overwrite table stats_src select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_src
+POSTHOOK: query: insert overwrite table stats_src select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_src
+POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table stats_src compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_src
+PREHOOK: Output: default@stats_src
+POSTHOOK: query: analyze table stats_src compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_src
+POSTHOOK: Output: default@stats_src
+PREHOOK: query: desc formatted stats_src
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_src
+POSTHOOK: query: desc formatted stats_src
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_src
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	0                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table stats_part like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: create table stats_part like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '11') select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '11') select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '12') select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '12') select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='11') compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@ds=2010-04-08/hr=11
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='11') compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+PREHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='12') compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@ds=2010-04-08/hr=12
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: query: analyze table stats_part partition(ds='2010-04-08', hr='12') compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: stats_part PARTITION(ds=2010-04-08,hr=13).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010-04-08, 11]    	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	0                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '12')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr = '12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010-04-08, 12]    	 
+Database:           	default             	 
+Table:              	stats_part          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	0                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table stats_part partition(ds, hr) compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@ds=2010-04-08/hr=11
+PREHOOK: Input: default@stats_part@ds=2010-04-08/hr=12
+PREHOOK: Input: default@stats_part@ds=2010-04-08/hr=13
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
+POSTHOOK: query: analyze table stats_part partition(ds, hr) compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: Input: default@stats_part@ds=2010-04-08/hr=13
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=11
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=12
+POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
+PREHOOK: query: desc formatted stats_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: desc formatted stats_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_part
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_src
+PREHOOK: Output: default@stats_src
+POSTHOOK: query: drop table stats_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_src
+POSTHOOK: Output: default@stats_src
+PREHOOK: query: drop table stats_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: drop table stats_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: default@stats_part
