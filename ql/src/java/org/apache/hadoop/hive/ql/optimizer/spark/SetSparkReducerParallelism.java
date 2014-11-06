@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.SparkClient;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -32,7 +35,7 @@ import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 
-import java.util.Stack;
+import scala.Tuple2;
 
 /**
  * SetSparkReducerParallelism determines how many reducers should
@@ -41,6 +44,9 @@ import java.util.Stack;
 public class SetSparkReducerParallelism implements NodeProcessor {
 
   private static final Log LOG = LogFactory.getLog(SetSparkReducerParallelism.class.getName());
+
+  // Spark memory per task, and total number of cores
+  private Tuple2<Long, Integer> sparkMemoryAndCores;
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
@@ -52,7 +58,6 @@ public class SetSparkReducerParallelism implements NodeProcessor {
     ReduceSinkOperator sink = (ReduceSinkOperator) nd;
     ReduceSinkDesc desc = sink.getConf();
 
-    long bytesPerReducer = context.getConf().getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
     int maxReducers = context.getConf().getIntVar(HiveConf.ConfVars.MAXREDUCERS);
     int constantReducers = context.getConf().getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
 
@@ -81,8 +86,20 @@ public class SetSparkReducerParallelism implements NodeProcessor {
           }
         }
 
+        if (sparkMemoryAndCores == null) {
+          sparkMemoryAndCores = SparkClient.getMemoryAndCores(context.getConf());
+        }
+
+        // Divide it by 2 so that we can have more reducers
+        long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
         int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
             maxReducers, false);
+
+        // If there are more cores, use the number of cores
+        int cores = sparkMemoryAndCores._2.intValue();
+        if (numReducers < cores) {
+          numReducers = cores;
+        }
         LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
         desc.setNumReducers(numReducers);
       }
