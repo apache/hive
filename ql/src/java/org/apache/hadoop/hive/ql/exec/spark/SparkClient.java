@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -41,15 +48,16 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.*;
+import scala.Tuple2;
+
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 
 public class SparkClient implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -71,6 +79,32 @@ public class SparkClient implements Serializable {
       client = new SparkClient(hiveConf);
     }
     return client;
+  }
+
+  /**
+   * Get Spark shuffle memory per task, and total number of cores. This
+   * information can be used to estimate how many reducers a task can have.
+   *
+   * @return a tuple, the first element is the shuffle memory per task in bytes,
+   *  the second element is the number of total cores usable by the client
+   */
+  public static Tuple2<Long, Integer>
+      getMemoryAndCores(Configuration hiveConf) {
+    SparkClient client = getInstance(hiveConf);
+    SparkContext sc = client.sc.sc();
+    SparkConf sparkConf = sc.conf();
+    int cores = sparkConf.getInt("spark.executor.cores", sc.defaultParallelism());
+    double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
+    // sc.executorMemory() is in MB, need to convert to bytes
+    long memoryPerTask =
+      (long) (sc.executorMemory() * memoryFraction * 1024 * 1024 / cores);
+    int executors = sc.getExecutorMemoryStatus().size();
+    int totalCores = executors * cores;
+    LOG.info("Spark cluster current has executors: " + executors
+      + ", cores per executor: " + cores + ", memory per executor: "
+      + sc.executorMemory() + "M, shuffle memoryFraction: " + memoryFraction);
+    return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTask),
+      Integer.valueOf(totalCores));
   }
 
   private JavaSparkContext sc;
