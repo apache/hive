@@ -22,12 +22,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.spark.executor.InputMetrics;
+import org.apache.spark.executor.ShuffleReadMetrics;
+import org.apache.spark.executor.ShuffleWriteMetrics;
+import org.apache.spark.executor.TaskMetrics;
 import org.apache.spark.scheduler.StageInfo;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.spark.ui.jobs.UIData;
@@ -124,7 +129,98 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
 
   @Override
   public SparkStatistics getSparkStatistics() {
-    return new SparkStatisticsBuilder().add(sparkCounters).build();
+    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
+    // add Hive operator level statistics.
+    sparkStatisticsBuilder.add(sparkCounters);
+    // add spark job metrics.
+    String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
+    Map<String, List<TaskMetrics>> jobMetric = jobStateListener.getJobMetric(jobId);
+    Map<String, Long> flatJobMetric = combineJobLevelMetrics(jobMetric);
+    for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
+      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+    }
+
+    return  sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public void cleanup() {
+    jobStateListener.cleanup(jobId);
+  }
+
+  private Map<String, Long> combineJobLevelMetrics(Map<String, List<TaskMetrics>> jobMetric) {
+    Map<String, Long> results = Maps.newLinkedHashMap();
+
+    long executorDeserializeTime = 0;
+    long executorRunTime = 0;
+    long resultSize = 0;
+    long jvmGCTime = 0;
+    long resultSerializationTime = 0;
+    long memoryBytesSpilled = 0;
+    long diskBytesSpilled = 0;
+    long bytesRead = 0;
+    long remoteBlocksFetched = 0;
+    long localBlocksFetched = 0;
+    long fetchWaitTime = 0;
+    long remoteBytesRead = 0;
+    long shuffleBytesWritten = 0;
+    long shuffleWriteTime = 0;
+    boolean inputMetricExist = false;
+    boolean shuffleReadMetricExist = false;
+    boolean shuffleWriteMetricExist = false;
+
+    for (List<TaskMetrics> stageMetric : jobMetric.values()) {
+      for (TaskMetrics taskMetrics : stageMetric) {
+        executorDeserializeTime += taskMetrics.executorDeserializeTime();
+        executorRunTime += taskMetrics.executorRunTime();
+        resultSize += taskMetrics.resultSize();
+        jvmGCTime += taskMetrics.jvmGCTime();
+        resultSerializationTime += taskMetrics.resultSerializationTime();
+        memoryBytesSpilled += taskMetrics.memoryBytesSpilled();
+        diskBytesSpilled += taskMetrics.diskBytesSpilled();
+        if (!taskMetrics.inputMetrics().isEmpty()) {
+          inputMetricExist = true;
+          bytesRead += taskMetrics.inputMetrics().get().bytesRead();
+        }
+        Option<ShuffleReadMetrics> shuffleReadMetricsOption = taskMetrics.shuffleReadMetrics();
+        if (!shuffleReadMetricsOption.isEmpty()) {
+          shuffleReadMetricExist = true;
+          remoteBlocksFetched += shuffleReadMetricsOption.get().remoteBlocksFetched();
+          localBlocksFetched += shuffleReadMetricsOption.get().localBlocksFetched();
+          fetchWaitTime += shuffleReadMetricsOption.get().fetchWaitTime();
+          remoteBytesRead += shuffleReadMetricsOption.get().remoteBytesRead();
+        }
+        Option<ShuffleWriteMetrics> shuffleWriteMetricsOption = taskMetrics.shuffleWriteMetrics();
+        if (!shuffleWriteMetricsOption.isEmpty()) {
+          shuffleWriteMetricExist = true;
+          shuffleBytesWritten += shuffleWriteMetricsOption.get().shuffleBytesWritten();
+          shuffleWriteTime += shuffleWriteMetricsOption.get().shuffleWriteTime();
+        }
+      }
+    }
+
+    results.put("EexcutorDeserializeTime", executorDeserializeTime);
+    results.put("ExecutorRunTime", executorRunTime);
+    results.put("ResultSize", resultSize);
+    results.put("JvmGCTime", jvmGCTime);
+    results.put("ResultSerializationTime", resultSerializationTime);
+    results.put("MemoryBytesSpilled", memoryBytesSpilled);
+    results.put("DiskBytesSpilled", diskBytesSpilled);
+    if (inputMetricExist) {
+      results.put("BytesRead", bytesRead);
+    }
+    if (shuffleReadMetricExist) {
+      results.put("RemoteBlocksFetched", remoteBlocksFetched);
+      results.put("LocalBlocksFetched", localBlocksFetched);
+      results.put("TotalBlocksFetched", localBlocksFetched + remoteBlocksFetched);
+      results.put("FetchWaitTime", fetchWaitTime);
+      results.put("RemoteBytesRead", remoteBytesRead);
+    }
+    if (shuffleWriteMetricExist) {
+      results.put("ShuffleBytesWritten", shuffleBytesWritten);
+      results.put("ShuffleWriteTime", shuffleWriteTime);
+    }
+    return results;
   }
 
   private List<StageInfo> getStageInfo(int stageId) {

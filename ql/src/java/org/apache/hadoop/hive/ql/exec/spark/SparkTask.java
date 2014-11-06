@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -104,13 +105,16 @@ public class SparkTask extends Task<SparkWork> {
       }
 
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
-      sparkCounters = jobRef.getSparkJobStatus().getCounter();
-      SparkJobMonitor monitor = new SparkJobMonitor(jobRef.getSparkJobStatus());
+      SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
+      sparkCounters = sparkJobStatus.getCounter();
+      SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
       monitor.startMonitor();
-      SparkStatistics sparkStatistics = jobRef.getSparkJobStatus().getSparkStatistics();
+      SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
       if (LOG.isInfoEnabled() && sparkStatistics != null) {
+        LOG.info(String.format("=====Spark Job[%d] statistics=====", jobRef.getJobId()));
         logSparkStatistic(sparkStatistics);
       }
+      sparkJobStatus.cleanup();
       rc = 0;
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);
