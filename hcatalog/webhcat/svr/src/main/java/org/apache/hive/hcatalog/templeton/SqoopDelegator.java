@@ -83,6 +83,20 @@ public class SqoopDelegator extends LauncherDelegator {
             args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
             args.add("-D" + TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
           }
+          if(i == 0 && TempletonUtils.isset(libdir) && TempletonUtils.isset(appConf.sqoopArchive())) {
+            //http://sqoop.apache.org/docs/1.4.5/SqoopUserGuide.html#_using_generic_and_specific_arguments
+            String libJars = null;
+            for(String s : args) {
+              if(s.startsWith(JobSubmissionConstants.Sqoop.LIB_JARS)) {
+                libJars = s.substring(s.indexOf("=") + 1);
+                break;
+              }
+            }
+            //the jars in libJars will be localized to CWD of the launcher task; then -libjars will
+            //cause them to be localized for the Sqoop MR job tasks
+            args.add(TempletonUtils.quoteForWindows("-libjars"));
+            args.add(TempletonUtils.quoteForWindows(libJars));
+          }
         }
       } else if (TempletonUtils.isset(optionsFile)) {
         args.add("--options-file");
@@ -114,11 +128,13 @@ public class SqoopDelegator extends LauncherDelegator {
       /**Sqoop accesses databases via JDBC.  This means it needs to have appropriate JDBC
       drivers available.  Normally, the user would install Sqoop and place these jars
       into SQOOP_HOME/lib.  When WebHCat is configured to auto-ship the Sqoop tar file, we
-      need to make sure that relevant JDBC jars are available on target node.
+      need to make sure that relevant JDBC jars are available on target node but we cannot modify
+      lib/ of exploded tar because Dist Cache intentionally prevents this.
       The user is expected to place any JDBC jars into an HDFS directory and specify this
-      dir in "libdir" parameter.  All the files in this dir will be copied to lib/ of the
-      exploded Sqoop tar ball on target node.
+      dir in "libdir" parameter.  WebHCat then ensures that these jars are localized for the launcher task
+      and made available to Sqoop.
       {@link org.apache.hive.hcatalog.templeton.tool.LaunchMapper#handleSqoop(org.apache.hadoop.conf.Configuration, java.util.Map)}
+      {@link #makeArgs(String, String, String, String, String, boolean, String)}
       */
       LOG.debug("libdir=" + libdir);
       List<Path> jarList = TempletonUtils.hadoopFsListChildren(libdir, appConf, runAs);
