@@ -127,7 +127,7 @@ public class CompactionTxnHandler extends TxnHandler {
          dbConn.rollback();
        } catch (SQLException e1) {
        }
-       detectDeadlock(e, "setRunAs");
+       detectDeadlock(dbConn, e, "setRunAs");
      } finally {
        closeDbConn(dbConn);
        closeStmt(stmt);
@@ -192,7 +192,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "findNextToCompact");
+        detectDeadlock(dbConn, e, "findNextToCompact");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -234,7 +234,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "markCompacted");
+        detectDeadlock(dbConn, e, "markCompacted");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -377,7 +377,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "markCleaned");
+        detectDeadlock(dbConn, e, "markCleaned");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -429,7 +429,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "cleanEmptyAbortedTxns");
+        detectDeadlock(dbConn, e, "cleanEmptyAbortedTxns");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -475,7 +475,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "revokeFromLocalWorkers");
+        detectDeadlock(dbConn, e, "revokeFromLocalWorkers");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -522,7 +522,7 @@ public class CompactionTxnHandler extends TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "revokeTimedoutWorkers");
+        detectDeadlock(dbConn, e, "revokeTimedoutWorkers");
         throw new MetaException("Unable to connect to transaction database " +
             StringUtils.stringifyException(e));
       } finally {
