@@ -191,8 +191,15 @@ message PostScript {
   optional uint64 footerLength = 1;
   optional CompressionKind compression = 2;
   optional uint64 compressionBlockSize = 3;
+  // the version of the file format
+  //   [0, 11] = Hive 0.11
+  //   [0, 12] = Hive 0.12
   repeated uint32 version = 4 [packed = true];
   optional uint64 metadataLength = 5;
+  // Version of the writer:
+  //   0 (or missing) = original
+  //   1 = HIVE-8732 fixed
+  optional uint32 writerVersion = 6;
   // Leave this last in the record
   optional string magic = 8000;
 }
