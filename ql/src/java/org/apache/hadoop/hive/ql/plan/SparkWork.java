@@ -54,7 +54,7 @@ public class SparkWork extends AbstractOperatorDesc {
   protected final Map<Pair<BaseWork, BaseWork>, SparkEdgeProperty> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, SparkEdgeProperty>();
 
-  private List<String> requiredCounterPrefix;
+  private Map<String, List<String>> requiredCounterPrefix;
 
   public SparkWork(String name) {
     this.name = name + ":" + (++counter);
@@ -176,11 +176,11 @@ public class SparkWork extends AbstractOperatorDesc {
     return new HashSet<BaseWork>(leaves);
   }
 
-  public void setRequiredCounterPrefix(List<String> requiredCounterPrefix) {
+  public void setRequiredCounterPrefix(Map<String, List<String>> requiredCounterPrefix) {
     this.requiredCounterPrefix = requiredCounterPrefix;
   }
 
-  public List<String> getRequiredCounterPrefix() {
+  public Map<String, List<String>> getRequiredCounterPrefix() {
     return requiredCounterPrefix;
   }
 

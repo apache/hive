@@ -59,28 +59,6 @@ public class SparkCounters implements Serializable {
     this.javaSparkContext = javaSparkContext;
     this.hiveConf = hiveConf;
     sparkCounterGroups = new HashMap<String, SparkCounterGroup>();
-    initializeSparkCounters();
-  }
-
-  /**
-   * pre-define all needed Counters here.
-   */
-  private void initializeSparkCounters() {
-    String groupName = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVECOUNTERGROUP);
-    createCounter(groupName, Operator.HIVECOUNTERCREATEDFILES);
-    createCounter(groupName, MapOperator.Counter.DESERIALIZE_ERRORS);
-    createCounter(groupName, MapOperator.Counter.RECORDS_IN);
-    createCounter(groupName, FileSinkOperator.Counter.RECORDS_OUT);
-    createCounter(groupName, ReduceSinkOperator.Counter.RECORDS_OUT_INTERMEDIATE);
-    createCounter(groupName, ScriptOperator.Counter.DESERIALIZE_ERRORS);
-    createCounter(groupName, ScriptOperator.Counter.SERIALIZE_ERRORS);
-    createCounter(groupName, JoinOperator.SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS);
-    // TODO remove? changed due to HIVE-8429
-    createCounter(MapOperator.Counter.DESERIALIZE_ERRORS);
-    createCounter(MapOperator.Counter.RECORDS_IN);
-    createCounter(ScriptOperator.Counter.DESERIALIZE_ERRORS);
-    createCounter(ScriptOperator.Counter.SERIALIZE_ERRORS);
-    createCounter(JoinOperator.SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS);
   }
 
   public void createCounter(Enum<?> key) {
