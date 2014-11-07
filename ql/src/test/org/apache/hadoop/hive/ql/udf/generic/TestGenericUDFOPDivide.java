@@ -187,7 +187,7 @@ public class TestGenericUDFOPDivide extends TestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(11, 7), oi.getTypeInfo());
     HiveDecimalWritable res = (HiveDecimalWritable) udf.evaluate(args);
-    Assert.assertEquals(HiveDecimal.create("0.0617100"), res.getHiveDecimal());
+    Assert.assertEquals(HiveDecimal.create("0.06171"), res.getHiveDecimal());
   }
 
   @Test
