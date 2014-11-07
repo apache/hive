@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Generated from template ColumnArithmeticColumnDecimal.txt, which covers binary arithmetic 
@@ -61,8 +61,8 @@ public class <ClassName> extends VectorExpression {
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    Decimal128[] vector1 = inputColVector1.vector;
-    Decimal128[] vector2 = inputColVector2.vector;
+    HiveDecimalWritable[] vector1 = inputColVector1.vector;
+    HiveDecimalWritable[] vector2 = inputColVector2.vector;
 
     // return immediately if batch is empty
     if (n == 0) {

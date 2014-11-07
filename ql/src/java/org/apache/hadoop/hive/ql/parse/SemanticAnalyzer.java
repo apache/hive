@@ -20,34 +20,12 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import com.google.common.annotations.VisibleForTesting;
-
-import net.hydromatic.optiq.SchemaPlus;
-import net.hydromatic.optiq.tools.Frameworks;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.Token;
@@ -122,7 +100,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveOptiqUtil;
 import org.apache.hadoop.hive.ql.optimizer.optiq.HiveTypeSystemImpl;
@@ -146,6 +123,7 @@ import org.apache.hadoop.hive.ql.optimizer.optiq.translator.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.RexNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.optiq.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
@@ -259,6 +237,9 @@ import org.eigenbase.rel.rules.LoptOptimizeJoinRule;
 import org.eigenbase.rel.rules.MergeFilterRule;
 import org.eigenbase.rel.rules.PushFilterPastProjectRule;
 import org.eigenbase.rel.rules.PushFilterPastSetOpRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastFilterRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastJoinRule;
+import org.eigenbase.rel.rules.PushSemiJoinPastProjectRule;
 import org.eigenbase.rel.rules.SemiJoinRel;
 import org.eigenbase.rel.rules.TransitivePredicatesOnJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
@@ -276,30 +257,51 @@ import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeFactory;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexBuilder;
+import org.eigenbase.rex.RexFieldCollation;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexUtil;
 import org.eigenbase.rex.RexWindowBound;
-import org.eigenbase.rex.RexFieldCollation;
 import org.eigenbase.sql.SqlAggFunction;
+import org.eigenbase.sql.SqlCall;
+import org.eigenbase.sql.SqlExplainLevel;
+import org.eigenbase.sql.SqlKind;
+import org.eigenbase.sql.SqlLiteral;
+import org.eigenbase.sql.SqlNode;
 import org.eigenbase.sql.SqlWindow;
 import org.eigenbase.sql.parser.SqlParserPos;
 import org.eigenbase.sql.type.SqlTypeName;
 import org.eigenbase.sql2rel.RelFieldTrimmer;
-import org.eigenbase.sql.SqlCall;
-import org.eigenbase.sql.SqlExplainLevel;
-import org.eigenbase.sql.SqlKind;
-import org.eigenbase.sql.SqlNode;
-import org.eigenbase.sql.SqlLiteral;
 import org.eigenbase.util.CompositeList;
 import org.eigenbase.util.ImmutableIntList;
 import org.eigenbase.util.Pair;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import net.hydromatic.optiq.SchemaPlus;
+import net.hydromatic.optiq.tools.Frameworks;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -4130,9 +4132,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(grpbyExpr));
       }
 
-      groupByKeys.add(new ExprNodeColumnDesc(exprInfo.getType(), exprInfo
-          .getInternalName(), exprInfo.getTabAlias(), exprInfo
-          .getIsVirtualCol()));
+      groupByKeys.add(new ExprNodeColumnDesc(exprInfo));
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
       ColumnInfo oColInfo = new ColumnInfo(field, exprInfo.getType(), "", false);
@@ -6260,8 +6260,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (!("".equals(nm[0])) && nm[1] != null) {
             colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
           }
-          String ctasColName = fixCtasColumnName(colName, colInfo, inputRR);
-          col.setName(ctasColName);
+          if (runCBO) {
+            colName = fixCtasColumnName(colName);
+          }
+          col.setName(colName);
           col.setType(colInfo.getType().getTypeName());
           field_schemas.add(col);
         }
@@ -6439,7 +6441,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private static String fixCtasColumnName(String colName, ColumnInfo colInfo, RowResolver rr) {
+  private static String fixCtasColumnName(String colName) {
     int lastDot = colName.lastIndexOf('.');
     if (lastDot < 0) return colName; // alias is not fully qualified
     String nqColumnName = colName.substring(lastDot + 1);
@@ -6926,9 +6928,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ColumnInfo colInfo : inputRR.getColumnInfos()) {
       String internalName = getColumnInternalName(i++);
       outputColumns.add(internalName);
-      valueCols.add(new ExprNodeColumnDesc(colInfo.getType(), colInfo
-          .getInternalName(), colInfo.getTabAlias(), colInfo
-          .getIsVirtualCol()));
+      valueCols.add(new ExprNodeColumnDesc(colInfo));
       colExprMap.put(internalName, valueCols
           .get(valueCols.size() - 1));
     }
@@ -7057,8 +7057,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo colInfo = columnInfos.get(i);
       String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
       String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
-      ExprNodeColumnDesc value = new ExprNodeColumnDesc(colInfo.getType(),
-          colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+      ExprNodeColumnDesc value = new ExprNodeColumnDesc(colInfo);
 
       // backtrack can be null when input is script operator
       ExprNodeDesc valueBack = ExprNodeDescUtils.backtrack(value, dummy, input);
@@ -7310,8 +7309,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo colInfo = columns.get(i);
       String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
       String[] nm2 = inputRR.getAlternateMappings(colInfo.getInternalName());
-      ExprNodeDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
-          colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+      ExprNodeDesc expr = new ExprNodeColumnDesc(colInfo);
 
       // backtrack can be null when input is script operator
       ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, child);
@@ -8399,12 +8397,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < columns.size(); i++) {
       ColumnInfo col = columns.get(i);
-      colList.add(new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
-          col.getTabAlias(), col.getIsVirtualCol()));
+      colList.add(new ExprNodeColumnDesc(col));
       columnNames.add(col.getInternalName());
-      columnExprMap.put(col.getInternalName(),
-          new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
-              col.getTabAlias(), col.getIsVirtualCol()));
+      columnExprMap.put(col.getInternalName(), new ExprNodeColumnDesc(col));
     }
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new SelectDesc(colList, columnNames, true), new RowSchema(inputRR
@@ -9261,8 +9256,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (String col : bucketCols) {
         ColumnInfo ci = rwsch.get(alias, col);
         // TODO: change type to the one in the table schema
-        args.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), ci
-            .getTabAlias(), ci.getIsVirtualCol()));
+        args.add(new ExprNodeColumnDesc(ci));
       }
     } else {
       for (ASTNode expr : ts.getExprs()) {
@@ -9843,8 +9837,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ColumnInfo col : source.getColumnInfos()) {
       String[] tabCol = source.reverseLookup(col.getInternalName());
       lvForwardRR.put(tabCol[0], tabCol[1], col);
-      ExprNodeDesc colExpr = new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
-          col.getTabAlias(), false);
+      ExprNodeDesc colExpr = new ExprNodeColumnDesc(col);
       colList.add(colExpr);
       colNames.add(colExpr.getName());
       lvfColExprMap.put(col.getInternalName(), colExpr);
@@ -9933,8 +9926,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tableAlias = tableCol[0];
       String colAlias = tableCol[1];
       dest.put(tableAlias, colAlias, newCol);
-      colExprMap.put(internalName, new ExprNodeColumnDesc(c.getType(), c.getInternalName(),
-          c.getTabAlias(), c.getIsVirtualCol()));
+      colExprMap.put(internalName, new ExprNodeColumnDesc(c));
     }
   }
 
@@ -10241,13 +10233,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      //        be supported and would require additional checks similar to IsQuery?
      boolean isSupportedType =
          qb.getIsQuery() || qb.isCTAS() || cboCtx.type == PreCboCtx.Type.INSERT;
-     boolean result = isSupportedRoot && isSupportedType && createVwDesc == null;
+     boolean noBadTokens = HiveOptiqUtil.validateASTForUnsupportedTokens(ast);
+     boolean result = isSupportedRoot && isSupportedType && createVwDesc == null && noBadTokens;
      if (!result) {
        if (needToLogMessage) {
          String msg = "";
          if (!isSupportedRoot) msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
          if (!isSupportedType) msg += "is not a query, CTAS, or insert; ";
          if (createVwDesc != null) msg += "has create view; ";
+         if (!noBadTokens) msg += "has unsupported tokens; ";
 
          if (msg.isEmpty()) msg += "has some unspecified limitations; ";
          LOG.info("Not invoking CBO because the statement " + msg.substring(0, msg.length() - 2));
@@ -11993,9 +11987,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     int pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
-        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
-            .getInternalName(), colInfo.getTabAlias(), colInfo
-            .getIsVirtualCol());
+        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo);
         valueCols.add(valueColExpr);
         String internalName = SemanticAnalyzer.getColumnInternalName(pos++);
         outputColumnNames.add(internalName);
@@ -12240,9 +12232,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver rsNewRR = new RowResolver();
     int pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
-        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
-            .getInternalName(), colInfo.getTabAlias(), colInfo
-            .getIsVirtualCol());
+        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo);
         valueCols.add(valueColExpr);
         String internalName = SemanticAnalyzer.getColumnInternalName(pos++);
         outputColumnNames.add(internalName);
@@ -12642,7 +12632,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-      basePlan = hepPlan(basePlan, true, mdProvider, new PushFilterPastProjectRule(
+
+      // Push Down Semi Joins
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          PushSemiJoinPastJoinRule.INSTANCE,
+          new PushSemiJoinPastFilterRule(HiveFilterRel.DEFAULT_FILTER_FACTORY),
+          new PushSemiJoinPastProjectRule(HiveProjectRel.DEFAULT_PROJECT_FACTORY));
+
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          new PushFilterPastProjectRule(
           FilterRelBase.class, HiveFilterRel.DEFAULT_FILTER_FACTORY, HiveProjectRel.class,
           HiveProjectRel.DEFAULT_PROJECT_FACTORY), new PushFilterPastSetOpRule(
           HiveFilterRel.DEFAULT_FILTER_FACTORY), new MergeFilterRule(

@@ -393,9 +393,11 @@ public class HiveConf extends Configuration {
         "the connection URL, before the next metastore query that accesses the\n" +
         "datastore. Once reloaded, this value is reset to false. Used for\n" +
         "testing only."),
+    METASTORESERVERMAXMESSAGESIZE("hive.metastore.server.max.message.size", 100*1024*1024,
+        "Maximum message size in bytes a HMS will accept."),
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200,
         "Minimum number of worker threads in the Thrift server's pool."),
-    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 100000,
+    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
     METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -1597,6 +1599,9 @@ public class HiveConf extends Configuration {
         "table. From 0.12 onwards, they are displayed separately. This flag will let you\n" +
         "get old behavior, if desired. See, test-case in patch for HIVE-6689."),
 
+    HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv2Hello,SSLv3",
+        "SSL Versions to disable for all Hive Servers"),
+
      // HiveServer2 specific configs
     HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L, new RangeValidator(0L, null),
         "Number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds " +
@@ -1622,6 +1627,8 @@ public class HiveConf extends Configuration {
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'http'."),
     HIVE_SERVER2_THRIFT_HTTP_PATH("hive.server2.thrift.http.path", "cliservice",
         "Path component of URL endpoint when in HTTP mode."),
+    HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE("hive.server2.thrift.max.message.size", 100*1024*1024,
+        "Maximum message size in bytes a HS2 server will accept."),
     HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS("hive.server2.thrift.http.min.worker.threads", 5,
         "Minimum number of worker threads when in HTTP mode."),
     HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500,
@@ -1922,7 +1929,15 @@ public class HiveConf extends Configuration {
     TEZ_SMB_NUMBER_WAVES(
         "hive.tez.smb.number.waves",
         (float) 0.5,
-        "The number of waves in which to run the SMB join. Account for cluster being occupied. Ideally should be 1 wave.")
+        "The number of waves in which to run the SMB join. Account for cluster being occupied. Ideally should be 1 wave."),
+    TEZ_EXEC_SUMMARY(
+        "hive.tez.exec.print.summary",
+        false,
+        "Display breakdown of execution steps, for every query executed by the shell."),
+    TEZ_EXEC_INPLACE_PROGRESS(
+        "hive.tez.exec.inplace.progress",
+        true,
+        "Updates tez job execution progress in-place in the terminal.")
     ;
 
     public final String varname;
@@ -2588,6 +2603,7 @@ public class HiveConf extends Configuration {
     "hive\\.auto\\..*",
     "hive\\.cbo\\..*",
     "hive\\.convert\\..*",
+    "hive\\.exec\\.dynamic\\.partition.*",
     "hive\\.exec\\..*\\.dynamic\\.partitions\\..*",
     "hive\\.exec\\.compress\\..*",
     "hive\\.exec\\.infer\\..*",

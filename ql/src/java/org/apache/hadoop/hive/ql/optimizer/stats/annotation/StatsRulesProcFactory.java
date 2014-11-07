@@ -18,13 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -77,8 +73,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 public class StatsRulesProcFactory {
 
@@ -170,7 +171,7 @@ public class StatsRulesProcFactory {
           // in case of select(*) the data size does not change
           if (!sop.getConf().isSelectStar() && !sop.getConf().isSelStarNoCompute()) {
             long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
-            stats.setDataSize(setMaxIfInvalid(dataSize));
+            stats.setDataSize(dataSize);
           }
           sop.setStatistics(stats);
 
@@ -322,8 +323,8 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows += evaluateChildExpr(stats, child, aspCtx, neededCols,
-                fop);
+            newNumRows = StatsUtils.safeAdd(
+                evaluateChildExpr(stats, child, aspCtx, neededCols, fop), newNumRows);
           }
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
@@ -677,9 +678,9 @@ public class StatsRulesProcFactory {
             if (cs != null) {
               long ndv = cs.getCountDistint();
               if (cs.getNumNulls() > 0) {
-                ndv += 1;
+                ndv = StatsUtils.safeAdd(ndv, 1);
               }
-              ndvProduct *= ndv;
+              ndvProduct = StatsUtils.safeMult(ndvProduct, ndv);
             } else {
               if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
                 // the column must be an aggregate column inserted by GBY. We
@@ -714,15 +715,16 @@ public class StatsRulesProcFactory {
             if (mapSideHashAgg) {
               if (containsGroupingSet) {
                 // Case 4: column stats, hash aggregation, grouping sets
-                cardinality = Math.min((parentNumRows * sizeOfGroupingSet) / 2,
-                    ndvProduct * parallelism * sizeOfGroupingSet);
+                cardinality = Math.min(
+                    (StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet)) / 2,
+                    StatsUtils.safeMult(StatsUtils.safeMult(ndvProduct, parallelism), sizeOfGroupingSet));
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 4] STATS-" + gop.toString() + ": cardinality: " + cardinality);
                 }
               } else {
                 // Case 3: column stats, hash aggregation, NO grouping sets
-                cardinality = Math.min(parentNumRows / 2, ndvProduct * parallelism);
+                cardinality = Math.min(parentNumRows / 2, StatsUtils.safeMult(ndvProduct, parallelism));
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 3] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -731,7 +733,7 @@ public class StatsRulesProcFactory {
             } else {
               if (containsGroupingSet) {
                 // Case 6: column stats, NO hash aggregation, grouping sets
-                cardinality = parentNumRows * sizeOfGroupingSet;
+                cardinality = StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet);
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 6] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -758,7 +760,7 @@ public class StatsRulesProcFactory {
 
             if (containsGroupingSet) {
               // Case 8: column stats, grouping sets
-              cardinality = Math.min(parentNumRows, ndvProduct * sizeOfGroupingSet);
+              cardinality = Math.min(parentNumRows, StatsUtils.safeMult(ndvProduct, sizeOfGroupingSet));
 
               if (isDebugEnabled) {
                 LOG.debug("[Case 8] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -789,7 +791,7 @@ public class StatsRulesProcFactory {
 
               if (containsGroupingSet) {
                 // Case 2: NO column stats, NO hash aggregation, grouping sets
-                cardinality = parentNumRows * sizeOfGroupingSet;
+                cardinality = StatsUtils.safeMult(parentNumRows, sizeOfGroupingSet);
 
                 if (isDebugEnabled) {
                   LOG.debug("[Case 2] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -828,7 +830,6 @@ public class StatsRulesProcFactory {
             // for those newly added columns
             if (!colExprMap.containsKey(ci.getInternalName())) {
               String colName = ci.getInternalName();
-              colName = StatsUtils.stripPrefixFromColumnName(colName);
               String tabAlias = ci.getTabAlias();
               String colType = ci.getTypeName();
               ColStatistics cs = new ColStatistics(tabAlias, colName, colType);
@@ -902,7 +903,7 @@ public class StatsRulesProcFactory {
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            numEstimatedRows *= cs.getCountDistint();
+            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }
@@ -956,7 +957,7 @@ public class StatsRulesProcFactory {
         long hashEntrySize = gop.javaHashEntryOverHead + avgKeySize + avgValSize;
 
         // estimated hash table size
-        long estHashTableSize = numEstimatedRows * hashEntrySize;
+        long estHashTableSize = StatsUtils.safeMult(numEstimatedRows, hashEntrySize);
 
         if (estHashTableSize < maxMemHashAgg) {
           return true;
@@ -1065,7 +1066,7 @@ public class StatsRulesProcFactory {
 
           // detect if there are multiple attributes in join key
           ReduceSinkOperator rsOp = (ReduceSinkOperator) jop.getParentOperators().get(0);
-          List<ExprNodeDesc> keyExprs = rsOp.getConf().getKeyCols();
+          List<String> keyExprs = rsOp.getConf().getOutputKeyColumnNames();
           numAttr = keyExprs.size();
 
           // infer PK-FK relationship in single attribute join case
@@ -1077,7 +1078,7 @@ public class StatsRulesProcFactory {
             ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
 
             Statistics parentStats = parent.getStatistics();
-            keyExprs = parent.getConf().getKeyCols();
+            keyExprs = parent.getConf().getOutputKeyColumnNames();
 
             // Parent RS may have column statistics from multiple parents.
             // Populate table alias to row count map, this will be used later to
@@ -1096,8 +1097,8 @@ public class StatsRulesProcFactory {
             // used to quickly look-up for column statistics of join key.
             // TODO: expressions in join condition will be ignored. assign
             // internal name for expressions and estimate column statistics for expression.
-            List<String> fqCols =
-                StatsUtils.getFullQualifedColNameFromExprs(keyExprs, parent.getColumnExprMap());
+            List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keyExprs,
+                parent.getColumnExprMap());
             joinKeys.put(pos, fqCols);
 
             // get column statistics for all output columns
@@ -1119,7 +1120,6 @@ public class StatsRulesProcFactory {
             for (int idx = 0; idx < numAttr; idx++) {
               for (Integer i : joinKeys.keySet()) {
                 String col = joinKeys.get(i).get(idx);
-                col = StatsUtils.stripPrefixFromColumnName(col);
                 ColStatistics cs = joinedColStats.get(col);
                 if (cs != null) {
                   perAttrDVs.add(cs.getCountDistint());
@@ -1136,13 +1136,12 @@ public class StatsRulesProcFactory {
               denom = getEasedOutDenominator(distinctVals);
             } else {
               for (Long l : distinctVals) {
-                denom *= l;
+                denom = StatsUtils.safeMult(denom, l);
               }
             }
           } else {
             for (List<String> jkeys : joinKeys.values()) {
               for (String jk : jkeys) {
-                jk = StatsUtils.stripPrefixFromColumnName(jk);
                 ColStatistics cs = joinedColStats.get(jk);
                 if (cs != null) {
                   distinctVals.add(cs.getCountDistint());
@@ -1166,7 +1165,6 @@ public class StatsRulesProcFactory {
             ExprNodeDesc end = colExprMap.get(key);
             if (end instanceof ExprNodeColumnDesc) {
               String colName = ((ExprNodeColumnDesc) end).getColumn();
-              colName = StatsUtils.stripPrefixFromColumnName(colName);
               String tabAlias = ((ExprNodeColumnDesc) end).getTabAlias();
               String fqColName = StatsUtils.getFullyQualifiedColumnName(tabAlias, colName);
               ColStatistics cs = joinedColStats.get(fqColName);
@@ -1214,13 +1212,13 @@ public class StatsRulesProcFactory {
           }
 
           long maxDataSize = parentSizes.get(maxRowIdx);
-          long newNumRows = (long) (joinFactor * maxRowCount * (numParents - 1));
-          long newDataSize = (long) (joinFactor * maxDataSize * (numParents - 1));
+          long newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
+          long newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
           Statistics wcStats = new Statistics();
-          wcStats.setNumRows(setMaxIfInvalid(newNumRows));
-          wcStats.setDataSize(setMaxIfInvalid(newDataSize));
+          wcStats.setNumRows(newNumRows);
+          wcStats.setDataSize(newDataSize);
           jop.setStatistics(wcStats);
-
+ 
           if (isDebugEnabled) {
             LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
           }
@@ -1339,6 +1337,7 @@ public class StatsRulesProcFactory {
         }
       }
 
+      // No need for overflow checks, assume selectivity is always <= 1.0
       float selMultiParent = 1.0f;
       for(Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
         // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
@@ -1369,8 +1368,8 @@ public class StatsRulesProcFactory {
         Operator<? extends OperatorDesc> op = ops.get(i);
         if (op != null && op instanceof ReduceSinkOperator) {
           ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-          List<ExprNodeDesc> keys = rsOp.getConf().getKeyCols();
-          List<String> fqCols = StatsUtils.getFullQualifedColNameFromExprs(keys,
+          List<String> keys = rsOp.getConf().getOutputKeyColumnNames();
+          List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keys,
               rsOp.getColumnExprMap());
           if (fqCols.size() == 1) {
             String joinCol = fqCols.get(0);
@@ -1400,8 +1399,8 @@ public class StatsRulesProcFactory {
           Operator<? extends OperatorDesc> op = ops.get(i);
           if (op instanceof ReduceSinkOperator) {
             ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-            List<ExprNodeDesc> keys = rsOp.getConf().getKeyCols();
-            List<String> fqCols = StatsUtils.getFullQualifedColNameFromExprs(keys,
+            List<String> keys = rsOp.getConf().getOutputKeyColumnNames();
+            List<String> fqCols = StatsUtils.getFullyQualifedReducerKeyNames(keys,
                 rsOp.getColumnExprMap());
             if (fqCols.size() == 1) {
               String joinCol = fqCols.get(0);
@@ -1441,7 +1440,7 @@ public class StatsRulesProcFactory {
         LOG.info("STATS-" + jop.toString() + ": Overflow in number of rows."
           + newNumRows + " rows will be set to Long.MAX_VALUE");
       }
-      newNumRows = setMaxIfInvalid(newNumRows);
+      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
       stats.setNumRows(newNumRows);
 
       // scale down/up the column statistics based on the changes in number of
@@ -1472,7 +1471,7 @@ public class StatsRulesProcFactory {
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils
           .getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(setMaxIfInvalid(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
 
     private long computeNewRowCount(List<Long> rowCountParents, long denom) {
@@ -1494,7 +1493,7 @@ public class StatsRulesProcFactory {
 
       for (int i = 0; i < rowCountParents.size(); i++) {
         if (i != maxIdx) {
-          result *= rowCountParents.get(i);
+          result = StatsUtils.safeMult(result, rowCountParents.get(i));
         }
       }
 
@@ -1512,7 +1511,6 @@ public class StatsRulesProcFactory {
         // find min NDV for joining columns
         for (Map.Entry<Integer, List<String>> entry : joinKeys.entrySet()) {
           String key = entry.getValue().get(joinColIdx);
-          key = StatsUtils.stripPrefixFromColumnName(key);
           ColStatistics cs = joinedColStats.get(key);
           if (cs != null && cs.getCountDistint() < minNDV) {
             minNDV = cs.getCountDistint();
@@ -1523,7 +1521,6 @@ public class StatsRulesProcFactory {
         if (minNDV != Long.MAX_VALUE) {
           for (Map.Entry<Integer, List<String>> entry : joinKeys.entrySet()) {
             String key = entry.getValue().get(joinColIdx);
-            key = StatsUtils.stripPrefixFromColumnName(key);
             ColStatistics cs = joinedColStats.get(key);
             if (cs != null) {
               cs.setCountDistint(minNDV);
@@ -1569,7 +1566,7 @@ public class StatsRulesProcFactory {
         long denom = 1;
         for (int i = 0; i < distinctVals.size(); i++) {
           if (i != minIdx) {
-            denom *= distinctVals.get(i);
+            denom = StatsUtils.safeMult(denom, distinctVals.get(i));
           }
         }
         return denom;
@@ -1613,12 +1610,13 @@ public class StatsRulesProcFactory {
             // in the absence of column statistics, compute data size based on
             // based on average row size
             Statistics wcStats = parentStats.clone();
+            limit = StatsUtils.getMaxIfOverflow(limit);
             if (limit <= parentStats.getNumRows()) {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
-              long dataSize = avgRowSize * limit;
-              wcStats.setNumRows(setMaxIfInvalid(numRows));
-              wcStats.setDataSize(setMaxIfInvalid(dataSize));
+              long dataSize = StatsUtils.safeMult(avgRowSize, limit);
+              wcStats.setNumRows(numRows);
+              wcStats.setDataSize(dataSize);
             }
             lop.setStatistics(wcStats);
 
@@ -1662,26 +1660,26 @@ public class StatsRulesProcFactory {
           if (satisfyPrecondition(parentStats)) {
             List<ColStatistics> colStats = Lists.newArrayList();
             for (String key : outKeyColNames) {
-              String prefixedKey = "KEY." + key;
+              String prefixedKey = Utilities.ReduceField.KEY.toString() + "." + key;
               ExprNodeDesc end = colExprMap.get(prefixedKey);
               if (end != null) {
                 ColStatistics cs = StatsUtils
                     .getColStatisticsFromExpression(conf, parentStats, end);
                 if (cs != null) {
-                  cs.setColumnName(key);
+                  cs.setColumnName(prefixedKey);
                   colStats.add(cs);
                 }
               }
             }
 
             for (String val : outValueColNames) {
-              String prefixedVal = "VALUE." + val;
+              String prefixedVal = Utilities.ReduceField.VALUE.toString() + "." + val;
               ExprNodeDesc end = colExprMap.get(prefixedVal);
               if (end != null) {
                 ColStatistics cs = StatsUtils
                     .getColStatisticsFromExpression(conf, parentStats, end);
                 if (cs != null) {
-                  cs.setColumnName(val);
+                  cs.setColumnName(prefixedVal);
                   colStats.add(cs);
                 }
               }
@@ -1815,7 +1813,7 @@ public class StatsRulesProcFactory {
           + newNumRows + " rows will be set to Long.MAX_VALUE");
     }
 
-    newNumRows = setMaxIfInvalid(newNumRows);
+    newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
     long oldRowCount = stats.getNumRows();
     double ratio = (double) newNumRows / (double) oldRowCount;
     stats.setNumRows(newNumRows);
@@ -1842,25 +1840,15 @@ public class StatsRulesProcFactory {
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(setMaxIfInvalid(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     } else {
       long newDataSize = (long) (ratio * stats.getDataSize());
-      stats.setDataSize(setMaxIfInvalid(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
   }
 
   static boolean satisfyPrecondition(Statistics stats) {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
-  }
-
-  /**
-   * negative number of rows or data sizes are invalid. It could be because of
-   * long overflow in which case return Long.MAX_VALUE
-   * @param val - input value
-   * @return Long.MAX_VALUE if val is negative else val
-   */
-  static long setMaxIfInvalid(long val) {
-    return val < 0 ? Long.MAX_VALUE : val;
   }
 }

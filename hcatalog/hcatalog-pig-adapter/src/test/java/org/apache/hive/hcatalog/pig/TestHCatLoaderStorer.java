@@ -64,7 +64,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     TestHCatLoader.executeStatementOnDriver("create external table " + tblName +
       " (my_small_int smallint, my_tiny_int tinyint)" +
       " row format delimited fields terminated by '\t' stored as textfile location '" +
-      dataDir + "'", driver);
+      dataDir.toURI().getPath() + "'", driver);
     TestHCatLoader.dropTable(tblName2, driver);
     TestHCatLoader.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
       "textfile");

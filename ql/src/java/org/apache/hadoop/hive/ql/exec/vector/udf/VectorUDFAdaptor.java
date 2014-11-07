@@ -329,10 +329,10 @@ public class VectorUDFAdaptor extends VectorExpression {
     } else if (outputOI instanceof WritableHiveDecimalObjectInspector) {
       DecimalColumnVector dcv = (DecimalColumnVector) colVec;
       if (value instanceof HiveDecimal) {
-        dcv.vector[i].update(((HiveDecimal) value).bigDecimalValue());
+        dcv.set(i, (HiveDecimal) value);
       } else {
         HiveDecimal hd = ((WritableHiveDecimalObjectInspector) outputOI).getPrimitiveJavaObject(value);
-        dcv.vector[i].update(hd.bigDecimalValue());
+        dcv.set(i, hd);
       }
     } else {
       throw new RuntimeException("Unhandled object type " + outputOI.getTypeName());

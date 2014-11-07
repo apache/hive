@@ -795,11 +795,12 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
-    addTempFiles(conf, tmpResources, hdfsDirPathStr, getTempFilesFromConf(conf));
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf));
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE, getTempArchivesFromConf(conf));
     return tmpResources;
   }
 
-  public static String[] getTempFilesFromConf(Configuration conf) {
+  private static String[] getTempFilesFromConf(Configuration conf) {
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
@@ -808,17 +809,21 @@ public class DagUtils {
     if (StringUtils.isNotBlank(addedJars)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDJARS, addedJars);
     }
-    String addedArchives = Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
-    if (StringUtils.isNotBlank(addedArchives)) {
-      HiveConf.setVar(conf, ConfVars.HIVEADDEDARCHIVES, addedArchives);
-    }
-
     String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
 
     // need to localize the additional jars and files
     // we need the directory on hdfs to which we shall put all these files
-    String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
+    String allFiles = auxJars + "," + addedJars + "," + addedFiles;
     return allFiles.split(",");
+  }
+
+  private static String[] getTempArchivesFromConf(Configuration conf) {
+    String addedArchives = Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
+    if (StringUtils.isNotBlank(addedArchives)) {
+      HiveConf.setVar(conf, ConfVars.HIVEADDEDARCHIVES, addedArchives);
+      return addedArchives.split(",");
+    }
+    return new String[0];
   }
 
   /**
@@ -834,12 +839,13 @@ public class DagUtils {
       String[] inputOutputJars) throws IOException, LoginException {
     if (inputOutputJars == null) return null;
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-    addTempFiles(conf, tmpResources, hdfsDirPathStr, inputOutputJars);
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars);
     return tmpResources;
   }
 
-  private void addTempFiles(Configuration conf,
+  private void addTempResources(Configuration conf,
       List<LocalResource> tmpResources, String hdfsDirPathStr,
+      LocalResourceType type,
       String[] files) throws IOException {
     for (String file : files) {
       if (!StringUtils.isNotBlank(file)) {
@@ -847,7 +853,7 @@ public class DagUtils {
       }
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
       LocalResource localResource = localizeResource(new Path(file),
-          hdfsFilePath, conf);
+          hdfsFilePath, type, conf);
       tmpResources.add(localResource);
     }
   }
@@ -925,11 +931,12 @@ public class DagUtils {
   /**
    * @param src path to the source for the resource
    * @param dest path in hdfs for the resource
+   * @param type local resource type (File/Archive)
    * @param conf
    * @return localresource from tez localization.
    * @throws IOException when any file system related calls fails.
    */
-  public LocalResource localizeResource(Path src, Path dest, Configuration conf)
+  public LocalResource localizeResource(Path src, Path dest, LocalResourceType type, Configuration conf)
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
 
@@ -970,7 +977,7 @@ public class DagUtils {
       }
     }
 
-    return createLocalResource(destFS, dest, LocalResourceType.FILE,
+    return createLocalResource(destFS, dest, type,
         LocalResourceVisibility.PRIVATE);
   }
 

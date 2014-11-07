@@ -134,6 +134,19 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     sources = ((TezContext) MapredContext.get()).getRecordSources();
   }
 
+  @Override
+  public void endGroup() throws HiveException {
+    // we do not want the end group to cause a checkAndGenObject
+    defaultEndGroup();
+  }
+
+  @Override
+  public void startGroup() throws HiveException {
+    // we do not want the start group to clear the storage
+    defaultStartGroup();
+  }
+
+
   /*
    * (non-Javadoc)
    *
@@ -275,7 +288,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (foundNextKeyGroup[t]) {
       // first promote the next group to be the current group if we reached a
       // new group in the previous fetch
-      if ((this.nextKeyWritables[t] != null) || (this.fetchDone[t] == false)) {
+      if (this.nextKeyWritables[t] != null) {
         promoteNextGroupToCandidate(t);
       } else {
         this.keyWritables[t] = null;

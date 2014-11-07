@@ -1,0 +1,350 @@
+PREHOOK: query: create table orc1
+  stored as orc
+  tblproperties("orc.compress"="ZLIB")
+  as
+    select rn
+    from
+    (
+      select cast(1 as int) as rn from src limit 1
+      union all
+      select cast(100 as int) as rn from src limit 1
+      union all
+      select cast(10000 as int) as rn from src limit 1
+    ) t
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc1
+POSTHOOK: query: create table orc1
+  stored as orc
+  tblproperties("orc.compress"="ZLIB")
+  as
+    select rn
+    from
+    (
+      select cast(1 as int) as rn from src limit 1
+      union all
+      select cast(100 as int) as rn from src limit 1
+      union all
+      select cast(10000 as int) as rn from src limit 1
+    ) t
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc1
+PREHOOK: query: create table orc_rn1 (rn int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_rn1
+POSTHOOK: query: create table orc_rn1 (rn int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_rn1
+PREHOOK: query: create table orc_rn2 (rn int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_rn2
+POSTHOOK: query: create table orc_rn2 (rn int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_rn2
+PREHOOK: query: create table orc_rn3 (rn int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_rn3
+POSTHOOK: query: create table orc_rn3 (rn int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_rn3
+PREHOOK: query: explain from orc1 a
+insert overwrite table orc_rn1 select a.* where a.rn < 100
+insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
+insert overwrite table orc_rn3 select a.* where a.rn >= 1000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain from orc1 a
+insert overwrite table orc_rn1 select a.* where a.rn < 100
+insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
+insert overwrite table orc_rn3 select a.* where a.rn >= 1000
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-9 depends on stages: Stage-3 , consists of Stage-6, Stage-5, Stage-7
+  Stage-6
+  Stage-0 depends on stages: Stage-6, Stage-5, Stage-8
+  Stage-4 depends on stages: Stage-0
+  Stage-5
+  Stage-7
+  Stage-8 depends on stages: Stage-7
+  Stage-15 depends on stages: Stage-3 , consists of Stage-12, Stage-11, Stage-13
+  Stage-12
+  Stage-1 depends on stages: Stage-12, Stage-11, Stage-14
+  Stage-10 depends on stages: Stage-1
+  Stage-11
+  Stage-13
+  Stage-14 depends on stages: Stage-13
+  Stage-21 depends on stages: Stage-3 , consists of Stage-18, Stage-17, Stage-19
+  Stage-18
+  Stage-2 depends on stages: Stage-18, Stage-17, Stage-20
+  Stage-16 depends on stages: Stage-2
+  Stage-17
+  Stage-19
+  Stage-20 depends on stages: Stage-19
+
+STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (rn < 100) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: rn (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.orc_rn1
+            Filter Operator
+              predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Select Operator
+                expressions: rn (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.orc_rn2
+            Filter Operator
+              predicate: (rn >= 1000) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: rn (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.orc_rn3
+      Execution mode: vectorized
+
+  Stage: Stage-9
+    Conditional Operator
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.orc_rn1
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn1
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn1
+
+  Stage: Stage-8
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-15
+    Conditional Operator
+
+  Stage: Stage-12
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.orc_rn2
+
+  Stage: Stage-10
+    Stats-Aggr Operator
+
+  Stage: Stage-11
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn2
+
+  Stage: Stage-13
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn2
+
+  Stage: Stage-14
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-21
+    Conditional Operator
+
+  Stage: Stage-18
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.orc_rn3
+
+  Stage: Stage-16
+    Stats-Aggr Operator
+
+  Stage: Stage-17
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn3
+
+  Stage: Stage-19
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.orc_rn3
+
+  Stage: Stage-20
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: from orc1 a
+insert overwrite table orc_rn1 select a.* where a.rn < 100
+insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
+insert overwrite table orc_rn3 select a.* where a.rn >= 1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc1
+PREHOOK: Output: default@orc_rn1
+PREHOOK: Output: default@orc_rn2
+PREHOOK: Output: default@orc_rn3
+POSTHOOK: query: from orc1 a
+insert overwrite table orc_rn1 select a.* where a.rn < 100
+insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
+insert overwrite table orc_rn3 select a.* where a.rn >= 1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc1
+POSTHOOK: Output: default@orc_rn1
+POSTHOOK: Output: default@orc_rn2
+POSTHOOK: Output: default@orc_rn3
+POSTHOOK: Lineage: orc_rn1.rn SIMPLE [(orc1)a.FieldSchema(name:rn, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_rn2.rn SIMPLE [(orc1)a.FieldSchema(name:rn, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_rn3.rn SIMPLE [(orc1)a.FieldSchema(name:rn, type:int, comment:null), ]
+PREHOOK: query: select * from orc_rn1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_rn1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_rn1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_rn1
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from orc_rn2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_rn2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_rn2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_rn2
+#### A masked pattern was here ####
+100
+PREHOOK: query: select * from orc_rn3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_rn3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_rn3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_rn3
+#### A masked pattern was here ####
+10000

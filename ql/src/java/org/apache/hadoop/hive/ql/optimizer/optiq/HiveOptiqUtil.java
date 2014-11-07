@@ -75,7 +75,7 @@ public class HiveOptiqUtil {
     return vCols;
   }
 
-  public static boolean validateASTForCBO(ASTNode ast) {
+  public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
     String astTree = ast.toStringTree();
     // if any of following tokens are present in AST, bail out
     String[] tokens = { "TOK_CHARSETLITERAL","TOK_TABLESPLITSAMPLE" };

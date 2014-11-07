@@ -809,6 +809,14 @@ public class SessionState {
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+    public void logInfo(String info) {
+      logInfo(info, null);
+    }
+
+    public void logInfo(String info, String detail) {
+      LOG.info(info + StringUtils.defaultString(detail));
+    }
+
     public void printInfo(String info) {
       printInfo(info, null);
     }

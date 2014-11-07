@@ -26,7 +26,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -168,7 +168,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
                         int row,
                         Object value) {
                     DecimalColumnVector dcv = (DecimalColumnVector) columnVector;
-                    dcv.vector[row] = (Decimal128)value;
+                    dcv.set(row, (HiveDecimal) value);
                 }
             };
       } else {

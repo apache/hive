@@ -34,6 +34,6 @@ public class CastDecimalToDouble extends FuncDecimalToDouble {
   }
 
   protected void func(DoubleColumnVector outV, DecimalColumnVector inV, int i) {
-    outV.vector[i] = inV.vector[i].doubleValue();
+    outV.vector[i] = inV.vector[i].getHiveDecimal().doubleValue();
   }
 }

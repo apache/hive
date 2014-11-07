@@ -37,6 +37,7 @@
     <module>common-secure</module>
     <module>0.20S</module>
     <module>0.23</module>
+    <module>scheduler</module>
     <module>aggregator</module>
   </modules>
 </project>

@@ -19,16 +19,13 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -143,7 +140,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @return converted expression for give node. If there is none then returns
    *         null.
    */
-  public ExprNodeDesc getConvertedNode(Node nd) {
+  public ExprNodeDesc getConvertedNode(ExprNodeDesc nd) {
     ExprInfo ei = exprInfoMap.get(nd);
     if (ei == null) {
       return null;
@@ -238,11 +235,11 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param expr
    */
   public void addFinalCandidate(ExprNodeDesc expr) {
-    String alias = getAlias(expr);
-    if (pushdownPreds.get(alias) == null) {
-      pushdownPreds.put(alias, new ArrayList<ExprNodeDesc>());
-    }
-    pushdownPreds.get(alias).add(expr);
+    addFinalCandidate(getAlias(expr), expr);
+  }
+
+  public void addFinalCandidate(String alias, ExprNodeDesc expr) {
+    getPushdownPreds(alias).add(expr);
   }
 
   /**
@@ -252,10 +249,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param pushDowns
    */
   public void addPushDowns(String alias, List<ExprNodeDesc> pushDowns) {
-    if (pushdownPreds.get(alias) == null) {
-      pushdownPreds.put(alias, new ArrayList<ExprNodeDesc>());
-    }
-    pushdownPreds.get(alias).addAll(pushDowns);
+    getPushdownPreds(alias).addAll(pushDowns);
   }
 
   /**
@@ -267,6 +261,26 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    */
   public Map<String, List<ExprNodeDesc>> getFinalCandidates() {
     return pushdownPreds;
+  }
+
+  private List<ExprNodeDesc> getPushdownPreds(String alias) {
+    List<ExprNodeDesc> predicates = pushdownPreds.get(alias);
+    if (predicates == null) {
+      pushdownPreds.put(alias, predicates = new ArrayList<ExprNodeDesc>());
+    }
+    return predicates;
+  }
+
+  public boolean hasAnyCandidates() {
+    if (pushdownPreds == null || pushdownPreds.isEmpty()) {
+      return false;
+    }
+    for (List<ExprNodeDesc> exprs : pushdownPreds.values()) {
+      if (!exprs.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -1,1 +1,32 @@
+--
+-- Create the table if it doesn't exist.
+--
+if not exists (SELECT 1 FROM INFORMATION_SCHEMA.TABLES 
+           WHERE TABLE_NAME='PART_COL_STATS')
+CREATE TABLE PART_COL_STATS
+(
+    CS_ID bigint NOT NULL,
+    AVG_COL_LEN float NULL,
+    "COLUMN_NAME" varchar(128) NOT NULL,
+    COLUMN_TYPE varchar(128) NOT NULL,
+    DB_NAME varchar(128) NOT NULL,
+    BIG_DECIMAL_HIGH_VALUE varchar(255) NULL,
+    BIG_DECIMAL_LOW_VALUE varchar(255) NULL,
+    DOUBLE_HIGH_VALUE float NULL,
+    DOUBLE_LOW_VALUE float NULL,
+    LAST_ANALYZED bigint NOT NULL,
+    LONG_HIGH_VALUE bigint NULL,
+    LONG_LOW_VALUE bigint NULL,
+    MAX_COL_LEN bigint NULL,
+    NUM_DISTINCTS bigint NULL,
+    NUM_FALSES bigint NULL,
+    NUM_NULLS bigint NOT NULL,
+    NUM_TRUES bigint NULL,
+    PART_ID bigint NULL,
+    PARTITION_NAME varchar(767) NOT NULL,
+    "TABLE_NAME" varchar(128) NOT NULL
+)
+go
+
+
 CREATE INDEX PCS_STATS_IDX ON PART_COL_STATS (DB_NAME,TABLE_NAME,COLUMN_NAME,PARTITION_NAME);

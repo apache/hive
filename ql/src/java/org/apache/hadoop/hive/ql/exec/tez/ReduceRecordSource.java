@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -73,18 +74,16 @@ public class ReduceRecordSource implements RecordSource {
   // for different tags
   private SerDe inputValueDeserializer;
 
-  TableDesc keyTableDesc;
-  TableDesc valueTableDesc;
+  private TableDesc keyTableDesc;
+  private TableDesc valueTableDesc;
 
-  ObjectInspector rowObjectInspector;
+  private ObjectInspector rowObjectInspector;
   private Operator<?> reducer;
 
   private Object keyObject = null;
   private BytesWritable groupKey;
 
   private boolean vectorized = false;
-
-  List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
   private DataOutputBuffer keyBuffer;
   private DataOutputBuffer valueBuffer;
@@ -111,7 +110,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private Iterable<Object> valueWritables;
   
-  private final boolean grouped = true;
+  private final GroupIterator groupIterator = new GroupIterator();
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, KeyValuesReader reader, boolean handleGroupKey, byte tag,
@@ -207,12 +206,18 @@ public class ReduceRecordSource implements RecordSource {
   
   @Override
   public final boolean isGrouped() {
-    return grouped;
+    return vectorized;
   }
 
   @Override
   public boolean pushRecord() throws HiveException {
     BytesWritable keyWritable;
+
+    if (!vectorized && groupIterator.hasNext()) {
+      // if we have records left in the group we push one of those
+      groupIterator.next();
+      return true;
+    }
 
     try {
       if (!reader.next()) {
@@ -245,11 +250,13 @@ public class ReduceRecordSource implements RecordSource {
         reducer.setGroupKeyObject(keyObject);
       }
 
-      /* this.keyObject passed via reference */
       if(vectorized) {
         processVectors(valueWritables, tag);
       } else {
-        processKeyValues(valueWritables, tag);
+        groupIterator.initialize(valueWritables, keyObject, tag);
+        if (groupIterator.hasNext()) {
+          groupIterator.next(); // push first record of group
+        }
       }
       return true;
     } catch (Throwable e) {
@@ -279,16 +286,29 @@ public class ReduceRecordSource implements RecordSource {
     }
   }
 
-  /**
-   * @param values
-   * @return true if it is not done and can take more inputs
-   */
-  private void processKeyValues(Iterable<Object> values, byte tag) throws HiveException {
-    List<Object> passDownKey = null;
-    for (Object value : values) {
+  private class GroupIterator {
+    private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
+    private List<Object> passDownKey = null;
+    private Iterator<Object> values;
+    private byte tag;
+    private Object keyObject;
+
+    public void initialize(Iterable<Object> values, Object keyObject, byte tag) {
+      this.passDownKey = null;
+      this.values = values.iterator();
+      this.tag = tag;
+      this.keyObject = keyObject;
+    }
+
+    public boolean hasNext() {
+      return values != null && values.hasNext();
+    }
+
+    public void next() throws HiveException {
+      row.clear();
+      Object value = values.next();
       BytesWritable valueWritable = (BytesWritable) value;
 
-      row.clear();
       if (passDownKey == null) {
         row.add(this.keyObject);
       } else {
@@ -387,7 +407,6 @@ public class ReduceRecordSource implements RecordSource {
     } catch (Exception e) {
       if (!abort) {
         // signal new failure to map-reduce
-        l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators: "
             + e.getMessage(), e);
       }

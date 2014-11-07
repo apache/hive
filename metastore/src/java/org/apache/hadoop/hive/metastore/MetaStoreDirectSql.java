@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -151,18 +150,17 @@ class MetaStoreDirectSql {
    * here - for eg., for MySQL, we signal that we want to use ANSI SQL quoting behaviour
    */
   private void doDbSpecificInitializationsBeforeQuery() throws MetaException {
-    if (isMySql){
-      try {
-        assert pm.currentTransaction().isActive(); // must be inside tx together with queries
-        trySetAnsiQuotesForMysql();
-      } catch (SQLException sqlEx) {
-        throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
-      }
+    if (!isMySql) return;
+    try {
+      assert pm.currentTransaction().isActive(); // must be inside tx together with queries
+      trySetAnsiQuotesForMysql();
+    } catch (SQLException sqlEx) {
+      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
     }
   }
 
   /**
-   * MySQL, by default, doesn't recognize ANSI quotes which need to have for Postgres.
+   * MySQL, by default, doesn't recognize ANSI quotes which we need to have for Postgres.
    * Try to set the ANSI quotes mode on for the session. Due to connection pooling, needs
    * to be called in the same transaction as the actual queries.
    */
@@ -194,18 +192,20 @@ class MetaStoreDirectSql {
       Object[] params = new Object[] { dbName };
       queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
 
-      LOG.debug("getDatabase:query instantiated : " + queryTextDbSelector + " with param ["+params[0]+"]");
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("getDatabase:query instantiated : " + queryTextDbSelector
+            + " with param [" + params[0] + "]");
+      }
 
+      @SuppressWarnings("unchecked")
       List<Object[]> sqlResult = (List<Object[]>)queryDbSelector.executeWithArray(params);
       if ((sqlResult == null) || sqlResult.isEmpty()) {
-        LOG.debug("getDatabase:queryDbSelector ran, returned no/empty results, returning NoSuchObjectException");
-        throw new MetaException("There is no database named " + dbName);
+        return null;
       }
 
       assert(sqlResult.size() == 1);
-      if (sqlResult.get(0) == null){
-        LOG.debug("getDatabase:queryDbSelector ran, returned results, but the result entry was null, returning NoSuchObjectException");
-        throw new MetaException("There is no database named " + dbName);
+      if (sqlResult.get(0) == null) {
+        return null;
       }
 
       Object[] dbline = sqlResult.get(0);
@@ -215,25 +215,28 @@ class MetaStoreDirectSql {
           + " FROM \"DATABASE_PARAMS\" "
           + " WHERE \"DB_ID\" = ? "
           + " AND \"PARAM_KEY\" IS NOT NULL";
-      Object[] params2 = new Object[] { dbid };
-      queryDbParams = pm.newQuery("javax.jdo.query.SQL",queryTextDbParams);
-      LOG.debug("getDatabase:query2 instantiated : " + queryTextDbParams + " with param ["+params2[0]+"]");
+      params[0] = dbid;
+      queryDbParams = pm.newQuery("javax.jdo.query.SQL", queryTextDbParams);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("getDatabase:query2 instantiated : " + queryTextDbParams
+            + " with param [" + params[0] + "]");
+      }
 
       Map<String,String> dbParams = new HashMap<String,String>();
-      List<Object[]> sqlResult2 = ensureList(queryDbParams.executeWithArray(params2));
-      if (!sqlResult2.isEmpty()){
-        for (Object[] line : sqlResult2){
+      List<Object[]> sqlResult2 = ensureList(queryDbParams.executeWithArray(params));
+      if (!sqlResult2.isEmpty()) {
+        for (Object[] line : sqlResult2) {
           dbParams.put(extractSqlString(line[0]),extractSqlString(line[1]));
         }
       }
-      LOG.debug("getDatabase: instantiating db object to return");
       Database db = new Database();
       db.setName(extractSqlString(dbline[1]));
       db.setLocationUri(extractSqlString(dbline[2]));
       db.setDescription(extractSqlString(dbline[3]));
       db.setOwnerName(extractSqlString(dbline[4]));
       String type = extractSqlString(dbline[5]);
-      db.setOwnerType((null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
+      db.setOwnerType(
+          (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
       db.setParameters(dbParams);
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
