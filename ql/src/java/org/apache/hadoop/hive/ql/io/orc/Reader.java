@@ -129,6 +129,16 @@ public interface Reader {
   List<OrcProto.Type> getTypes();
 
   /**
+   * Get the file format version.
+   */
+  OrcFile.Version getFileVersion();
+
+  /**
+   * Get the version of the writer of this file.
+   */
+  OrcFile.WriterVersion getWriterVersion();
+
+  /**
    * Options for creating a RecordReader.
    */
   public static class Options {

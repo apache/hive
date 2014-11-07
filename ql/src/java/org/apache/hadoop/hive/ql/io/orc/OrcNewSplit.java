@@ -38,6 +38,7 @@ public class OrcNewSplit extends FileSplit {
   private boolean isOriginal;
   private boolean hasBase;
   private final List<Long> deltas = new ArrayList<Long>();
+  private OrcFile.WriterVersion writerVersion;
 
   protected OrcNewSplit(){
     //The FileSplit() constructor in hadoop 0.20 and 1.x is package private so can't use it.
@@ -83,6 +84,7 @@ public class OrcNewSplit extends FileSplit {
       WritableUtils.writeVInt(out, footerBuff.limit() - footerBuff.position());
       out.write(footerBuff.array(), footerBuff.position(),
           footerBuff.limit() - footerBuff.position());
+      WritableUtils.writeVInt(out, fileMetaInfo.writerVersion.getId());
     }
   }
 
@@ -111,9 +113,11 @@ public class OrcNewSplit extends FileSplit {
       int footerBuffSize = WritableUtils.readVInt(in);
       ByteBuffer footerBuff = ByteBuffer.allocate(footerBuffSize);
       in.readFully(footerBuff.array(), 0, footerBuffSize);
+      OrcFile.WriterVersion writerVersion =
+          ReaderImpl.getWriterVersion(WritableUtils.readVInt(in));
 
       fileMetaInfo = new ReaderImpl.FileMetaInfo(compressionType, bufferSize,
-          metadataSize, footerBuff);
+          metadataSize, footerBuff, writerVersion);
     }
   }
 
