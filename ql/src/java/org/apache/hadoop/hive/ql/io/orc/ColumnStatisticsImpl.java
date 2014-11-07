@@ -394,7 +394,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (str.minimum != null) {
         if (minimum.compareTo(str.minimum) > 0) {
           minimum = new Text(str.getMinimum());
-        } else if (maximum.compareTo(str.maximum) < 0) {
+        }
+        if (maximum.compareTo(str.maximum) < 0) {
           maximum = new Text(str.getMaximum());
         }
       }
@@ -563,7 +564,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (dec.minimum != null) {
         if (minimum.compareTo(dec.minimum) > 0) {
           minimum = dec.minimum;
-        } else if (maximum.compareTo(dec.maximum) < 0) {
+        }
+        if (maximum.compareTo(dec.maximum) < 0) {
           maximum = dec.maximum;
         }
         if (sum == null || dec.sum == null) {
@@ -671,7 +673,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (dateStats.minimum != null) {
         if (minimum > dateStats.minimum) {
           minimum = dateStats.minimum;
-        } else if (maximum < dateStats.maximum) {
+        }
+        if (maximum < dateStats.maximum) {
           maximum = dateStats.maximum;
         }
       }
@@ -767,7 +770,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (timestampStats.minimum != null) {
         if (minimum > timestampStats.minimum) {
           minimum = timestampStats.minimum;
-        } else if (maximum < timestampStats.maximum) {
+        }
+        if (maximum < timestampStats.maximum) {
           maximum = timestampStats.maximum;
         }
       }
