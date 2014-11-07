@@ -158,7 +158,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_creat
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
@@ -196,8 +195,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	100                 
+	rawDataSize         	52600               
 	totalSize           	3121                
 #### A masked pattern was here ####
 	 	 
@@ -411,7 +410,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
   SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
@@ -460,8 +458,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	50                  
+	rawDataSize         	21950               
 	totalSize           	2024                
 #### A masked pattern was here ####
 	 	 
@@ -505,8 +503,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	50                  
+	rawDataSize         	22050               
 	totalSize           	2043                
 #### A masked pattern was here ####
 	 	 
@@ -732,7 +730,6 @@ PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people_staging
 PREHOOK: Output: default@orc_create_people
-[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type counter cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
   SELECT * FROM orc_create_people_staging ORDER BY id
 POSTHOOK: type: QUERY
@@ -781,8 +778,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	50                  
+	rawDataSize         	21950               
 	totalSize           	2024                
 #### A masked pattern was here ####
 	 	 
@@ -826,8 +823,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	50                  
+	rawDataSize         	22050               
 	totalSize           	2043                
 #### A masked pattern was here ####
 	 	 
