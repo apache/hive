@@ -1605,7 +1605,7 @@ POSTHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) as c from
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-1.0
+1
 PREHOOK: query: explain
 select cast('0.99999999999999999999' as decimal(20,20)) as c from decimal_2 order by c
 PREHOOK: type: QUERY
