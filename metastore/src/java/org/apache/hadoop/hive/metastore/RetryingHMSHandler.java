@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.datanucleus.exceptions.NucleusException;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -132,8 +133,9 @@ public class RetryingHMSHandler implements InvocationHandler {
           }
           throw e.getCause();
         } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-            && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-          // The JDOException may be wrapped further in a MetaException
+            && (e.getCause().getCause() instanceof javax.jdo.JDOException || 
+            	e.getCause().getCause() instanceof NucleusException)) {
+          // The JDOException or the Nucleus Exception may be wrapped further in a MetaException
           caughtException = e.getCause().getCause();
         } else {
           LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
