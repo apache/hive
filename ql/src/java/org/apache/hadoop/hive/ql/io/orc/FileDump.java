@@ -65,6 +65,8 @@ public final class FileDump {
       System.out.println("Structure for " + filename);
       Path path = new Path(filename);
       Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+      System.out.println("File Version: " + reader.getFileVersion().getName() +
+                         " with " + reader.getWriterVersion());
       RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
       System.out.println("Rows: " + reader.getNumberOfRows());
       System.out.println("Compression: " + reader.getCompression());
