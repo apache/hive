@@ -290,6 +290,7 @@ public class TezJobMonitor {
             break;
           case INITING:
             console.printInfo("Status: Initializing");
+            startTime = System.currentTimeMillis();
             break;
           case RUNNING:
             if (!running) {
