@@ -197,12 +197,13 @@ public class SparkClient implements Serializable {
     fs.mkdirs(emptyScratchDir);
 
     SparkCounters sparkCounters = new SparkCounters(sc, hiveConf);
-    List<String> prefixes = sparkWork.getRequiredCounterPrefix();
+    Map<String, List<String>> prefixes = sparkWork.getRequiredCounterPrefix();
     // register spark counters before submit spark job.
     if (prefixes != null) {
-      for (String prefix : prefixes) {
-        sparkCounters.createCounter(prefix, StatsSetupConst.ROW_COUNT);
-        sparkCounters.createCounter(prefix, StatsSetupConst.RAW_DATA_SIZE);
+      for (String group : prefixes.keySet()) {
+        for (String counter : prefixes.get(group)) {
+          sparkCounters.createCounter(group, counter);
+        }
       }
     }
     SparkReporter sparkReporter = new SparkReporter(sparkCounters);

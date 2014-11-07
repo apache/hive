@@ -22,18 +22,27 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -97,12 +106,7 @@ public class SparkTask extends Task<SparkWork> {
       SessionState.get().setSparkSession(sparkSession);
       SparkWork sparkWork = getWork();
 
-      // We need to pre register spark counters for table statistic collection related query.
-      String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-      StatsTask statsTask = getStatsTaskInChildTasks(this);
-      if (statsImpl.equalsIgnoreCase("counter") && statsTask != null) {
-        sparkWork.setRequiredCounterPrefix(getRequiredCounterPrefix(statsTask));
-      }
+      sparkWork.setRequiredCounterPrefix(getCounterPrefixes());
 
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
@@ -225,18 +229,38 @@ public class SparkTask extends Task<SparkWork> {
     console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
   }
 
+  private Map<String, List<String>> getCounterPrefixes() throws HiveException, MetaException {
+    Map<String, List<String>> counters = getOperatorCounters();
+    StatsTask statsTask = getStatsTaskInChildTasks(this);
+    String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    // fetch table prefix if SparkTask try to gather table statistics based on counter.
+    if (statsImpl.equalsIgnoreCase("counter") && statsTask != null) {
+      List<String> prefixes = getRequiredCounterPrefix(statsTask);
+      for (String prefix : prefixes) {
+        List<String> counterGroup = counters.get(prefix);
+        if (counterGroup == null) {
+          counterGroup = new LinkedList<String>();
+          counters.put(prefix, counterGroup);
+        }
+        counterGroup.add(StatsSetupConst.ROW_COUNT);
+        counterGroup.add(StatsSetupConst.RAW_DATA_SIZE);
+      }
+    }
+    return counters;
+  }
+
   private List<String> getRequiredCounterPrefix(StatsTask statsTask) throws HiveException, MetaException {
     List<String> prefixs = new LinkedList<String>();
     StatsWork statsWork = statsTask.getWork();
-    String prefix = getPrefix(statsWork);
+    String tablePrefix = getTablePrefix(statsWork);
     List<Partition> partitions = getPartitionsList(statsWork);
     int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
     if (partitions == null) {
-      prefixs.add(Utilities.getHashedStatsPrefix(prefix, maxPrefixLength));
+      prefixs.add(Utilities.getHashedStatsPrefix(tablePrefix, maxPrefixLength));
     } else {
       for (Partition partition : partitions) {
-        String prefixWithPartition = Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+        String prefixWithPartition = Utilities.join(tablePrefix, Warehouse.makePartPath(partition.getSpec()));
         prefixs.add(Utilities.getHashedStatsPrefix(prefixWithPartition, maxPrefixLength));
       }
     }
@@ -244,7 +268,7 @@ public class SparkTask extends Task<SparkWork> {
     return prefixs;
   }
 
-  private String getPrefix(StatsWork work) throws HiveException {
+  private String getTablePrefix(StatsWork work) throws HiveException {
       String tableName;
       if (work.getLoadTableDesc() != null) {
         tableName = work.getLoadTableDesc().getTable().getTableName();
@@ -325,5 +349,41 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return list;
+  }
+
+  private Map<String, List<String>> getOperatorCounters() {
+    String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    Map<String, List<String>> counters = new HashMap<String, List<String>>();
+    List<String> hiveCounters = new LinkedList<String>();
+    counters.put(groupName, hiveCounters);
+    hiveCounters.add(Operator.HIVECOUNTERCREATEDFILES);
+    SparkWork sparkWork = this.getWork();
+    for (BaseWork work : sparkWork.getAllWork()) {
+      for (Operator operator : work.getAllOperators()) {
+        if (operator instanceof MapOperator) {
+          for (MapOperator.Counter counter : MapOperator.Counter.values()) {
+            hiveCounters.add(counter.toString());
+          }
+        } else if (operator instanceof FileSinkOperator) {
+          for (FileSinkOperator.Counter counter : FileSinkOperator.Counter.values()) {
+            hiveCounters.add(counter.toString());
+          }
+        } else if (operator instanceof ReduceSinkOperator) {
+          for (ReduceSinkOperator.Counter counter : ReduceSinkOperator.Counter.values()) {
+            hiveCounters.add(counter.toString());
+          }
+        }else if (operator instanceof ScriptOperator) {
+          for (ScriptOperator.Counter counter : ScriptOperator.Counter.values()) {
+            hiveCounters.add(counter.toString());
+          }
+        }else if (operator instanceof JoinOperator) {
+          for (JoinOperator.SkewkeyTableCounter counter : JoinOperator.SkewkeyTableCounter.values()) {
+            hiveCounters.add(counter.toString());
+          }
+        }
+      }
+    }
+
+    return counters;
   }
 }
