@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
@@ -187,7 +188,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(getExecContext(), hconf, this);
-    loader.load(mapJoinTables, mapJoinTableSerdes);
+    long memUsage = (long)(MapJoinMemoryExhaustionHandler.getMaxHeapSize()
+        * conf.getHashTableMemoryUsage());
+    loader.load(mapJoinTables, mapJoinTableSerdes, memUsage);
     if (!conf.isBucketMapJoin()) {
       /*
        * The issue with caching in case of bucket map join is that different tasks
