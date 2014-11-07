@@ -2364,20 +2364,21 @@ class RecordReaderImpl implements RecordReader {
                                       PredicateLeaf predicate) {
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(index);
     Object minValue = getMin(cs);
-    // if we didn't have any values, everything must have been null
-    if (minValue == null) {
-      if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
-        return TruthValue.YES;
-      } else {
-        return TruthValue.NULL;
-      }
-    }
     Object maxValue = getMax(cs);
     return evaluatePredicateRange(predicate, minValue, maxValue);
   }
 
   static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object min,
       Object max) {
+    // if we didn't have any values, everything must have been null
+    if (min == null) {
+      if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
+        return TruthValue.YES;
+      } else {
+        return TruthValue.NULL;
+      }
+    }
+
     Location loc;
     try {
       // Predicate object and stats object can be one of the following base types
