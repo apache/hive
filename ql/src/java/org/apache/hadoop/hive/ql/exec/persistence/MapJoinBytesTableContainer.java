@@ -60,17 +60,20 @@ public class MapJoinBytesTableContainer implements MapJoinTableContainer {
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
   public MapJoinBytesTableContainer(Configuration hconf,
-      MapJoinObjectSerDeContext valCtx, long keyCount) throws SerDeException {
+      MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage) throws SerDeException {
     this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE), valCtx, keyCount);
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
+        valCtx, keyCount, memUsage);
   }
 
   private MapJoinBytesTableContainer(float keyCountAdj, int threshold, float loadFactor,
-      int wbSize, MapJoinObjectSerDeContext valCtx, long keyCount) throws SerDeException {
-    threshold = HashMapWrapper.calculateTableSize(keyCountAdj, threshold, loadFactor, keyCount);
-    hashMap = new BytesBytesMultiHashMap(threshold, loadFactor, wbSize);
+      int wbSize, MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage)
+          throws SerDeException {
+    int newThreshold = HashMapWrapper.calculateTableSize(
+        keyCountAdj, threshold, loadFactor, keyCount);
+    hashMap = new BytesBytesMultiHashMap(newThreshold, loadFactor, wbSize, memUsage, threshold);
   }
 
   private LazyBinaryStructObjectInspector createInternalOi(
