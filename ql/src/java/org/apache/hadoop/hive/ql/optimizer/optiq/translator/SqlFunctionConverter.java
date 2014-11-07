@@ -98,10 +98,19 @@ public class SqlFunctionConverter {
     return getOptiqFn(name, optiqArgTypes, retType);
   }
 
-  public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt) {
+  public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt, int argsLength) {
     String name = reverseOperatorMap.get(op);
-    if (name == null)
+    if (name == null) {
       name = op.getName();
+    }
+    // Make sure we handle unary + and - correctly.
+    if (argsLength == 1) {
+      if (name == "+") {
+        name = FunctionRegistry.UNARY_PLUS_FUNC_NAME;
+      } else if (name == "-") {
+        name = FunctionRegistry.UNARY_MINUS_FUNC_NAME;
+      }
+    }
     FunctionInfo hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
     if (hFn == null)
       hFn = handleExplicitCast(op, dt);

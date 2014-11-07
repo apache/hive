@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
@@ -34,7 +35,8 @@ public interface VectorExpressionWriter {
   Object writeValue(long value) throws HiveException;
   Object writeValue(double value) throws HiveException;
   Object writeValue(byte[] value, int start, int length) throws HiveException;
-  Object writeValue(Decimal128 value) throws HiveException;
+  Object writeValue(HiveDecimalWritable value) throws HiveException;
+  Object writeValue(HiveDecimal value) throws HiveException;
   Object setValue(Object row, ColumnVector column, int columnRow) throws HiveException;
   Object initValue(Object ost) throws HiveException;
 }

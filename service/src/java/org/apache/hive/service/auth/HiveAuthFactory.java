@@ -21,9 +21,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLServerSocket;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 
@@ -43,12 +47,16 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class helps in some aspects of authentication. It creates the proper Thrift classes for the
  * given configuration as well as helps with authenticating requests.
  */
 public class HiveAuthFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
+
 
   public enum AuthTypes {
     NOSASL("NOSASL"),
@@ -218,7 +226,8 @@ public class HiveAuthFactory {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-    String keyStorePassWord) throws TTransportException, UnknownHostException {
+    String keyStorePassWord,  List<String> sslVersionBlacklist)
+      throws TTransportException, UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
       new TSSLTransportFactory.TSSLTransportParameters();
     params.setKeyStore(keyStorePath, keyStorePassWord);
@@ -229,7 +238,25 @@ public class HiveAuthFactory {
     } else {
       serverAddress = InetAddress.getByName(hiveHost);
     }
-    return TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress, params);
+    TServerSocket thriftServerSocket = TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress, params);
+    if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
+      List<String> sslVersionBlacklistLocal = new ArrayList<String>();
+      for (String sslVersion : sslVersionBlacklist) {
+        sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
+      }
+      SSLServerSocket sslServerSocket = (SSLServerSocket)thriftServerSocket.getServerSocket();
+      List<String> enabledProtocols = new ArrayList<String>();
+      for (String protocol : sslServerSocket.getEnabledProtocols()) {
+        if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
+          LOG.debug("Disabling SSL Protocol: " + protocol);
+        } else {
+          enabledProtocols.add(protocol);
+        }
+      }
+      sslServerSocket.setEnabledProtocols(enabledProtocols.toArray(new String[0]));
+      LOG.info("SSL Server Socket Enabled Protocols: " + Arrays.toString(sslServerSocket.getEnabledProtocols()));
+    }
+    return thriftServerSocket;
   }
 
   // retrieve delegation token for the given user

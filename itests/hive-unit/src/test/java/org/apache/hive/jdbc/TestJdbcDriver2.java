@@ -1805,6 +1805,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ResultSet rs = stmt.executeQuery("SELECT 1 AS a, 2 AS a from " + tableName);
     assertTrue(rs.next());
     assertEquals(1, rs.getInt("a"));
+    rs.close();
   }
 
 

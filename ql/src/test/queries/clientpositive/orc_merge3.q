@@ -19,7 +19,7 @@ EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b
 INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a;
 
-DESC FORMATTED orcfile_merge3b;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge3b/;
 
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)

@@ -21,8 +21,10 @@ INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100;
 SELECT * FROM table1;
 SELECT * FROM table2;
 
-CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:hive.root}/data/files/ext_test';
-CREATE EXTERNAL TABLE table5 LIKE table4 LOCATION '${system:hive.root}/data/files/ext_test';
+dfs -cp ${system:hive.root}/data/files/ext_test ${system:test.tmp.dir}/ext_test;
+
+CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:test.tmp.dir}/ext_test';
+CREATE EXTERNAL TABLE table5 LIKE table4 LOCATION '${system:test.tmp.dir}/ext_test';
 
 SELECT * FROM table4;
 SELECT * FROM table5;
@@ -31,7 +33,7 @@ DROP TABLE table5;
 SELECT * FROM table4;
 DROP TABLE table4;
 
-CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:hive.root}/data/files/ext_test';
+CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:test.tmp.dir}/ext_test';
 SELECT * FROM table4;
 
 CREATE TABLE doctors STORED AS AVRO TBLPROPERTIES ('avro.schema.literal'='{

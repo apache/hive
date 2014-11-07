@@ -40,7 +40,7 @@ import org.apache.thrift.TException;
 
 /**
  * Helper class to run jobs using Kerberos security.  Always safe to
- * use these methods, it's a noop if security is not enabled.
+ * use these methods, it's a no-op if security is not enabled.
  */
 public class SecureProxySupport {
   private Path tokenPath;
@@ -140,6 +140,7 @@ public class SecureProxySupport {
     ugi.doAs(new PrivilegedExceptionAction<Object>() {
       public Object run() throws IOException {
         FileSystem fs = FileSystem.get(conf);
+        //todo: according to JavaDoc this seems like private API: addDelegationToken should be used
         twrapper.token = fs.getDelegationToken(ugi.getShortUserName());
         return null;
       }

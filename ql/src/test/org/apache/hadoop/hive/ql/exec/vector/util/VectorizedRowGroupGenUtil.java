@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 public class VectorizedRowGroupGenUtil {
@@ -114,10 +116,10 @@ public class VectorizedRowGroupGenUtil {
     dcv.noNulls = !nulls;
     dcv.isRepeating = repeating;
 
-    Decimal128 repeatingValue = new Decimal128();
+    HiveDecimalWritable repeatingValue = new HiveDecimalWritable();
     do{
-      repeatingValue.update(rand.nextDouble(), (short)typeInfo.scale());
-    }while(repeatingValue.doubleValue() == 0);
+      repeatingValue.set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short)typeInfo.scale()));
+    }while(repeatingValue.getHiveDecimal().doubleValue() == 0);
 
     int nullFrequency = generateNullFrequency(rand);
 
@@ -129,12 +131,12 @@ public class VectorizedRowGroupGenUtil {
       }else {
         dcv.isNull[i] = false;
         if (repeating) {
-          dcv.vector[i].update(repeatingValue);
+          dcv.vector[i].set(repeatingValue);
         } else {
-          dcv.vector[i].update(rand.nextDouble(), (short) typeInfo.scale());
+          dcv.vector[i].set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short) typeInfo.scale()));
         }
 
-        if(dcv.vector[i].doubleValue() == 0) {
+        if(dcv.vector[i].getHiveDecimal().doubleValue() == 0) {
           i--;
         }
       }

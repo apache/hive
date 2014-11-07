@@ -18,7 +18,6 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import com.google.common.io.Files;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -101,11 +100,18 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     if(TempletonUtils.isset(conf.get(Sqoop.LIB_JARS))) {
       //LIB_JARS should only be set if Sqoop is auto-shipped
       LOG.debug(Sqoop.LIB_JARS + "=" + conf.get(Sqoop.LIB_JARS));
-      //copy these (which have now been localized) jars to sqoop/lib
-      String destDir = conf.get(AppConfig.SQOOP_HOME_PATH) + File.separator + "lib";
       String[] files = conf.getStrings(Sqoop.LIB_JARS);
+      StringBuilder jdbcJars = new StringBuilder();
       for(String f : files) {
-        Files.copy(new File(f), new File(destDir + File.separator + f));
+        jdbcJars.append(f).append(File.pathSeparator);
+      }
+      jdbcJars.setLength(jdbcJars.length() - 1);
+      //this makes the jars available to Sqoop client
+      if(TempletonUtils.isset(System.getenv("HADOOP_CLASSPATH"))) {
+        env.put("HADOOP_CLASSPATH", System.getenv("HADOOP_CLASSPATH") + File.pathSeparator + jdbcJars.toString());
+      }
+      else {
+        env.put("HADOOP_CLASSPATH", jdbcJars.toString());
       }
     }
   }

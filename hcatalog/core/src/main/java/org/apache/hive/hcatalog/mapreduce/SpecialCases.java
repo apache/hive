@@ -23,11 +23,20 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * This class is a place to put all the code associated with
@@ -82,6 +91,35 @@ public class SpecialCases {
           jobProperties.put(propName,tableProps.get(propName));
         }
       }
+    } else if (ofclass == AvroContainerOutputFormat.class) {
+      // Special cases for Avro. As with ORC, we make table properties that
+      // Avro is interested in available in jobconf at runtime
+      Map<String, String> tableProps = jobInfo.getTableInfo().getTable().getParameters();
+      for (AvroSerdeUtils.AvroTableProperties property : AvroSerdeUtils.AvroTableProperties.values()) {
+        String propName = property.getPropName();
+        if (tableProps.containsKey(propName)){
+          String propVal = tableProps.get(propName);
+          jobProperties.put(propName,tableProps.get(propName));
+        }
+      }
+
+      Properties properties = new Properties();
+      properties.put("name",jobInfo.getTableName());
+
+      List<String> colNames = jobInfo.getOutputSchema().getFieldNames();
+      List<TypeInfo> colTypes = new ArrayList<TypeInfo>();
+      for (HCatFieldSchema field : jobInfo.getOutputSchema().getFields()){
+        colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getTypeString()));
+      }
+
+      jobProperties.put(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(),
+          AvroSerDe.getSchemaFromCols(properties, colNames, colTypes, null).toString());
+
+
+      for (String propName : jobProperties.keySet()){
+        String propVal = jobProperties.get(propName);
+      }
+
     }
   }
 

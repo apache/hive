@@ -84,8 +84,8 @@ public class TestVectorExpressionWriters {
     return null;
   }
 
-  private Writable getWritableValue(TypeInfo ti, Decimal128 value) {
-    return new HiveDecimalWritable(HiveDecimal.create(value.toBigDecimal()));
+  private Writable getWritableValue(TypeInfo ti, HiveDecimal value) {
+    return new HiveDecimalWritable(value);
   }
 
   private Writable getWritableValue(TypeInfo ti, byte[] value) {
@@ -163,7 +163,7 @@ public class TestVectorExpressionWriters {
     for (int i = 0; i < vectorSize; i++) {
       Writable w = (Writable) vew.writeValue(dcv, i);
       if (w != null) {
-        Writable expected = getWritableValue(type, dcv.vector[i]);
+        Writable expected = getWritableValue(type, dcv.vector[i].getHiveDecimal());
         Assert.assertEquals(expected, w);
       } else {
         Assert.assertTrue(dcv.isNull[i]);
@@ -182,7 +182,7 @@ public class TestVectorExpressionWriters {
       values[i] = null;  // setValue() should be able to handle null input
       values[i] = vew.setValue(values[i], dcv, i);
       if (values[i] != null) {
-        Writable expected = getWritableValue(type, dcv.vector[i]);
+        Writable expected = getWritableValue(type, dcv.vector[i].getHiveDecimal());
         Assert.assertEquals(expected, values[i]);
       } else {
         Assert.assertTrue(dcv.isNull[i]);

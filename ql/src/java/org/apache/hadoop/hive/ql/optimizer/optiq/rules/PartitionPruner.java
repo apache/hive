@@ -108,7 +108,7 @@ public class PartitionPruner {
       boolean argsPruned = false;
 
       GenericUDF hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
-          call.getType());
+          call.getType(), call.operands.size());
       if (hiveUDF != null &&
           !FunctionRegistry.isDeterministic(hiveUDF)) {
         return null;

@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -96,7 +95,7 @@ public class VectorizedRowBatchCtx {
   // list does not contain partition columns
   private List<Integer> colsToInclude;
 
-  private Map<Integer, String> columnTypeMap = null;
+  private Map<Integer, String> scratchColumnTypeMap = null;
 
   /**
    * Constructor for VectorizedRowBatchCtx
@@ -126,36 +125,17 @@ public class VectorizedRowBatchCtx {
   public VectorizedRowBatchCtx() {
 
   }
-  
-  /**
-   * Initializes the VectorizedRowBatch context based on an arbitrary object inspector
-   * Used by non-tablescan operators when they change the vectorization context 
-   * @param hiveConf
-   * @param fileKey 
-   *          The key on which to retrieve the extra column mapping from the map/reduce scratch
-   * @param rowOI
-   *          Object inspector that shapes the column types
-   */
-  public void init(Configuration hiveConf, String fileKey,
-      StructObjectInspector rowOI) {
-    Map<String, Map<Integer, String>> scratchColumnVectorTypes =
-            Utilities.getAllScratchColumnVectorTypeMaps(hiveConf);
-    columnTypeMap = scratchColumnVectorTypes.get(fileKey);
-    this.rowOI= rowOI;
-    this.rawRowOI = rowOI;
-  }
-  
 
   /**
    * Initializes the VectorizedRowBatch context based on an scratch column type map and
    * object inspector.
-   * @param columnTypeMap
+   * @param scratchColumnTypeMap
    * @param rowOI
    *          Object inspector that shapes the column types
    */
-  public void init(Map<Integer, String> columnTypeMap,
+  public void init(Map<Integer, String> scratchColumnTypeMap,
       StructObjectInspector rowOI) {
-    this.columnTypeMap = columnTypeMap;
+    this.scratchColumnTypeMap = scratchColumnTypeMap;
     this.rowOI= rowOI;
     this.rawRowOI = rowOI;
   }
@@ -179,7 +159,8 @@ public class VectorizedRowBatchCtx {
       IOException,
       SerDeException,
       InstantiationException,
-      IllegalAccessException, HiveException {
+      IllegalAccessException,
+      HiveException {
 
     Map<String, PartitionDesc> pathToPartitionInfo = Utilities
         .getMapRedWork(hiveConf).getMapWork().getPathToPartitionInfo();
@@ -189,8 +170,8 @@ public class VectorizedRowBatchCtx {
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
 
     String partitionPath = split.getPath().getParent().toString();
-    columnTypeMap = Utilities
-        .getAllScratchColumnVectorTypeMaps(hiveConf)
+    scratchColumnTypeMap = Utilities
+        .getMapWorkAllScratchColumnVectorTypeMaps(hiveConf)
         .get(partitionPath);
 
     Properties partProps =
@@ -557,7 +538,7 @@ public class VectorizedRowBatchCtx {
             dv.isRepeating = true;
           } else {
             HiveDecimal hd = (HiveDecimal) value;
-            dv.vector[0] = new Decimal128(hd.toString(), (short) hd.scale());
+            dv.set(0, hd);
             dv.isRepeating = true;
             dv.isNull[0] = false;      
           }
@@ -613,12 +594,12 @@ public class VectorizedRowBatchCtx {
   }
 
   private void addScratchColumnsToBatch(VectorizedRowBatch vrb) throws HiveException {
-    if (columnTypeMap != null && !columnTypeMap.isEmpty()) {
+    if (scratchColumnTypeMap != null && !scratchColumnTypeMap.isEmpty()) {
       int origNumCols = vrb.numCols;
-      int newNumCols = vrb.cols.length+columnTypeMap.keySet().size();
+      int newNumCols = vrb.cols.length+scratchColumnTypeMap.keySet().size();
       vrb.cols = Arrays.copyOf(vrb.cols, newNumCols);
       for (int i = origNumCols; i < newNumCols; i++) {
-       String typeName = columnTypeMap.get(i);
+       String typeName = scratchColumnTypeMap.get(i);
        if (typeName == null) {
          throw new HiveException("No type found for column type entry " + i);
        }

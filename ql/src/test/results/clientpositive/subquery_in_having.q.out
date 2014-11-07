@@ -1,7 +1,14 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
 
 -- data setup
-CREATE TABLE part( 
+DROP TABLE IF EXISTS part_subq
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- data setup
+DROP TABLE IF EXISTS part_subq
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE part_subq( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -14,11 +21,8 @@ CREATE TABLE part(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- data setup
-CREATE TABLE part( 
+PREHOOK: Output: default@part_subq
+POSTHOOK: query: CREATE TABLE part_subq( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -31,15 +35,15 @@ CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+POSTHOOK: Output: default@part_subq
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@part
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part
+PREHOOK: Output: default@part_subq
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part_subq
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@part
+POSTHOOK: Output: default@part_subq
 PREHOOK: query: -- non agg, non corr
 explain
  select key, count(*) 
@@ -413,11 +417,11 @@ STAGE PLANS:
 PREHOOK: query: -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
-from part b
+from part_subq b
 group by b.p_mfgr
 having b.p_mfgr in 
    (select p_mfgr 
-    from part
+    from part_subq
     group by p_mfgr
     having max(p_size) - min(p_size) < 20
    )
@@ -425,11 +429,11 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
-from part b
+from part_subq b
 group by b.p_mfgr
 having b.p_mfgr in 
    (select p_mfgr 
-    from part
+    from part_subq
     group by p_mfgr
     having max(p_size) - min(p_size) < 20
    )
@@ -445,83 +449,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
-            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: p_mfgr is not null (type: boolean)
-              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: p_mfgr (type: string), p_size (type: int)
-                outputColumnNames: p_mfgr, p_size
-                Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: avg(p_size)
-                  keys: p_mfgr (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: avg(VALUE._col0)
-          keys: KEY._col0 (type: string)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: double)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 2 Data size: 211 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Left Semi Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0}
-            1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: double)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: part
+            alias: part_subq
             Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_mfgr is not null (type: boolean)
@@ -568,42 +496,44 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 2 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: double)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {KEY.reducesinkkey0} {VALUE._col0}
+            1 
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 16 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: -- agg, non corr
-explain
-select p_mfgr, avg(p_size)
-from part b
-group by b.p_mfgr
-having b.p_mfgr in
-   (select p_mfgr
-    from part
-    group by p_mfgr
-    having max(p_size) - min(p_size) < 20
-   )
-PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
-select p_mfgr, avg(p_size)
-from part b
-group by b.p_mfgr
-having b.p_mfgr in
-   (select p_mfgr
-    from part
-    group by p_mfgr
-    having max(p_size) - min(p_size) < 20
-   )
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -628,8 +558,60 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: avg(VALUE._col0)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- agg, non corr
+explain
+select p_mfgr, avg(p_size)
+from part_subq b
+group by b.p_mfgr
+having b.p_mfgr in
+   (select p_mfgr
+    from part_subq
+    group by p_mfgr
+    having max(p_size) - min(p_size) < 20
+   )
+PREHOOK: type: QUERY
+POSTHOOK: query: -- agg, non corr
+explain
+select p_mfgr, avg(p_size)
+from part_subq b
+group by b.p_mfgr
+having b.p_mfgr in
+   (select p_mfgr
+    from part_subq
+    group by p_mfgr
+    having max(p_size) - min(p_size) < 20
+   )
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
           TableScan
-            alias: part
+            alias: part_subq
             Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_mfgr is not null (type: boolean)
@@ -650,6 +632,28 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: int), _col2 (type: int)
+          TableScan
+            alias: b
+            Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: p_mfgr is not null (type: boolean)
+              Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: p_mfgr (type: string), p_size (type: int)
+                outputColumnNames: p_mfgr, p_size
+                Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(p_size)
+                  keys: p_mfgr (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 15 Data size: 1586 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
       Reduce Operator Tree:
         Demux Operator
           Statistics: Num rows: 30 Data size: 3172 Basic stats: COMPLETE Column stats: NONE
@@ -1233,18 +1237,18 @@ STAGE PLANS:
 PREHOOK: query: -- non agg, non corr, windowing
 explain
 select p_mfgr, p_name, avg(p_size) 
-from part 
+from part_subq 
 group by p_mfgr, p_name
 having p_name in 
-  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 PREHOOK: type: QUERY
 POSTHOOK: query: -- non agg, non corr, windowing
 explain
 select p_mfgr, p_name, avg(p_size) 
-from part 
+from part_subq 
 group by p_mfgr, p_name
 having p_name in 
-  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part)
+  (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1260,7 +1264,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: part
+            alias: part_subq
             Statistics: Num rows: 15 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: p_mfgr (type: string), p_size (type: int)
@@ -1379,7 +1383,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: part
+            alias: part_subq
             Statistics: Num rows: 15 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -1420,3 +1424,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: DROP TABLE part_subq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_subq
+PREHOOK: Output: default@part_subq
+POSTHOOK: query: DROP TABLE part_subq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_subq
+POSTHOOK: Output: default@part_subq

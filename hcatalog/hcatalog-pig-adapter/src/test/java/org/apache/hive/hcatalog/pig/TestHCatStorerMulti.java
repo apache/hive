@@ -70,11 +70,6 @@ public class TestHCatStorerMulti {
 
   private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
       new HashMap<String, Set<String>>() {{
-        put(IOConstants.AVRO, new HashSet<String>() {{
-          add("testStoreBasicTable");
-          add("testStorePartitionedTable");
-          add("testStoreTableMulti");
-        }});
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
           add("testStoreBasicTable");
           add("testStorePartitionedTable");

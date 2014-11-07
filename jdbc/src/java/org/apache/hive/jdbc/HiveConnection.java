@@ -99,6 +99,7 @@ public class HiveConnection implements java.sql.Connection {
   private JdbcConnectionParams connParams;
   private final boolean isEmbeddedMode;
   private TTransport transport;
+  private boolean assumeSubject;
   // TODO should be replaced by CliServiceClient
   private TCLIService.Iface client;
   private boolean isClosed = true;
@@ -177,6 +178,9 @@ public class HiveConnection implements java.sql.Connection {
   private void openTransport() throws SQLException {
     while (true) {
       try {
+        assumeSubject =
+            JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+                .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
         transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
         if (!transport.isOpen()) {
           LOG.info("Will try to open client transport with JDBC Uri: " + jdbcUriString);
@@ -265,8 +269,9 @@ public class HiveConnection implements java.sql.Connection {
        * In https mode, the entire information is encrypted
        * TODO: Optimize this with a mix of kerberos + using cookie.
        */
-      requestInterceptor = new HttpKerberosRequestInterceptor(
-          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(false));
+      requestInterceptor =
+          new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+              host, getServerHttpUrl(useSsl), assumeSubject);
     }
     else {
       /**
@@ -351,8 +356,6 @@ public class HiveConnection implements java.sql.Connection {
           }
           saslProps.put(Sasl.QOP, saslQOP.toString());
           saslProps.put(Sasl.SERVER_AUTH, "true");
-          boolean assumeSubject = JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
           transport = KerberosSaslHelper.getKerberosTransport(
               sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
               HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps,

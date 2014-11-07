@@ -18,32 +18,60 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.SqlMathUtil;
-import org.apache.hadoop.hive.common.type.UnsignedInt128;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.udf.generic.RoundUtils;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Utility functions for vector operations on decimal values.
  */
 public class DecimalUtil {
 
-  public static final Decimal128 DECIMAL_ONE = new Decimal128();
-  private static final UnsignedInt128 scratchUInt128 = new UnsignedInt128();
+  public static int compare(HiveDecimalWritable writableLeft, HiveDecimal right) {
+    return writableLeft.getHiveDecimal().compareTo(right);
+  }
 
-  static {
-    DECIMAL_ONE.update(1L, (short) 0);
+  public static int compare(HiveDecimal left, HiveDecimalWritable writableRight) {
+    return left.compareTo(writableRight.getHiveDecimal());
   }
 
   // Addition with overflow check. Overflow produces NULL output.
-  public static void addChecked(int i, Decimal128 left, Decimal128 right,
+  public static void addChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
     try {
-      Decimal128.add(left, right, outputColVector.vector[i], outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+      outputColVector.set(i, left.add(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void addChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().add(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void addChecked(int i, HiveDecimalWritable left, HiveDecimal right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().add(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void addChecked(int i, HiveDecimal left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.add(right.getHiveDecimal()));
     } catch (ArithmeticException e) {  // catch on overflow
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
@@ -51,11 +79,40 @@ public class DecimalUtil {
   }
 
   // Subtraction with overflow check. Overflow produces NULL output.
-  public static void subtractChecked(int i, Decimal128 left, Decimal128 right,
+  public static void subtractChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
     try {
-      Decimal128.subtract(left, right, outputColVector.vector[i], outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+      outputColVector.set(i, left.subtract(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void subtractChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().subtract(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void subtractChecked(int i, HiveDecimalWritable left, HiveDecimal right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().subtract(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void subtractChecked(int i, HiveDecimal left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.subtract(right.getHiveDecimal()));
     } catch (ArithmeticException e) {  // catch on overflow
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
@@ -63,11 +120,40 @@ public class DecimalUtil {
   }
 
   // Multiplication with overflow check. Overflow produces NULL output.
-  public static void multiplyChecked(int i, Decimal128 left, Decimal128 right,
+  public static void multiplyChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
     try {
-      Decimal128.multiply(left, right, outputColVector.vector[i], outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+      outputColVector.set(i, left.multiply(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void multiplyChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().multiply(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void multiplyChecked(int i, HiveDecimalWritable left, HiveDecimal right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().multiply(right));
+    } catch (ArithmeticException e) {  // catch on overflow
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void multiplyChecked(int i, HiveDecimal left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.multiply(right.getHiveDecimal()));
     } catch (ArithmeticException e) {  // catch on overflow
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
@@ -75,11 +161,40 @@ public class DecimalUtil {
   }
 
   // Division with overflow/zero-divide check. Error produces NULL output.
-  public static void divideChecked(int i, Decimal128 left, Decimal128 right,
+  public static void divideChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
     try {
-      Decimal128.divide(left, right, outputColVector.vector[i], outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+      outputColVector.set(i, left.divide(right));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void divideChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().divide(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void divideChecked(int i, HiveDecimalWritable left, HiveDecimal right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().divide(right));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void divideChecked(int i, HiveDecimal left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.divide(right.getHiveDecimal()));
     } catch (ArithmeticException e) {  // catch on error
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
@@ -87,80 +202,156 @@ public class DecimalUtil {
   }
 
   // Modulo operator with overflow/zero-divide check.
-  public static void moduloChecked(int i, Decimal128 left, Decimal128 right,
+  public static void moduloChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
     try {
-      Decimal128.modulo(left, right, outputColVector.vector[i], outputColVector.scale);
-      outputColVector.vector[i].checkPrecisionOverflow(outputColVector.precision);
+      outputColVector.set(i, left.remainder(right));
     } catch (ArithmeticException e) {  // catch on error
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
-  public static void floor(int i, Decimal128 input, DecimalColumnVector outputColVector) {
+  public static void moduloChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
     try {
-      Decimal128 result = outputColVector.vector[i];
-      result.update(input);
-      result.zeroFractionPart(scratchUInt128);
-      result.changeScaleDestructive(outputColVector.scale);
-      if ((result.compareTo(input) != 0) && input.getSignum() < 0) {
-        result.subtractDestructive(DECIMAL_ONE, outputColVector.scale);
-      }
+      outputColVector.set(i, left.getHiveDecimal().remainder(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void moduloChecked(int i, HiveDecimalWritable left, HiveDecimal right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.getHiveDecimal().remainder(right));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void moduloChecked(int i, HiveDecimal left, HiveDecimalWritable right,
+      DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, left.remainder(right.getHiveDecimal()));
+    } catch (ArithmeticException e) {  // catch on error
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void floor(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, input.setScale(0, HiveDecimal.ROUND_FLOOR));
     } catch (ArithmeticException e) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
-  public static void ceiling(int i, Decimal128 input, DecimalColumnVector outputColVector) {
+  public static void floor(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
     try {
-      Decimal128 result = outputColVector.vector[i];
-      result.update(input);
-      result.zeroFractionPart(scratchUInt128);
-      result.changeScaleDestructive(outputColVector.scale);
-      if ((result.compareTo(input) != 0) && input.getSignum() > 0) {
-        result.addDestructive(DECIMAL_ONE, outputColVector.scale);
-      }
+      outputColVector.set(i, input.getHiveDecimal().setScale(0, HiveDecimal.ROUND_FLOOR));
     } catch (ArithmeticException e) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
-  public static void round(int i, Decimal128 input, DecimalColumnVector outputColVector) {
-    HiveDecimal inputHD = HiveDecimal.create(input.toBigDecimal());
-    HiveDecimal result = RoundUtils.round(inputHD, outputColVector.scale);
-    if (result == null) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    } else {
-      outputColVector.vector[i].update(result.bigDecimalValue().toPlainString(), outputColVector.scale);
-    }
-  }
-
-  public static void sign(int i, Decimal128 input, LongColumnVector outputColVector) {
-    outputColVector.vector[i] = input.getSignum();
-  }
-
-  public static void abs(int i, Decimal128 input, DecimalColumnVector outputColVector) {
-    Decimal128 result = outputColVector.vector[i];
+  public static void ceiling(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
     try {
-      result.update(input);
-      result.absDestructive();
-      result.changeScaleDestructive(outputColVector.scale);
+      outputColVector.set(i, input.setScale(0, HiveDecimal.ROUND_CEILING));
     } catch (ArithmeticException e) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
-  public static void negate(int i, Decimal128 input, DecimalColumnVector outputColVector) {
-    Decimal128 result = outputColVector.vector[i];
+  public static void ceiling(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
     try {
-      result.update(input);
-      result.negateDestructive();
-      result.changeScaleDestructive(outputColVector.scale);
+      outputColVector.set(i, input.getHiveDecimal().setScale(0, HiveDecimal.ROUND_CEILING));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void round(int i, HiveDecimal input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input, decimalPlaces));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void round(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input.getHiveDecimal(), decimalPlaces));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void round(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input, outputColVector.scale));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void round(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, RoundUtils.round(input.getHiveDecimal(), outputColVector.scale));
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void sign(int i, HiveDecimal input, LongColumnVector outputColVector) {
+    outputColVector.vector[i] = input.signum();
+  }
+
+  public static void sign(int i, HiveDecimalWritable input, LongColumnVector outputColVector) {
+    outputColVector.vector[i] = input.getHiveDecimal().signum();
+  }
+
+  public static void abs(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, input.abs());
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void abs(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, input.getHiveDecimal().abs());
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void negate(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, input.negate());
+    } catch (ArithmeticException e) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[i] = true;
+    }
+  }
+
+  public static void negate(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
+    try {
+      outputColVector.set(i, input.getHiveDecimal().negate());
     } catch (ArithmeticException e) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;

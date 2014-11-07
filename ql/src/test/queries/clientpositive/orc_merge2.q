@@ -18,7 +18,7 @@ INSERT OVERWRITE TABLE orcfile_merge2a PARTITION (one='1', two, three)
         PMOD(HASH(value), 10) as three
     FROM src;
 
-DESC FORMATTED orcfile_merge2a partition (one='1', two='0', three='2');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge2a/one=1/two=0/three=2/;
 
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)

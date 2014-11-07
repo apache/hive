@@ -62,8 +62,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private String rootNode = "";
   private volatile CuratorFramework zkSession;
   private String zkConnectString;
-  private final int zkSessionTimeout = 3000;
-  private int connectTimeoutMillis = -1;
+  private int connectTimeoutMillis;
   private List<ACL> newNodeAcl = Arrays.asList(new ACL(Perms.ALL, Ids.AUTH_IDS));
 
   /**
@@ -101,10 +100,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     if (zkSession == null || zkSession.getState() == CuratorFrameworkState.STOPPED) {
       synchronized (this) {
         if (zkSession == null || zkSession.getState() == CuratorFrameworkState.STOPPED) {
-          zkSession = CuratorFrameworkFactory.builder().connectString(zkConnectString)
-              .sessionTimeoutMs(zkSessionTimeout).connectionTimeoutMs(connectTimeoutMillis)
-              .aclProvider(aclDefaultProvider)
-              .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
+          zkSession =
+              CuratorFrameworkFactory.builder().connectString(zkConnectString)
+                  .connectionTimeoutMs(connectTimeoutMillis).aclProvider(aclDefaultProvider)
+                  .retryPolicy(new ExponentialBackoffRetry(1000, 3)).build();
           zkSession.start();
         }
       }
@@ -431,12 +430,14 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   @Override
   public void init(Object objectStore, ServerMode smode) {
     this.serverMode = smode;
-    zkConnectString = conf.get(
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
+    zkConnectString =
+        conf.get(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
     if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
       // try alternate config param
-      zkConnectString = conf.get(
-          HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE, null);
+      zkConnectString =
+          conf.get(
+              HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE,
+              null);
       if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
         throw new IllegalArgumentException("Zookeeper connect string has to be specifed through "
             + "either " + HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR
@@ -445,14 +446,17 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
             + WHEN_ZK_DSTORE_MSG);
       }
     }
-    connectTimeoutMillis = conf.getInt(
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS, -1);
+    connectTimeoutMillis =
+        conf.getInt(
+            HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
+            CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
     String aclStr = conf.get(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ACL, null);
     if (StringUtils.isNotBlank(aclStr)) {
       this.newNodeAcl = parseACLs(aclStr);
     }
-    rootNode = conf.get(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
-        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
+    rootNode =
+        conf.get(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
+            HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
 
     try {
       // Install the JAAS Configuration for the runtime

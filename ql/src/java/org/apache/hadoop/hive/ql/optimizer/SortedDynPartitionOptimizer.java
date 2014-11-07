@@ -18,14 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,8 +66,14 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * When dynamic partitioning (with or without bucketing and sorting) is enabled, this optimization
@@ -157,7 +157,11 @@ public class SortedDynPartitionOptimizer implements Transform {
       // the reduce sink key. Since both key columns are not prefix subset
       // ReduceSinkDeDuplication will not merge them together resulting in 2 MR jobs.
       // To avoid that we will remove the RS (and EX) inserted by enforce bucketing/sorting.
-      removeRSInsertedByEnforceBucketing(fsOp);
+      if (!removeRSInsertedByEnforceBucketing(fsOp)) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as some partition columns " +
+            "got constant folded.");
+        return null;
+      }
 
       // unlink connection between FS and its parent
       Operator<? extends OperatorDesc> fsParent = fsOp.getParentOperators().get(0);
@@ -209,8 +213,7 @@ public class SortedDynPartitionOptimizer implements Transform {
       ArrayList<ExprNodeDesc> newValueCols = Lists.newArrayList();
       Map<String, ExprNodeDesc> colExprMap = Maps.newHashMap();
       for (ColumnInfo ci : valColInfo) {
-        newValueCols.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(), ci
-            .getTabAlias(), ci.isHiddenVirtualCol()));
+        newValueCols.add(new ExprNodeColumnDesc(ci));
         colExprMap.put(ci.getInternalName(), newValueCols.get(newValueCols.size() - 1));
       }
       ReduceSinkDesc rsConf = getReduceSinkDesc(partitionPositions, sortPositions, sortOrder,
@@ -263,7 +266,7 @@ public class SortedDynPartitionOptimizer implements Transform {
 
     // Remove RS and EX introduced by enforce bucketing/sorting config
     // Convert PARENT -> RS -> EX -> FS to PARENT -> FS
-    private void removeRSInsertedByEnforceBucketing(FileSinkOperator fsOp) {
+    private boolean removeRSInsertedByEnforceBucketing(FileSinkOperator fsOp) {
       HiveConf hconf = parseCtx.getConf();
       boolean enforceBucketing = HiveConf.getBoolVar(hconf, ConfVars.HIVEENFORCEBUCKETING);
       boolean enforceSorting = HiveConf.getBoolVar(hconf, ConfVars.HIVEENFORCESORTING);
@@ -298,17 +301,27 @@ public class SortedDynPartitionOptimizer implements Transform {
           Operator<? extends OperatorDesc> rsGrandChild = rsChild.getChildOperators().get(0);
 
           if (rsChild instanceof ExtractOperator) {
+            // if schema size cannot be matched, then it could be because of constant folding
+            // converting partition column expression to constant expression. The constant
+            // expression will then get pruned by column pruner since it will not reference to
+            // any columns.
+            if (rsParent.getSchema().getSignature().size() !=
+                rsChild.getSchema().getSignature().size()) {
+              return false;
+            }
             rsParent.getChildOperators().clear();
             rsParent.getChildOperators().add(rsGrandChild);
             rsGrandChild.getParentOperators().clear();
             rsGrandChild.getParentOperators().add(rsParent);
             parseCtx.removeOpParseCtx(rsToRemove);
             parseCtx.removeOpParseCtx(rsChild);
-            LOG.info("Removed " + rsParent.getOperatorId() + " and " + rsChild.getOperatorId()
+            LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChild.getOperatorId()
                 + " as it was introduced by enforce bucketing/sorting.");
           }
         }
       }
+
+      return true;
     }
 
     private List<Integer> getPartitionPositions(DynamicPartitionCtx dpCtx, RowSchema schema) {
@@ -476,8 +489,7 @@ public class SortedDynPartitionOptimizer implements Transform {
 
       for (Integer idx : pos) {
         ColumnInfo ci = colInfos.get(idx);
-        ExprNodeColumnDesc encd = new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(),
-            ci.getTabAlias(), ci.isHiddenVirtualCol());
+        ExprNodeColumnDesc encd = new ExprNodeColumnDesc(ci);
         cols.add(encd);
       }
 

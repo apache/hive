@@ -89,17 +89,17 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
       tmpExprArgs.addAll(args.subList(0, 2));
       gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), tmpExprArgs);
+          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2), tmpExprArgs);
       for (int i = 2; i < call.operands.size(); i++) {
         tmpExprArgs = new ArrayList<ExprNodeDesc>();
         tmpExprArgs.add(gfDesc);
         tmpExprArgs.add(args.get(i));
         gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-            SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), tmpExprArgs);
+            SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2), tmpExprArgs);
       }
     } else {
       gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType()), args);
+          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), args.size()), args);
     }
 
     return gfDesc;

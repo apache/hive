@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.conf;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
@@ -75,31 +76,37 @@ public class TestHiveLogging extends TestCase {
     assertEquals(true, logCreated);
   }
 
-  private void RunTest(String cleanCmd, String findCmd, String logFile,
+  public void cleanLog(File logFile) {
+    if (logFile.exists()) {
+      logFile.delete();
+    }
+    File logFileDir = logFile.getParentFile();
+    if (logFileDir.exists()) {
+      logFileDir.delete();
+    }
+  }
+
+  private void RunTest(File logFile,
     String hiveLog4jProperty, String hiveExecLog4jProperty) throws Exception {
     // clean test space
-    runCmd(cleanCmd);
+    cleanLog(logFile);
+    assertFalse(logFile + " should not exist", logFile.exists());
 
     // config log4j with customized files
     // check whether HiveConf initialize log4j correctly
     configLog(hiveLog4jProperty, hiveExecLog4jProperty);
 
     // check whether log file is created on test running
-    runCmd(findCmd);
-    getCmdOutput(logFile);
-
-    // clean test space
-    runCmd(cleanCmd);
+    assertTrue(logFile + " should exist", logFile.exists());
   }
 
   public void testHiveLogging() throws Exception {
-    // customized log4j config log file to be: /tmp/TestHiveLogging/hiveLog4jTest.log
-    String customLogPath = "/tmp/" + System.getProperty("user.name") + "-TestHiveLogging/";
+    // customized log4j config log file to be: /${test.tmp.dir}/TestHiveLogging/hiveLog4jTest.log
+    File customLogPath = new File(new File(System.getProperty("test.tmp.dir")),
+        System.getProperty("user.name") + "-TestHiveLogging/");
     String customLogName = "hiveLog4jTest.log";
-    String customLogFile = customLogPath + customLogName;
-    String customCleanCmd = "rm -rf " + customLogFile;
-    String customFindCmd = "find " + customLogPath + " -name " + customLogName;
-    RunTest(customCleanCmd, customFindCmd, customLogFile,
+    File customLogFile = new File(customLogPath, customLogName);
+    RunTest(customLogFile,
       "hive-log4j-test.properties", "hive-exec-log4j-test.properties");
   }
 }

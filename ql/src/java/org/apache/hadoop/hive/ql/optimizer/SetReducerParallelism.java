@@ -31,11 +31,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
@@ -82,7 +84,8 @@ public class SetReducerParallelism implements NodeProcessor {
         for (Operator<? extends OperatorDesc> sibling:
           sink.getChildOperators().get(0).getParentOperators()) {
           if (sibling.getStatistics() != null) {
-            numberOfBytes += sibling.getStatistics().getDataSize();
+            numberOfBytes = StatsUtils.safeAdd(
+                numberOfBytes, sibling.getStatistics().getDataSize());
           } else {
             LOG.warn("No stats available from: "+sibling);
           }

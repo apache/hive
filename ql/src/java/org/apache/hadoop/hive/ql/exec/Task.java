@@ -30,7 +30,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -518,9 +517,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void shutdown() {
   }
 
-  public List<FieldSchema> getResultSchema() {
-    return null;
-  }
   Throwable getException() {
     return exception;
   }

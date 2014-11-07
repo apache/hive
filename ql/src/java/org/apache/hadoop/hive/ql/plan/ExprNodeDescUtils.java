@@ -193,6 +193,7 @@ public class ExprNodeDescUtils {
   /**
    * Convert expressions in current operator to those in terminal operator, which
    * is an ancestor of current or null (back to top operator).
+   * Possibly contain null values for non-traceable exprs
    */
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
       Operator<?> current, Operator<?> terminal) throws SemanticException {
@@ -396,29 +397,34 @@ public class ExprNodeDescUtils {
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
 	 * 
 	 * @param exprDesc
-	 * @param hashCodeTocolumnDescMap
+	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
 	 *            they are logically referring to same projection
 	 */
 	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
+			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
 		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeTocolumnDescMap.put(
-					((ExprNodeColumnDesc) exprDesc).hashCode(),
-					((ExprNodeColumnDesc) exprDesc));
+			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
 		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : ((ExprNodeColumnListDesc) exprDesc)
-					.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			for (ExprNodeDesc child : exprDesc.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
 			}
 		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : ((ExprNodeGenericFuncDesc) exprDesc)
-					.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeTocolumnDescMap);
+			for (ExprNodeDesc child : exprDesc.getChildren()) {
+				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
 			}
 		} else if (exprDesc instanceof ExprNodeFieldDesc) {
 			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeTocolumnDescMap);
+					hashCodeToColumnDescMap);
 		}
 	}
+
+  public static boolean isAllConstants(List<ExprNodeDesc> value) {
+    for (ExprNodeDesc expr : value) {
+      if (!(expr instanceof ExprNodeConstantDesc)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
