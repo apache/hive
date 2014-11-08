@@ -55,7 +55,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected static HiveAuthFactory hiveAuthFactory;
 
   protected int portNum;
-  protected InetAddress serverAddress;
+  protected InetAddress serverIPAddress;
   protected String hiveHost;
   protected TServer server;
   protected org.eclipse.jetty.server.Server httpServer;
@@ -85,9 +85,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
     try {
       if (hiveHost != null && !hiveHost.isEmpty()) {
-        serverAddress = InetAddress.getByName(hiveHost);
+        serverIPAddress = InetAddress.getByName(hiveHost);
       } else {
-        serverAddress = InetAddress.getLocalHost();
+        serverIPAddress = InetAddress.getLocalHost();
       }
     } catch (UnknownHostException e) {
       throw new ServiceException(e);
@@ -153,8 +153,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return portNum;
   }
 
-  public InetAddress getServerAddress() {
-    return serverAddress;
+  public InetAddress getServerIPAddress() {
+    return serverIPAddress;
   }
 
   @Override
