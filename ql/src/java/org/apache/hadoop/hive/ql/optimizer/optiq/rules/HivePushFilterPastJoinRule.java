@@ -95,36 +95,40 @@ public abstract class HivePushFilterPastJoinRule extends PushFilterPastJoinRule 
 	 * not equi join conditions.
 	 */
 	@Override
-	protected void validateJoinFilters(List<RexNode> aboveFilters,
-			List<RexNode> joinFilters, JoinRelBase join, JoinRelType joinType) {
-		if (joinType.equals(JoinRelType.INNER)) {
-			ListIterator<RexNode> filterIter = joinFilters.listIterator();
-			while (filterIter.hasNext()) {
-				RexNode exp = filterIter.next();
-				if (exp instanceof RexCall) {
-					RexCall c = (RexCall) exp;
-					if (c.getOperator().getKind() == SqlKind.EQUALS) {
-						boolean validHiveJoinFilter = true;
-						for (RexNode rn : c.getOperands()) {
-							// NOTE: Hive dis-allows projections from both left
-							// &
-							// right side
-							// of join condition. Example: Hive disallows
-							// (r1.x=r2.x)=(r1.y=r2.y) on join condition.
-							if (filterRefersToBothSidesOfJoin(rn, join)) {
-								validHiveJoinFilter = false;
-								break;
-							}
-						}
-						if (validHiveJoinFilter)
-							continue;
-					}
-				}
-				aboveFilters.add(exp);
-				filterIter.remove();
-			}
-		}
-	}
+  protected void validateJoinFilters(List<RexNode> aboveFilters, List<RexNode> joinFilters,
+      JoinRelBase join, JoinRelType joinType) {
+    if (joinType.equals(JoinRelType.INNER)) {
+      ListIterator<RexNode> filterIter = joinFilters.listIterator();
+      while (filterIter.hasNext()) {
+        RexNode exp = filterIter.next();
+        if (exp instanceof RexCall) {
+          RexCall c = (RexCall) exp;
+          if ((c.getOperator().getKind() == SqlKind.EQUALS)
+              || (c.getOperator().getKind() == SqlKind.LESS_THAN)
+              || (c.getOperator().getKind() == SqlKind.GREATER_THAN)
+              || (c.getOperator().getKind() == SqlKind.LESS_THAN_OR_EQUAL)
+              || (c.getOperator().getKind() == SqlKind.GREATER_THAN_OR_EQUAL)) {
+            boolean validHiveJoinFilter = true;
+            for (RexNode rn : c.getOperands()) {
+              // NOTE: Hive dis-allows projections from both left
+              // &
+              // right side
+              // of join condition. Example: Hive disallows
+              // (r1.x=r2.x)=(r1.y=r2.y) on join condition.
+              if (filterRefersToBothSidesOfJoin(rn, join)) {
+                validHiveJoinFilter = false;
+                break;
+              }
+            }
+            if (validHiveJoinFilter)
+              continue;
+          }
+        }
+        aboveFilters.add(exp);
+        filterIter.remove();
+      }
+    }
+  }
 
 	private boolean filterRefersToBothSidesOfJoin(RexNode filter, JoinRelBase j) {
 		boolean refersToBothSides = false;
