@@ -17,35 +17,50 @@
  */
 package org.apache.hive.service.cli.operation;
 
-import org.junit.Assert;
+import java.io.File;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.cli.*;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.service.cli.FetchOrientation;
+import org.apache.hive.service.cli.FetchType;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
 
 /**
  * TestOperationLoggingAPI
  * Test the FetchResults of TFetchType.LOG in thrift level.
  */
 public class TestOperationLoggingAPI {
-  private HiveConf hiveConf = new HiveConf();
-  private String tableName = "testOperationLoggingAPI_table";
+  private static HiveConf hiveConf;
+  private final String tableName = "testOperationLoggingAPI_table";
   private File dataFile;
   private ThriftCLIServiceClient client;
   private SessionHandle sessionHandle;
-  private String sql = "select * from " + tableName;
-  private String[] expectedLogs = {
+  private final String sql = "select * from " + tableName;
+  private final String[] expectedLogs = {
     "Parsing command",
     "Parse Completed",
     "Starting Semantic Analysis",
     "Semantic Analysis Completed",
     "Starting command"
   };
+
+  @BeforeClass
+  public static void setUpBeforeClass() {
+    hiveConf = new HiveConf();
+    hiveConf.setBoolean(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE.varname, true);
+  }
 
   /**
    * Start embedded mode, open a session, and create a table for cases usage
@@ -247,7 +262,7 @@ public class TestOperationLoggingAPI {
 
   private void verifyFetchedLog(String logs) {
     for (String log : expectedLogs) {
-      Assert.assertTrue(logs.contains(log));
+      Assert.assertTrue("Checking for presence of " + log, logs.contains(log));
     }
   }
 }
