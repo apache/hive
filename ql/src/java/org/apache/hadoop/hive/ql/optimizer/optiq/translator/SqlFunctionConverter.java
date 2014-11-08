@@ -278,6 +278,7 @@ public class SqlFunctionConverter {
       registerFunction(">=", SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
           hToken(HiveParser.GREATERTHANOREQUALTO, ">="));
       registerFunction("!", SqlStdOperatorTable.NOT, hToken(HiveParser.KW_NOT, "not"));
+      registerFunction("<>", SqlStdOperatorTable.NOT_EQUALS, hToken(HiveParser.NOTEQUAL, "<>"));
     }
 
     private void registerFunction(String name, SqlOperator optiqFn, HiveToken hiveToken) {
