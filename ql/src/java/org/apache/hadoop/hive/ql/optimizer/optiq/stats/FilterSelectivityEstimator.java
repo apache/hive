@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.stats;
 
 import java.util.BitSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.optimizer.optiq.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.optiq.reloperators.HiveTableScanRel;
@@ -32,6 +35,10 @@ import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexVisitorImpl;
 import org.eigenbase.sql.SqlKind;
+import org.eigenbase.sql.SqlOperator;
+import org.eigenbase.sql.type.SqlTypeUtil;
+
+import com.google.common.collect.Sets;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
@@ -61,7 +68,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     Double selectivity = null;
-    SqlKind op = call.getKind();
+    SqlKind op = getOp(call);
 
     switch (op) {
     case AND: {
@@ -74,6 +81,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
 
+    case NOT:
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
       break;
@@ -88,7 +96,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     case IN: {
-      selectivity = ((double) 1 / ((double) call.operands.size()));
+      // TODO: 1) check for duplicates 2) We assume in clause values to be
+      // present in NDV which may not be correct (Range check can find it) 3) We
+      // assume values in NDV set is uniformly distributed over col values
+      // (account for skewness - histogram).
+      selectivity = computeFunctionSelectivity(call) * (call.operands.size() - 1);
+      if (selectivity <= 0.0) {
+        selectivity = 0.10;
+      } else if (selectivity >= 1.0) {
+        selectivity = 1.0;
+      }
       break;
     }
 
@@ -152,18 +169,19 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
       tmpCardinality = childCardinality * tmpSelectivity;
 
-      if (tmpCardinality > 1)
+      if (tmpCardinality > 1 && tmpCardinality < childCardinality) {
         tmpSelectivity = (1 - tmpCardinality / childCardinality);
-      else
+      } else {
         tmpSelectivity = 1.0;
+      }
 
       selectivity *= tmpSelectivity;
     }
 
-    if (selectivity > 1)
-      return (1 - selectivity);
-    else
-      return 1.0;
+    if (selectivity < 0.0)
+      selectivity = 0.0;
+
+    return (1 - selectivity);
   }
 
   /**
@@ -224,5 +242,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return table.containsPartitionColumnsOnly(cols);
     }
     return false;
+  }
+
+  private SqlKind getOp(RexCall call) {
+    SqlKind op = call.getKind();
+
+    if (call.getKind().equals(SqlKind.OTHER_FUNCTION)
+        && SqlTypeUtil.inBooleanFamily(call.getType())) {
+      SqlOperator sqlOp = call.getOperator();
+      String opName = (sqlOp != null) ? sqlOp.getName() : "";
+      if (opName.equalsIgnoreCase("in")) {
+        op = SqlKind.IN;
+      }
+    }
+
+    return op;
   }
 }
