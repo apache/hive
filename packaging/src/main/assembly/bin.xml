@@ -328,6 +328,11 @@
       <destName>hive-exec-log4j.properties.template</destName>
     </file>
     <file>
+      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>beeline-log4j.properties.template</destName>
+    </file>
+    <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>
       <outputDirectory>hcatalog/share/doc/hcatalog</outputDirectory>
     </file>
