@@ -771,6 +771,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
   }
 
+  @Override
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
+    dest.getCredentials().mergeAll(src.getCredentials());
+  }
+
   protected static final Method accessMethod;
   protected static final Method getPasswordMethod;
 
