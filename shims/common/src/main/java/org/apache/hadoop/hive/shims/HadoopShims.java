@@ -712,6 +712,8 @@ public interface HadoopShims {
 
   public void getMergedCredentials(JobConf jobConf) throws IOException;
 
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException;
+
   /**
    * Check if the configured UGI has access to the path for the given file system action.
    * Method will return successfully if action is permitted. AccessControlExceptoin will
