@@ -187,7 +187,6 @@ public class TezSessionState {
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
 
-    TezJobMonitor.initShutdownHook();
     session.start();
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {

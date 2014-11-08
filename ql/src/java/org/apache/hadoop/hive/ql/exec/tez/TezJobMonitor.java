@@ -110,13 +110,9 @@ public class TezJobMonitor {
   /* Pretty print the values */
   private final NumberFormat secondsFormat;
   private final NumberFormat commaFormat;
-  private static List<DAGClient> shutdownList;
+  private static final List<DAGClient> shutdownList;
 
-  public static void initShutdownHook() {
-    if (shutdownList != null) {
-      return;
-    }
-
+  static {
     shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
@@ -134,10 +130,9 @@ public class TezJobMonitor {
         }
       }
     });
-  }    
+  }
 
   public TezJobMonitor() {
-    initShutdownHook();
     console = SessionState.getConsole();
     secondsFormat = new DecimalFormat("#0.00");
     commaFormat = NumberFormat.getNumberInstance(Locale.US);
