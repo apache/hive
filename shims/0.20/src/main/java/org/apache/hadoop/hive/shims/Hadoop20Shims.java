@@ -904,6 +904,11 @@ public class Hadoop20Shims implements HadoopShims {
     throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
 
+  @Override
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
+  }
+
   protected void run(FsShell shell, String[] command) throws Exception {
     LOG.debug(ArrayUtils.toString(command));
     shell.run(command);
