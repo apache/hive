@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -479,7 +480,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       // Get credentials using the configuration instance which has HBase properties
       JobConf hbaseJobConf = new JobConf(getConf());
       org.apache.hadoop.hbase.mapred.TableMapReduceUtil.initCredentials(hbaseJobConf);
-      jobConf.getCredentials().mergeAll(hbaseJobConf.getCredentials());
+      ShimLoader.getHadoopShims().mergeCredentials(jobConf, hbaseJobConf);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
