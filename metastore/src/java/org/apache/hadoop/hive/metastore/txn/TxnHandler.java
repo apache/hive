@@ -911,8 +911,9 @@ public class TxnHandler {
     // If you change this function, remove the @Ignore from TestTxnHandler.deadlockIsDetected()
     // to test these changes.
     // MySQL and MSSQL use 40001 as the state code for rollback.  Postgres uses 40001 and 40P01.
-    // Oracle seems to return different SQLStates each time, but the message always contains
-    // "deadlock detected", so I've used that instead.
+    // Oracle seems to return different SQLStates and messages each time,
+    // so I've tried to capture the different error messages (there appear to be fewer different
+    // error messages than SQL states).
     // Derby and newer MySQL driver use the new SQLTransactionRollbackException
     if (dbProduct == null) {
       determineDatabaseProduct(conn);
@@ -921,7 +922,8 @@ public class TxnHandler {
         ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
             dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
         (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
-        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")))) {
+        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
+            || e.getMessage().contains("can't serialize access for this transaction")))) {
       if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
         LOG.warn("Deadlock detected in " + caller + ", trying again.");
         throw new DeadlockException();
