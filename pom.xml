@@ -866,6 +866,11 @@
 	    <exclude>**/gen-java/**</exclude>
 	    <exclude>**/testdata/**</exclude>
 	    <exclude>**/ptest2/*.md</exclude>
+	    <exclude>**/test/org/apache/hadoop/hive/hbase/avro/**</exclude>
+	    <exclude>**/avro_test.avpr</exclude>
+	    <exclude>**/xmlReport.pl</exclude>
+	    <exclude>**/*.html</exclude>
+	    <exclude>**/sit</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
