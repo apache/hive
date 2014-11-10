@@ -121,8 +121,8 @@ public class TestHiveKVResultCache {
     HashSet<Long> primaryRowKeys = new HashSet<Long>();
     HashSet<Long> separateRowKeys = new HashSet<Long>();
     for (Tuple2<HiveKey, BytesWritable> item: output) {
-      String key = new String(item._1.copyBytes());
-      String value = new String(item._2.copyBytes());
+      String key = new String(item._1.getBytes());
+      String value = new String(item._2.getBytes());
       String prefix = key.substring(0, key.indexOf('_'));
       Long id = Long.valueOf(key.substring(5 + prefix.length()));
       if (prefix.equals(prefix1)) {

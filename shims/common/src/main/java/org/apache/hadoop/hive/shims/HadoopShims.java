@@ -715,6 +715,14 @@ public interface HadoopShims {
   public void mergeCredentials(JobConf dest, JobConf src) throws IOException;
 
   /**
+   * Get the counter group display name
+   * @param group the group name to lookup
+   * @param defaultValue of the group
+   * @return the group display name
+   */
+  public String getCounterGroupName(String group, String defaultValue);
+
+  /**
    * Check if the configured UGI has access to the path for the given file system action.
    * Method will return successfully if action is permitted. AccessControlExceptoin will
    * be thrown if user does not have access to perform the action. Other exceptions may

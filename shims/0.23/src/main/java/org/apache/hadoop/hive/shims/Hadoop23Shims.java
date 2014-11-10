@@ -71,6 +71,7 @@ import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
+import org.apache.hadoop.mapreduce.util.ResourceBundles;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -774,6 +775,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
     dest.getCredentials().mergeAll(src.getCredentials());
+  }
+
+  @Override
+  public String getCounterGroupName(String group, String defaultValue) {
+    return ResourceBundles.getCounterGroupName(group, defaultValue);
   }
 
   protected static final Method accessMethod;
