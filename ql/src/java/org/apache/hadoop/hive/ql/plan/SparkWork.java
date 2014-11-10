@@ -134,6 +134,15 @@ public class SparkWork extends AbstractOperatorDesc {
   }
 
   /**
+   * Whether the specified BaseWork is a vertex in this graph
+   * @param w the BaseWork to check
+   * @return whether specified BaseWork is in this graph
+   */
+  public boolean contains(BaseWork w) {
+    return workGraph.containsKey(w);
+  }
+
+  /**
    * add creates a new node in the graph without any connections
    */
   public void add(BaseWork w) {
