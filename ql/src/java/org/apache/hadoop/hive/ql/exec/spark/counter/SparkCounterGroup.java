@@ -21,14 +21,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.mapreduce.util.ResourceBundles;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
  * We use group to fold all the same kind of counters.
  */
 public class SparkCounterGroup implements Serializable {
-
+  private static final long serialVersionUID = 1L;
   private String groupName;
   private String groupDisplayName;
   private Map<String, SparkCounter> sparkCounters;
@@ -47,7 +47,7 @@ public class SparkCounterGroup implements Serializable {
   }
 
   public void createCounter(String name, long initValue) {
-    String displayName = ResourceBundles.getCounterGroupName(name, name);
+    String displayName = ShimLoader.getHadoopShims().getCounterGroupName(groupName, groupName);
     SparkCounter counter = new SparkCounter(name, displayName, groupName, initValue, javaSparkContext);
     sparkCounters.put(name, counter);
   }

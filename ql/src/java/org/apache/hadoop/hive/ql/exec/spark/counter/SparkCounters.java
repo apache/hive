@@ -26,13 +26,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
-import org.apache.hadoop.mapreduce.util.ResourceBundles;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
@@ -48,6 +47,8 @@ import org.apache.spark.api.java.JavaSparkContext;
  * 3. Hive could only get Counter value at driver side.
  */
 public class SparkCounters implements Serializable {
+  private static final long serialVersionUID = 1L;
+
   private static final Log LOG = LogFactory.getLog(SparkCounters.class);
 
   private Map<String, SparkCounterGroup> sparkCounterGroups;
@@ -113,7 +114,8 @@ public class SparkCounters implements Serializable {
   private SparkCounterGroup getGroup(String groupName) {
     SparkCounterGroup group = sparkCounterGroups.get(groupName);
     if (group == null) {
-      String groupDisplayName = ResourceBundles.getCounterGroupName(groupName, groupName);
+      String groupDisplayName =
+        ShimLoader.getHadoopShims().getCounterGroupName(groupName, groupName);
       group = new SparkCounterGroup(groupName, groupDisplayName, javaSparkContext);
       sparkCounterGroups.put(groupName, group);
     }
