@@ -136,7 +136,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
         edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
       }
     }*/
-    SparkEdgeProperty edgeProp = new SparkEdgeProperty(0/*null, edgeType, numBuckets*/);
+    SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
 
     if (mapJoinWork != null) {
       for (BaseWork myWork: mapJoinWork) {

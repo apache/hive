@@ -19,15 +19,11 @@
 package org.apache.hadoop.hive.ql.parse.spark;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -311,25 +307,7 @@ public class GenSparkWork implements NodeProcessor {
 
       if (!context.connectedReduceSinks.contains(rs)) {
         // add dependency between the two work items
-        // Use group-by as the default shuffler
-        SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_GROUP,
-            rs.getConf().getNumReducers());
-        String sortOrder = Strings.nullToEmpty(rs.getConf().getOrder()).trim();
-        if (!sortOrder.isEmpty() && GenSparkUtils.isSortNecessary(rs)) {
-          edgeProp.setShuffleSort();
-        }
-        if (rWork.getReducer() instanceof JoinOperator) {
-          //reduce-side join, use MR-style shuffle
-          edgeProp.setMRShuffle();
-        }
-        //If its a FileSink to bucketed files, also use MR-style shuffle to get compatible taskId for bucket-name
-        FileSinkOperator fso = GenSparkUtils.getChildOperator(rWork.getReducer(), FileSinkOperator.class);
-        if (fso != null) {
-          String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT);
-          if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
-            edgeProp.setMRShuffle();
-          }
-        }
+        SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(rs, rWork);
         sparkWork.connect(work, rWork, edgeProp);
         context.connectedReduceSinks.add(rs);
       }

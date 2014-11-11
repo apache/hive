@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -117,28 +118,7 @@ public class GenSparkUtils {
 
     sparkWork.add(reduceWork);
 
-    // Use group-by as the default shuffler
-    SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_GROUP,
-        reduceWork.getNumReduceTasks());
-
-    String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
-    if (!sortOrder.isEmpty() && isSortNecessary(reduceSink)) {
-      edgeProp.setShuffleSort();
-    }
-
-    if (reduceWork.getReducer() instanceof JoinOperator) {
-      //reduce-side join, use MR-style shuffle
-      edgeProp.setMRShuffle();
-    }
-
-    //If its a FileSink to bucketed files, also use MR-style shuffle to get compatible taskId for bucket-name
-    FileSinkOperator fso = getChildOperator(reduceWork.getReducer(), FileSinkOperator.class);
-    if (fso != null) {
-      String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT);
-      if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
-        edgeProp.setMRShuffle();
-      }
-    }
+    SparkEdgeProperty edgeProp = getEdgeProperty(reduceSink, reduceWork);
 
     sparkWork.connect(
         context.preceedingWork,
@@ -315,22 +295,102 @@ public class GenSparkUtils {
     }
   }
 
+  public static SparkEdgeProperty getEdgeProperty(ReduceSinkOperator reduceSink,
+      ReduceWork reduceWork) throws SemanticException {
+    SparkEdgeProperty edgeProperty = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
+    edgeProperty.setNumPartitions(reduceWork.getNumReduceTasks());
+    String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
+
+    // test if we need group-by shuffle
+    if (reduceSink.getChildOperators().size() == 1 &&
+        reduceSink.getChildOperators().get(0) instanceof GroupByOperator) {
+      edgeProperty.setShuffleGroup();
+      // test if the group by needs partition level sort, if so, use the MR style shuffle
+      // SHUFFLE_SORT shouldn't be used for this purpose, see HIVE-8542
+      if (!sortOrder.isEmpty() && groupByNeedParLevelOrder(reduceSink)) {
+        edgeProperty.setMRShuffle();
+      }
+    }
+
+    if (reduceWork.getReducer() instanceof JoinOperator) {
+      //reduce-side join, use MR-style shuffle
+      edgeProperty.setMRShuffle();
+    }
+
+    //If its a FileSink to bucketed files, also use MR-style shuffle to
+    // get compatible taskId for bucket-name
+    FileSinkOperator fso = getChildOperator(reduceWork.getReducer(), FileSinkOperator.class);
+    if (fso != null) {
+      String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(
+          hive_metastoreConstants.BUCKET_COUNT);
+      if (bucketCount != null && Integer.valueOf(bucketCount) > 1) {
+        edgeProperty.setMRShuffle();
+      }
+    }
+
+    // test if we need total order, if so, we can either use MR shuffle + set #reducer to 1,
+    // or we can use SHUFFLE_SORT
+    if (edgeProperty.isShuffleNone() && !sortOrder.isEmpty()) {
+      if (reduceSink.getConf().getPartitionCols() == null ||
+          reduceSink.getConf().getPartitionCols().isEmpty() ||
+          isSame(reduceSink.getConf().getPartitionCols(),
+              reduceSink.getConf().getKeyCols())) {
+        edgeProperty.setShuffleSort();
+      } else {
+        edgeProperty.setMRShuffle();
+      }
+    }
+
+    // set to groupby-shuffle if it's still NONE
+    // simple distribute-by goes here
+    if (edgeProperty.isShuffleNone()) {
+      edgeProperty.setShuffleGroup();
+    }
+
+    return edgeProperty;
+  }
+
   /**
-   * Test if the sort order in the RS is necessary.
-   * Unnecessary sort is mainly introduced when GBY is created. Therefore, if the sorting
+   * Test if we need partition level order for group by query.
+   * GBY needs partition level order when distinct is present. Therefore, if the sorting
    * keys, partitioning keys and grouping keys are the same, we ignore the sort and use
    * GroupByShuffler to shuffle the data. In this case a group-by transformation should be
    * sufficient to produce the correct results, i.e. data is properly grouped by the keys
    * but keys are not guaranteed to be sorted.
    */
-  public static boolean isSortNecessary(ReduceSinkOperator reduceSinkOperator) {
+  private static boolean groupByNeedParLevelOrder(ReduceSinkOperator reduceSinkOperator) {
+    // whether we have to enforce sort anyway, e.g. in case of RS deduplication
+    if (reduceSinkOperator.getConf().isEnforceSort()) {
+      return true;
+    }
     List<Operator<? extends OperatorDesc>> children = reduceSinkOperator.getChildOperators();
     if (children != null && children.size() == 1 &&
         children.get(0) instanceof GroupByOperator) {
       GroupByOperator child = (GroupByOperator) children.get(0);
-      if (reduceSinkOperator.getConf().getKeyCols().equals(
+      if (isSame(reduceSinkOperator.getConf().getKeyCols(),
           reduceSinkOperator.getConf().getPartitionCols()) &&
           reduceSinkOperator.getConf().getKeyCols().size() == child.getConf().getKeys().size()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Test if two lists of ExprNodeDesc are semantically same
+   */
+  private static boolean isSame(List<ExprNodeDesc> list1, List<ExprNodeDesc> list2) {
+    if (list1 != list2) {
+      if (list1 != null && list2 != null) {
+        if (list1.size() != list2.size()) {
+          return false;
+        }
+        for (int i = 0; i < list1.size(); i++) {
+          if (!list1.get(i).isSame(list2.get(i))) {
+            return false;
+          }
+        }
+      } else {
         return false;
       }
     }

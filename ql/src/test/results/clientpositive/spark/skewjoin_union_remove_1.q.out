@@ -68,8 +68,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1), Map 7 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
         Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
@@ -214,8 +214,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1), Map 7 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
         Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
@@ -369,8 +369,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1), Map 7 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
         Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
@@ -537,8 +537,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1), Map 4 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1), Map 7 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
         Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:

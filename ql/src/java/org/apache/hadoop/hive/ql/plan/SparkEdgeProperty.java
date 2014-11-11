@@ -91,7 +91,6 @@ public class SparkEdgeProperty {
         sb.append(" ");
       }
       sb.append("PARTITION-LEVEL SORT");
-      return sb.toString();
     }
 
     if (isShuffleSort()) {
@@ -99,7 +98,6 @@ public class SparkEdgeProperty {
         sb.append(" ");
       }
       sb.append("SORT");
-      return sb.toString();
     }
 
     return sb.toString();
