@@ -57,7 +57,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -420,9 +422,10 @@ public class PartitionPruner implements Transform {
 
     String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     List<String> partCols = extractPartColNames(tab);
+    List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 
     boolean hasUnknownPartitions = prunePartitionNames(
-        partCols, prunerExpr, defaultPartitionName, partNames);
+        partCols, partColTypeInfos, prunerExpr, defaultPartitionName, partNames);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
@@ -442,19 +445,30 @@ public class PartitionPruner implements Transform {
     return partCols;
   }
 
+  private static List<PrimitiveTypeInfo> extractPartColTypes(Table tab) {
+    List<FieldSchema> pCols = tab.getPartCols();
+    List<PrimitiveTypeInfo> partColTypeInfos = new ArrayList<PrimitiveTypeInfo>(pCols.size());
+    for (FieldSchema pCol : pCols) {
+      partColTypeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(pCol.getType()));
+    }
+    return partColTypeInfos;
+  }
+
   /**
    * Prunes partition names to see if they match the prune expression.
-   * @param columnNames name of partition columns
+   * @param partColumnNames name of partition columns
+   * @param partColumnTypeInfos types of partition columns
    * @param prunerExpr The expression to match.
    * @param defaultPartitionName name of default partition
    * @param partNames Partition names to filter. The list is modified in place.
    * @return Whether the list has any partitions for which the expression may or may not match.
    */
-  public static boolean prunePartitionNames(List<String> columnNames, ExprNodeGenericFuncDesc prunerExpr,
+  public static boolean prunePartitionNames(List<String> partColumnNames,
+      List<PrimitiveTypeInfo> partColumnTypeInfos, ExprNodeGenericFuncDesc prunerExpr,
       String defaultPartitionName, List<String> partNames) throws HiveException, MetaException {
     // Prepare the expression to filter on the columns.
     ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
-        PartExprEvalUtils.prepareExpr(prunerExpr, columnNames);
+        PartExprEvalUtils.prepareExpr(prunerExpr, partColumnNames, partColumnTypeInfos);
 
     // Filter the name list. Removing elements one by one can be slow on e.g. ArrayList,
     // so let's create a new list and copy it if we don't have a linked list
@@ -462,8 +476,8 @@ public class PartitionPruner implements Transform {
     List<String> partNamesSeq = inPlace ? partNames : new LinkedList<String>(partNames);
 
     // Array for the values to pass to evaluator.
-    ArrayList<String> values = new ArrayList<String>(columnNames.size());
-    for (int i = 0; i < columnNames.size(); ++i) {
+    ArrayList<String> values = new ArrayList<String>(partColumnNames.size());
+    for (int i = 0; i < partColumnNames.size(); ++i) {
       values.add(null);
     }
 
@@ -473,8 +487,17 @@ public class PartitionPruner implements Transform {
       String partName = partIter.next();
       Warehouse.makeValsFromName(partName, values);
 
+      ArrayList<Object> convertedValues = new ArrayList<Object>(values.size());
+      for(int i=0; i<values.size(); i++) {
+        Object o = ObjectInspectorConverters.getConverter(
+            PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+            PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(partColumnTypeInfos.get(i)))
+            .convert(values.get(i));
+        convertedValues.add(o);
+      }
+
       // Evaluate the expression tree.
-      Boolean isNeeded = (Boolean)PartExprEvalUtils.evaluateExprOnPart(handle, values);
+      Boolean isNeeded = (Boolean)PartExprEvalUtils.evaluateExprOnPart(handle, convertedValues);
       boolean isUnknown = (isNeeded == null);
       if (!isUnknown && !isNeeded) {
         partIter.remove();
