@@ -64,3 +64,9 @@ DESCRIBE FORMATTED doctors;
 
 CREATE TABLE doctors2 like doctors;
 DESCRIBE FORMATTED doctors2;
+
+CREATE TABLE CompressedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO");
+CREATE TABLE LikeCompressedParquetTable LIKE CompressedParquetTable;
+
+DESCRIBE FORMATTED LikeCompressedParquetTable;
+
