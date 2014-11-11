@@ -238,7 +238,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     return subject;
   }
 
-  private PrivilegeObjectDesc parsePrivObject(ASTNode ast) throws SemanticException {
+  protected PrivilegeObjectDesc parsePrivObject(ASTNode ast) throws SemanticException {
     PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
     ASTNode child = (ASTNode) ast.getChild(0);
     ASTNode gchild = (ASTNode)child.getChild(0);
@@ -246,6 +246,8 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       subject.setTable(true);
       String[] qualified = BaseSemanticAnalyzer.getQualifiedTableName(gchild);
       subject.setObject(BaseSemanticAnalyzer.getDotName(qualified));
+    } else if (child.getType() == HiveParser.TOK_URI_TYPE || child.getType() == HiveParser.TOK_SERVER_TYPE) {
+      throw new SemanticException("Hive authorization does not support the URI or SERVER objects");
     } else {
       subject.setTable(false);
       subject.setObject(BaseSemanticAnalyzer.unescapeIdentifier(gchild.getText()));
