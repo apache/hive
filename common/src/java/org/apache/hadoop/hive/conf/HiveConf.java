@@ -1477,6 +1477,9 @@ public class HiveConf extends Configuration {
         "An example like \"select,drop\" will grant select and drop privilege to the owner\n" +
         "of the table. Note that the default gives the creator of a table no access to the\n" +
         "table (but see HIVE-8067)."),
+    HIVE_AUTHORIZATION_TASK_FACTORY("hive.security.authorization.task.factory",
+        "org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl",
+        "Authorization DDL task factory implementation"),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars

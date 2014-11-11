@@ -22,6 +22,8 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -229,7 +231,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
-    hiveAuthorizationTaskFactory = new HiveAuthorizationTaskFactoryImpl(conf, db);
+    hiveAuthorizationTaskFactory = createAuthorizationTaskFactory(conf, db);
   }
 
   @Override
@@ -3419,4 +3421,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e);
     }
   }
+
+  private HiveAuthorizationTaskFactory createAuthorizationTaskFactory(HiveConf conf, Hive db) {
+    Class<? extends HiveAuthorizationTaskFactory> authProviderClass = conf.
+        getClass(HiveConf.ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY.varname,
+            HiveAuthorizationTaskFactoryImpl.class,
+            HiveAuthorizationTaskFactory.class);
+    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
+    try {
+      Constructor<? extends HiveAuthorizationTaskFactory> constructor =
+          authProviderClass.getConstructor(HiveConf.class, Hive.class);
+      return constructor.newInstance(conf, db);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (SecurityException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (InstantiationException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (InvocationTargetException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    }
+  }
+
 }
