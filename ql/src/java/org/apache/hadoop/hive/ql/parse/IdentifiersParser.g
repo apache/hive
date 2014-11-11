@@ -218,6 +218,7 @@ constant
     :
     Number
     | dateLiteral
+    | timestampLiteral
     | StringLiteral
     | stringLiteralSequence
     | BigintLiteral
@@ -250,6 +251,14 @@ dateLiteral
     }
     ;
 
+timestampLiteral
+    :
+    KW_TIMESTAMP StringLiteral ->
+    {
+      adaptor.create(TOK_TIMESTAMPLITERAL, $StringLiteral.text)
+    }
+    ;
+
 expression
 @init { gParent.pushMsg("expression specification", state); }
 @after { gParent.popMsg(state); }
@@ -260,7 +269,6 @@ expression
 atomExpression
     :
     KW_NULL -> TOK_NULL
-    | dateLiteral
     | constant
     | castExpression
     | caseExpression

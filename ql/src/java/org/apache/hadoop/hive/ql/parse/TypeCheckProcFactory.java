@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -170,7 +171,8 @@ public class TypeCheckProcFactory {
         tf.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
         + HiveParser.KW_FALSE + "%"), tf.getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), tf.getDateExprProcessor());
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%|"
+        + HiveParser.TOK_TIMESTAMPLITERAL + "%"), tf.getDateTimeExprProcessor());
     opRules.put(new RuleRegExp("R6", HiveParser.TOK_TABLE_OR_COL + "%"),
         tf.getColumnExprProcessor());
     opRules.put(new RuleRegExp("R7", HiveParser.TOK_SUBQUERY_OP + "%"),
@@ -420,7 +422,7 @@ public class TypeCheckProcFactory {
   /**
    * Processor for date constants.
    */
-  public static class DateExprProcessor implements NodeProcessor {
+  public static class DateTimeExprProcessor implements NodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -437,14 +439,24 @@ public class TypeCheckProcFactory {
       }
 
       ASTNode expr = (ASTNode) nd;
+      String timeString = BaseSemanticAnalyzer.stripQuotes(expr.getText());
 
       // Get the string value and convert to a Date value.
       try {
-        String dateString = BaseSemanticAnalyzer.stripQuotes(expr.getText());
-        Date date = Date.valueOf(dateString);
-        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, date);
-      } catch (IllegalArgumentException err) {
-        throw new SemanticException("Unable to convert date literal string to date value.", err);
+        // todo replace below with joda-time, which supports timezone
+        if (expr.getType() == HiveParser.TOK_DATELITERAL) {
+          PrimitiveTypeInfo typeInfo = TypeInfoFactory.dateTypeInfo;
+          return new ExprNodeConstantDesc(typeInfo,
+              Date.valueOf(timeString));
+        }
+        if (expr.getType() == HiveParser.TOK_TIMESTAMPLITERAL) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+              Timestamp.valueOf(timeString));
+        }
+        throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
+      } catch (Exception err) {
+        throw new SemanticException(
+            "Unable to convert time literal '" + timeString + "' to time value.", err);
       }
     }
   }
@@ -454,8 +466,8 @@ public class TypeCheckProcFactory {
    *
    * @return DateExprProcessor.
    */
-  public DateExprProcessor getDateExprProcessor() {
-    return new DateExprProcessor();
+  public DateTimeExprProcessor getDateTimeExprProcessor() {
+    return new DateTimeExprProcessor();
   }
 
   /**
