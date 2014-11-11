@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * The basic implementation of PartitionExpressionProxy that uses ql package classes.
@@ -40,13 +41,14 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   }
 
   @Override
-  public boolean filterPartitionsByExpr(List<String> columnNames, byte[] exprBytes,
+  public boolean filterPartitionsByExpr(List<String> partColumnNames,
+      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] exprBytes,
       String defaultPartitionName, List<String> partitionNames) throws MetaException {
     ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
     try {
       long startTime = System.nanoTime(), len = partitionNames.size();
       boolean result = PartitionPruner.prunePartitionNames(
-          columnNames, expr, defaultPartitionName, partitionNames);
+          partColumnNames, partColumnTypeInfos, expr, defaultPartitionName, partitionNames);
       double timeMs = (System.nanoTime() - startTime) / 1000000.0;
       LOG.debug("Pruning " + len + " partition names took " + timeMs + "ms");
       return result;
