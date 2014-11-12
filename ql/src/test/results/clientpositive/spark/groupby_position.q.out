@@ -40,11 +40,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -67,6 +67,11 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 20) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -238,11 +243,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -265,6 +270,11 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 20) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE

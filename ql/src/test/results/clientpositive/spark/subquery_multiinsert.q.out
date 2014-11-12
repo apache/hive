@@ -68,14 +68,14 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 10 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Reducer 3 (SORT, 1)
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
         Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -84,6 +84,11 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     value expressions: key (type: string), value (type: string)
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: string), value (type: string)
                     sort order: ++
@@ -501,14 +506,14 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 10 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Reducer 3 (SORT, 1)
-        Reducer 5 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
         Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -517,6 +522,11 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     value expressions: key (type: string), value (type: string)
+        Map 11 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: key (type: string), value (type: string)
                     sort order: ++

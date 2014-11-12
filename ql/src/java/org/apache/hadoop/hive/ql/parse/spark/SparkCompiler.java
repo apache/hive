@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
+import org.apache.hadoop.hive.ql.optimizer.spark.SplitSparkWorkResolver;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -261,6 +262,8 @@ public class SparkCompiler extends TaskCompiler {
       Context ctx) throws SemanticException {
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
+
+    physicalCtx = new SplitSparkWorkResolver().resolve(physicalCtx);
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);
