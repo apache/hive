@@ -18,23 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -70,7 +62,7 @@ public class SparkPlanGenerator {
   private Context context;
   private Path scratchDir;
   private SparkReporter sparkReporter;
-  private final Map<BaseWork, BaseWork> cloneToWork;
+  private Map<BaseWork, BaseWork> cloneToWork;
   private final Map<BaseWork, SparkTran> workToTranMap;
   private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
 
@@ -85,7 +77,6 @@ public class SparkPlanGenerator {
     this.context = context;
     this.jobConf = jobConf;
     this.scratchDir = scratchDir;
-    this.cloneToWork = new HashMap<BaseWork, BaseWork>();
     this.workToTranMap = new HashMap<BaseWork, SparkTran>();
     this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
     this.sparkReporter = sparkReporter;
@@ -93,11 +84,9 @@ public class SparkPlanGenerator {
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     SparkPlan sparkPlan = new SparkPlan();
-    cloneToWork.clear();
+    cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
-
-    splitSparkWork(sparkWork);
 
     for (BaseWork work : sparkWork.getAllWork()) {
       SparkTran tran;
@@ -157,105 +146,6 @@ public class SparkPlanGenerator {
     }
 
     return result;
-  }
-
-
-  private void splitSparkWork(SparkWork sparkWork) {
-    // do a BFS on the sparkWork graph, and look for any work that has more than one child.
-    // If we found such a work, we split it into multiple ones, one for each of its child.
-    Queue<BaseWork> queue = new LinkedList<BaseWork>();
-    Set<BaseWork> visited = new HashSet<BaseWork>();
-    queue.addAll(sparkWork.getRoots());
-    while (!queue.isEmpty()) {
-      BaseWork work = queue.poll();
-      if (!visited.add(work)) {
-        continue;
-      }
-
-      List<BaseWork> childWorks = sparkWork.getChildren(work);
-      // First, add all children of this work into queue, to be processed later.
-      for (BaseWork w : childWorks) {
-        queue.add(w);
-      }
-
-      // Second, check if this work has multiple reduceSinks. If so, do split.
-      splitBaseWork(sparkWork, work, childWorks);
-    }
-  }
-
-  private Set<Operator<?>> getAllReduceSinks(BaseWork work) {
-    Set<Operator<?>> resultSet = work.getAllLeafOperators();
-    Iterator<Operator<?>> it = resultSet.iterator();
-    while (it.hasNext()) {
-      if (!(it.next() instanceof ReduceSinkOperator)) {
-        it.remove();
-      }
-    }
-    return resultSet;
-  }
-
-  // Split work into multiple branches, one for each childWork in childWorks.
-  // It also set up the connection between each parent work and child work.
-  private void splitBaseWork(SparkWork sparkWork, BaseWork parentWork, List<BaseWork> childWorks) {
-    if (getAllReduceSinks(parentWork).size() <= 1) {
-      return;
-    }
-
-    // Grand-parent works - we need to set these to be the parents of the cloned works.
-    List<BaseWork> grandParentWorks = sparkWork.getParents(parentWork);
-    boolean isFirst = true;
-
-    for (BaseWork childWork : childWorks) {
-      BaseWork clonedParentWork = Utilities.cloneBaseWork(parentWork);
-      String childReducerName = childWork.getName();
-      SparkEdgeProperty clonedEdgeProperty = sparkWork.getEdgeProperty(parentWork, childWork);
-
-      // We need to remove those branches that
-      // 1, ended with a ReduceSinkOperator, and
-      // 2, the ReduceSinkOperator's name is not the same as childReducerName.
-      // Also, if the cloned work is not the first, we remove ALL leaf operators except
-      // the corresponding ReduceSinkOperator.
-      for (Operator<?> op : clonedParentWork.getAllLeafOperators()) {
-        if (op instanceof ReduceSinkOperator) {
-          if (!((ReduceSinkOperator)op).getConf().getOutputName().equals(childReducerName)) {
-            removeOpRecursive(op);
-          }
-        } else if (!isFirst) {
-          removeOpRecursive(op);
-        }
-      }
-
-      isFirst = false;
-
-      // Then, we need to set up the graph connection. Especially:
-      // 1, we need to connect this cloned parent work with all the grand-parent works.
-      // 2, we need to connect this cloned parent work with the corresponding child work.
-      sparkWork.add(clonedParentWork);
-      for (BaseWork gpw : grandParentWorks) {
-        sparkWork.connect(gpw, clonedParentWork, sparkWork.getEdgeProperty(gpw, parentWork));
-      }
-      sparkWork.connect(clonedParentWork, childWork, clonedEdgeProperty);
-      cloneToWork.put(clonedParentWork, parentWork);
-    }
-
-    sparkWork.remove(parentWork);
-  }
-
-  // Remove op from all its parents' child list.
-  // Recursively remove any of its parent who only have this op as child.
-  private void removeOpRecursive(Operator<?> operator) {
-    List<Operator<?>> parentOperators = new ArrayList<Operator<?>>();
-    for (Operator<?> op : operator.getParentOperators()) {
-      parentOperators.add(op);
-    }
-    for (Operator<?> parentOperator : parentOperators) {
-      Preconditions.checkArgument(parentOperator.getChildOperators().contains(operator),
-          "AssertionError: parent of " + operator.getName() + " doesn't have it as child.");
-      parentOperator.removeChild(operator);
-      if (parentOperator.getNumChild() == 0) {
-        removeOpRecursive(parentOperator);
-      }
-    }
   }
 
   private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {

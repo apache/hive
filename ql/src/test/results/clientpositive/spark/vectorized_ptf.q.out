@@ -5202,10 +5202,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 6 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Reducer 2 (PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Reducer 7 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 1 (PARTITION-LEVEL SORT, 1)
+        Reducer 7 <- Map 1 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -5271,33 +5272,6 @@ STAGE PLANS:
                   name: default.part_orc
             Truncated Path -> Alias:
               /part_orc [part_orc]
-        Reducer 2 
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Extract
-                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                PTF Operator
-                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col2 (type: string), _col5 (type: int)
-                    sort order: ++
-                    Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
-                    auto parallelism: false
-                  Select Operator
-                    expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                    outputColumnNames: _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string)
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                      tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                      auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5387,6 +5361,40 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+        Reducer 6 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col2 (type: string), _col5 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col2 (type: string)
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                    auto parallelism: false
+        Reducer 7 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                    outputColumnNames: _col1, _col2, _col5, _col7
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                      auto parallelism: false
 
   Stage: Stage-3
     Dependency Collection

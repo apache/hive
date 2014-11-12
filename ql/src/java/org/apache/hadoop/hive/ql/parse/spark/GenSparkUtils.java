@@ -410,4 +410,8 @@ public class GenSparkUtils {
     }
     return null;
   }
+
+  public synchronized int getNextSeqNumber() {
+    return ++sequenceNumber;
+  }
 }

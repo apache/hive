@@ -296,11 +296,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP, 1)
+        Reducer 3 <- Map 5 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src_10
@@ -356,6 +356,11 @@ STAGE PLANS:
                                 Map-reduce partition columns: _col0 (type: string)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: double)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -567,11 +572,11 @@ STAGE PLANS:
   Stage: Stage-3
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Map 1 (SORT, 1)
+        Reducer 2 <- Map 4 (GROUP, 1)
+        Reducer 3 <- Map 5 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src_10
@@ -627,6 +632,11 @@ STAGE PLANS:
                                 Map-reduce partition columns: _col0 (type: string)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                                 value expressions: _col1 (type: double)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > 200) or (key < 200)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE
@@ -857,12 +867,12 @@ STAGE PLANS:
   Stage: Stage-3
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 6 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src_10
@@ -916,6 +926,11 @@ STAGE PLANS:
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: double)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -965,6 +980,11 @@ STAGE PLANS:
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: double)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: value (type: string), key (type: string)
                     outputColumnNames: value, key
@@ -1221,12 +1241,12 @@ STAGE PLANS:
   Stage: Stage-4
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Map 1 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 6 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 4 <- Map 7 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src_10
@@ -1280,6 +1300,11 @@ STAGE PLANS:
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: string)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1329,6 +1354,11 @@ STAGE PLANS:
                                 sort order: ++
                                 Map-reduce partition columns: _col0 (type: string)
                                 Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: src_10
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > 200) or (key < 200)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 62 Basic stats: COMPLETE Column stats: NONE

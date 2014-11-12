@@ -49,15 +49,20 @@ public class SparkWork extends AbstractOperatorDesc {
   private final Set<BaseWork> roots = new HashSet<BaseWork>();
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
 
-  protected final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
-  protected final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
+  protected final Map<BaseWork, List<BaseWork>> workGraph =
+      new HashMap<BaseWork, List<BaseWork>>();
+  protected final Map<BaseWork, List<BaseWork>> invertedWorkGraph =
+      new HashMap<BaseWork, List<BaseWork>>();
   protected final Map<Pair<BaseWork, BaseWork>, SparkEdgeProperty> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, SparkEdgeProperty>();
 
   private Map<String, List<String>> requiredCounterPrefix;
 
+  private final Map<BaseWork, BaseWork> cloneToWork;
+
   public SparkWork(String name) {
     this.name = name + ":" + (++counter);
+    cloneToWork = new HashMap<BaseWork, BaseWork>();
   }
 
 
@@ -305,20 +310,25 @@ public class SparkWork extends AbstractOperatorDesc {
   @Explain(displayName = "Edges")
   public Map<String, List<Dependency>> getDependencyMap() {
     Map<String, List<Dependency>> result = new LinkedHashMap<String, List<Dependency>>();
-    for (Map.Entry<BaseWork, List<BaseWork>> entry: invertedWorkGraph.entrySet()) {
-      List<Dependency> dependencies = new LinkedList<Dependency>();
-      for (BaseWork d: entry.getValue()) {
-        Dependency dependency = new Dependency();
-        dependency.w = d;
-        dependency.prop = getEdgeProperty(d, entry.getKey());
-        dependencies.add(dependency);
-      }
-      if (!dependencies.isEmpty()) {
-        Collections.sort(dependencies);
-        result.put(entry.getKey().getName(), dependencies);
+    for (BaseWork baseWork : getAllWork()) {
+      if (invertedWorkGraph.get(baseWork) != null && invertedWorkGraph.get(baseWork).size() > 0) {
+        List<Dependency> dependencies = new LinkedList<Dependency>();
+        for (BaseWork d : invertedWorkGraph.get(baseWork)) {
+          Dependency dependency = new Dependency();
+          dependency.w = d;
+          dependency.prop = getEdgeProperty(d, baseWork);
+          dependencies.add(dependency);
+        }
+        if (!dependencies.isEmpty()) {
+          Collections.sort(dependencies);
+          result.put(baseWork.getName(), dependencies);
+        }
       }
     }
     return result;
   }
 
+  public Map<BaseWork, BaseWork> getCloneToWork() {
+    return cloneToWork;
+  }
 }
