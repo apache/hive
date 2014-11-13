@@ -31,13 +31,12 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKeyObject;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinEagerRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
@@ -50,10 +49,11 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
-@SuppressWarnings({"rawtypes", "deprecation"})
 public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
@@ -91,14 +91,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private transient List<ObjectInspector>[] joinFilterObjectInspectors;
 
   private transient Byte[] order; // order in which the results should
-  private Configuration hconf;
+  protected Configuration hconf;
 
-  // Used as a differentiator for different files
-  // in case multiple files are created for one operator.
-  private int fileIndex = 0;
-
-  private transient MapJoinPersistableTableContainer[] mapJoinTables;
-  private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
+  protected transient MapJoinPersistableTableContainer[] mapJoinTables;
+  protected transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
 
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   private static final MapJoinEagerRowContainer EMPTY_ROW_CONTAINER = new MapJoinEagerRowContainer();
@@ -107,7 +103,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   }
   
   private long rowNumber = 0;
-  private transient LogHelper console;
+  protected transient LogHelper console;
   private long hashTableScale;
   private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
   
@@ -201,24 +197,25 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     return mapJoinTables;
   }
 
-//  private static List<ObjectInspector>[] getStandardObjectInspectors(
-//      List<ObjectInspector>[] aliasToObjectInspectors, int maxTag) {
-//    @SuppressWarnings("unchecked")
-//    List<ObjectInspector>[] result = new List[maxTag];
-//    for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
-//      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
-//      if (oiList == null) {
-//        continue;
-//      }
-//      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(oiList.size());
-//      for (int i = 0; i < oiList.size(); i++) {
-//        fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList.get(i),
-//            ObjectInspectorCopyOption.WRITABLE));
-//      }
-//      result[alias] = fieldOIList;
-//    }
-//    return result;
-//  }
+  private static List<ObjectInspector>[] getStandardObjectInspectors(
+      List<ObjectInspector>[] aliasToObjectInspectors, int maxTag) {
+    @SuppressWarnings("unchecked")
+    List<ObjectInspector>[] result = new List[maxTag];
+    for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
+      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
+      if (oiList == null) {
+        continue;
+      }
+      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(oiList.size());
+      for (int i = 0; i < oiList.size(); i++) {
+        fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList.get(i),
+            ObjectInspectorCopyOption.WRITABLE));
+      }
+      result[alias] = fieldOIList;
+    }
+    return result;
+
+  }
 
   /*
    * This operator only process small tables Read the key/value pairs Load them into hashtable
@@ -298,22 +295,11 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       // get the tmp URI path; it will be a hdfs path if not local mode
       String dumpFilePrefix = conf.getDumpFilePrefix();
       Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
-      FileSystem fs = path.getFileSystem(hconf);
-      short replication = fs.getDefaultReplication(path);
-
-      // For Spark, path is a folder. Let's create it now.
-      if (HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-        fs.mkdirs(path);  // Create the folder and its parents if not there
-        path = new Path(path, getOperatorId() + "-" + (fileIndex++));
-        // TODO find out numOfPartitions for the big table
-        int numOfPartitions = 10;
-        replication = (short)Math.min(10, numOfPartitions);
-      }
       console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag +
           " with group count: " + tableContainer.size() + " into file: " + path);
       // get the hashtable file and path
-      ObjectOutputStream out = new ObjectOutputStream(
-        new BufferedOutputStream(fs.create(path, replication), 4096));
+      FileSystem fs = path.getFileSystem(hconf);
+      ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
       try {
         mapJoinTableSerdes[tag].persist(out, tableContainer);
       } finally {

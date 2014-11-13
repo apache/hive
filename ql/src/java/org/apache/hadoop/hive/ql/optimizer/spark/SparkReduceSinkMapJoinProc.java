@@ -26,15 +26,13 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
-import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -43,12 +41,12 @@ import org.apache.hadoop.hive.ql.parse.spark.GenSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
-import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
+import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -234,9 +232,9 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     //replace ReduceSinkOp with HashTableSinkOp for the RSops which are parents of MJop
     MapJoinDesc mjDesc = mapJoinOp.getConf();
 
-    HashTableSinkDesc hashTableSinkDesc = new HashTableSinkDesc(mjDesc);
-    HashTableSinkOperator hashTableSinkOp = (HashTableSinkOperator) OperatorFactory
-        .get(hashTableSinkDesc);
+    SparkHashTableSinkDesc hashTableSinkDesc = new SparkHashTableSinkDesc(mjDesc);
+    SparkHashTableSinkOperator hashTableSinkOp =
+      (SparkHashTableSinkOperator) OperatorFactory.get(hashTableSinkDesc);
 
     //get all parents of reduce sink
     List<Operator<? extends OperatorDesc>> RSparentOps = parentRS.getParentOperators();
@@ -244,6 +242,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
       parent.replaceChild(parentRS, hashTableSinkOp);
     }
     hashTableSinkOp.setParentOperators(RSparentOps);
+    hashTableSinkOp.setTag((byte)pos);
     return true;
   }
 }
