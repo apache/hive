@@ -220,7 +220,7 @@ public class SparkClient implements Serializable {
     // As we always use foreach action to submit RDD graph, it would only trigger on job.
     int jobId = future.jobIds().get(0);
     SimpleSparkJobStatus sparkJobStatus =
-      new SimpleSparkJobStatus(jobId, jobStateListener, jobProgressListener, sparkCounters);
+      new SimpleSparkJobStatus(jobId, jobStateListener, jobProgressListener, sparkCounters, future);
     return new SparkJobRef(jobId, sparkJobStatus);
   }
 

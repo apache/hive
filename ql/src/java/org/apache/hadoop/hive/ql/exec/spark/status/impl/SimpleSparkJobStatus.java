@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.executor.InputMetrics;
 import org.apache.spark.executor.ShuffleReadMetrics;
 import org.apache.spark.executor.ShuffleWriteMetrics;
@@ -49,17 +50,20 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
   private JobStateListener jobStateListener;
   private JobProgressListener jobProgressListener;
   private SparkCounters sparkCounters;
+  private JavaFutureAction<Void> future;
 
   public SimpleSparkJobStatus(
     int jobId,
     JobStateListener stateListener,
     JobProgressListener progressListener,
-    SparkCounters sparkCounters) {
+    SparkCounters sparkCounters,
+    JavaFutureAction<Void> future) {
 
     this.jobId = jobId;
     this.jobStateListener = stateListener;
     this.jobProgressListener = progressListener;
     this.sparkCounters = sparkCounters;
+    this.future = future;
   }
 
   @Override
@@ -69,7 +73,14 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
 
   @Override
   public SparkJobState getState() {
-    return jobStateListener.getJobState(jobId);
+    // For spark job with empty source data, it's not submitted actually, so we would never
+    // receive JobStart/JobEnd event in JobStateListener, use JavaFutureAction to get current
+    // job state.
+    if (future.isDone()) {
+      return SparkJobState.SUCCEEDED;
+    } else {
+      return jobStateListener.getJobState(jobId);
+    }
   }
 
   @Override
@@ -135,6 +146,10 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
     // add spark job metrics.
     String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
     Map<String, List<TaskMetrics>> jobMetric = jobStateListener.getJobMetric(jobId);
+    if (jobMetric == null) {
+      return null;
+    }
+
     Map<String, Long> flatJobMetric = combineJobLevelMetrics(jobMetric);
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
       sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
@@ -170,31 +185,35 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
     boolean shuffleWriteMetricExist = false;
 
     for (List<TaskMetrics> stageMetric : jobMetric.values()) {
-      for (TaskMetrics taskMetrics : stageMetric) {
-        executorDeserializeTime += taskMetrics.executorDeserializeTime();
-        executorRunTime += taskMetrics.executorRunTime();
-        resultSize += taskMetrics.resultSize();
-        jvmGCTime += taskMetrics.jvmGCTime();
-        resultSerializationTime += taskMetrics.resultSerializationTime();
-        memoryBytesSpilled += taskMetrics.memoryBytesSpilled();
-        diskBytesSpilled += taskMetrics.diskBytesSpilled();
-        if (!taskMetrics.inputMetrics().isEmpty()) {
-          inputMetricExist = true;
-          bytesRead += taskMetrics.inputMetrics().get().bytesRead();
-        }
-        Option<ShuffleReadMetrics> shuffleReadMetricsOption = taskMetrics.shuffleReadMetrics();
-        if (!shuffleReadMetricsOption.isEmpty()) {
-          shuffleReadMetricExist = true;
-          remoteBlocksFetched += shuffleReadMetricsOption.get().remoteBlocksFetched();
-          localBlocksFetched += shuffleReadMetricsOption.get().localBlocksFetched();
-          fetchWaitTime += shuffleReadMetricsOption.get().fetchWaitTime();
-          remoteBytesRead += shuffleReadMetricsOption.get().remoteBytesRead();
-        }
-        Option<ShuffleWriteMetrics> shuffleWriteMetricsOption = taskMetrics.shuffleWriteMetrics();
-        if (!shuffleWriteMetricsOption.isEmpty()) {
-          shuffleWriteMetricExist = true;
-          shuffleBytesWritten += shuffleWriteMetricsOption.get().shuffleBytesWritten();
-          shuffleWriteTime += shuffleWriteMetricsOption.get().shuffleWriteTime();
+      if (stageMetric != null) {
+        for (TaskMetrics taskMetrics : stageMetric) {
+          if (taskMetrics != null) {
+            executorDeserializeTime += taskMetrics.executorDeserializeTime();
+            executorRunTime += taskMetrics.executorRunTime();
+            resultSize += taskMetrics.resultSize();
+            jvmGCTime += taskMetrics.jvmGCTime();
+            resultSerializationTime += taskMetrics.resultSerializationTime();
+            memoryBytesSpilled += taskMetrics.memoryBytesSpilled();
+            diskBytesSpilled += taskMetrics.diskBytesSpilled();
+            if (!taskMetrics.inputMetrics().isEmpty()) {
+              inputMetricExist = true;
+              bytesRead += taskMetrics.inputMetrics().get().bytesRead();
+            }
+            Option<ShuffleReadMetrics> shuffleReadMetricsOption = taskMetrics.shuffleReadMetrics();
+            if (!shuffleReadMetricsOption.isEmpty()) {
+              shuffleReadMetricExist = true;
+              remoteBlocksFetched += shuffleReadMetricsOption.get().remoteBlocksFetched();
+              localBlocksFetched += shuffleReadMetricsOption.get().localBlocksFetched();
+              fetchWaitTime += shuffleReadMetricsOption.get().fetchWaitTime();
+              remoteBytesRead += shuffleReadMetricsOption.get().remoteBytesRead();
+            }
+            Option<ShuffleWriteMetrics> shuffleWriteMetricsOption = taskMetrics.shuffleWriteMetrics();
+            if (!shuffleWriteMetricsOption.isEmpty()) {
+              shuffleWriteMetricExist = true;
+              shuffleBytesWritten += shuffleWriteMetricsOption.get().shuffleBytesWritten();
+              shuffleWriteTime += shuffleWriteMetricsOption.get().shuffleWriteTime();
+            }
+          }
         }
       }
     }
