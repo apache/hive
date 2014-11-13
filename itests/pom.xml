@@ -49,6 +49,12 @@
         <module>hive-minikdc</module>
       </modules>
     </profile>
+    <profile>
+      <id>hadoop-1</id>
+      <modules>
+        <module>qtest-spark</module>
+      </modules>
+    </profile>
   </profiles>
 
 </project>
