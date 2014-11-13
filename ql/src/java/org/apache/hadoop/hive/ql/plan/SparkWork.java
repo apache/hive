@@ -58,7 +58,7 @@ public class SparkWork extends AbstractOperatorDesc {
 
   private Map<String, List<String>> requiredCounterPrefix;
 
-  private final Map<BaseWork, BaseWork> cloneToWork;
+  private Map<BaseWork, BaseWork> cloneToWork;
 
   public SparkWork(String name) {
     this.name = name + ":" + (++counter);
@@ -330,5 +330,9 @@ public class SparkWork extends AbstractOperatorDesc {
 
   public Map<BaseWork, BaseWork> getCloneToWork() {
     return cloneToWork;
+  }
+
+  public void setCloneToWork(Map<BaseWork, BaseWork> cloneToWork) {
+    this.cloneToWork = cloneToWork;
   }
 }
