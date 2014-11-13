@@ -76,7 +76,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       }
       // All HashTables share the same base dir,
       // which is passed in as the tmp path
-      Path baseDir = localWork.getTmpPath();
+      Path baseDir = localWork.getTmpHDFSPath();
       if (baseDir == null) {
         return;
       }
