@@ -14,7 +14,6 @@ admin
 mixCaseRole1
 mixCaseRole2
 public
-
 PREHOOK: query: create table t1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
