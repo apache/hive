@@ -42,6 +42,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to do compactions.  This will run in a separate thread.  It will spin on the
@@ -77,7 +78,7 @@ public class Worker extends CompactorThread {
       do {
         CompactionInfo ci = txnHandler.findNextToCompact(name);
 
-        if (ci == null && !stop.boolVal) {
+        if (ci == null && !stop.get()) {
           try {
             Thread.sleep(SLEEP_TIME);
             continue;
@@ -160,7 +161,7 @@ public class Worker extends CompactorThread {
               ".  Marking clean to avoid repeated failures, " + StringUtils.stringifyException(e));
           txnHandler.markCleaned(ci);
         }
-      } while (!stop.boolVal);
+      } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + name +
           ", exiting " + StringUtils.stringifyException(t));
@@ -168,7 +169,7 @@ public class Worker extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
     super.init(stop, looped);
 
     StringBuilder name = new StringBuilder(hostname());
