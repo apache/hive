@@ -229,8 +229,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -353,8 +353,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -477,8 +477,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -608,12 +608,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Map 12 (PARTITION-LEVEL SORT, 1), Map 14 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
         Reducer 4 <- Map 13 (PARTITION-LEVEL SORT, 1), Reducer 3 (PARTITION-LEVEL SORT, 1)
         Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 7 <- Map 6 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
         Reducer 9 <- Map 10 (PARTITION-LEVEL SORT, 1), Map 8 (PARTITION-LEVEL SORT, 1)
+        Reducer 7 <- Map 6 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

@@ -70,9 +70,9 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 10 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Reducer 3 (SORT, 1)
         Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
         Reducer 9 <- Map 8 (GROUP, 1)
+        Reducer 4 <- Reducer 3 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 10 
@@ -508,9 +508,9 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 10 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Reducer 3 (SORT, 1)
         Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
         Reducer 9 <- Map 8 (GROUP, 1)
+        Reducer 4 <- Reducer 3 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 10 

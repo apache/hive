@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -307,13 +306,80 @@ public class SparkWork extends AbstractOperatorDesc {
     }
   }
 
+  /**
+   * Task name is usually sorted by natural order, which is the same
+   * as the topological order in most cases. However, with Spark, some
+   * tasks may be converted, so have new names. The natural order may
+   * be different from the topological order. This class is to make
+   * sure all tasks to be sorted by topological order deterministically.
+   */
+  private static class ComparableName implements Comparable<ComparableName> {
+    private final Map<String, String> dependencies;
+    private final String name;
+
+    ComparableName(Map<String, String> dependencies, String name) {
+      this.dependencies = dependencies;
+      this.name = name;
+    }
+
+    /**
+     * Check if task n1 depends on task n2
+     */
+    boolean dependsOn(String n1, String n2) {
+      for (String p = dependencies.get(n1); p != null; p = dependencies.get(p)) {
+        if (p.equals(n2)) return true;
+      }
+      return false;
+    }
+
+    /**
+     * Get the number of parents of task n
+     */
+    int getDepth(String n) {
+      int depth = 0;
+      for (String p = dependencies.get(n); p != null; p = dependencies.get(p)) {
+        depth++;
+      }
+      return depth;
+    }
+
+    @Override
+    public int compareTo(ComparableName o) {
+      if (dependsOn(name, o.name)) {
+        // this depends on o
+        return 1;
+      }
+      if (dependsOn(o.name, name)) {
+        // o depends on this
+        return -1;
+      }
+      // No dependency, check depth
+      int d1 = getDepth(name);
+      int d2 = getDepth(o.name);
+      if (d1 == d2) {
+        // Same depth, using natural order
+        return name.compareTo(o.name);
+      }
+      // Deep one is bigger, i.e. less to the top
+      return d1 > d2 ? 1 : -1;
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+   }
+
   @Explain(displayName = "Edges")
-  public Map<String, List<Dependency>> getDependencyMap() {
-    Map<String, List<Dependency>> result = new LinkedHashMap<String, List<Dependency>>();
+  public Map<ComparableName, List<Dependency>> getDependencyMap() {
+    Map<String, String> allDependencies = new HashMap<String, String>();
+    Map<ComparableName, List<Dependency>> result =
+      new LinkedHashMap<ComparableName, List<Dependency>>();
     for (BaseWork baseWork : getAllWork()) {
       if (invertedWorkGraph.get(baseWork) != null && invertedWorkGraph.get(baseWork).size() > 0) {
         List<Dependency> dependencies = new LinkedList<Dependency>();
         for (BaseWork d : invertedWorkGraph.get(baseWork)) {
+          allDependencies.put(baseWork.getName(), d.getName());
           Dependency dependency = new Dependency();
           dependency.w = d;
           dependency.prop = getEdgeProperty(d, baseWork);
@@ -321,7 +387,8 @@ public class SparkWork extends AbstractOperatorDesc {
         }
         if (!dependencies.isEmpty()) {
           Collections.sort(dependencies);
-          result.put(baseWork.getName(), dependencies);
+          result.put(new ComparableName(allDependencies,
+            baseWork.getName()), dependencies);
         }
       }
     }

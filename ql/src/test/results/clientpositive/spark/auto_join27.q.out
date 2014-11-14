@@ -32,8 +32,8 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
         Reducer 4 <- Map 7 (PARTITION-LEVEL SORT, 1), Union 3 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
         Union 3 <- Map 6 (NONE, 0), Reducer 2 (NONE, 0)
+        Reducer 5 <- Reducer 4 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
