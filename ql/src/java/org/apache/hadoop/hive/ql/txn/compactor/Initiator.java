@@ -44,6 +44,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -126,10 +127,10 @@ public class Initiator extends CompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= checkInterval || stop.boolVal)  continue;
+        if (elapsedTime >= checkInterval || stop.get())  continue;
         else Thread.sleep(checkInterval - elapsedTime);
 
-      } while (!stop.boolVal);
+      } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
@@ -137,7 +138,7 @@ public class Initiator extends CompactorThread {
   }
 
   @Override
-  public void init(BooleanPointer stop, BooleanPointer looped) throws MetaException {
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
     super.init(stop, looped);
     checkInterval =
         conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
