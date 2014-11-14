@@ -45,7 +45,7 @@ public class MapredLocalWork implements Serializable {
   private BucketMapJoinContext bucketMapjoinContext;
   private Path tmpPath;
   private String stageID;
-  // Temp HDFS path for Spark HashTable sink and loader
+  // Temp HDFS path for Spark HashTable sink
   private Path tmpHDFSPath;
 
   private List<Operator<? extends OperatorDesc>> dummyParentOp;

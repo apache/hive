@@ -20,24 +20,31 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
@@ -120,11 +127,51 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         // update this information in sparkWorkMap
         sparkWorkMap.put(work, parentWork);
         for (BaseWork parent : parentWorks) {
-          if (containsOp(parent, HashTableSinkOperator.class)) {
+          if (containsOp(parent, SparkHashTableSinkOperator.class)) {
             moveWork(sparkWork, parent, parentWork);
           } else {
             moveWork(sparkWork, parent, targetWork);
           }
+        }
+      }
+    }
+
+    private void generateLocalWork(SparkTask originalTask) {
+      SparkWork originalWork = originalTask.getWork();
+      Collection<BaseWork> allBaseWorks = originalWork.getAllWorkUnsorted();
+
+      for (BaseWork work : allBaseWorks) {
+        if (containsOp(work, SparkHashTableSinkOperator.class) ||
+            containsOp(work, MapJoinOperator.class)) {
+          work.setMapRedLocalWork(new MapredLocalWork());
+        }
+      }
+
+      Context ctx = physicalContext.getContext();
+
+      for (BaseWork work : allBaseWorks) {
+        if (containsOp(work, MapJoinOperator.class)) {
+          Path tmpPath = Utilities.generateTmpPath(ctx.getMRTmpPath(), originalTask.getId());
+          MapredLocalWork bigTableLocalWork = work.getMapRedLocalWork();
+          List<Operator<? extends OperatorDesc>> dummyOps =
+              new ArrayList<Operator<? extends OperatorDesc>>(work.getDummyOps());
+          bigTableLocalWork.setDummyParentOp(dummyOps);
+
+          for (BaseWork parentWork : originalWork.getParents(work)) {
+            if (containsOp(parentWork,SparkHashTableSinkOperator.class)) {
+              parentWork.getMapRedLocalWork().setTmpHDFSPath(tmpPath);
+              parentWork.getMapRedLocalWork().setDummyParentOp(
+                  new ArrayList<Operator<? extends OperatorDesc>>());
+            }
+          }
+
+          bigTableLocalWork.setAliasToWork(
+              new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
+          bigTableLocalWork.setAliasToFetchWork(new LinkedHashMap<String, FetchWork>());
+          bigTableLocalWork.setTmpPath(tmpPath);
+
+          // TODO: set inputFileChangeSensitive and BucketMapjoinContext,
+          // TODO: enable non-staged mapjoin
         }
       }
     }
@@ -167,7 +214,11 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         throws SemanticException {
       Task<? extends Serializable> currentTask = (Task<? extends Serializable>) nd;
       if (currentTask instanceof SparkTask) {
-        SparkWork sparkWork = ((SparkTask) currentTask).getWork();
+        SparkTask sparkTask = (SparkTask) currentTask;
+        SparkWork sparkWork = sparkTask.getWork();
+
+        // Generate MapredLocalWorks for MJ and HTS
+        generateLocalWork(sparkTask);
 
         dependencyGraph.put(sparkWork, new ArrayList<SparkWork>());
         Set<BaseWork> leaves = sparkWork.getLeaves();
@@ -187,7 +238,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
 
         // Now create SparkTasks from the SparkWorks, also set up dependency
         for (SparkWork work : dependencyGraph.keySet()) {
-          createSparkTask((SparkTask)currentTask, work, createdTaskMap);
+          createSparkTask(sparkTask, work, createdTaskMap);
         }
       }
 
