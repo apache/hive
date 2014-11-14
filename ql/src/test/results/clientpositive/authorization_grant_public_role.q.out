@@ -41,7 +41,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: SHOW CURRENT ROLES
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: -- user2 should be able to do a describe table, as pubic is in the current roles
 DESC t_gpr1
 PREHOOK: type: DESCTABLE
