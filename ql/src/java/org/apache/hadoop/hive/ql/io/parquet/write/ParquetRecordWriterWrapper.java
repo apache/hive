@@ -18,10 +18,12 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -55,25 +57,42 @@ public class ParquetRecordWriterWrapper implements RecordWriter<Void, ArrayWrita
       }
       taskContext = ContextUtil.newTaskAttemptContext(jobConf, taskAttemptID);
 
+      LOG.info("initialize serde with table properties.");
+      initializeSerProperties(taskContext, tableProperties);
+
       LOG.info("creating real writer to write at " + name);
 
-      String compressionName = tableProperties.getProperty(ParquetOutputFormat.COMPRESSION);
-      if (compressionName != null && !compressionName.isEmpty()) {
-        //get override compression properties via "tblproperties" clause if it is set
-        LOG.debug("get override compression properties via tblproperties");
-
-        ContextUtil.getConfiguration(taskContext);
-        CompressionCodecName codecName = CompressionCodecName.fromConf(compressionName);
-        realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(jobConf,
-                new Path(name), codecName);
-      } else {
-        realWriter = ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext,
-                new Path(name));
-      }
+      realWriter =
+              ((ParquetOutputFormat) realOutputFormat).getRecordWriter(taskContext, new Path(name));
 
       LOG.info("real writer: " + realWriter);
     } catch (final InterruptedException e) {
       throw new IOException(e);
+    }
+  }
+
+  private void initializeSerProperties(JobContext job, Properties tableProperties) {
+    String blockSize = tableProperties.getProperty(ParquetOutputFormat.BLOCK_SIZE);
+    Configuration conf = ContextUtil.getConfiguration(job);
+    if (blockSize != null && !blockSize.isEmpty()) {
+      LOG.debug("get override parquet.block.size property via tblproperties");
+      conf.setInt(ParquetOutputFormat.BLOCK_SIZE, Integer.valueOf(blockSize));
+    }
+
+    String enableDictionaryPage =
+      tableProperties.getProperty(ParquetOutputFormat.ENABLE_DICTIONARY);
+    if (enableDictionaryPage != null && !enableDictionaryPage.isEmpty()) {
+      LOG.debug("get override parquet.enable.dictionary property via tblproperties");
+      conf.setBoolean(ParquetOutputFormat.ENABLE_DICTIONARY,
+        Boolean.valueOf(enableDictionaryPage));
+    }
+
+    String compressionName = tableProperties.getProperty(ParquetOutputFormat.COMPRESSION);
+    if (compressionName != null && !compressionName.isEmpty()) {
+      //get override compression properties via "tblproperties" clause if it is set
+      LOG.debug("get override compression properties via tblproperties");
+      CompressionCodecName codecName = CompressionCodecName.fromConf(compressionName);
+      conf.set(ParquetOutputFormat.COMPRESSION, codecName.name());
     }
   }
 
