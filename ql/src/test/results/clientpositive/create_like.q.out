@@ -405,28 +405,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: CREATE TABLE CompressedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
+PREHOOK: query: CREATE TABLE PropertiedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@CompressedParquetTable
-POSTHOOK: query: CREATE TABLE CompressedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
+PREHOOK: Output: default@PropertiedParquetTable
+POSTHOOK: query: CREATE TABLE PropertiedParquetTable(a INT, b STRING) STORED AS PARQUET TBLPROPERTIES("parquet.compression"="LZO")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@CompressedParquetTable
-PREHOOK: query: CREATE TABLE LikeCompressedParquetTable LIKE CompressedParquetTable
+POSTHOOK: Output: default@PropertiedParquetTable
+PREHOOK: query: CREATE TABLE LikePropertiedParquetTable LIKE PropertiedParquetTable
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@LikeCompressedParquetTable
-POSTHOOK: query: CREATE TABLE LikeCompressedParquetTable LIKE CompressedParquetTable
+PREHOOK: Output: default@LikePropertiedParquetTable
+POSTHOOK: query: CREATE TABLE LikePropertiedParquetTable LIKE PropertiedParquetTable
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@LikeCompressedParquetTable
-PREHOOK: query: DESCRIBE FORMATTED LikeCompressedParquetTable
+POSTHOOK: Output: default@LikePropertiedParquetTable
+PREHOOK: query: DESCRIBE FORMATTED LikePropertiedParquetTable
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@likecompressedparquettable
-POSTHOOK: query: DESCRIBE FORMATTED LikeCompressedParquetTable
+PREHOOK: Input: default@likepropertiedparquettable
+POSTHOOK: query: DESCRIBE FORMATTED LikePropertiedParquetTable
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@likecompressedparquettable
+POSTHOOK: Input: default@likepropertiedparquettable
 # col_name            	data_type           	comment             
 	 	 
 a                   	int                 	                    

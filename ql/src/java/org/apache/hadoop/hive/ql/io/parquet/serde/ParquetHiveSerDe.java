@@ -64,6 +64,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import parquet.hadoop.ParquetOutputFormat;
+import parquet.hadoop.ParquetWriter;
 import parquet.io.api.Binary;
 
 /**
@@ -79,8 +80,9 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   public static final Text MAP = new Text("map");
   public static final Text ARRAY = new Text("bag");
 
-  // default compression type is uncompressed
-  private static final String DEFAULTCOMPRESSION = "UNCOMPRESSED";
+  // default compression type for parquet output format
+  private static final String DEFAULTCOMPRESSION =
+          ParquetWriter.DEFAULT_COMPRESSION_CODEC_NAME.name();
 
   // Map precision to the number bytes needed for binary conversion.
   public static final int PRECISION_TO_BYTE_COUNT[] = new int[38];
