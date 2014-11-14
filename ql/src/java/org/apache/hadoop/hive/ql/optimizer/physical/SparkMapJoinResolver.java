@@ -145,14 +145,16 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
           parentTask.addDependentTask(resultTask);
         }
       } else {
-        List<Task<? extends Serializable>> parentTasks = originalTask.getParentTasks();
-        if (parentTasks != null && parentTasks.size() > 0) {
-          for (Task<? extends Serializable> parentTask : parentTasks) {
-            parentTask.addDependentTask(resultTask);
+        if (originalTask != resultTask) {
+          List<Task<? extends Serializable>> parentTasks = originalTask.getParentTasks();
+          if (parentTasks != null && parentTasks.size() > 0) {
+            for (Task<? extends Serializable> parentTask : parentTasks) {
+              parentTask.addDependentTask(resultTask);
+            }
+          } else {
+            physicalContext.addToRootTask(resultTask);
+            physicalContext.removeFromRootTask(originalTask);
           }
-        } else {
-          physicalContext.addToRootTask(resultTask);
-          physicalContext.removeFromRootTask(originalTask);
         }
       }
 
