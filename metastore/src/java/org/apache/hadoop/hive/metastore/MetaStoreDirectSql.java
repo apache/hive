@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.jdo.JDODataStoreException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
@@ -40,6 +41,7 @@ import javax.jdo.datastore.JDOConnection;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.derby.iapi.error.StandardException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -87,6 +89,7 @@ class MetaStoreDirectSql {
     MYSQL,
     ORACLE,
     MSSQL,
+    DERBY,
     OTHER
   }
 
@@ -134,8 +137,26 @@ class MetaStoreDirectSql {
       dbType = DB.ORACLE;
     } else if (runDbCheck("SELECT @@version", "MSSQL")) {
       dbType = DB.MSSQL;
+    } else {
+      // TODO: maybe we should use getProductName to identify all the DBs
+      String productName = getProductName();
+      if (productName != null && productName.toLowerCase().contains("derby")) {
+        dbType = DB.DERBY;
+      }
     }
     return dbType;
+  }
+
+  private String getProductName() {
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    try {
+      return ((Connection)jdoConn.getNativeConnection()).getMetaData().getDatabaseProductName();
+    } catch (Throwable t) {
+      LOG.warn("Error retrieving product name", t);
+      return null;
+    } finally {
+      jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
   }
 
   private boolean ensureDbInit() {
@@ -147,7 +168,7 @@ class MetaStoreDirectSql {
       pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''").execute();
       return true;
     } catch (Exception ex) {
-      LOG.error("Database initialization failed; direct SQL is disabled", ex);
+      LOG.warn("Database initialization failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
     }
@@ -162,7 +183,7 @@ class MetaStoreDirectSql {
       tx.commit();
       return true;
     } catch (Exception ex) {
-      LOG.error("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
+      LOG.warn("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
       tx.rollback();
       return false;
     }
@@ -236,8 +257,8 @@ class MetaStoreDirectSql {
             + " with param [" + params[0] + "]");
       }
 
-      @SuppressWarnings("unchecked")
-      List<Object[]> sqlResult = (List<Object[]>)queryDbSelector.executeWithArray(params);
+      List<Object[]> sqlResult = executeWithArray(
+          queryDbSelector, params, queryTextDbSelector);
       if ((sqlResult == null) || sqlResult.isEmpty()) {
         return null;
       }
@@ -262,10 +283,11 @@ class MetaStoreDirectSql {
       }
 
       Map<String,String> dbParams = new HashMap<String,String>();
-      List<Object[]> sqlResult2 = ensureList(queryDbParams.executeWithArray(params));
+      List<Object[]> sqlResult2 = ensureList(executeWithArray(
+          queryDbParams, params, queryTextDbParams));
       if (!sqlResult2.isEmpty()) {
         for (Object[] line : sqlResult2) {
-          dbParams.put(extractSqlString(line[0]),extractSqlString(line[1]));
+          dbParams.put(extractSqlString(line[0]), extractSqlString(line[1]));
         }
       }
       Database db = new Database();
@@ -323,12 +345,16 @@ class MetaStoreDirectSql {
     assert tree != null;
     List<Object> params = new ArrayList<Object>();
     List<String> joins = new ArrayList<String>();
-    String sqlFilter = PartitionFilterGenerator.generateSqlFilter(table, tree, params, joins);
+    // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
+    boolean dbHasJoinCastBug = (dbType == DB.DERBY || dbType == DB.ORACLE);
+    String sqlFilter = PartitionFilterGenerator.generateSqlFilter(
+        table, tree, params, joins, dbHasJoinCastBug);
     if (sqlFilter == null) {
       return null; // Cannot make SQL filter to push down.
     }
+    Boolean isViewTable = isViewTable(table);
     return getPartitionsViaSqlFilterInternal(table.getDbName(), table.getTableName(),
-        isViewTable(table), sqlFilter, params, joins, max);
+        isViewTable, sqlFilter, params, joins, max);
   }
 
   /**
@@ -356,7 +382,7 @@ class MetaStoreDirectSql {
     Object[] params = new Object[] { tblName, dbName };
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
     query.setUnique(true);
-    Object result = query.executeWithArray(params);
+    Object result = executeWithArray(query, params, queryText);
     return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
   }
 
@@ -413,8 +439,7 @@ class MetaStoreDirectSql {
     if (max != null) {
       query.setRange(0, max.shortValue());
     }
-    @SuppressWarnings("unchecked")
-    List<Object> sqlResult = (List<Object>)query.executeWithArray(params);
+    List<Object> sqlResult = executeWithArray(query, params, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
     if (sqlResult.isEmpty()) {
       timingTrace(doTrace, queryText, start, queryTime);
@@ -466,7 +491,7 @@ class MetaStoreDirectSql {
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
     @SuppressWarnings("unchecked")
-    List<Object[]> sqlResult = (List<Object[]>)query.execute();
+    List<Object[]> sqlResult = executeWithArray(query, null, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
 
     // Read all the fields and create partitions, SDs and serdes.
@@ -835,12 +860,14 @@ class MetaStoreDirectSql {
     private final FilterBuilder filterBuffer;
     private final List<Object> params;
     private final List<String> joins;
+    private final boolean dbHasJoinCastBug;
 
     private PartitionFilterGenerator(
-        Table table, List<Object> params, List<String> joins) {
+        Table table, List<Object> params, List<String> joins, boolean dbHasJoinCastBug) {
       this.table = table;
       this.params = params;
       this.joins = joins;
+      this.dbHasJoinCastBug = dbHasJoinCastBug;
       this.filterBuffer = new FilterBuilder(false);
     }
 
@@ -851,13 +878,14 @@ class MetaStoreDirectSql {
      * @param joins the joins necessary for the resulting expression
      * @return the string representation of the expression tree
      */
-    public static String generateSqlFilter(Table table,
-        ExpressionTree tree, List<Object> params, List<String> joins) throws MetaException {
+    private static String generateSqlFilter(Table table, ExpressionTree tree,
+        List<Object> params, List<String> joins, boolean dbHasJoinCastBug) throws MetaException {
       assert table != null;
       if (tree.getRoot() == null) {
         return "";
       }
-      PartitionFilterGenerator visitor = new PartitionFilterGenerator(table, params, joins);
+      PartitionFilterGenerator visitor = new PartitionFilterGenerator(
+          table, params, joins, dbHasJoinCastBug);
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -996,11 +1024,15 @@ class MetaStoreDirectSql {
           tableValue = "cast(" + tableValue + " as date)";
         }
 
-        // This is a workaround for DERBY-6358; as such, it is pretty horrible.
-        tableValue = "(case when \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? then "
-          + tableValue + " else null end)";
-        params.add(table.getTableName().toLowerCase());
-        params.add(table.getDbName().toLowerCase());
+        if (dbHasJoinCastBug) {
+          // This is a workaround for DERBY-6358 and Oracle bug; it is pretty horrible.
+          tableValue = "(case when \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? and "
+              + "\"FILTER" + partColIndex + "\".\"PART_ID\" = \"PARTITIONS\".\"PART_ID\" and "
+                + "\"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex + " then "
+              + tableValue + " else null end)";
+          params.add(table.getTableName().toLowerCase());
+          params.add(table.getDbName().toLowerCase());
+        }
       }
       if (!node.isReverseOrder) {
         params.add(nodeValue);
@@ -1029,7 +1061,7 @@ class MetaStoreDirectSql {
     for (int i = 0; i < colNames.size(); ++i) {
       params[i + 2] = colNames.get(i);
     }
-    Object qResult = query.executeWithArray(params);
+    Object qResult = executeWithArray(query, params, queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
     if (qResult == null) {
       query.closeAll();
@@ -1056,17 +1088,17 @@ class MetaStoreDirectSql {
       List<String> partNames, List<String> colNames) throws MetaException {
     long partsFound = 0;
     boolean doTrace = LOG.isDebugEnabled();
-    String qText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""
+    String queryText = "select count(\"COLUMN_NAME\") from \"PART_COL_STATS\""
         + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
         + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
         + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
         + " group by \"PARTITION_NAME\"";
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", qText);
-    Object qResult = query.executeWithArray(prepareParams(dbName, tableName,
-        partNames, colNames));
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    Object qResult = executeWithArray(query, prepareParams(
+        dbName, tableName, partNames, colNames), queryText);
     long end = doTrace ? System.nanoTime() : 0;
-    timingTrace(doTrace, qText, start, end);
+    timingTrace(doTrace, queryText, start, end);
     ForwardQueryResult fqr = (ForwardQueryResult) qResult;
     Iterator<?> iter = fqr.iterator();
     while (iter.hasNext()) {
@@ -1087,7 +1119,7 @@ class MetaStoreDirectSql {
         + "min(\"BIG_DECIMAL_LOW_VALUE\"), max(\"BIG_DECIMAL_HIGH_VALUE\"), sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
         + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\") from \"PART_COL_STATS\""
         + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? ";
-    String qText = null;
+    String queryText = null;
     long start = 0;
     long end = 0;
     Query query = null;
@@ -1097,20 +1129,20 @@ class MetaStoreDirectSql {
     // Check if the status of all the columns of all the partitions exists
     // Extrapolation is not needed.
     if (partsFound == partNames.size()) {
-      qText = commonPrefix 
+      queryText = commonPrefix
           + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
           + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", qText);
-      qResult = query.executeWithArray(prepareParams(dbName, tableName,
-          partNames, colNames));      
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      qResult = executeWithArray(query, prepareParams(
+          dbName, tableName, partNames, colNames), queryText);
       if (qResult == null) {
         query.closeAll();
         return Lists.newArrayList();
       }
       end = doTrace ? System.nanoTime() : 0;
-      timingTrace(doTrace, qText, start, end);
+      timingTrace(doTrace, queryText, start, end);
       List<Object[]> list = ensureList(qResult);
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(
           list.size());
@@ -1125,18 +1157,18 @@ class MetaStoreDirectSql {
       // We need to extrapolate this partition based on the other partitions
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(
           colNames.size());
-      qText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PARTITION_NAME\") "
+      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PARTITION_NAME\") "
           + " from \"PART_COL_STATS\""
           + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
           + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
           + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", qText);
-      qResult = query.executeWithArray(prepareParams(dbName, tableName,
-          partNames, colNames));
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      qResult = executeWithArray(query, prepareParams(
+          dbName, tableName, partNames, colNames), queryText);
       end = doTrace ? System.nanoTime() : 0;
-      timingTrace(doTrace, qText, start, end);
+      timingTrace(doTrace, queryText, start, end);
       if (qResult == null) {
         query.closeAll();
         return Lists.newArrayList();
@@ -1161,14 +1193,14 @@ class MetaStoreDirectSql {
       query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
       if (noExtraColumnNames.size() != 0) {
-        qText = commonPrefix 
+        queryText = commonPrefix
             + " and \"COLUMN_NAME\" in ("+ makeParams(noExtraColumnNames.size()) + ")"
             + " and \"PARTITION_NAME\" in ("+ makeParams(partNames.size()) +")"
             + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", qText);
-        qResult = query.executeWithArray(prepareParams(dbName, tableName,
-            partNames, noExtraColumnNames));
+        query = pm.newQuery("javax.jdo.query.SQL", queryText);
+        qResult = executeWithArray(query, prepareParams(
+            dbName, tableName, partNames, noExtraColumnNames), queryText);
         if (qResult == null) {
           query.closeAll();
           return Lists.newArrayList();
@@ -1178,7 +1210,7 @@ class MetaStoreDirectSql {
           colStats.add(prepareCSObj(row, 0));
         }
         end = doTrace ? System.nanoTime() : 0;
-        timingTrace(doTrace, qText, start, end);
+        timingTrace(doTrace, queryText, start, end);
         query.closeAll();
       }
       // Extrapolation is needed for extraColumnNames.
@@ -1190,18 +1222,18 @@ class MetaStoreDirectSql {
         }
         // get sum for all columns to reduce the number of queries
         Map<String, Map<Integer, Object>> sumMap = new HashMap<String, Map<Integer, Object>>();
-        qText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\")"
+        queryText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\")"
             + " from \"PART_COL_STATS\""
             + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
             + " and \"COLUMN_NAME\" in (" +makeParams(extraColumnNameTypeParts.size())+ ")"
             + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
             + " group by \"COLUMN_NAME\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", qText);
+        query = pm.newQuery("javax.jdo.query.SQL", queryText);
         List<String> extraColumnNames = new ArrayList<String>();
         extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-        qResult = query.executeWithArray(prepareParams(dbName, tableName,
-            partNames, extraColumnNames));
+        qResult = executeWithArray(query, prepareParams(
+            dbName, tableName, partNames, extraColumnNames), queryText);
         if (qResult == null) {
           query.closeAll();
           return Lists.newArrayList();
@@ -1217,7 +1249,7 @@ class MetaStoreDirectSql {
           sumMap.put((String) row[0], indexToObject);
         }
         end = doTrace ? System.nanoTime() : 0;
-        timingTrace(doTrace, qText, start, end);
+        timingTrace(doTrace, queryText, start, end);
         query.closeAll();
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts
             .entrySet()) {
@@ -1252,7 +1284,7 @@ class MetaStoreDirectSql {
             } else {
               // if the aggregation type is min/max, we extrapolate from the
               // left/right borders
-              qText = "select \""
+              queryText = "select \""
                   + colStatName
                   + "\",\"PARTITION_NAME\" from \"PART_COL_STATS\""
                   + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ?"
@@ -1260,9 +1292,9 @@ class MetaStoreDirectSql {
                   + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
                   + " order by \'" + colStatName + "\'";
               start = doTrace ? System.nanoTime() : 0;
-              query = pm.newQuery("javax.jdo.query.SQL", qText);
-              qResult = query.executeWithArray(prepareParams(dbName,
-                  tableName, partNames, Arrays.asList(colName)));
+              query = pm.newQuery("javax.jdo.query.SQL", queryText);
+              qResult = executeWithArray(query, prepareParams(
+                  dbName, tableName, partNames, Arrays.asList(colName)), queryText);
               if (qResult == null) {
                 query.closeAll();
                 return Lists.newArrayList();
@@ -1271,7 +1303,7 @@ class MetaStoreDirectSql {
               Object[] min = (Object[]) (fqr.get(0));
               Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
               end = doTrace ? System.nanoTime() : 0;
-              timingTrace(doTrace, qText, start, end);
+              timingTrace(doTrace, queryText, start, end);
               query.closeAll();
               if (min[0] == null || max[0] == null) {
                 row[2 + colStatIndex] = null;
@@ -1329,7 +1361,8 @@ class MetaStoreDirectSql {
       + makeParams(partNames.size()) + ") order by \"PARTITION_NAME\"";
 
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    Object qResult = query.executeWithArray(prepareParams(dbName, tableName, partNames, colNames));
+    Object qResult = executeWithArray(query, prepareParams(
+        dbName, tableName, partNames, colNames), queryText);
     long queryTime = doTrace ? System.nanoTime() : 0;
     if (qResult == null) {
       query.closeAll();
@@ -1395,5 +1428,24 @@ class MetaStoreDirectSql {
   private String makeParams(int size) {
     // W/ size 0, query will fail, but at least we'd get to see the query in debug output.
     return (size == 0) ? "" : repeat(",?", size).substring(1);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
+    try {
+      return (T)((params == null) ? query.execute() : query.executeWithArray(params));
+    } catch (Exception ex) {
+      String error = "Failed to execute [" + sql + "] with parameters [";
+      if (params != null) {
+        boolean isFirst = true;
+        for (Object param : params) {
+          error += (isFirst ? "" : ", ") + param;
+          isFirst = false;
+        }
+      }
+      LOG.warn(error + "]", ex);
+      // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
+      throw new MetaException("See previous errors; " + ex.getMessage());
+    }
   }
 }
