@@ -23,27 +23,31 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.spark.api.java.JavaPairRDD;
+
 import com.google.common.base.Preconditions;
+
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.storage.StorageLevel;
+
 import scala.Tuple2;
 
 
 public class MapInput implements SparkTran<WritableComparable, Writable,
     WritableComparable, Writable> {
   private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
-  private boolean toCache;
+  private StorageLevel storageLevel;
 
   public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
-    this(hadoopRDD, false);
+    this(hadoopRDD, null);
   }
 
-  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
+  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD, StorageLevel level) {
     this.hadoopRDD = hadoopRDD;
-    this.toCache = toCache;
+    setStorageLevel(level);
   }
 
-  public void setToCache(boolean toCache) {
-    this.toCache = toCache;
+  public void setStorageLevel(StorageLevel level) {
+    storageLevel = level;
   }
 
   @Override
@@ -51,7 +55,8 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
       JavaPairRDD<WritableComparable, Writable> input) {
     Preconditions.checkArgument(input == null,
         "AssertionError: MapInput doesn't take any input");
-    return toCache ? hadoopRDD.mapToPair(new CopyFunction()).cache() : hadoopRDD;
+    return storageLevel == null || storageLevel.equals(StorageLevel.NONE()) ? hadoopRDD :
+      hadoopRDD.mapToPair(new CopyFunction()).persist(storageLevel);
   }
 
   private static class CopyFunction implements PairFunction<Tuple2<WritableComparable, Writable>,

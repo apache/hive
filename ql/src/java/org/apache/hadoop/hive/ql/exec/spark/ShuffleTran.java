@@ -21,25 +21,26 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.storage.StorageLevel;
 
 public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, Iterable<BytesWritable>> {
   private final SparkShuffler shuffler;
   private final int numOfPartitions;
-  private final boolean toCache;
+  private final StorageLevel storageLevel;
 
   public ShuffleTran(SparkShuffler sf, int n) {
-    this(sf, n, false);
+    this(sf, n, null);
   }
 
-  public ShuffleTran(SparkShuffler sf, int n, boolean c) {
+  public ShuffleTran(SparkShuffler sf, int n, StorageLevel level) {
     shuffler = sf;
     numOfPartitions = n;
-    toCache = c;
+    storageLevel = level;
   }
 
   @Override
   public JavaPairRDD<HiveKey, Iterable<BytesWritable>> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
     JavaPairRDD<HiveKey, Iterable<BytesWritable>> result = shuffler.shuffle(input, numOfPartitions);
-    return toCache ? result.cache() : result;
+    return storageLevel == null || storageLevel.equals(StorageLevel.NONE()) ? result : result.persist(storageLevel);
   }
 }
