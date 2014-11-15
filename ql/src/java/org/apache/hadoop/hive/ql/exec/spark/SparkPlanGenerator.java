@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,6 +54,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.storage.StorageLevel;
 
 public class SparkPlanGenerator {
   private static final Log LOG = LogFactory.getLog(SparkPlanGenerator.class);
@@ -131,7 +133,8 @@ public class SparkPlanGenerator {
       sparkPlan.addTran(result);
     } else if (work instanceof ReduceWork) {
       List<BaseWork> parentWorks = sparkWork.getParents(work);
-      result = generate(sparkWork.getEdgeProperty(parentWorks.get(0), work), cloneToWork.containsKey(work));
+      StorageLevel level = cloneToWork.containsKey(work) ? getStorageLevel(jobConf) : null;
+      result = generate(sparkWork.getEdgeProperty(parentWorks.get(0), work), level);
       sparkPlan.addTran(result);
       for (BaseWork parentWork : parentWorks) {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
@@ -146,6 +149,20 @@ public class SparkPlanGenerator {
     }
 
     return result;
+  }
+
+  private StorageLevel getStorageLevel(JobConf jobConf) {
+    String storageLevel = jobConf.get("spark.storage.level");
+    if (storageLevel == null || storageLevel.isEmpty()) {
+      return StorageLevel.MEMORY_AND_DISK();
+    }
+    try {
+      return StorageLevel.fromString(storageLevel);
+    } catch (IllegalArgumentException iae) {
+      LOG.error("Invalid configuraiton for 'spark.storage.level': "
+        +  storageLevel, iae);
+      throw iae;
+    }
   }
 
   private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
@@ -184,11 +201,12 @@ public class SparkPlanGenerator {
 
     JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
         WritableComparable.class, Writable.class);
-    MapInput result = new MapInput(hadoopRDD, cloneToWork.containsKey(mapWork));
+    StorageLevel level = cloneToWork.containsKey(mapWork) ? getStorageLevel(jobConf) : null;
+    MapInput result = new MapInput(hadoopRDD, level);
     return result;
   }
 
-  private ShuffleTran generate(SparkEdgeProperty edge, boolean needCache) {
+  private ShuffleTran generate(SparkEdgeProperty edge, StorageLevel level) {
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
@@ -199,7 +217,7 @@ public class SparkPlanGenerator {
     } else {
       shuffler = new GroupByShuffler();
     }
-    return new ShuffleTran(shuffler, edge.getNumPartitions(), needCache);
+    return new ShuffleTran(shuffler, edge.getNumPartitions(), level);
   }
 
   private MapTran generate(MapWork mw) throws Exception {
