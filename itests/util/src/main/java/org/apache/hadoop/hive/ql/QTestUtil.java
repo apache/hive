@@ -537,10 +537,11 @@ public class QTestUtil {
   /**
    * Clear out any side effects of running tests
    */
-  public void clearTestSideEffects() throws Exception {
+  public void clearTablesCreatedDuringTests() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
@@ -574,9 +575,11 @@ public class QTestUtil {
     try {
       Path p = new Path(testWarehouse);
       FileSystem fileSystem = p.getFileSystem(conf);
-      for (FileStatus status : fileSystem.listStatus(p)) {
-        if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
-          fileSystem.delete(status.getPath(), true);
+      if (fileSystem.exists(p)) {
+        for (FileStatus status : fileSystem.listStatus(p)) {
+          if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
+            fileSystem.delete(status.getPath(), true);
+          }
         }
       }
     } catch (IllegalArgumentException e) {
@@ -590,6 +593,18 @@ public class QTestUtil {
           db.dropRole(roleName);
         }
     }
+  }
+
+  /**
+   * Clear out any side effects of running tests
+   */
+  public void clearTestSideEffects() throws Exception {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+
+    clearTablesCreatedDuringTests();
+
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);
@@ -605,6 +620,8 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+
+    clearTablesCreatedDuringTests();
 
     SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
 
