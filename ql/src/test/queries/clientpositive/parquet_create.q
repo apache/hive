@@ -28,7 +28,6 @@ SELECT * FROM parquet_create_staging;
 
 INSERT OVERWRITE TABLE parquet_create SELECT * FROM parquet_create_staging;
 
-SELECT * FROM parquet_create group by id;
 SELECT id, count(0) FROM parquet_create group by id;
 SELECT str from parquet_create;
 SELECT mp from parquet_create;

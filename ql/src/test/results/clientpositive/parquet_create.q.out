@@ -118,17 +118,6 @@ POSTHOOK: Lineage: parquet_create.lst SIMPLE [(parquet_create_staging)parquet_cr
 POSTHOOK: Lineage: parquet_create.mp SIMPLE [(parquet_create_staging)parquet_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
 POSTHOOK: Lineage: parquet_create.str SIMPLE [(parquet_create_staging)parquet_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: parquet_create.strct SIMPLE [(parquet_create_staging)parquet_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
-PREHOOK: query: SELECT * FROM parquet_create group by id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_create
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM parquet_create group by id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_create
-#### A masked pattern was here ####
-1
-2
-3
 PREHOOK: query: SELECT id, count(0) FROM parquet_create group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_create

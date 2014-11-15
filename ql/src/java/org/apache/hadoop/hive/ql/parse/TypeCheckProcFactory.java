@@ -74,6 +74,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
+import com.google.common.collect.Lists;
+
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are
@@ -184,9 +186,8 @@ public class TypeCheckProcFactory {
         opRules, tcCtx);
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
-    // Create a list of topop nodes
-    ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.add(expr);
+    // Create a list of top nodes
+    ArrayList<Node> topNodes = Lists.<Node>newArrayList(expr);
     HashMap<Node, Object> nodeOutputs = new LinkedHashMap<Node, Object>();
     ogw.startWalking(topNodes, nodeOutputs);
 
