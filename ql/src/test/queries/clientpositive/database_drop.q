@@ -75,6 +75,12 @@ CREATE EXTERNAL TABLE extab1(id INT, name STRING) ROW FORMAT
               STORED AS TEXTFILE
               LOCATION 'file:${system:test.tmp.dir}/dbcascade/extab1';
 
+-- add a table, create index (give a name for index table)
+CREATE TABLE temp_tbl3 (id INT, name STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl3;
+CREATE INDEX temp_tbl3_idx ON TABLE temp_tbl3(id) AS 'COMPACT' with DEFERRED REBUILD IN TABLE temp_tbl3_idx_tbl;
+ALTER INDEX temp_tbl3_idx ON temp_tbl3 REBUILD;
+
 -- drop the database with cascade
 DROP DATABASE db5 CASCADE;
 

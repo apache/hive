@@ -695,7 +695,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
        for (String table : tableList) {
          try {
            // Subclasses can override this step (for example, for temporary tables)
-           dropTable(name, table, deleteData, false);
+           dropTable(name, table, deleteData, true);
          } catch (UnsupportedOperationException e) {
            // Ignore Index tables, those will be dropped with parent tables
          }
