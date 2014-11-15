@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -52,8 +53,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
-
-  static final private String NO_COMPACTION = "NO_AUTO_COMPACTION";
 
   private long checkInterval;
 
@@ -86,9 +85,8 @@ public class Initiator extends CompactorThread {
             try {
               Table t = resolveTable(ci);
               // check if no compaction set for this table
-              if (t.getParameters().get(NO_COMPACTION) != null) {
-                LOG.info("Table " + tableName(t) + " marked " +  NO_COMPACTION +
-                    " so we will not compact it.");
+              if (noAutoCompactSet(t)) {
+                LOG.info("Table " + tableName(t) + " marked true so we will not compact it.");
                 continue;
               }
 
@@ -278,5 +276,17 @@ public class Initiator extends CompactorThread {
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
     txnHandler.compact(rqst);
+  }
+
+  // Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
+  // to no_auto_compact, we need to check it in both cases.
+  private boolean noAutoCompactSet(Table t) {
+    String noAutoCompact =
+        t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
+    if (noAutoCompact == null) {
+      noAutoCompact =
+          t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
+    }
+    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 }

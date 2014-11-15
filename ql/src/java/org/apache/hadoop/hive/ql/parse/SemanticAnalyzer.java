@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -317,9 +318,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
   private static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
-
-  @VisibleForTesting
-  static final String ACID_TABLE_PROPERTY = "transactional";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
@@ -12415,7 +12413,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean isAcidTable(Table tab) {
     if (tab == null) return false;
     if (!SessionState.get().getTxnMgr().supportsAcid()) return false;
-    return tab.getProperty(ACID_TABLE_PROPERTY) != null;
+    String tableIsTransactional =
+        tab.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
   private boolean isAcidOutputFormat(Class<? extends HiveOutputFormat> of) {
