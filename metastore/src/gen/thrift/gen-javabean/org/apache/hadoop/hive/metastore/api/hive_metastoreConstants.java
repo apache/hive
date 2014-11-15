@@ -75,4 +75,8 @@ public class hive_metastoreConstants {
 
   public static final String META_TABLE_STORAGE = "storage_handler";
 
+  public static final String TABLE_IS_TRANSACTIONAL = "transactional";
+
+  public static final String TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
+
 }

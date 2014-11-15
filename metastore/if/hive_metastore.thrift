@@ -1139,6 +1139,7 @@ const string META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types",
 const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",
-
+const string TABLE_IS_TRANSACTIONAL = "transactional",
+const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 
 
