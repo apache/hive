@@ -951,9 +951,9 @@ public final class ObjectInspectorUtils {
 
       if (childFieldsList1 == null && childFieldsList2 == null) {
         return true;
-      }
-
-      if (childFieldsList1.size() != childFieldsList2.size()) {
+      } else if (childFieldsList1 == null || childFieldsList2 == null) {
+        return false;
+      } else if (childFieldsList1.size() != childFieldsList2.size()) {
         return false;
       }
 
