@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,42 +25,35 @@ import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
-import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.spark.JobExecutionStatus;
+import org.apache.spark.SparkJobInfo;
+import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
-import org.apache.spark.executor.InputMetrics;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.executor.ShuffleReadMetrics;
 import org.apache.spark.executor.ShuffleWriteMetrics;
 import org.apache.spark.executor.TaskMetrics;
-import org.apache.spark.scheduler.StageInfo;
-import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.spark.ui.jobs.UIData;
 
 import scala.Option;
-import scala.Tuple2;
-
-import static scala.collection.JavaConversions.bufferAsJavaList;
-import static scala.collection.JavaConversions.mutableMapAsJavaMap;
 
 public class SimpleSparkJobStatus implements SparkJobStatus {
 
+  private final JavaSparkContext sparkContext;
   private int jobId;
-  private JobStateListener jobStateListener;
-  private JobProgressListener jobProgressListener;
+  // After SPARK-2321, we only use JobMetricsListener to get job metrics
+  // TODO: remove it when the new API provides equivalent functionality
+  private JobMetricsListener jobMetricsListener;
   private SparkCounters sparkCounters;
   private JavaFutureAction<Void> future;
 
-  public SimpleSparkJobStatus(
-    int jobId,
-    JobStateListener stateListener,
-    JobProgressListener progressListener,
-    SparkCounters sparkCounters,
-    JavaFutureAction<Void> future) {
-
+  public SimpleSparkJobStatus(JavaSparkContext sparkContext, int jobId,
+      JobMetricsListener jobMetricsListener, SparkCounters sparkCounters,
+      JavaFutureAction<Void> future) {
+    this.sparkContext = sparkContext;
     this.jobId = jobId;
-    this.jobStateListener = stateListener;
-    this.jobProgressListener = progressListener;
+    this.jobMetricsListener = jobMetricsListener;
     this.sparkCounters = sparkCounters;
     this.future = future;
   }
@@ -72,62 +64,39 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public SparkJobState getState() {
+  public JobExecutionStatus getState() {
     // For spark job with empty source data, it's not submitted actually, so we would never
     // receive JobStart/JobEnd event in JobStateListener, use JavaFutureAction to get current
     // job state.
     if (future.isDone()) {
-      return SparkJobState.SUCCEEDED;
+      return JobExecutionStatus.SUCCEEDED;
     } else {
-      return jobStateListener.getJobState(jobId);
+      // SparkJobInfo may not be available yet
+      SparkJobInfo sparkJobInfo = getJobInfo();
+      return sparkJobInfo == null ? null : sparkJobInfo.status();
     }
   }
 
   @Override
   public int[] getStageIds() {
-    return jobStateListener.getStageIds(jobId);
+    SparkJobInfo sparkJobInfo = getJobInfo();
+    return sparkJobInfo == null ? new int[0] : sparkJobInfo.stageIds();
   }
 
   @Override
   public Map<String, SparkStageProgress> getSparkStageProgress() {
     Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
-    int[] stageIds = jobStateListener.getStageIds(jobId);
-    if (stageIds != null) {
-      for (int stageId : stageIds) {
-        List<StageInfo> stageInfos = getStageInfo(stageId);
-        for (StageInfo stageInfo : stageInfos) {
-          Tuple2<Object, Object> tuple2 = new Tuple2<Object, Object>(stageInfo.stageId(),
-            stageInfo.attemptId());
-          UIData.StageUIData uiData = jobProgressListener.stageIdToData().get(tuple2).get();
-          if (uiData != null) {
-            int runningTaskCount = uiData.numActiveTasks();
-            int completedTaskCount = uiData.numCompleteTasks();
-            int failedTaskCount = uiData.numFailedTasks();
-            int totalTaskCount = stageInfo.numTasks();
-            int killedTaskCount = 0;
-            long costTime;
-            Option<Object> startOption = stageInfo.submissionTime();
-            Option<Object> completeOption = stageInfo.completionTime();
-            if (startOption.isEmpty()) {
-              costTime = 0;
-            } else if (completeOption.isEmpty()) {
-              long startTime = (Long)startOption.get();
-              costTime = System.currentTimeMillis() - startTime;
-            } else {
-              long startTime = (Long)startOption.get();
-              long completeTime = (Long)completeOption.get();
-              costTime = completeTime - startTime;
-            }
-            SparkStageProgress stageProgress = new SparkStageProgress(
-              totalTaskCount,
-              completedTaskCount,
-              runningTaskCount,
-              failedTaskCount,
-              killedTaskCount,
-              costTime);
-            stageProgresses.put(stageInfo.stageId() + "_" + stageInfo.attemptId(), stageProgress);
-          }
-        }
+    for (int stageId : getStageIds()) {
+      SparkStageInfo sparkStageInfo = getStageInfo(stageId);
+      if (sparkStageInfo != null) {
+        int runningTaskCount = sparkStageInfo.numActiveTasks();
+        int completedTaskCount = sparkStageInfo.numCompletedTasks();
+        int failedTaskCount = sparkStageInfo.numFailedTasks();
+        int totalTaskCount = sparkStageInfo.numTasks();
+        SparkStageProgress sparkStageProgress = new SparkStageProgress(
+            totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
+        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_" +
+            sparkStageInfo.currentAttemptId(), sparkStageProgress);
       }
     }
     return stageProgresses;
@@ -145,7 +114,7 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
     sparkStatisticsBuilder.add(sparkCounters);
     // add spark job metrics.
     String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
-    Map<String, List<TaskMetrics>> jobMetric = jobStateListener.getJobMetric(jobId);
+    Map<String, List<TaskMetrics>> jobMetric = jobMetricsListener.getJobMetric(jobId);
     if (jobMetric == null) {
       return null;
     }
@@ -160,7 +129,7 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
 
   @Override
   public void cleanup() {
-    jobStateListener.cleanup(jobId);
+    jobMetricsListener.cleanup(jobId);
   }
 
   private Map<String, Long> combineJobLevelMetrics(Map<String, List<TaskMetrics>> jobMetric) {
@@ -242,29 +211,11 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
     return results;
   }
 
-  private List<StageInfo> getStageInfo(int stageId) {
-    List<StageInfo> stageInfos = new LinkedList<StageInfo>();
+  private SparkJobInfo getJobInfo() {
+    return sparkContext.statusTracker().getJobInfo(jobId);
+  }
 
-    Map<Object, StageInfo> activeStages = mutableMapAsJavaMap(jobProgressListener.activeStages());
-    List<StageInfo> completedStages = bufferAsJavaList(jobProgressListener.completedStages());
-    List<StageInfo> failedStages = bufferAsJavaList(jobProgressListener.failedStages());
-
-    if (activeStages.containsKey(stageId)) {
-      stageInfos.add(activeStages.get(stageId));
-    } else {
-      for (StageInfo stageInfo : completedStages) {
-        if (stageInfo.stageId() == stageId) {
-          stageInfos.add(stageInfo);
-        }
-      }
-
-      for (StageInfo stageInfo : failedStages) {
-        if (stageInfo.stageId() == stageId) {
-          stageInfos.add(stageInfo);
-        }
-      }
-    }
-
-    return stageInfos;
+  private SparkStageInfo getStageInfo(int stageId) {
+    return sparkContext.statusTracker().getStageInfo(stageId);
   }
 }

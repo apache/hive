@@ -32,14 +32,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
-import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobStateListener;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.SimpleSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -52,7 +51,6 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.ui.jobs.JobProgressListener;
 
 import scala.Tuple2;
 
@@ -113,17 +111,13 @@ public class SparkClient implements Serializable {
 
   private List<String> localFiles = new ArrayList<String>();
 
-  private JobStateListener jobStateListener;
-
-  private JobProgressListener jobProgressListener;
+  private JobMetricsListener jobMetricsListener;
 
   private SparkClient(Configuration hiveConf) {
     SparkConf sparkConf = initiateSparkConf(hiveConf);
     sc = new JavaSparkContext(sparkConf);
-    jobStateListener = new JobStateListener();
-    jobProgressListener = new JobProgressListener(sparkConf);
-    sc.sc().listenerBus().addListener(jobStateListener);
-    sc.sc().listenerBus().addListener(jobProgressListener);
+    jobMetricsListener = new JobMetricsListener();
+    sc.sc().listenerBus().addListener(jobMetricsListener);
   }
 
   private SparkConf initiateSparkConf(Configuration hiveConf) {
@@ -217,10 +211,11 @@ public class SparkClient implements Serializable {
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
     // We use Spark RDD async action to submit job as it's the only way to get jobId now.
     JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-    // As we always use foreach action to submit RDD graph, it would only trigger on job.
+    // As we always use foreach action to submit RDD graph, it would only trigger one job.
     int jobId = future.jobIds().get(0);
     SimpleSparkJobStatus sparkJobStatus =
-      new SimpleSparkJobStatus(jobId, jobStateListener, jobProgressListener, sparkCounters, future);
+        new SimpleSparkJobStatus(sc, jobId, jobMetricsListener,
+            sparkCounters, future);
     return new SparkJobRef(jobId, sparkJobStatus);
   }
 

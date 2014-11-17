@@ -44,11 +44,10 @@ import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
 import org.apache.spark.scheduler.SparkListenerTaskStart;
 import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
 
-public class JobStateListener implements SparkListener {
+public class JobMetricsListener implements SparkListener {
 
-  private final static Log LOG = LogFactory.getLog(JobStateListener.class);
+  private final static Log LOG = LogFactory.getLog(JobMetricsListener.class);
 
-  private final Map<Integer, SparkJobState> jobIdToStates = Maps.newHashMap();
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
   private final Map<Integer, Map<String, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
@@ -99,7 +98,6 @@ public class JobStateListener implements SparkListener {
   @Override
   public synchronized void onJobStart(SparkListenerJobStart jobStart) {
     int jobId = jobStart.jobId();
-    jobIdToStates.put(jobId, SparkJobState.RUNNING);
     int size = jobStart.stageIds().size();
     int[] intStageIds = new int[size];
     for(int i=0; i< size; i++) {
@@ -112,12 +110,7 @@ public class JobStateListener implements SparkListener {
 
   @Override
   public synchronized void onJobEnd(SparkListenerJobEnd jobEnd) {
-    // JobSucceeded is a scala singleton object, so we need to add a dollar at the second part.
-    if (jobEnd.jobResult().getClass().getName().equals(JobSucceeded.class.getName() + "$")) {
-      jobIdToStates.put(jobEnd.jobId(), SparkJobState.SUCCEEDED);
-    } else {
-      jobIdToStates.put(jobEnd.jobId(), SparkJobState.FAILED);
-    }
+
   }
 
   @Override
@@ -155,21 +148,12 @@ public class JobStateListener implements SparkListener {
 
   }
 
-  public synchronized SparkJobState getJobState(int jobId) {
-    return jobIdToStates.get(jobId);
-  }
-
-  public synchronized int[] getStageIds(int jobId) {
-    return jobIdToStageId.get(jobId);
-  }
-
   public synchronized  Map<String, List<TaskMetrics>> getJobMetric(int jobId) {
     return allJobMetrics.get(jobId);
   }
 
   public synchronized void cleanup(int jobId) {
     allJobMetrics.remove(jobId);
-    jobIdToStates.remove(jobId);
     jobIdToStageId.remove(jobId);
     Iterator<Map.Entry<Integer, Integer>> iterator = stageIdToJobId.entrySet().iterator();
     while (iterator.hasNext()) {

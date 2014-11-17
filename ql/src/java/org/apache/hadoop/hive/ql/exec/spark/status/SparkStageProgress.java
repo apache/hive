@@ -23,23 +23,21 @@ public class SparkStageProgress {
   private int succeededTaskCount;
   private int runningTaskCount;
   private int failedTaskCount;
-  private int killedTaskCount;
-  private long cumulativeTime;
+  // TODO: remove the following two metrics as they're not available in current spark API,
+  // we can add them back once spark provides it
+//  private int killedTaskCount;
+//  private long cumulativeTime;
 
   public SparkStageProgress(
     int totalTaskCount,
     int succeededTaskCount,
     int runningTaskCount,
-    int failedTaskCount,
-    int killedTaskCount,
-    long cumulativeTime) {
+    int failedTaskCount) {
 
     this.totalTaskCount = totalTaskCount;
     this.succeededTaskCount = succeededTaskCount;
     this.runningTaskCount = runningTaskCount;
     this.failedTaskCount = failedTaskCount;
-    this.killedTaskCount = killedTaskCount;
-    this.cumulativeTime = cumulativeTime;
   }
 
   public int getTotalTaskCount() {
@@ -58,14 +56,6 @@ public class SparkStageProgress {
     return failedTaskCount;
   }
 
-  public int getKilledTaskCount() {
-    return killedTaskCount;
-  }
-
-  public long getCumulativeTime() {
-    return cumulativeTime;
-  }
-
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof SparkStageProgress) {
@@ -73,8 +63,7 @@ public class SparkStageProgress {
       return getTotalTaskCount() == other.getTotalTaskCount()
         && getSucceededTaskCount() == other.getSucceededTaskCount()
         && getRunningTaskCount() == other.getRunningTaskCount()
-        && getFailedTaskCount() == other.getFailedTaskCount()
-        && getKilledTaskCount() == other.getKilledTaskCount();
+        && getFailedTaskCount() == other.getFailedTaskCount();
     }
     return false;
   }
@@ -90,10 +79,6 @@ public class SparkStageProgress {
     sb.append(getRunningTaskCount());
     sb.append(" Failed: ");
     sb.append(getFailedTaskCount());
-    sb.append(" Killed: ");
-    sb.append(getKilledTaskCount());
-    sb.append(" CumulativeTime: ");
-    sb.append(getCumulativeTime() + "ms");
     return sb.toString();
   }
 }
