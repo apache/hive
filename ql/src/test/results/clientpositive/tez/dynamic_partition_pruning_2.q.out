@@ -584,10 +584,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (id is not null and (id = 1)) (type: boolean)
+                  filterExpr: (id = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (id = 1)) (type: boolean)
+                    predicate: (id = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: 1 (type: int)
@@ -597,7 +597,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: (dim_shops_id is not null and (dim_shops_id = 1)) (type: boolean)
+                  filterExpr: (dim_shops_id = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:

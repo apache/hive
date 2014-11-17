@@ -29,7 +29,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 src_role2
-
 PREHOOK: query: -- revoke role without role keyword
 revoke src_rolE2 from user user2
 PREHOOK: type: REVOKE_ROLE
@@ -48,7 +47,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 src_role2
-
 PREHOOK: query: ----------------------------------------
 -- role granting without role keyword, with admin option (syntax check)
 ----------------------------------------
@@ -104,7 +102,6 @@ admin
 public
 src_role2
 src_role_wadmin
-
 PREHOOK: query: drop role Src_role2
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role Src_role2
@@ -116,7 +113,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 src_role_wadmin
-
 PREHOOK: query: drop role sRc_role_wadmin
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role sRc_role_wadmin
@@ -127,4 +123,3 @@ POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
 admin
 public
-

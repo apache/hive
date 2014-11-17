@@ -480,7 +480,9 @@ class PigHCatUtil {
     Map<String, Object> result = new HashMap<String, Object>();
     for (Entry<?, ?> entry : map.entrySet()) {
       // since map key for Pig has to be Strings
-      result.put(entry.getKey().toString(), extractPigObject(entry.getValue(), hfs.getMapValueSchema().get(0)));
+      if (entry.getKey()!=null) {
+        result.put(entry.getKey().toString(), extractPigObject(entry.getValue(), hfs.getMapValueSchema().get(0)));
+      }
     }
     return result;
   }

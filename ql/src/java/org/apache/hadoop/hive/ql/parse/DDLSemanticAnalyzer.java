@@ -22,6 +22,8 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
@@ -214,24 +217,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return typeName;
   }
 
-  static class TablePartition {
-    String tableName;
-    HashMap<String, String> partSpec = null;
-
-    public TablePartition() {
-    }
-
-    public TablePartition(ASTNode tblPart) throws SemanticException {
-      tableName = getDotName((getQualifiedTableName((ASTNode) tblPart.getChild(0))));
-      if (tblPart.getChildCount() > 1) {
-        ASTNode part = (ASTNode) tblPart.getChild(1);
-        if (part.getToken().getType() == HiveParser.TOK_PARTSPEC) {
-          this.partSpec = DDLSemanticAnalyzer.getPartSpec(part);
-        }
-      }
-    }
-  }
-
   public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
     this(conf, createHiveDB(conf));
   }
@@ -246,7 +231,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
-    hiveAuthorizationTaskFactory = new HiveAuthorizationTaskFactoryImpl(conf, db);
+    hiveAuthorizationTaskFactory = createAuthorizationTaskFactory(conf, db);
   }
 
   @Override
@@ -1034,7 +1019,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(truncateTask);
   }
 
-  private boolean isFullSpec(Table table, Map<String, String> partSpec) {
+  public static boolean isFullSpec(Table table, Map<String, String> partSpec) {
     for (FieldSchema partCol : table.getPartCols()) {
       if (partSpec.get(partCol.getName()) == null) {
         return false;
@@ -1139,20 +1124,25 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // configured not to ignore this
     boolean throwException =
         !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    if (throwException) {
-      try {
-        Index idx = db.getIndex(tableName, indexName);
-      } catch (HiveException e) {
+    Table tbl = getTable(tableName, false);
+    if (throwException && tbl == null) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    try {
+      Index idx = db.getIndex(tableName, indexName);
+    } catch (HiveException e) {
+      if (!(e.getCause() instanceof NoSuchObjectException)) {
+        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("dropping index"), e);
+      }
+      if (throwException) {
         throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
       }
     }
-
-    Table tbl = getTable(tableName, false);
     if (tbl != null) {
-      inputs.add(new ReadEntity(getTable(tableName)));
+      inputs.add(new ReadEntity(tbl));
     }
 
-    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
+    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName, throwException);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropIdxDesc), conf));
   }
@@ -1399,11 +1389,22 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // ReadEntity as no lock.
       re.noLockNeeded();
       inputs.add(re);
-      if (desc == null || desc.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
+
+      if (isFullSpec(tab, partSpec)) {
+        // Fully specified partition spec
         Partition part = getPartition(tab, partSpec, true);
-        outputs.add(new WriteEntity(part, writeType));
-      }
-      else {
+        outputs.add(new WriteEntity(part, writeType));        
+      } else {
+        // Partial partition spec supplied. Make sure this is allowed.
+        if (desc == null
+            || !AlterTableDesc.doesAlterTableTypeSupportPartialPartitionSpec(desc.getOp())) {
+          String alterTabletype = (desc != null) ? desc.getOp().name() : "";
+          throw new SemanticException(
+              ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, alterTabletype);
+        } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING)) {
+          throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
+        }
+
         for (Partition part : getPartitions(tab, partSpec, true)) {
           outputs.add(new WriteEntity(part, writeType));
         }
@@ -2809,7 +2810,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param ast
    *          The parsed command tree.
    * @throws SemanticException
-   *           Parsin failed
+   *           Parsing failed
    */
   private void analyzeAlterTableTouch(String[] qualified, CommonTree ast)
       throws SemanticException {
@@ -2933,8 +2934,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param ast Tree to extract partitions from.
    * @param tab Table.
-   * @param result Map of partitions by prefix length. Most of the time prefix length will
-   *               be the same for all partition specs, so we can just OR the expressions.
+   * @return    Map of partitions by prefix length. Most of the time prefix length will
+   *            be the same for all partition specs, so we can just OR the expressions.
    */
   private Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table tab, boolean canGroupExprs) throws SemanticException {
@@ -3420,4 +3421,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e);
     }
   }
+
+  private HiveAuthorizationTaskFactory createAuthorizationTaskFactory(HiveConf conf, Hive db) {
+    Class<? extends HiveAuthorizationTaskFactory> authProviderClass = conf.
+        getClass(HiveConf.ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY.varname,
+            HiveAuthorizationTaskFactoryImpl.class,
+            HiveAuthorizationTaskFactory.class);
+    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
+    try {
+      Constructor<? extends HiveAuthorizationTaskFactory> constructor =
+          authProviderClass.getConstructor(HiveConf.class, Hive.class);
+      return constructor.newInstance(conf, db);
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (SecurityException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (InstantiationException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    } catch (InvocationTargetException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    }
+  }
+
 }

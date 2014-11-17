@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.Arrays;
 
@@ -61,7 +61,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
-    Decimal128[] vector = inputColVector.vector;
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -73,7 +73,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
       // All must be selected otherwise size would be zero
       // Repeating property will not change.
       outputIsNull[0] = inputIsNull[0];
-      DecimalUtil.round(0, vector[0], outputColVector);
+      DecimalUtil.round(0, vector[0], decimalPlaces, outputColVector);
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
@@ -82,14 +82,14 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
 
           // Set isNull because decimal operation can yield a null.
           outputIsNull[i] = false;
-          DecimalUtil.round(i, vector[i], outputColVector);
+          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
         }
       } else {
 
         // Set isNull because decimal operation can yield a null.
         Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
-          DecimalUtil.round(i, vector[i], outputColVector);
+          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
       outputColVector.isRepeating = false;
@@ -98,12 +98,12 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputIsNull[i] = inputIsNull[i];
-          DecimalUtil.round(i, vector[i], outputColVector);
+          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
         }
       } else {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          DecimalUtil.round(i, vector[i], outputColVector);
+          DecimalUtil.round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
       outputColVector.isRepeating = false;
@@ -119,27 +119,6 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   public String getOutputType() {
     return outputType;
   }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getDecimalPlaces() {
-    return decimalPlaces;
-  }
-
-  public void setDecimalPlaces(int decimalPlaces) {
-    this.decimalPlaces = decimalPlaces;
-  }
-
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {

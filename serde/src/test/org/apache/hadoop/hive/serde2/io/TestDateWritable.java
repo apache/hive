@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.serde2.io;
 
 import com.google.code.tempusfugit.concurrency.annotations.*;
@@ -10,6 +28,12 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class TestDateWritable {
 
@@ -134,5 +158,62 @@ public class TestDateWritable {
 
   private static String getRandomDateString() {
     return dateStrings[(int) (Math.random() * 365)];
+  }
+
+  public static class DateTestCallable implements Callable<String> {
+    public DateTestCallable() {
+    }
+
+    @Override
+    public String call() throws Exception {
+      // Iterate through each day of the year, make sure Date/DateWritable match
+      Date originalDate = Date.valueOf("2014-01-01");
+      Calendar cal = Calendar.getInstance();
+      cal.setTimeInMillis(originalDate.getTime());
+      for (int idx = 0; idx < 365; ++idx) {
+        originalDate = new Date(cal.getTimeInMillis());
+        // Make sure originalDate is at midnight in the local time zone,
+        // since DateWritable will generate dates at that time.
+        originalDate = Date.valueOf(originalDate.toString());
+        DateWritable dateWritable = new DateWritable(originalDate);
+        if (!originalDate.equals(dateWritable.get())) {
+          return originalDate.toString();
+        }
+        cal.add(Calendar.DAY_OF_YEAR, 1);
+      }
+      // Success!
+      return null;
+    }
+  }
+
+  @Test
+  public void testDaylightSavingsTime() throws InterruptedException, ExecutionException {
+    String[] timeZones = {
+        "GMT",
+        "UTC",
+        "America/Godthab",
+        "America/Los_Angeles",
+        "Asia/Jerusalem",
+        "Australia/Melbourne",
+        "Europe/London",
+        // time zones with half hour boundaries
+        "America/St_Johns",
+        "Asia/Tehran",
+    };
+
+    for (String timeZone: timeZones) {
+      TimeZone previousDefault = TimeZone.getDefault();
+      TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
+      assertEquals("Default timezone should now be " + timeZone,
+          timeZone, TimeZone.getDefault().getID());
+      ExecutorService threadPool = Executors.newFixedThreadPool(1);
+      try {
+        Future<String> future = threadPool.submit(new DateTestCallable());
+        String result = future.get();
+        assertNull("Failed at timezone " + timeZone + ", date " + result, result);
+      } finally {
+        threadPool.shutdown(); TimeZone.setDefault(previousDefault);
+      }
+    }
   }
 }

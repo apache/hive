@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +84,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   transient Deserializer scriptOutputDeserializer;
   transient volatile Throwable scriptError = null;
   transient RecordWriter scriptOutWriter = null;
+  // List of conf entries not to turn into env vars
+  transient Set<String> blackListedConfEntries = null;
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING = "Broken pipe";
   static final String IO_EXCEPTION_STREAM_CLOSED = "Stream closed";
@@ -119,7 +123,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
   /**
    * Most UNIX implementations impose some limit on the total size of environment variables and
-   * size of strings. To fit in this limit we need sometimes to truncate strings.
+   * size of strings. To fit in this limit we need sometimes to truncate strings.  Also,
+   * some values tend be long and are meaningless to scripts, so strain them out.
    * @param value environment variable value to check
    * @param name name of variable (used only for logging purposes)
    * @param truncate truncate value or not
@@ -138,6 +143,23 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return value;
   }
 
+  boolean blackListed(String name) {
+    if (blackListedConfEntries == null) {
+      blackListedConfEntries = new HashSet<String>();
+      if (hconf != null) {
+        String bl = hconf.get(HiveConf.ConfVars.HIVESCRIPT_ENV_BLACKLIST.toString());
+        if (bl != null && bl.length() > 0) {
+          String[] bls = bl.split(",");
+          for (String b : bls) {
+            b.replaceAll(".", "_");
+            blackListedConfEntries.add(b);
+          }
+        }
+      }
+    }
+    return blackListedConfEntries.contains(name);
+  }
+
   /**
    * addJobConfToEnvironment is mostly shamelessly copied from hadoop streaming. Added additional
    * check on environment variable length
@@ -147,13 +169,16 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     while (it.hasNext()) {
       Map.Entry<String, String> en = it.next();
       String name = en.getKey();
-      // String value = (String)en.getValue(); // does not apply variable
-      // expansion
-      String value = conf.get(name); // does variable expansion
-      name = safeEnvVarName(name);
-      boolean truncate = conf.getBoolean(HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV.toString(), false);
-      value = safeEnvVarValue(value, name, truncate);
-      env.put(name, value);
+      if (!blackListed(name)) {
+        // String value = (String)en.getValue(); // does not apply variable
+        // expansion
+        String value = conf.get(name); // does variable expansion
+        name = safeEnvVarName(name);
+        boolean truncate = conf
+            .getBoolean(HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV.toString(), false);
+        value = safeEnvVarValue(value, name, truncate);
+        env.put(name, value);
+      }
     }
   }
 
@@ -236,8 +261,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   protected void initializeOp(Configuration hconf) throws HiveException {
     firstRow = true;
 
-    statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
-    statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
+    statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
+    statsMap.put(Counter.SERIALIZE_ERRORS.toString(), serialize_error_count);
 
     try {
       this.hconf = hconf;
@@ -283,6 +308,16 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return;
   }
 
+  private transient String tableName;
+  private transient String partitionName ;
+
+  @Override
+  public void setInputContext(String inputPath, String tableName, String partitionName) {
+    this.tableName = tableName;
+    this.partitionName = partitionName;
+    super.setInputContext(inputPath, tableName, partitionName);
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     // initialize the user's process only when you receive the first row
@@ -306,10 +341,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
         LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-        LOG.info("tablename="
-            + hconf.get(HiveConf.ConfVars.HIVETABLENAME.varname));
-        LOG.info("partname="
-            + hconf.get(HiveConf.ConfVars.HIVEPARTITIONNAME.varname));
+        LOG.info("tablename=" + tableName);
+        LOG.info("partname=" + partitionName);
         LOG.info("alias=" + alias);
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);

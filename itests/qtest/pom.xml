@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>0.15.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -425,22 +425,6 @@
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientnegative"/>
-
-
-                <!-- Parse -->
-                <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
-                  outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/parse/"
-                  templatePath="${basedir}/${hive.path.to.root}/ql/src/test/templates/" template="TestParse.vm"
-                  queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/positive/"
-                  queryFile="${qfile}"
-                  queryFileRegex="${qfile_regex}"
-                  runDisabled="${run_disabled}"
-                  resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/compiler/" className="TestParse"
-                  logFile="${project.build.directory}/testparsegen.log"
-                  hadoopVersion="${active.hadoop.version}"
-                  logDirectory="${project.build.directory}/qfile-results/positive/"
-                  initScript="q_test_init.sql"
-                  cleanupScript="q_test_cleanup.sql"/>
 
                 <!-- Negative Parse -->
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"

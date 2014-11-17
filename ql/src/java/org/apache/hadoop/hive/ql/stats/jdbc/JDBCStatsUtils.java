@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.util.hash.MurmurHash;
 
 public class JDBCStatsUtils {
 
@@ -124,9 +125,10 @@ public class JDBCStatsUtils {
    * Prepares CREATE TABLE query
    */
   public static String getCreate(String comment) {
-    String create = "CREATE TABLE /* " + comment + " */ " + JDBCStatsUtils.getStatTableName() +
-          " (" + getTimestampColumnName() + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-          JDBCStatsUtils.getIdColumnName() + " VARCHAR(255) PRIMARY KEY ";
+    String create = "CREATE TABLE /* " + comment + " */ " + JDBCStatsUtils.getStatTableName()
+        + " (" + getTimestampColumnName() + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+        + JDBCStatsUtils.getIdColumnName() + " VARCHAR("
+        + JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE + ") PRIMARY KEY ";
     for (int i = 0; i < supportedStats.size(); i++) {
       create += ", " + getStatColumnName(supportedStats.get(i)) + " BIGINT ";
     }
@@ -191,4 +193,13 @@ public class JDBCStatsUtils {
     return delete;
   }
 
+  /**
+   * Make sure the row ID fits into the row ID column in the table.
+   * @param rowId Row ID.
+   * @return Resulting row ID truncated to correct length, if necessary.
+   */
+  public static String truncateRowId(String rowId) {
+    return (rowId.length() <= JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE)
+        ? rowId : Integer.toHexString(MurmurHash.getInstance().hash(rowId.getBytes()));
+  }
 }

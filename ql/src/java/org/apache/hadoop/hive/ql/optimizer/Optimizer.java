@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.ppd.SyntheticJoinPredicate;
 public class Optimizer {
   private ParseContext pctx;
   private List<Transform> transformations;
+  private static final Log LOG = LogFactory.getLog(Optimizer.class.getName());
 
   /**
    * Create the list of transformations.
@@ -60,16 +63,20 @@ public class Optimizer {
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
-      transformations.add(new PredicateTransitivePropagate());
+    transformations.add(new PredicateTransitivePropagate());
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      transformations.add(new ConstantPropagate());
+    }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
-      transformations.add(new PartitionPruner());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      // We run constant propagation twice because after predicate pushdown, filter expressions
+      // are combined and may become eligible for reduction (like is not null filter).
         transformations.add(new ConstantPropagate());
     }
-
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+      transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
         /* Add list bucketing pruner. */
@@ -83,7 +90,11 @@ public class Optimizer {
     }
     transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
-      transformations.add(new SkewJoinOptimizer());
+      if (!isTezExecEngine) {
+        transformations.add(new SkewJoinOptimizer());
+      } else {
+        LOG.warn("Skew join is currently not supported in tez! Disabling the skew join optimization.");
+      }
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
@@ -143,7 +154,9 @@ public class Optimizer {
       transformations.add(new AnnotateWithOpTraits());
     }
 
-    transformations.add(new SimpleFetchOptimizer());  // must be called last
+    if (!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION).equals("none")) {
+      transformations.add(new SimpleFetchOptimizer()); // must be called last
+    }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKAGGR)) {
       transformations.add(new SimpleFetchAggregation());

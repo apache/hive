@@ -85,6 +85,9 @@ public class JarDelegator extends LauncherDelegator {
       if (TempletonUtils.isset(libjars)) {
         String libjarsListAsString =
             TempletonUtils.hadoopFsListAsString(libjars, appConf, runAs);
+        //This will work only if the files are local files on webhcat server
+        // (which is not very useful since users might not have access to that file system).
+        //This is likely the HIVE-5188 issue
         args.add("-libjars");
         args.add(TempletonUtils.quoteForWindows(libjarsListAsString));
       }

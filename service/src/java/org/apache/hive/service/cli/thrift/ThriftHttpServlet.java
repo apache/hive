@@ -208,11 +208,9 @@ public class ThriftHttpServlet extends TServlet {
 
         // Create a GSS context
         gssContext = manager.createContext(serverCreds);
-
         // Get service ticket from the authorization header
         String serviceTicketBase64 = getAuthHeader(request, authType);
         byte[] inToken = Base64.decodeBase64(serviceTicketBase64.getBytes());
-
         gssContext.acceptSecContext(inToken, 0, inToken.length);
         // Authenticate or deny based on its context completion
         if (!gssContext.isEstablished()) {

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +35,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -64,7 +62,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   private static final long serialVersionUID = 1L;
   private boolean isBigTableWork;
   private static final Log LOG = LogFactory.getLog(CommonMergeJoinOperator.class.getName());
-  private Map<Integer, String> aliasToInputNameMap;
   transient List<Object>[] keyWritables;
   transient List<Object>[] nextKeyWritables;
   transient RowContainer<List<Object>>[] nextGroupStorage;
@@ -136,6 +133,19 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     sources = ((TezContext) MapredContext.get()).getRecordSources();
   }
+
+  @Override
+  public void endGroup() throws HiveException {
+    // we do not want the end group to cause a checkAndGenObject
+    defaultEndGroup();
+  }
+
+  @Override
+  public void startGroup() throws HiveException {
+    // we do not want the start group to clear the storage
+    defaultStartGroup();
+  }
+
 
   /*
    * (non-Javadoc)
@@ -278,7 +288,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if (foundNextKeyGroup[t]) {
       // first promote the next group to be the current group if we reached a
       // new group in the previous fetch
-      if ((this.nextKeyWritables[t] != null) || (this.fetchDone[t] == false)) {
+      if (this.nextKeyWritables[t] != null) {
         promoteNextGroupToCandidate(t);
       } else {
         this.keyWritables[t] = null;
@@ -308,6 +318,8 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   @Override
   public void closeOp(boolean abort) throws HiveException {
     joinFinalLeftData();
+
+    super.closeOp(abort);
 
     // clean up
     for (int pos = 0; pos < order.length; pos++) {
@@ -365,6 +377,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       joinOneGroup();
       dataInCache = false;
       for (byte pos = 0; pos < order.length; pos++) {
+        if (candidateStorage[pos] == null) {
+          continue;
+        }
         if (this.candidateStorage[pos].rowCount() > 0) {
           dataInCache = true;
           break;
@@ -423,8 +438,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       WritableComparable key_1 = (WritableComparable) k1.get(i);
       WritableComparable key_2 = (WritableComparable) k2.get(i);
       if (key_1 == null && key_2 == null) {
-        return nullsafes != null && nullsafes[i] ? 0 : -1; // just return k1 is
-                                                           // smaller than k2
+        if (nullsafes != null && nullsafes[i]) {
+          continue;
+        } else {
+          return -1;
+        }
       } else if (key_1 == null) {
         return -1;
       } else if (key_2 == null) {

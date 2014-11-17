@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.log;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PerfLogger.
@@ -147,10 +147,37 @@ public class PerfLogger {
   }
 
   public Long getStartTime(String method) {
-    return startTimes.get(method);
+    long startTime = 0L;
+
+    if (startTimes.containsKey(method)) {
+      startTime = startTimes.get(method);
+    }
+    return startTime;
   }
 
   public Long getEndTime(String method) {
-    return endTimes.get(method);
+    long endTime = 0L;
+
+    if (endTimes.containsKey(method)) {
+      endTime = endTimes.get(method);
+    }
+    return endTime;
   }
+
+  public boolean startTimeHasMethod(String method) {
+    return startTimes.containsKey(method);
+  }
+
+  public boolean endTimeHasMethod(String method) {
+    return endTimes.containsKey(method);
+  }
+
+  public Long getDuration(String method) {
+    long duration = 0;
+    if (startTimes.containsKey(method) && endTimes.containsKey(method)) {
+      duration = endTimes.get(method) - startTimes.get(method);
+    }
+    return duration;
+  }
+
 }

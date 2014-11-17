@@ -29,20 +29,31 @@ import org.apache.hadoop.io.Writable;
  * This class is the payload for custom vertex. It serializes and de-serializes
  * @numBuckets: the number of buckets of the "big table"
  * @vertexType: this is the type of vertex and differentiates between bucket map join and SMB joins
- * @inputName: This is the name of the input. Used in case of SMB joins
+ * @numInputs: The number of inputs that are directly connected to the vertex (MRInput/MultiMRInput).
+ *             In case of bucket map join, it is always 1.
+ * @inputName: This is the name of the input. Used in case of SMB joins. Empty in case of BucketMapJoin
  */
 public class CustomVertexConfiguration implements Writable {
 
   private int numBuckets;
   private VertexType vertexType = VertexType.AUTO_INITIALIZED_EDGES;
+  private int numInputs;
   private String inputName;
 
   public CustomVertexConfiguration() {
   }
 
-  public CustomVertexConfiguration(int numBuckets, VertexType vertexType, String inputName) {
+  // this is the constructor to use for the Bucket map join case.
+  public CustomVertexConfiguration(int numBuckets, VertexType vertexType) {
+    this(numBuckets, vertexType, "", 1);
+  }
+
+  // this is the constructor to use for SMB.
+  public CustomVertexConfiguration(int numBuckets, VertexType vertexType, String inputName,
+      int numInputs) {
     this.numBuckets = numBuckets;
     this.vertexType = vertexType;
+    this.numInputs = numInputs;
     this.inputName = inputName;
   }
 
@@ -50,6 +61,7 @@ public class CustomVertexConfiguration implements Writable {
   public void write(DataOutput out) throws IOException {
     out.writeInt(this.vertexType.ordinal());
     out.writeInt(this.numBuckets);
+    out.writeInt(numInputs);
     out.writeUTF(inputName);
   }
 
@@ -57,6 +69,7 @@ public class CustomVertexConfiguration implements Writable {
   public void readFields(DataInput in) throws IOException {
     this.vertexType = VertexType.values()[in.readInt()];
     this.numBuckets = in.readInt();
+    this.numInputs = in.readInt();
     this.inputName = in.readUTF();
   }
 
@@ -70,5 +83,9 @@ public class CustomVertexConfiguration implements Writable {
 
   public String getInputName() {
     return inputName;
+  }
+
+  public int getNumInputs() {
+    return numInputs;
   }
 }

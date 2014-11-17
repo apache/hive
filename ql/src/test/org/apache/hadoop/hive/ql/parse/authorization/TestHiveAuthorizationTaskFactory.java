@@ -22,18 +22,23 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc.RoleOperation;
@@ -46,6 +51,33 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 public class TestHiveAuthorizationTaskFactory {
+
+  public static class DummyHiveAuthorizationTaskFactoryImpl extends HiveAuthorizationTaskFactoryImpl {
+
+    static String uriPath = "";
+    static String serverName = "";
+
+    public DummyHiveAuthorizationTaskFactoryImpl(HiveConf conf, Hive db) {
+      super(conf, db);
+    }
+
+    @Override
+    protected PrivilegeObjectDesc parsePrivObject(ASTNode ast) throws SemanticException {
+      ASTNode child = (ASTNode) ast.getChild(0);
+      ASTNode gchild = (ASTNode)child.getChild(0);
+      if (child.getType() == HiveParser.TOK_URI_TYPE) {
+        uriPath = gchild.getText().replaceAll("'", "").replaceAll("\"", "");
+      } else if (child.getType() == HiveParser.TOK_SERVER_TYPE) {
+        serverName = gchild.getText();
+      }
+      return super.parsePrivObject(ast);
+    }
+
+    public static void reset() {
+      uriPath = "";
+      serverName = "";
+    }
+  }
 
   private static final String SELECT = "SELECT";
   private static final String DB = "default";
@@ -67,6 +99,8 @@ public class TestHiveAuthorizationTaskFactory {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
+    conf.setVar(ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY,
+        TestHiveAuthorizationTaskFactory.DummyHiveAuthorizationTaskFactoryImpl.class.getName());
     db = Mockito.mock(Hive.class);
     table = new Table(DB, TABLE);
     partition = new Partition(table);
@@ -81,6 +115,7 @@ public class TestHiveAuthorizationTaskFactory {
     HadoopDefaultAuthenticator auth = new HadoopDefaultAuthenticator();
     auth.setConf(conf);
     currentUser = auth.getUserName();
+    DummyHiveAuthorizationTaskFactoryImpl.reset();
 
   }
   /**
@@ -412,6 +447,34 @@ public class TestHiveAuthorizationTaskFactory {
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
     Assert.assertEquals(TABLE_QNAME, grantDesc.getHiveObj().getObject());
     Assert.assertTrue("Expected table", grantDesc.getHiveObj().getTable());
+  }
+
+  /**
+   * GRANT ALL ON URI
+   */
+  @Test
+  public void testGrantUri() throws Exception {
+    String uriPath = "/tmp";
+    try {
+      analyze("GRANT ALL ON URI '" + uriPath  + "' TO USER user2");
+      Assert.fail("Grant on URI should fail");
+    } catch (SemanticException e) {
+      Assert.assertEquals(uriPath, DummyHiveAuthorizationTaskFactoryImpl.uriPath);
+    }
+  }
+
+  /**
+   * GRANT ALL ON SERVER
+   */
+  @Test
+  public void testGrantServer() throws Exception {
+    String serverName = "foo";
+    try {
+      analyze("GRANT ALL ON SERVER " + serverName + " TO USER user2");
+      Assert.fail("Grant on Server should fail");
+    } catch (SemanticException e) {
+      Assert.assertEquals(serverName, DummyHiveAuthorizationTaskFactoryImpl.serverName);
+    }
   }
 
   private DDLWork analyze(String command) throws Exception {

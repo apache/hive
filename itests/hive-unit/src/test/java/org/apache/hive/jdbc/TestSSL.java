@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -30,15 +31,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestSSL {
+  private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);
   private static final String KEY_STORE_NAME = "keystore.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_PASSWORD = "HiveJdbc";
@@ -55,8 +62,8 @@ public class TestSSL {
   private Connection hs2Conn = null;
   private String dataFileDir = conf.get("test.data.files");
   private Map<String, String> confOverlay;
-  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + dataFileDir + File.separator +
-      TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD;
+  private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + URLEncoder.encode(dataFileDir + File.separator +
+      TRUST_STORE_NAME) + ";trustStorePassword=" + KEY_STORE_PASSWORD;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -84,6 +91,73 @@ public class TestSSL {
     }
     System.clearProperty(JAVA_TRUST_STORE_PROP);
     System.clearProperty(JAVA_TRUST_STORE_PASS_PROP);
+  }
+
+  private int execCommand(String cmd) throws Exception {
+    int exitCode;
+    try {
+      String output = Shell.execCommand("bash", "-c", cmd);
+      LOG.info("Output from '" + cmd + "': " + output) ;
+      exitCode = 0;
+    } catch (Shell.ExitCodeException e) {
+      exitCode = e.getExitCode();
+      LOG.info("Error executing '" + cmd + "', exitCode = " + exitCode, e);
+    }
+    return exitCode;
+  }
+
+  /***
+   * Tests to ensure SSLv2 and SSLv3 are disabled
+   */
+  @Test
+  public void testSSLVersion() throws Exception {
+    Assume.assumeTrue(execCommand("which openssl") == 0); // we need openssl
+    Assume.assumeTrue(System.getProperty("os.name").toLowerCase()
+      .contains("linux")); // we depend on linux openssl exit codes
+
+    setSslConfOverlay(confOverlay);
+    // Test in binary mode
+    setBinaryConfOverlay(confOverlay);
+    // Start HS2 with SSL
+    miniHS2.start(confOverlay);
+
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" +
+        dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" +
+        KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
+    hs2Conn.close();
+    Assert.assertEquals("Expected exit code of 1", 1,
+      execCommand("openssl s_client -connect " + miniHS2.getHost() + ":" + miniHS2.getBinaryPort()
+      + " -ssl2 < /dev/null"));
+    Assert.assertEquals("Expected exit code of 1", 1,
+      execCommand("openssl s_client -connect " + miniHS2.getHost() + ":" + miniHS2.getBinaryPort()
+      + " -ssl3 < /dev/null"));
+    miniHS2.stop();
+
+    // Test in http mode
+    setHttpConfOverlay(confOverlay);
+    miniHS2.start(confOverlay);
+    // make SSL connection
+    try {
+      hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() +
+          ";ssl=true;sslTrustStore=" + dataFileDir + File.separator +
+          TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD +
+          "?hive.server2.transport.mode=" + HS2_HTTP_MODE +
+          ";hive.server2.thrift.http.path=" + HS2_HTTP_ENDPOINT,
+          System.getProperty("user.name"), "bar");
+      Assert.fail("Expected SQLException during connect");
+    } catch (SQLException e) {
+      LOG.info("Expected exception: " + e, e);
+      Assert.assertEquals("08S01", e.getSQLState().trim());
+      Throwable cause = e.getCause();
+      Assert.assertNotNull(cause);
+      while (cause.getCause() != null) {
+        cause = cause.getCause();
+      }
+      Assert.assertEquals("org.apache.http.NoHttpResponseException", cause.getClass().getName());
+      Assert.assertEquals("The target server failed to respond", cause.getMessage());
+    }
+    miniHS2.stop();
   }
 
   /***

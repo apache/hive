@@ -15,7 +15,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
@@ -25,7 +24,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 admin
-
 PREHOOK: query: select * from t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1

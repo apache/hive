@@ -33,6 +33,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.hcatalog.templeton.AppConfig;
 import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
@@ -89,6 +90,31 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       env.put(PigConstants.PIG_OPTS, pigOpts.toString());
     }
   }
+
+  /**
+   * {@link #copyLocal(String, org.apache.hadoop.conf.Configuration)} should be called before this
+   * See {@link org.apache.hive.hcatalog.templeton.SqoopDelegator#makeBasicArgs(String, String, String, String, boolean, String)}
+   * for more comments
+   */
+  private static void handleSqoop(Configuration conf, Map<String, String> env) throws IOException {
+    if(TempletonUtils.isset(conf.get(Sqoop.LIB_JARS))) {
+      //LIB_JARS should only be set if Sqoop is auto-shipped
+      LOG.debug(Sqoop.LIB_JARS + "=" + conf.get(Sqoop.LIB_JARS));
+      String[] files = conf.getStrings(Sqoop.LIB_JARS);
+      StringBuilder jdbcJars = new StringBuilder();
+      for(String f : files) {
+        jdbcJars.append(f).append(File.pathSeparator);
+      }
+      jdbcJars.setLength(jdbcJars.length() - 1);
+      //this makes the jars available to Sqoop client
+      if(TempletonUtils.isset(System.getenv("HADOOP_CLASSPATH"))) {
+        env.put("HADOOP_CLASSPATH", System.getenv("HADOOP_CLASSPATH") + File.pathSeparator + jdbcJars.toString());
+      }
+      else {
+        env.put("HADOOP_CLASSPATH", jdbcJars.toString());
+      }
+    }
+  }
   protected Process startJob(Context context, String user, String overrideClasspath)
     throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -108,6 +134,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     removeEnv.add("mapredcommand");
     Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
     handlePigEnvVars(conf, env);
+    handleSqoop(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");

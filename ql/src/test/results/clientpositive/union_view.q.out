@@ -54,7 +54,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_1_src_union_1_key_idx__
+            alias: default.default__src_union_1_src_union_1_key_idx__
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -113,7 +113,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_2_src_union_2_key_idx__
+            alias: default.default__src_union_2_src_union_2_key_idx__
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -172,7 +172,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -236,7 +236,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_1_src_union_1_key_idx__
+            alias: default.default__src_union_1_src_union_1_key_idx__
             filterExpr: (ds = '1') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -307,7 +307,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_2_src_union_2_key_idx__
+            alias: default.default__src_union_2_src_union_2_key_idx__
             filterExpr: (ds = '2') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -378,7 +378,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '3') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -452,7 +452,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_1_src_union_1_key_idx__
+            alias: default.default__src_union_1_src_union_1_key_idx__
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -517,7 +517,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_2_src_union_2_key_idx__
+            alias: default.default__src_union_2_src_union_2_key_idx__
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -582,7 +582,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -651,7 +651,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_2_src_union_2_key_idx__
+            alias: default.default__src_union_2_src_union_2_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -757,7 +757,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_1_src_union_1_key_idx__
+            alias: default.default__src_union_1_src_union_1_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -781,7 +781,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: (key = 86) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -828,7 +828,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_1_src_union_1_key_idx__
+            alias: default.default__src_union_1_src_union_1_key_idx__
             filterExpr: (ds = '1') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -903,7 +903,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_2_src_union_2_key_idx__
+            alias: default.default__src_union_2_src_union_2_key_idx__
             filterExpr: (ds = '2') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -978,7 +978,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '3') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)
@@ -1056,7 +1056,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -1122,7 +1122,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default__src_union_3_src_union_3_key_idx__
+            alias: default.default__src_union_3_src_union_3_key_idx__
             filterExpr: (ds = '4') (type: boolean)
             Select Operator
               expressions: _bucketname (type: string), _offsets (type: array<bigint>)

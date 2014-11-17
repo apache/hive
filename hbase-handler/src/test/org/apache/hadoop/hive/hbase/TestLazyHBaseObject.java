@@ -459,7 +459,7 @@ public class TestLazyHBaseObject extends TestCase {
     List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
           "string,int,array<string>,map<string,string>,string");
-    List<String> fieldNames = Arrays.asList(new String[]{"key", "a", "b", "c", "d"});
+    List<String> fieldNames = Arrays.asList("key", "a", "b", "c", "d");
     Text nullSequence = new Text("\\N");
 
     String hbaseColsMapping = ":key,cfa:a,cfa:b,cfb:c,cfb:d";
@@ -483,7 +483,7 @@ public class TestLazyHBaseObject extends TestCase {
     ObjectInspector oi = LazyFactory.createLazyStructInspector(fieldNames,
       fieldTypeInfos, new byte[] {' ', ':', '='},
       nullSequence, false, false, (byte)0);
-    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi);
+    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi, columnMappings);
 
     List<KeyValue> kvs = new ArrayList<KeyValue>();
 
@@ -497,7 +497,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("hi")));
 
     Result r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
@@ -511,7 +511,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("c"), Bytes.toBytes("d=e:f=g")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
         ("{'key':'test-row','a':123,'b':null,"
@@ -527,7 +527,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
         ("{'key':'test-row','a':null,'b':['a'],"
@@ -541,7 +541,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
@@ -565,7 +565,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("d"), Bytes.toBytes("")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
@@ -609,7 +609,7 @@ public class TestLazyHBaseObject extends TestCase {
       fieldTypeInfos,
       new byte[] {' ', ':', '='},
       nullSequence, false, false, (byte) 0);
-    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi);
+    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi, columnMappings);
 
     List<KeyValue> kvs = new ArrayList<KeyValue>();
     kvs.add(new KeyValue(Bytes.toBytes("test-row"),
@@ -624,7 +624,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("hi")));
 
     Result r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
@@ -640,7 +640,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfb"), Bytes.toBytes("f"), Bytes.toBytes("g")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':123,'b':null,"
@@ -656,7 +656,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['a'],"
@@ -670,7 +670,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("no")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
@@ -686,7 +686,7 @@ public class TestLazyHBaseObject extends TestCase {
         Bytes.toBytes("cfc"), Bytes.toBytes("d"), Bytes.toBytes("")));
 
     r = new Result(kvs);
-    o.init(r, columnMappings);
+    o.init(r);
 
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
@@ -733,7 +733,7 @@ public class TestLazyHBaseObject extends TestCase {
       LazyFactory.createLazyStructInspector(fieldNames, fieldTypeInfos,
           new byte [] {' ', ':', '='}, nullSequence, false, false, (byte) 0);
 
-    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi);
+    LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi, columnMappings);
 
     byte [] rowKey = "row-key".getBytes();
     List<KeyValue> kvs = new ArrayList<KeyValue>();
@@ -785,7 +785,7 @@ public class TestLazyHBaseObject extends TestCase {
 
     Collections.sort(kvs, KeyValue.COMPARATOR);
     Result result = new Result(kvs);
-    o.init(result, columnMappings);
+    o.init(result);
     List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
 
 

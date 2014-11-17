@@ -18,17 +18,21 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -52,15 +56,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 /**
  * The implementation of SearchArguments.
@@ -366,7 +364,7 @@ final class SearchArgumentImpl implements SearchArgument {
         case STRING:
           return StringUtils.stripEnd(lit.getValue().toString(), null);
         case FLOAT:
-          return ((Number) lit.getValue()).doubleValue();
+          return Double.parseDouble(lit.getValue().toString());
         case DATE:
         case TIMESTAMP:
         case DECIMAL:
@@ -977,7 +975,9 @@ final class SearchArgumentImpl implements SearchArgument {
           literal instanceof Integer) {
         return Long.valueOf(literal.toString());
       } else if (literal instanceof Float) {
-        return Double.valueOf((Float) literal);
+        // to avoid change in precision when upcasting float to double
+        // we convert the literal to string and parse it as double. (HIVE-8460)
+        return Double.parseDouble(literal.toString());
       } else {
         throw new IllegalArgumentException("Unknown type for literal " +
             literal);

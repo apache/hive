@@ -19,7 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import junit.framework.Assert;
-import org.apache.hadoop.hive.common.type.Decimal128;
+
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.junit.Test;
@@ -32,183 +33,203 @@ public class TestDecimalUtil {
   @Test
   public void testFloor() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 13);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
-    Decimal128 expected1 = new Decimal128(19, (short)0);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
+    HiveDecimal expected1 = HiveDecimal.create("19");
     DecimalUtil.floor(0, d1, dcv);
-    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(23.0, (short) 5);
-    Decimal128 expected2 = new Decimal128(23, (short)0);
+    // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
+    HiveDecimal d2 = HiveDecimal.create("23.00000");
+    Assert.assertEquals(0, d2.scale());
+    HiveDecimal expected2 = HiveDecimal.create("23");
     DecimalUtil.floor(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d3 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected3 = new Decimal128(-26, (short)0);
+    HiveDecimal d3 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected3 = HiveDecimal.create("-26");
     DecimalUtil.floor(0, d3, dcv);
-    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d4 = new Decimal128(-17, (short) 5);
-    Decimal128 expected4 = new Decimal128(-17, (short)0);
+    HiveDecimal d4 = HiveDecimal.create("-17.00000");
+    Assert.assertEquals(0, d4.scale());
+    HiveDecimal expected4 = HiveDecimal.create("-17");
     DecimalUtil.floor(0, d4, dcv);
-    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d5 = new Decimal128(-0.3, (short) 5);
-    Decimal128 expected5 = new Decimal128(-1, (short)0);
+    HiveDecimal d5 = HiveDecimal.create("-0.30000");
+    Assert.assertEquals(1, d5.scale());
+    HiveDecimal expected5 = HiveDecimal.create("-1");
     DecimalUtil.floor(0, d5, dcv);
-    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d6 = new Decimal128(0.3, (short) 5);
-    Decimal128 expected6 = new Decimal128(0, (short)0);
+    HiveDecimal d6 = HiveDecimal.create("0.30000");
+    Assert.assertEquals(1, d6.scale());
+    HiveDecimal expected6 = HiveDecimal.create("0");
     DecimalUtil.floor(0, d6, dcv);
-    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testCeiling() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 13);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
-    Decimal128 expected1 = new Decimal128(20, (short)0);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
+    HiveDecimal expected1 = HiveDecimal.create("20");
     DecimalUtil.ceiling(0, d1, dcv);
-    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(23.0, (short) 5);
-    Decimal128 expected2 = new Decimal128(23, (short)0);
+    // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
+    HiveDecimal d2 = HiveDecimal.create("23.00000");
+    Assert.assertEquals(0, d2.scale());
+    HiveDecimal expected2 = HiveDecimal.create("23");
     DecimalUtil.ceiling(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d3 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected3 = new Decimal128(-25, (short)0);
+    HiveDecimal d3 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected3 = HiveDecimal.create("-25");
     DecimalUtil.ceiling(0, d3, dcv);
-    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d4 = new Decimal128(-17, (short) 5);
-    Decimal128 expected4 = new Decimal128(-17, (short)0);
+    HiveDecimal d4 = HiveDecimal.create("-17.00000");
+    Assert.assertEquals(0, d4.scale());
+    HiveDecimal expected4 = HiveDecimal.create("-17");
     DecimalUtil.ceiling(0, d4, dcv);
-    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d5 = new Decimal128(-0.3, (short) 5);
-    Decimal128 expected5 = new Decimal128(0, (short)0);
+    HiveDecimal d5 = HiveDecimal.create("-0.30000");
+    Assert.assertEquals(1, d5.scale());
+    HiveDecimal expected5 = HiveDecimal.create("0");
     DecimalUtil.ceiling(0, d5, dcv);
-    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d6 = new Decimal128(0.3, (short) 5);
-    Decimal128 expected6 = new Decimal128(1, (short)0);
+    HiveDecimal d6 = HiveDecimal.create("0.30000");
+    Assert.assertEquals(1, d6.scale());
+    HiveDecimal expected6 = HiveDecimal.create("1");
     DecimalUtil.ceiling(0, d6, dcv);
-    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testAbs() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 13);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
     DecimalUtil.abs(0, d1, dcv);
-    Assert.assertEquals(0, d1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, d1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected2 = new Decimal128(25.34567, (short)5);
+    HiveDecimal d2 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected2 = HiveDecimal.create("25.34567");
     DecimalUtil.abs(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testRound() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 0);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
-    Decimal128 expected1 = new Decimal128(20, (short)0);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
+    HiveDecimal expected1 = HiveDecimal.create("20");
     DecimalUtil.round(0, d1, dcv);
-    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(23.0, (short) 5);
-    Decimal128 expected2 = new Decimal128(23, (short)0);
+    // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
+    HiveDecimal d2 = HiveDecimal.create("23.00000");
+    Assert.assertEquals(0, d2.scale());
+    HiveDecimal expected2 = HiveDecimal.create("23");
     DecimalUtil.round(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d3 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected3 = new Decimal128(-25, (short)0);
+    HiveDecimal d3 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected3 = HiveDecimal.create("-25");
     DecimalUtil.round(0, d3, dcv);
-    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d4 = new Decimal128(-17, (short) 5);
-    Decimal128 expected4 = new Decimal128(-17, (short)0);
+    HiveDecimal d4 = HiveDecimal.create("-17.00000");
+    Assert.assertEquals(0, d4.scale());
+    HiveDecimal expected4 = HiveDecimal.create("-17");
     DecimalUtil.round(0, d4, dcv);
-    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d5 = new Decimal128(19.36778, (short) 5);
-    Decimal128 expected5 = new Decimal128(19, (short)0);
+    HiveDecimal d5 = HiveDecimal.create("19.36778");
+    HiveDecimal expected5 = HiveDecimal.create("19");
     DecimalUtil.round(0, d5, dcv);
-    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d6 = new Decimal128(-25.54567, (short) 5);
-    Decimal128 expected6 = new Decimal128(-26, (short)0);
+    HiveDecimal d6 = HiveDecimal.create("-25.54567");
+    HiveDecimal expected6 = HiveDecimal.create("-26");
     DecimalUtil.round(0, d6, dcv);
-    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testRoundWithDigits() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 3);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
-    Decimal128 expected1 = new Decimal128(19.568, (short)3);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
+    HiveDecimal expected1 = HiveDecimal.create("19.568");
     DecimalUtil.round(0, d1, dcv);
-    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(23.567, (short) 5);
-    Decimal128 expected2 = new Decimal128(23.567, (short)3);
+    // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
+    HiveDecimal d2 = HiveDecimal.create("23.56700");
+    Assert.assertEquals(3, d2.scale());
+    HiveDecimal expected2 = HiveDecimal.create("23.567");
     DecimalUtil.round(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d3 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected3 = new Decimal128(-25.346, (short)3);
+    HiveDecimal d3 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected3 = HiveDecimal.create("-25.346");
     DecimalUtil.round(0, d3, dcv);
-    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d4 = new Decimal128(-17.234, (short) 5);
-    Decimal128 expected4 = new Decimal128(-17.234, (short)3);
+    HiveDecimal d4 = HiveDecimal.create("-17.23400");
+    Assert.assertEquals(3, d4.scale());
+    HiveDecimal expected4 = HiveDecimal.create("-17.234");
     DecimalUtil.round(0, d4, dcv);
-    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected4.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d5 = new Decimal128(19.36748, (short) 5);
-    Decimal128 expected5 = new Decimal128(19.367, (short)3);
+    HiveDecimal d5 = HiveDecimal.create("19.36748");
+    HiveDecimal expected5 = HiveDecimal.create("19.367");
     DecimalUtil.round(0, d5, dcv);
-    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected5.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d6 = new Decimal128(-25.54537, (short) 5);
-    Decimal128 expected6 = new Decimal128(-25.545, (short)3);
+    HiveDecimal d6 = HiveDecimal.create("-25.54537");
+    HiveDecimal expected6 = HiveDecimal.create("-25.545");
     DecimalUtil.round(0, d6, dcv);
-    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected6.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testNegate() {
     DecimalColumnVector dcv = new DecimalColumnVector(4 ,20, 13);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
-    Decimal128 expected1 = new Decimal128(-19.56778, (short)5);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
+    HiveDecimal expected1 = HiveDecimal.create("-19.56778");
     DecimalUtil.negate(0, d1, dcv);
-    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected1.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d2 = new Decimal128(-25.34567, (short) 5);
-    Decimal128 expected2 = new Decimal128(25.34567, (short)5);
+    HiveDecimal d2 = HiveDecimal.create("-25.34567");
+    HiveDecimal expected2 = HiveDecimal.create("25.34567");
     DecimalUtil.negate(0, d2, dcv);
-    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected2.compareTo(dcv.vector[0].getHiveDecimal()));
 
-    Decimal128 d3 = new Decimal128(0, (short) 5);
-    Decimal128 expected3 = new Decimal128(0, (short)0);
+    // As of HIVE-8745, these decimal values should be trimmed of trailing zeros.
+    HiveDecimal d3 = HiveDecimal.create("0.00000");
+    Assert.assertEquals(0, d3.scale());
+    HiveDecimal expected3 = HiveDecimal.create("0");
     DecimalUtil.negate(0, d3, dcv);
-    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0]));
+    Assert.assertEquals(0, expected3.compareTo(dcv.vector[0].getHiveDecimal()));
   }
 
   @Test
   public void testSign() {
     LongColumnVector lcv = new LongColumnVector(4);
-    Decimal128 d1 = new Decimal128(19.56778, (short) 5);
+    HiveDecimal d1 = HiveDecimal.create("19.56778");
     DecimalUtil.sign(0, d1, lcv);
     Assert.assertEquals(1, lcv.vector[0]);
 
-    Decimal128 d2 = new Decimal128(-25.34567, (short) 5);
+    HiveDecimal d2 = HiveDecimal.create("-25.34567");
     DecimalUtil.sign(0, d2, lcv);
     Assert.assertEquals(-1, lcv.vector[0]);
 
-    Decimal128 d3 = new Decimal128(0, (short) 5);
+    HiveDecimal d3 = HiveDecimal.create("0.00000");
+    Assert.assertEquals(0, d3.scale());
+    d3.setScale(5);
     DecimalUtil.sign(0, d3, lcv);
     Assert.assertEquals(0, lcv.vector[0]);
   }

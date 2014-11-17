@@ -417,60 +417,61 @@ public class StatObjectConverter {
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+    colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-      boolStats.setNumFalses(extractSqlLong(falses));
-      boolStats.setNumTrues(extractSqlLong(trues));
-      boolStats.setNumNulls(extractSqlLong(nulls));
+      boolStats.setNumFalses(MetaStoreDirectSql.extractSqlLong(falses));
+      boolStats.setNumTrues(MetaStoreDirectSql.extractSqlLong(trues));
+      boolStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       data.setBooleanStats(boolStats);
     } else if (colType.equals("string") ||
         colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
-      stringStats.setNumNulls(extractSqlLong(nulls));
+      stringStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       stringStats.setAvgColLen((Double)avglen);
-      stringStats.setMaxColLen(extractSqlLong(maxlen));
-      stringStats.setNumDVs(extractSqlLong(dist));
+      stringStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
+      stringStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-      binaryStats.setNumNulls(extractSqlLong(nulls));
+      binaryStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       binaryStats.setAvgColLen((Double)avglen);
-      binaryStats.setMaxColLen(extractSqlLong(maxlen));
+      binaryStats.setMaxColLen(MetaStoreDirectSql.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
         colType.equals("smallint") || colType.equals("tinyint") ||
         colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
-      longStats.setNumNulls(extractSqlLong(nulls));
+      longStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (lhigh != null) {
-        longStats.setHighValue(extractSqlLong(lhigh));
+        longStats.setHighValue(MetaStoreDirectSql.extractSqlLong(lhigh));
       }
       if (llow != null) {
-        longStats.setLowValue(extractSqlLong(llow));
+        longStats.setLowValue(MetaStoreDirectSql.extractSqlLong(llow));
       }
-      longStats.setNumDVs(extractSqlLong(dist));
+      longStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setLongStats(longStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
-      doubleStats.setNumNulls(extractSqlLong(nulls));
+      doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (dhigh != null) {
         doubleStats.setHighValue((Double)dhigh);
       }
       if (dlow != null) {
         doubleStats.setLowValue((Double)dlow);
       }
-      doubleStats.setNumDVs(extractSqlLong(dist));
+      doubleStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
-      decimalStats.setNumNulls(extractSqlLong(nulls));
+      decimalStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (dechigh != null) {
         decimalStats.setHighValue(createThriftDecimal((String)dechigh));
       }
       if (declow != null) {
         decimalStats.setLowValue(createThriftDecimal((String)declow));
       }
-      decimalStats.setNumDVs(extractSqlLong(dist));
+      decimalStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       data.setDecimalStats(decimalStats);
     }
   }
@@ -482,13 +483,5 @@ public class StatObjectConverter {
 
   private static String createJdoDecimalString(Decimal d) {
     return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
-  }
-
-  static Long extractSqlLong(Object obj) throws MetaException {
-    if (obj == null) return null;
-    if (!(obj instanceof Number)) {
-      throw new MetaException("Expected numeric type but got " + obj.getClass().getName());
-    }
-    return ((Number)obj).longValue();
   }
 }

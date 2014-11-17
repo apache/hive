@@ -305,7 +305,7 @@ public class QTestUtil {
     this.outDir = outDir;
     this.logDir = logDir;
     if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+confDir+"/hive-site.xml"));
+      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);
@@ -537,10 +537,11 @@ public class QTestUtil {
   /**
    * Clear out any side effects of running tests
    */
-  public void clearTestSideEffects() throws Exception {
+  public void clearTablesCreatedDuringTests() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
@@ -559,7 +560,7 @@ public class QTestUtil {
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
           if (indexes != null && indexes.size() > 0) {
             for (Index index : indexes) {
-              db.dropIndex(dbName, tblName, index.getIndexName(), true);
+              db.dropIndex(dbName, tblName, index.getIndexName(), true, true);
             }
           }
         }
@@ -574,9 +575,11 @@ public class QTestUtil {
     try {
       Path p = new Path(testWarehouse);
       FileSystem fileSystem = p.getFileSystem(conf);
-      for (FileStatus status : fileSystem.listStatus(p)) {
-        if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
-          fileSystem.delete(status.getPath(), true);
+      if (fileSystem.exists(p)) {
+        for (FileStatus status : fileSystem.listStatus(p)) {
+          if (status.isDir() && !srcTables.contains(status.getPath().getName())) {
+            fileSystem.delete(status.getPath(), true);
+          }
         }
       }
     } catch (IllegalArgumentException e) {
@@ -590,6 +593,18 @@ public class QTestUtil {
           db.dropRole(roleName);
         }
     }
+  }
+
+  /**
+   * Clear out any side effects of running tests
+   */
+  public void clearTestSideEffects() throws Exception {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+
+    clearTablesCreatedDuringTests();
+
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);
@@ -605,6 +620,8 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+
+    clearTablesCreatedDuringTests();
 
     SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
 
@@ -952,7 +969,7 @@ public class QTestUtil {
       for (Task<? extends Serializable> plan : tasks) {
         Utilities.serializePlan(plan, ofs, conf);
       }
-
+      ofs.close();
       fixXml4JDK7(outf.getPath());
       maskPatterns(xmlPlanMask, outf.getPath());
 
@@ -964,6 +981,7 @@ public class QTestUtil {
       return exitVal;
     } finally {
       conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
+      IOUtils.closeQuietly(ofs);
     }
   }
 

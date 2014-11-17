@@ -19,10 +19,13 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.hcatalog.messaging.json.JSONMessageFactory;
 
@@ -129,6 +132,16 @@ public abstract class MessageFactory {
      * @return AddPartitionMessage instance.
      */
     public abstract AddPartitionMessage buildAddPartitionMessage(Table table, List<Partition> partitions);
+
+  /**
+   * Factory method for AddPartitionMessage.
+   * @param table The Table to which the partitions are added.
+   * @param partitionSpec The set of Partitions being added.
+   * @return AddPartitionMessage instance.
+   */
+  @InterfaceAudience.LimitedPrivate({"Hive"})
+  @InterfaceStability.Evolving
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, PartitionSpecProxy partitionSpec);
 
   /**
    * Factory method for DropPartitionMessage.

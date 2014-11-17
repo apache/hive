@@ -80,6 +80,7 @@ public class TestTypeInfoToSchema {
 
   private TypeInfoToSchema typeInfoToSchema;
 
+  private final String lineSeparator = System.getProperty("line.separator");
 
   private String getAvroSchemaString(TypeInfo columnType) {
     return typeInfoToSchema.convert(
@@ -383,7 +384,7 @@ public class TestTypeInfoToSchema {
     LOGGER.info("structTypeInfo is " + structTypeInfo);
 
     final String specificSchema = IOUtils.toString(Resources.getResource("avro-struct.avsc")
-        .openStream()).replace("\n", "");
+        .openStream()).replace(lineSeparator, "");
     String expectedSchema = genSchema(
         specificSchema);
 
@@ -414,7 +415,7 @@ public class TestTypeInfoToSchema {
     superStructTypeInfo.setAllStructFieldTypeInfos(superTypeInfos);
 
     final String specificSchema = IOUtils.toString(Resources.getResource("avro-nested-struct.avsc")
-        .openStream()).replace("\n", "");
+        .openStream()).replace(lineSeparator, "");
     String expectedSchema = genSchema(
         specificSchema);
     Assert.assertEquals("Test for nested struct's avro schema failed",

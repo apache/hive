@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -40,6 +41,8 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.util.Progressable;
 
 import parquet.hadoop.ParquetOutputFormat;
+import parquet.hadoop.metadata.CompressionCodecName;
+import parquet.hadoop.util.ContextUtil;
 
 /**
  *
@@ -110,15 +113,19 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ArrayWrita
     }
 
     DataWritableWriteSupport.setSchema(HiveSchemaConverter.convert(columnNames, columnTypes), jobConf);
-    return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(), progress);
+
+    return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
+            progress,tableProperties);
   }
 
   protected ParquetRecordWriterWrapper getParquerRecordWriterWrapper(
       ParquetOutputFormat<ArrayWritable> realOutputFormat,
       JobConf jobConf,
       String finalOutPath,
-      Progressable progress
+      Progressable progress,
+      Properties tableProperties
       ) throws IOException {
-    return new ParquetRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(), progress);
+    return new ParquetRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
+            progress,tableProperties);
   }
 }

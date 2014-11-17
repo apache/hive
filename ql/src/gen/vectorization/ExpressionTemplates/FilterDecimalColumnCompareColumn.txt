@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Generated from template FilterDecimalColumnCompareColumn.txt, which covers binary comparison 
@@ -57,8 +57,8 @@ public class <ClassName> extends VectorExpression {
     boolean[] nullPos1 = inputColVector1.isNull;
     boolean[] nullPos2 = inputColVector2.isNull;
     int n = batch.size;
-    Decimal128[] vector1 = inputColVector1.vector;
-    Decimal128[] vector2 = inputColVector2.vector;
+    HiveDecimalWritable[] vector1 = inputColVector1.vector;
+    HiveDecimalWritable[] vector2 = inputColVector2.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -427,22 +427,6 @@ public class <ClassName> extends VectorExpression {
   @Override
   public int getOutputColumn() {
     return -1;
-  }
-  
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
   }
 
   @Override

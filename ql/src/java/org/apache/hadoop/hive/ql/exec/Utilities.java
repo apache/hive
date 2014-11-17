@@ -18,11 +18,67 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
-import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
+import java.beans.DefaultPersistenceDelegate;
+import java.beans.Encoder;
+import java.beans.ExceptionListener;
+import java.beans.Expression;
+import java.beans.PersistenceDelegate;
+import java.beans.Statement;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLTransientException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -126,66 +182,11 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.ExceptionListener;
-import java.beans.Expression;
-import java.beans.PersistenceDelegate;
-import java.beans.Statement;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.SQLTransientException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
 
 /**
  * Utilities.
@@ -409,7 +410,7 @@ public final class Utilities {
         }
         gWorkMap.put(path, gWork);
       } else {
-        LOG.debug("Found plan in cache.");
+        LOG.debug("Found plan in cache for name: " + name);
         gWork = gWorkMap.get(path);
       }
       return gWork;
@@ -429,20 +430,9 @@ public final class Utilities {
     }
   }
 
-  public static Map<String, Map<Integer, String>> getScratchColumnVectorTypes(Configuration hiveConf) {
-    BaseWork baseWork = getMapWork(hiveConf);
-    if (baseWork == null) {
-      baseWork = getReduceWork(hiveConf);
-    }
-    return baseWork.getScratchColumnVectorTypes();
-  }
-
-  public static Map<String, Map<String, Integer>> getScratchColumnMap(Configuration hiveConf) {
-    BaseWork baseWork = getMapWork(hiveConf);
-    if (baseWork == null) {
-      baseWork = getReduceWork(hiveConf);
-    }
-    return baseWork.getScratchColumnMap();
+  public static Map<String, Map<Integer, String>> getMapWorkAllScratchColumnVectorTypeMaps(Configuration hiveConf) {
+    MapWork mapWork = getMapWork(hiveConf);
+    return mapWork.getAllScratchColumnVectorTypeMaps();
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
@@ -664,21 +654,33 @@ public final class Utilities {
 
       Path planPath = getPlanPath(conf, name);
 
-      OutputStream out;
+      OutputStream out = null;
 
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
         // add it to the conf
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
-        serializePlan(w, out, conf);
+        try {
+          out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
+          serializePlan(w, out, conf);
+          out.close();
+          out = null;
+        } finally {
+          IOUtils.closeStream(out);
+        }
         LOG.info("Setting plan: "+planPath.toUri().getPath());
         conf.set(planPath.toUri().getPath(),
             Base64.encodeBase64String(byteOut.toByteArray()));
       } else {
         // use the default file system of the conf
         FileSystem fs = planPath.getFileSystem(conf);
-        out = fs.create(planPath);
-        serializePlan(w, out, conf);
+        try {
+          out = fs.create(planPath);
+          serializePlan(w, out, conf);
+          out.close();
+          out = null;
+        } finally {
+          IOUtils.closeStream(out);
+        }
 
         // Serialize the plan to the default hdfs instance
         // Except for hadoop local mode execution where we should be
@@ -1610,12 +1612,13 @@ public final class Utilities {
    * Group 6: copy     [copy keyword]
    * Group 8: 2        [copy file index]
    */
+  private static final String COPY_KEYWORD = "_copy_"; // copy keyword
   private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
       Pattern.compile("^.*?"+ // any prefix
                       "([0-9]+)"+ // taskId
                       "(_)"+ // separator
                       "([0-9]{1,6})?"+ // attemptId (limited to 6 digits)
-                      "((_)(\\Bcopy\\B)(_)"+ // copy keyword
+                      "((_)(\\Bcopy\\B)(_)" +
                       "([0-9]{1,6})$)?"+ // copy file index
                       "(\\..*)?$"); // any suffix/file extension
 
@@ -2010,6 +2013,15 @@ public final class Utilities {
     return false;
   }
 
+  public static String getBucketFileNameFromPathSubString(String bucketName) {
+    try {
+      return bucketName.split(COPY_KEYWORD)[0];
+    } catch (Exception e) {
+      e.printStackTrace();
+      return bucketName;
+    }
+  }
+
   public static String getNameMessage(Exception e) {
     return e.getClass().getName() + "(" + e.getMessage() + ")";
   }
@@ -2042,15 +2054,21 @@ public final class Utilities {
   public static ClassLoader getSessionSpecifiedClassLoader() {
     SessionState state = SessionState.get();
     if (state == null || state.getConf() == null) {
-      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
+      }
       return JavaUtils.getClassLoader();
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
-    if (sessionCL != null){
-      LOG.debug("Use session specified class loader");
+    if (sessionCL != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Use session specified class loader");
+      }
       return sessionCL;
     }
-    LOG.debug("Session specified class loader not found, use thread based class loader");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Session specified class loader not found, use thread based class loader");
+    }
     return JavaUtils.getClassLoader();
   }
 
@@ -2327,6 +2345,32 @@ public final class Utilities {
         if (val != null) {
           job.set(name, StringEscapeUtils.escapeJava(val));
         }
+      }
+    }
+    Map<String, String> jobProperties = tbl.getJobProperties();
+    if (jobProperties == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+      job.set(entry.getKey(), entry.getValue());
+    }
+  }
+
+  /**
+   * Copies the storage handler proeprites configured for a table descriptor to a runtime job
+   * configuration.  This differs from {@link #copyTablePropertiesToConf(org.apache.hadoop.hive.ql.plan.TableDesc, org.apache.hadoop.mapred.JobConf)}
+   * in that it does not allow parameters already set in the job to override the values from the
+   * table.  This is important for setting the config up for reading,
+   * as the job may already have values in it from another table.
+   * @param tbl
+   * @param job
+   */
+  public static void copyTablePropertiesToConf(TableDesc tbl, JobConf job) {
+    Properties tblProperties = tbl.getProperties();
+    for(String name: tblProperties.stringPropertyNames()) {
+      String val = (String) tblProperties.get(name);
+      if (val != null) {
+        job.set(name, StringEscapeUtils.escapeJava(val));
       }
     }
     Map<String, String> jobProperties = tbl.getJobProperties();
@@ -3087,11 +3131,10 @@ public final class Utilities {
 
   public static int estimateReducers(long totalInputFileSize, long bytesPerReducer,
       int maxReducers, boolean powersOfTwo) {
-
-    int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
+    double bytes = Math.max(totalInputFileSize, bytesPerReducer);
+    int reducers = (int) Math.ceil(bytes / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
-
 
     int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
     int reducersPowerTwo = (int)Math.pow(2, reducersLog);
@@ -3131,7 +3174,7 @@ public final class Utilities {
     }
 
     if (highestSamplePercentage >= 0) {
-      totalInputFileSize = Math.min((long) (totalInputFileSize * highestSamplePercentage / 100D)
+      totalInputFileSize = Math.min((long) (totalInputFileSize * (highestSamplePercentage / 100D))
           , totalInputFileSize);
     }
     return totalInputFileSize;
@@ -3155,7 +3198,7 @@ public final class Utilities {
     }
 
     if (highestSamplePercentage >= 0) {
-      totalInputNumFiles = Math.min((long) (totalInputNumFiles * highestSamplePercentage / 100D)
+      totalInputNumFiles = Math.min((long) (totalInputNumFiles * (highestSamplePercentage / 100D))
           , totalInputNumFiles);
     }
     return totalInputNumFiles;

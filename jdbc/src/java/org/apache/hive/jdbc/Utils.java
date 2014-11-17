@@ -90,7 +90,7 @@ public class Utils {
     static final String HTTP_PATH_DEPRECATED = "hive.server2.thrift.http.path";
     static final String HTTP_PATH = "httpPath";
     static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
-    // Don't use dynamic serice discovery
+    // Don't use dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_NONE = "none";
     // Use ZooKeeper for indirection while using dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_ZOOKEEPER = "zooKeeper";
@@ -100,8 +100,6 @@ public class Utils {
     static final String ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2";
 
     // Non-configurable params:
-    // ZOOKEEPER_SESSION_TIMEOUT is not exposed as client configurable
-    static final int ZOOKEEPER_SESSION_TIMEOUT = 600 * 1000;
     // Currently supports JKS keystore format
     static final String SSL_TRUST_STORE_TYPE = "JKS";
 
@@ -226,10 +224,11 @@ public class Utils {
 
   // Verify success and optionally with_info status, else throw SQLException
   public static void verifySuccess(TStatus status, boolean withInfo) throws SQLException {
-    if ((status.getStatusCode() != TStatusCode.SUCCESS_STATUS) &&
-        (withInfo && (status.getStatusCode() != TStatusCode.SUCCESS_WITH_INFO_STATUS))) {
-        throw new HiveSQLException(status);
+    if (status.getStatusCode() == TStatusCode.SUCCESS_STATUS ||
+        (withInfo && status.getStatusCode() == TStatusCode.SUCCESS_WITH_INFO_STATUS)) {
+      return;
     }
+    throw new HiveSQLException(status);
   }
 
   /**
@@ -295,10 +294,6 @@ public class Utils {
     // key=value pattern
     Pattern pattern = Pattern.compile("([^;]*)=([^;]*)[;]?");
 
-    Map<String, String> sessionVarMap = connParams.getSessionVars();
-    Map<String, String> hiveConfMap = connParams.getHiveConfs();
-    Map<String, String> hiveVarMap = connParams.getHiveVars();
-
     // dbname and session settings
     String sessVars = jdbcURI.getPath();
     if ((sessVars != null) && !sessVars.isEmpty()) {
@@ -315,7 +310,7 @@ public class Utils {
         if (sessVars != null) {
           Matcher sessMatcher = pattern.matcher(sessVars);
           while (sessMatcher.find()) {
-            if (sessionVarMap.put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
+            if (connParams.getSessionVars().put(sessMatcher.group(1), sessMatcher.group(2)) != null) {
               throw new JdbcUriParseException("Bad URL format: Multiple values for property "
                   + sessMatcher.group(1));
             }
@@ -332,7 +327,7 @@ public class Utils {
     if (confStr != null) {
       Matcher confMatcher = pattern.matcher(confStr);
       while (confMatcher.find()) {
-        hiveConfMap.put(confMatcher.group(1), confMatcher.group(2));
+        connParams.getHiveConfs().put(confMatcher.group(1), confMatcher.group(2));
       }
     }
 
@@ -341,7 +336,7 @@ public class Utils {
     if (varStr != null) {
       Matcher varMatcher = pattern.matcher(varStr);
       while (varMatcher.find()) {
-        hiveVarMap.put(varMatcher.group(1), varMatcher.group(2));
+        connParams.getHiveVars().put(varMatcher.group(1), varMatcher.group(2));
       }
     }
 
@@ -350,19 +345,19 @@ public class Utils {
     String usageUrlBase = "jdbc:hive2://<host>:<port>/dbName;";
     // Handle deprecation of AUTH_QOP_DEPRECATED
     newUsage = usageUrlBase + JdbcConnectionParams.AUTH_QOP + "=<qop_value>";
-    handleParamDeprecation(sessionVarMap, sessionVarMap, JdbcConnectionParams.AUTH_QOP_DEPRECATED,
-        JdbcConnectionParams.AUTH_QOP, newUsage);
+    handleParamDeprecation(connParams.getSessionVars(), connParams.getSessionVars(),
+        JdbcConnectionParams.AUTH_QOP_DEPRECATED, JdbcConnectionParams.AUTH_QOP, newUsage);
 
     // Handle deprecation of TRANSPORT_MODE_DEPRECATED
     newUsage = usageUrlBase + JdbcConnectionParams.TRANSPORT_MODE + "=<transport_mode_value>";
-    handleParamDeprecation(hiveConfMap, sessionVarMap,
+    handleParamDeprecation(connParams.getHiveConfs(), connParams.getSessionVars(),
         JdbcConnectionParams.TRANSPORT_MODE_DEPRECATED, JdbcConnectionParams.TRANSPORT_MODE,
         newUsage);
 
     // Handle deprecation of HTTP_PATH_DEPRECATED
     newUsage = usageUrlBase + JdbcConnectionParams.HTTP_PATH + "=<http_path_value>";
-    handleParamDeprecation(hiveConfMap, sessionVarMap, JdbcConnectionParams.HTTP_PATH_DEPRECATED,
-        JdbcConnectionParams.HTTP_PATH, newUsage);
+    handleParamDeprecation(connParams.getHiveConfs(), connParams.getSessionVars(),
+        JdbcConnectionParams.HTTP_PATH_DEPRECATED, JdbcConnectionParams.HTTP_PATH, newUsage);
 
     // Extract host, port
     if (connParams.isEmbeddedMode()) {
@@ -374,6 +369,7 @@ public class Utils {
       // Else substitute the dummy authority with a resolved one.
       // In case of dynamic service discovery using ZooKeeper, it picks a server uri from ZooKeeper
       String resolvedAuthorityString = resolveAuthority(connParams);
+      LOG.info("Resolved authority: " + resolvedAuthorityString);
       uri = uri.replace(dummyAuthorityString, resolvedAuthorityString);
       connParams.setJdbcUriString(uri);
       // Create a Java URI from the resolved URI for extracting the host/port
@@ -395,8 +391,9 @@ public class Utils {
    * Also log a deprecation message for the client.
    * @param fromMap
    * @param toMap
-   * @param oldName
+   * @param deprecatedName
    * @param newName
+   * @param newUsage
    */
   private static void handleParamDeprecation(Map<String, String> fromMap, Map<String, String> toMap,
       String deprecatedName, String newName, String newUsage) {

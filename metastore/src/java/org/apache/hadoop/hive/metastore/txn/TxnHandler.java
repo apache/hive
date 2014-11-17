@@ -65,13 +65,13 @@ public class TxnHandler {
   static final protected char TXN_OPEN = 'o';
 
   // Lock states
-  static final private char LOCK_ACQUIRED = 'a';
-  static final private char LOCK_WAITING = 'w';
+  static final protected char LOCK_ACQUIRED = 'a';
+  static final protected char LOCK_WAITING = 'w';
 
   // Lock types
-  static final private char LOCK_EXCLUSIVE = 'e';
-  static final private char LOCK_SHARED = 'r';
-  static final private char LOCK_SEMI_SHARED = 'w';
+  static final protected char LOCK_EXCLUSIVE = 'e';
+  static final protected char LOCK_SHARED = 'r';
+  static final protected char LOCK_SEMI_SHARED = 'w';
 
   static final private int ALLOWED_REPEATED_DEADLOCKS = 5;
   static final private Log LOG = LogFactory.getLog(TxnHandler.class.getName());
@@ -89,6 +89,8 @@ public class TxnHandler {
 
   // Transaction timeout, in milliseconds.
   private long timeout;
+
+  private String identifierQuoteString; // quotes to use for quoting tables, where necessary
 
   // DEADLOCK DETECTION AND HANDLING
   // A note to developers of this class.  ALWAYS access HIVE_LOCKS before TXNS to avoid deadlock
@@ -299,7 +301,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "openTxns");
+        detectDeadlock(dbConn, e, "openTxns");
         throw new MetaException("Unable to select from transaction database "
           + StringUtils.stringifyException(e));
       } finally {
@@ -334,7 +336,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "abortTxn");
+        detectDeadlock(dbConn, e, "abortTxn");
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
@@ -391,7 +393,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "commitTxn");
+        detectDeadlock(dbConn, e, "commitTxn");
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
@@ -417,7 +419,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "lock");
+        detectDeadlock(dbConn, e, "lock");
         throw new MetaException("Unable to update transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -442,7 +444,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "lockNoWait");
+        detectDeadlock(dbConn, e, "lockNoWait");
         throw new MetaException("Unable to update transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -477,7 +479,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "checkLock");
+        detectDeadlock(dbConn, e, "checkLock");
         throw new MetaException("Unable to update transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -532,7 +534,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "unlock");
+        detectDeadlock(dbConn, e, "unlock");
         throw new MetaException("Unable to update transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -611,7 +613,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "heartbeat");
+        detectDeadlock(dbConn, e, "heartbeat");
         throw new MetaException("Unable to select from transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -650,7 +652,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "heartbeatTxnRange");
+        detectDeadlock(dbConn, e, "heartbeatTxnRange");
         throw new MetaException("Unable to select from transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -733,7 +735,7 @@ public class TxnHandler {
           dbConn.rollback();
         } catch (SQLException e1) {
         }
-        detectDeadlock(e, "compact");
+        detectDeadlock(dbConn, e, "compact");
         throw new MetaException("Unable to select from transaction database " +
             StringUtils.stringifyException(e));
       } finally {
@@ -896,15 +898,32 @@ public class TxnHandler {
    * Determine if an exception was a deadlock.  Unfortunately there is no standard way to do
    * this, so we have to inspect the error messages and catch the telltale signs for each
    * different database.
+   * @param conn database connection
    * @param e exception that was thrown.
    * @param caller name of the method calling this
    * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.DeadlockException when deadlock
    * detected and retry count has not been exceeded.
    */
-  protected void detectDeadlock(SQLException e, String caller) throws DeadlockException {
-    final String mysqlDeadlock =
-        "Deadlock found when trying to get lock; try restarting transaction";
-    if (e.getMessage().contains(mysqlDeadlock) || e instanceof SQLTransactionRollbackException) {
+  protected void detectDeadlock(Connection conn,
+                                SQLException e,
+                                String caller) throws DeadlockException, MetaException {
+
+    // If you change this function, remove the @Ignore from TestTxnHandler.deadlockIsDetected()
+    // to test these changes.
+    // MySQL and MSSQL use 40001 as the state code for rollback.  Postgres uses 40001 and 40P01.
+    // Oracle seems to return different SQLStates and messages each time,
+    // so I've tried to capture the different error messages (there appear to be fewer different
+    // error messages than SQL states).
+    // Derby and newer MySQL driver use the new SQLTransactionRollbackException
+    if (dbProduct == null) {
+      determineDatabaseProduct(conn);
+    }
+    if (e instanceof SQLTransactionRollbackException ||
+        ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
+            dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
+        (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
+        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
+            || e.getMessage().contains("can't serialize access for this transaction")))) {
       if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
         LOG.warn("Deadlock detected in " + caller + ", trying again.");
         throw new DeadlockException();
@@ -958,6 +977,19 @@ public class TxnHandler {
     } finally {
       closeStmt(stmt);
     }
+  }
+
+  /**
+   * Determine the String that should be used to quote identifiers.
+   * @param conn Active connection
+   * @return quotes
+   * @throws SQLException
+   */
+  protected String getIdentifierQuoteString(Connection conn) throws SQLException {
+    if (identifierQuoteString == null) {
+      identifierQuoteString = conn.getMetaData().getIdentifierQuoteString();
+    }
+    return identifierQuoteString;
   }
 
   protected enum DatabaseProduct { DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER}

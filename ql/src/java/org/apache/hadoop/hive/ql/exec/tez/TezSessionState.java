@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.PreWarmVertex;
 import org.apache.tez.dag.api.SessionNotRunning;
@@ -67,13 +69,14 @@ public class TezSessionState {
   private LocalResource appJarLr;
   private TezClient session;
   private String sessionId;
-  private DagUtils utils;
+  private final DagUtils utils;
   private String queueName;
   private boolean defaultQueue = false;
   private String user;
 
   private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
+  private boolean doAsEnabled;
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -130,6 +133,8 @@ public class TezSessionState {
   public void open(HiveConf conf, String[] additionalFiles)
     throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
+    this.queueName = conf.get("tez.queue.name");
+    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     UserGroupInformation ugi;
     ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
@@ -182,6 +187,7 @@ public class TezSessionState {
     LOG.info("Opening new Tez Session (id: " + sessionId
         + ", scratch dir: " + tezScratchDir + ")");
 
+    TezJobMonitor.initShutdownHook();
     session.start();
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_PREWARM_ENABLED)) {
@@ -349,7 +355,7 @@ public class TezSessionState {
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
-    return utils.localizeResource(localFile, destFile, conf);
+    return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
   }
 
 
@@ -391,5 +397,9 @@ public class TezSessionState {
 
   public String getUser() {
     return user;
+  }
+
+  public boolean getDoAsEnabled() {
+    return doAsEnabled;
   }
 }

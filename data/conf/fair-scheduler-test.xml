@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<allocations>
+  <queue name="user2-test">
+    <aclAdministerApps>*</aclAdministerApps>
+  </queue>
+  <queue name="user3-group">
+    <aclAdministerApps>*</aclAdministerApps>
+  </queue>
+   
+  <queuePlacementPolicy>
+    <rule name="specified" />
+    <rule name="secondaryGroupExistingQueue" create="false"/>
+    <rule name="primaryGroup" create="false"/>
+    <rule name="default" />
+  </queuePlacementPolicy>
+</allocations>

@@ -48,6 +48,7 @@
         <include>NOTICE</include>
         <include>CHANGELOG</include>
         <include>RELEASE_NOTES.txt</include>
+        <include>accumulo-handler/**/*</include>
         <include>ant/**/*</include>
         <include>beeline/**/*</include>
         <include>bin/**/*</include>

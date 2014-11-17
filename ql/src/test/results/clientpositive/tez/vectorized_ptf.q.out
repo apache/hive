@@ -2,9 +2,9 @@ PREHOOK: query: DROP TABLE part_staging
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE part_staging
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE part
+PREHOOK: query: DROP TABLE part_orc
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE part
+POSTHOOK: query: DROP TABLE part_orc
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: -- NOTE: This test is a copy of ptf.
 -- NOTE: We cannot vectorize "pure" table functions (e.g. NOOP) -- given their blackbox nature. So only queries without table functions and
@@ -52,7 +52,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwri
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part_staging
-PREHOOK: query: CREATE TABLE part( 
+PREHOOK: query: CREATE TABLE part_orc( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -65,8 +65,8 @@ PREHOOK: query: CREATE TABLE part(
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part
-POSTHOOK: query: CREATE TABLE part( 
+PREHOOK: Output: default@part_orc
+POSTHOOK: query: CREATE TABLE part_orc( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -79,13 +79,13 @@ POSTHOOK: query: CREATE TABLE part(
 ) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part
-PREHOOK: query: DESCRIBE EXTENDED part
+POSTHOOK: Output: default@part_orc
+PREHOOK: query: DESCRIBE EXTENDED part_orc
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@part
-POSTHOOK: query: DESCRIBE EXTENDED part
+PREHOOK: Input: default@part_orc
+POSTHOOK: query: DESCRIBE EXTENDED part_orc
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 p_partkey           	int                 	                    
 p_name              	string              	                    
 p_mfgr              	string              	                    
@@ -97,23 +97,23 @@ p_retailprice       	double
 p_comment           	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: insert into table part select * from part_staging
+PREHOOK: query: insert into table part_orc select * from part_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_staging
-PREHOOK: Output: default@part
-POSTHOOK: query: insert into table part select * from part_staging
+PREHOOK: Output: default@part_orc
+POSTHOOK: query: insert into table part_orc select * from part_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_staging
-POSTHOOK: Output: default@part
-POSTHOOK: Lineage: part.p_brand SIMPLE [(part_staging)part_staging.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: part.p_comment SIMPLE [(part_staging)part_staging.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part.p_container SIMPLE [(part_staging)part_staging.FieldSchema(name:p_container, type:string, comment:null), ]
-POSTHOOK: Lineage: part.p_mfgr SIMPLE [(part_staging)part_staging.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part.p_name SIMPLE [(part_staging)part_staging.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part.p_partkey SIMPLE [(part_staging)part_staging.FieldSchema(name:p_partkey, type:int, comment:null), ]
-POSTHOOK: Lineage: part.p_retailprice SIMPLE [(part_staging)part_staging.FieldSchema(name:p_retailprice, type:double, comment:null), ]
-POSTHOOK: Lineage: part.p_size SIMPLE [(part_staging)part_staging.FieldSchema(name:p_size, type:int, comment:null), ]
-POSTHOOK: Lineage: part.p_type SIMPLE [(part_staging)part_staging.FieldSchema(name:p_type, type:string, comment:null), ]
+POSTHOOK: Output: default@part_orc
+POSTHOOK: Lineage: part_orc.p_brand SIMPLE [(part_staging)part_staging.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_comment SIMPLE [(part_staging)part_staging.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_container SIMPLE [(part_staging)part_staging.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_mfgr SIMPLE [(part_staging)part_staging.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_name SIMPLE [(part_staging)part_staging.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_partkey SIMPLE [(part_staging)part_staging.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_retailprice SIMPLE [(part_staging)part_staging.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_size SIMPLE [(part_staging)part_staging.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_orc.p_type SIMPLE [(part_staging)part_staging.FieldSchema(name:p_type, type:string, comment:null), ]
 PREHOOK: query: --1. test1
 
 explain extended
@@ -121,7 +121,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   )
@@ -133,7 +133,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   )
@@ -146,7 +146,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -231,7 +231,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -247,7 +247,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -257,14 +257,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -277,20 +277,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -353,23 +353,23 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
@@ -402,7 +402,7 @@ PREHOOK: query: -- 2. testJoinWithNoop
 explain extended
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
-from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
+from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
@@ -411,7 +411,7 @@ POSTHOOK: query: -- 2. testJoinWithNoop
 explain extended
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
-from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
+from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
@@ -427,11 +427,11 @@ TOK_QUERY
                   TOK_JOIN
                      TOK_TABREF
                         TOK_TABNAME
-                           part
+                           part_orc
                         p1
                      TOK_TABREF
                         TOK_TABNAME
-                           part
+                           part_orc
                         p2
                      =
                         .
@@ -537,7 +537,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -547,14 +547,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -567,20 +567,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [p1]
+              /part_orc [p1]
             Execution mode: vectorized
         Map 5 
             Map Operator Tree:
@@ -604,7 +604,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -614,14 +614,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -634,20 +634,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [p2]
+              /part_orc [p2]
             Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
@@ -733,19 +733,19 @@ STAGE PLANS:
 
 PREHOOK: query: select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
-from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
+from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
-from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
+from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	0
 Manufacturer#1	almond antique burnished rose metallic	2	0
@@ -779,7 +779,7 @@ PREHOOK: query: -- 3. testOnlyPTF
 
 explain extended
 select p_mfgr, p_name, p_size
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
@@ -787,7 +787,7 @@ POSTHOOK: query: -- 3. testOnlyPTF
 
 explain extended
 select p_mfgr, p_name, p_size
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
@@ -799,7 +799,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -838,7 +838,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -854,7 +854,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -864,14 +864,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -884,20 +884,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -938,18 +938,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select p_mfgr, p_name, p_size
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#1	almond antique burnished rose metallic	2
@@ -984,7 +984,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   ) abc
@@ -996,7 +996,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   ) abc
@@ -1010,7 +1010,7 @@ TOK_QUERY
          abc
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -1095,7 +1095,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -1111,7 +1111,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -1121,14 +1121,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1141,20 +1141,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1217,23 +1217,23 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   ) abc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part 
+from noop(on part_orc 
   partition by p_mfgr
   order by p_name
   ) abc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
@@ -1268,7 +1268,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           )
@@ -1280,7 +1280,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           )
@@ -1293,7 +1293,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -1383,7 +1383,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -1399,7 +1399,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -1409,14 +1409,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1429,20 +1429,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1505,23 +1505,23 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2	0
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2	0
@@ -1556,7 +1556,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           ) 
@@ -1569,7 +1569,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           ) 
@@ -1583,7 +1583,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -1681,7 +1681,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -1697,7 +1697,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -1707,14 +1707,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1727,20 +1727,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -1824,25 +1824,25 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
           partition by p_mfgr 
           order by p_name 
           ) 
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2	0
 Manufacturer#1	almond antique chartreuse lavender yellow	34	2	2	34	32
@@ -1873,19 +1873,19 @@ PREHOOK: query: -- 7. testJoin
 
 explain extended
 select abc.* 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
 POSTHOOK: query: -- 7. testJoin
 
 explain extended
 select abc.* 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -1897,7 +1897,7 @@ TOK_QUERY
             abc
             TOK_TABREF
                TOK_TABNAME
-                  part
+                  part_orc
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
@@ -1908,7 +1908,7 @@ TOK_QUERY
                         p_name
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
             p1
          =
             .
@@ -1964,7 +1964,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -1974,14 +1974,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1994,25 +1994,25 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [p1]
+              /part_orc [p1]
             Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -2028,7 +2028,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -2038,14 +2038,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2058,20 +2058,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2140,20 +2140,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select abc.* 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select abc.* 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
@@ -2187,7 +2187,7 @@ PREHOOK: query: -- 8. testJoinRight
 
 explain extended
 select abc.* 
-from part p1 join noop(on part 
+from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
@@ -2196,7 +2196,7 @@ POSTHOOK: query: -- 8. testJoinRight
 
 explain extended
 select abc.* 
-from part p1 join noop(on part 
+from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
@@ -2208,14 +2208,14 @@ TOK_QUERY
       TOK_JOIN
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
             p1
          TOK_PTBLFUNCTION
             noop
             abc
             TOK_TABREF
                TOK_TABNAME
-                  part
+                  part_orc
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
@@ -2278,7 +2278,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -2288,14 +2288,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2308,25 +2308,25 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [p1]
+              /part_orc [p1]
             Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -2342,7 +2342,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -2352,14 +2352,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2372,20 +2372,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2454,20 +2454,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select abc.* 
-from part p1 join noop(on part 
+from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select abc.* 
-from part p1 join noop(on part 
+from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
@@ -2502,7 +2502,7 @@ PREHOOK: query: -- 9. testNoopWithMap
 explain extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
-from noopwithmap(on part
+from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
@@ -2511,7 +2511,7 @@ POSTHOOK: query: -- 9. testNoopWithMap
 explain extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
-from noopwithmap(on part
+from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
@@ -2523,7 +2523,7 @@ TOK_QUERY
          noopwithmap
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -2582,7 +2582,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
@@ -2600,7 +2600,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -2610,14 +2610,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2630,20 +2630,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2704,19 +2704,19 @@ STAGE PLANS:
 
 PREHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
-from noopwithmap(on part
+from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
-from noopwithmap(on part
+from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1
 Manufacturer#1	almond antique burnished rose metallic	2	1
@@ -2751,7 +2751,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noopwithmap(on part 
+from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
@@ -2762,7 +2762,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noopwithmap(on part 
+from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
@@ -2774,7 +2774,7 @@ TOK_QUERY
          noopwithmap
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -2859,7 +2859,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   PTF Operator
@@ -2877,7 +2877,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -2887,14 +2887,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -2907,20 +2907,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2983,21 +2983,21 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noopwithmap(on part 
+from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noopwithmap(on part 
+from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
@@ -3032,7 +3032,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
@@ -3043,7 +3043,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
@@ -3055,7 +3055,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -3140,7 +3140,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -3156,7 +3156,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -3166,14 +3166,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3186,20 +3186,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3262,21 +3262,21 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
-from noop(on part
+from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
@@ -3311,7 +3311,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
-from noop(on noopwithmap(on noop(on part 
+from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
@@ -3323,7 +3323,7 @@ select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
-from noop(on noopwithmap(on noop(on part 
+from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
@@ -3340,7 +3340,7 @@ TOK_QUERY
                noop
                TOK_TABREF
                   TOK_TABNAME
-                     part
+                     part_orc
                TOK_PARTITIONINGSPEC
                   TOK_DISTRIBUTEBY
                      TOK_TABLE_OR_COL
@@ -3429,7 +3429,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -3445,7 +3445,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -3455,14 +3455,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3475,20 +3475,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3568,23 +3568,23 @@ PREHOOK: query: select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
-from noop(on noopwithmap(on noop(on part 
+from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
-from noop(on noopwithmap(on noop(on part 
+from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
 )))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
@@ -3621,7 +3621,7 @@ from (select p_mfgr, p_name,
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
@@ -3636,7 +3636,7 @@ from (select p_mfgr, p_name,
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
@@ -3653,7 +3653,7 @@ TOK_QUERY
                   noop
                   TOK_TABREF
                      TOK_TABNAME
-                        part
+                        part_orc
                   TOK_PARTITIONINGSPEC
                      TOK_DISTRIBUTEBY
                         TOK_TABLE_OR_COL
@@ -3755,7 +3755,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -3771,7 +3771,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -3781,14 +3781,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -3801,20 +3801,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -3879,13 +3879,13 @@ from (select p_mfgr, p_name,
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
@@ -3893,13 +3893,13 @@ from (select p_mfgr, p_name,
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	4100.06
 Manufacturer#1	almond antique burnished rose metallic	2	5702.650000000001
@@ -3936,10 +3936,10 @@ dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr,
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
 POSTHOOK: query: -- 14. testPTFJoinWithWindowingWithCount
 
@@ -3950,10 +3950,10 @@ dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr,
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -3965,7 +3965,7 @@ TOK_QUERY
             abc
             TOK_TABREF
                TOK_TABNAME
-                  part
+                  part_orc
             TOK_PARTITIONINGSPEC
                TOK_DISTRIBUTEBY
                   TOK_TABLE_OR_COL
@@ -3976,7 +3976,7 @@ TOK_QUERY
                         p_name
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
             p1
          =
             .
@@ -4160,7 +4160,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -4170,14 +4170,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4190,25 +4190,25 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [p1]
+              /part_orc [p1]
             Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -4224,7 +4224,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -4234,14 +4234,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4254,20 +4254,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4356,12 +4356,12 @@ dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr,
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
@@ -4369,12 +4369,12 @@ dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr,
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey
+) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	4	1173.15	1173.15	2	0
 Manufacturer#1	almond antique burnished rose metallic	1	1	4	1173.15	2346.3	2	0
@@ -4408,7 +4408,7 @@ PREHOOK: query: -- 15. testDistinctInSelectWithPTF
 
 explain extended
 select DISTINCT p_mfgr, p_name, p_size 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
@@ -4416,7 +4416,7 @@ POSTHOOK: query: -- 15. testDistinctInSelectWithPTF
 
 explain extended
 select DISTINCT p_mfgr, p_name, p_size 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
@@ -4428,7 +4428,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -4468,7 +4468,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -4484,7 +4484,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -4494,14 +4494,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4514,20 +4514,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -4593,18 +4593,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select DISTINCT p_mfgr, p_name, p_size 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select DISTINCT p_mfgr, p_name, p_size 
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#1	almond antique chartreuse lavender yellow	34
@@ -4635,20 +4635,20 @@ PREHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
-from part 
+from part_orc 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mfgr_price_view
 POSTHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
-from part 
+from part_orc 
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view
 PREHOOK: query: explain extended
@@ -4740,7 +4740,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -4766,7 +4766,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -4776,14 +4776,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -4796,20 +4796,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
             Execution mode: vectorized
         Reducer 2 
             Needs Tagging: false
@@ -4895,7 +4895,7 @@ order by p_mfgr)
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mfgr_price_view
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1
@@ -4905,7 +4905,7 @@ order by p_mfgr)
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mfgr_price_view
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	Brand#12	4800.84	4800.84
 Manufacturer#1	Brand#14	2346.3	7147.14
@@ -4970,7 +4970,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_5
 PREHOOK: query: explain extended
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
@@ -4986,7 +4986,7 @@ first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-from noop(on part 
+from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
@@ -5009,7 +5009,7 @@ TOK_QUERY
          noop
          TOK_TABREF
             TOK_TABNAME
-               part
+               part_orc
          TOK_PARTITIONINGSPEC
             TOK_DISTRIBUTEBY
                TOK_TABLE_OR_COL
@@ -5215,7 +5215,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -5231,7 +5231,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -5241,14 +5241,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5261,20 +5261,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5447,7 +5447,7 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-PREHOOK: query: from noop(on part 
+PREHOOK: query: from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
@@ -5462,10 +5462,10 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 PREHOOK: Output: default@part_4
 PREHOOK: Output: default@part_5
-POSTHOOK: query: from noop(on part 
+POSTHOOK: query: from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
@@ -5480,23 +5480,23 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 POSTHOOK: Output: default@part_4
 POSTHOOK: Output: default@part_5
-POSTHOOK: Lineage: part_4.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_4.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.cud SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-POSTHOOK: Lineage: part_5.s2 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part)part.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_4.s SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.cud SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.dr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.fv1 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_mfgr SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_name SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.p_size SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.r SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: part_5.s2 SCRIPT [(part_orc)part_orc.FieldSchema(name:p_partkey, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_name, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_type, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_size, type:int, comment:null), (part_orc)part_orc.FieldSchema(name:p_container, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), (part_orc)part_orc.FieldSchema(name:p_comment, type:string, comment:null), (part_orc)part_orc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part_orc)part_orc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), (part_orc)part_orc.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: select * from part_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_4
@@ -5575,7 +5575,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noop(on 
         noopwithmap(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5594,7 +5594,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noop(on 
         noopwithmap(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5617,7 +5617,7 @@ TOK_QUERY
                   noop
                   TOK_TABREF
                      TOK_TABNAME
-                        part
+                        part_orc
                   TOK_PARTITIONINGSPEC
                      TOK_DISTRIBUTEBY
                         TOK_TABLE_OR_COL
@@ -5723,7 +5723,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -5739,7 +5739,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -5749,14 +5749,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -5769,20 +5769,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -5865,7 +5865,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noop(on 
         noopwithmap(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5874,7 +5874,7 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -5883,7 +5883,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noop(on 
         noopwithmap(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5892,7 +5892,7 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	2
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4
@@ -5930,7 +5930,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbou
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5949,7 +5949,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbou
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -5972,7 +5972,7 @@ TOK_QUERY
                   noop
                   TOK_TABREF
                      TOK_TABNAME
-                        part
+                        part_orc
                   TOK_PARTITIONINGSPEC
                      TOK_DISTRIBUTEBY
                         TOK_TABLE_OR_COL
@@ -6080,7 +6080,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -6096,7 +6096,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -6106,14 +6106,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6126,20 +6126,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6235,7 +6235,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbou
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -6244,7 +6244,7 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -6253,7 +6253,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbou
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -6262,7 +6262,7 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	2
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4
@@ -6300,7 +6300,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6317,7 +6317,7 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6338,7 +6338,7 @@ TOK_QUERY
                   noop
                   TOK_TABREF
                      TOK_TABNAME
-                        part
+                        part_orc
                   TOK_PARTITIONINGSPEC
                      TOK_DISTRIBUTEBY
                         TOK_TABLE_OR_COL
@@ -6433,7 +6433,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -6449,7 +6449,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -6459,14 +6459,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6479,20 +6479,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6573,14 +6573,14 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -6589,14 +6589,14 @@ p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1
 from noop(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
           partition by p_mfgr 
           order by p_mfgr))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4
@@ -6634,7 +6634,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noopwithmap(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6653,7 +6653,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noopwithmap(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6676,7 +6676,7 @@ TOK_QUERY
                   noop
                   TOK_TABREF
                      TOK_TABNAME
-                        part
+                        part_orc
                   TOK_PARTITIONINGSPEC
                      TOK_DISTRIBUTEBY
                         TOK_TABLE_OR_COL
@@ -6783,7 +6783,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -6799,7 +6799,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -6809,14 +6809,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -6829,20 +6829,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -6940,7 +6940,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noopwithmap(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6949,7 +6949,7 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
@@ -6958,7 +6958,7 @@ p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded prec
 from noopwithmap(on 
         noop(on 
           noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -6967,7 +6967,7 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	2
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4
@@ -7006,7 +7006,7 @@ sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           partition by p_mfgr 
@@ -7024,7 +7024,7 @@ sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           partition by p_mfgr 
@@ -7043,7 +7043,7 @@ TOK_QUERY
                noop
                TOK_TABREF
                   TOK_TABNAME
-                     part
+                     part_orc
                TOK_PARTITIONINGSPEC
                   TOK_DISTRIBUTEBY
                      TOK_TABLE_OR_COL
@@ -7181,7 +7181,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -7197,7 +7197,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -7207,14 +7207,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7227,20 +7227,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7324,14 +7324,14 @@ sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           partition by p_mfgr 
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
@@ -7341,14 +7341,14 @@ sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           partition by p_mfgr 
           order by p_mfgr
           ))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	2	2
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4	4
@@ -7387,7 +7387,7 @@ sum(p_size) over (partition by p_mfgr order by p_name range between unbounded pr
 sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
@@ -7403,7 +7403,7 @@ sum(p_size) over (partition by p_mfgr order by p_name range between unbounded pr
 sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
@@ -7420,7 +7420,7 @@ TOK_QUERY
                noop
                TOK_TABREF
                   TOK_TABNAME
-                     part
+                     part_orc
                TOK_PARTITIONINGSPEC
                   TOK_DISTRIBUTEBY
                      TOK_TABLE_OR_COL
@@ -7530,7 +7530,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part
+                  alias: part_orc
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
@@ -7546,7 +7546,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: part
+                  base file name: part_orc
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
@@ -7556,14 +7556,14 @@ STAGE PLANS:
                     columns.comments         
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                    name default.part
+                    name default.part_orc
                     numFiles 1
                     numRows 26
                     rawDataSize 16042
-                    serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2597
+                    totalSize 2599
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -7576,20 +7576,20 @@ STAGE PLANS:
                       columns.comments         
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
-                      name default.part
+                      name default.part_orc
                       numFiles 1
                       numRows 26
                       rawDataSize 16042
-                      serialization.ddl struct part { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2597
+                      totalSize 2599
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part
-                  name: default.part
+                    name: default.part_orc
+                  name: default.part_orc
             Truncated Path -> Alias:
-              /part [part]
+              /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -7673,12 +7673,12 @@ sum(p_size) over (partition by p_mfgr order by p_name range between unbounded pr
 sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part
+PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
@@ -7688,12 +7688,12 @@ sum(p_size) over (partition by p_mfgr order by p_name range between unbounded pr
 sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
-              noop(on part 
+              noop(on part_orc 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4	4
 Manufacturer#1	almond antique burnished rose metallic	1	1	2	4	4

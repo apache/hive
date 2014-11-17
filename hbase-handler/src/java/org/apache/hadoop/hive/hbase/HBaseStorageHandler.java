@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -186,7 +187,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
           Set<String> uniqueColumnFamilies = new HashSet<String>();
 
           for (ColumnMapping colMap : columnMappings) {
-            if (!colMap.hbaseRowKey) {
+            if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
               uniqueColumnFamilies.add(colMap.familyName);
             }
           }
@@ -213,7 +214,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
         for (ColumnMapping colMap : columnMappings) {
 
-          if (colMap.hbaseRowKey) {
+          if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
             continue;
           }
 
@@ -475,6 +476,11 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       TableMapReduceUtil.addDependencyJars(copy);
       merged.addAll(copy.getConfiguration().getStringCollection("tmpjars"));
       jobConf.set("tmpjars", StringUtils.arrayToString(merged.toArray(new String[0])));
+
+      // Get credentials using the configuration instance which has HBase properties
+      JobConf hbaseJobConf = new JobConf(getConf());
+      org.apache.hadoop.hbase.mapred.TableMapReduceUtil.initCredentials(hbaseJobConf);
+      ShimLoader.getHadoopShims().mergeCredentials(jobConf, hbaseJobConf);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -495,34 +501,38 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       HBaseSerDe hBaseSerDe,
       ExprNodeDesc predicate) {
     ColumnMapping keyMapping = hBaseSerDe.getHBaseSerdeParam().getKeyColumnMapping();
+    ColumnMapping tsMapping = hBaseSerDe.getHBaseSerdeParam().getTimestampColumnMapping();
     IndexPredicateAnalyzer analyzer = HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
-        keyMapping.columnName, keyMapping.columnType, keyMapping.binaryStorage.get(0));
-    List<IndexSearchCondition> searchConditions =
-        new ArrayList<IndexSearchCondition>();
+        keyMapping.columnName, keyMapping.isComparable(),
+        tsMapping == null ? null : tsMapping.columnName);
+    List<IndexSearchCondition> conditions = new ArrayList<IndexSearchCondition>();
     ExprNodeGenericFuncDesc residualPredicate =
-        (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, searchConditions);
-    int scSize = searchConditions.size();
-    if (scSize < 1 || 2 < scSize) {
-      // Either there was nothing which could be pushed down (size = 0),
-      // there were complex predicates which we don't support yet.
-      // Currently supported are one of the form:
-      // 1. key < 20                        (size = 1)
-      // 2. key = 20                        (size = 1)
-      // 3. key < 20 and key > 10           (size = 2)
-      return null;
-    }
-    if (scSize == 2 &&
-        (searchConditions.get(0).getComparisonOp()
-        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
-        searchConditions.get(1).getComparisonOp()
-        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
-      // If one of the predicates is =, then any other predicate with it is illegal.
-      return null;
+        (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, conditions);
+
+    for (List<IndexSearchCondition> searchConditions:
+        HiveHBaseInputFormatUtil.decompose(conditions).values()) {
+      int scSize = searchConditions.size();
+      if (scSize < 1 || 2 < scSize) {
+        // Either there was nothing which could be pushed down (size = 0),
+        // there were complex predicates which we don't support yet.
+        // Currently supported are one of the form:
+        // 1. key < 20                        (size = 1)
+        // 2. key = 20                        (size = 1)
+        // 3. key < 20 and key > 10           (size = 2)
+        return null;
+      }
+      if (scSize == 2 &&
+          (searchConditions.get(0).getComparisonOp()
+              .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
+              searchConditions.get(1).getComparisonOp()
+                  .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
+        // If one of the predicates is =, then any other predicate with it is illegal.
+        return null;
+      }
     }
 
     DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
-    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(
-      searchConditions);
+    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(conditions);
     decomposedPredicate.residualPredicate = residualPredicate;
     return decomposedPredicate;
   }

@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -66,6 +66,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -219,28 +220,33 @@ public class FetchOperator implements Serializable {
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
+  private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
   @SuppressWarnings("unchecked")
-  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass,
-      Configuration conf) throws IOException {
+  static InputFormat getInputFormatFromCache(
+    Class<? extends InputFormat> inputFormatClass, JobConf conf) throws IOException {
+    if (Configurable.class.isAssignableFrom(inputFormatClass) ||
+        JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
+      return HiveInputFormat.wrapForLlap((InputFormat<WritableComparable, Writable>) ReflectionUtils
+          .newInstance(inputFormatClass, conf), conf);
+    }
     // TODO: why is this copy-pasted from HiveInputFormat?
-    if (!inputFormats.containsKey(inputFormatClass)) {
+    InputFormat format = inputFormats.get(inputFormatClass.getName());
+    if (format == null) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
-            .newInstance(inputFormatClass, conf);
-        inputFormats.put(inputFormatClass, newInstance);
+        format = ReflectionUtils.newInstance(inputFormatClass, conf);
+        inputFormats.put(inputFormatClass.getName(), format);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return HiveInputFormat.wrapForLlap(inputFormats.get(inputFormatClass), conf);
+    return HiveInputFormat.wrapForLlap(format, conf);
   }
 
   private StructObjectInspector getRowInspectorFromTable(TableDesc table) throws Exception {
     Deserializer serde = table.getDeserializerClass().newInstance();
-    SerDeUtils.initializeSerDe(serde, job, table.getProperties(), null);
+    SerDeUtils.initializeSerDeWithoutErrorCheck(serde, job, table.getProperties(), null);
     return createRowInspector(getStructOIFrom(serde.getObjectInspector()));
   }
 

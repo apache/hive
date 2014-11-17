@@ -20,6 +20,11 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
@@ -42,20 +47,54 @@ public class TestSQLStdHiveAccessControllerHS2 {
    * policy on hiveconf correctly
    *
    * @throws HiveAuthzPluginException
+   * @throws IllegalAccessException
+   * @throws NoSuchFieldException
+   * @throws IllegalArgumentException
+   * @throws SecurityException
    */
   @Test
-  public void testConfigProcessing() throws HiveAuthzPluginException {
-    HiveConf processedConf = new HiveConf();
+  public void testConfigProcessing() throws HiveAuthzPluginException, SecurityException,
+      IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+    HiveConf processedConf = newAuthEnabledConf();
     SQLStdHiveAccessController accessController = new SQLStdHiveAccessController(null,
-        processedConf, new HadoopDefaultAuthenticator(), getHS2SessionCtx()
-        );
+        processedConf, new HadoopDefaultAuthenticator(), getHS2SessionCtx());
     accessController.applyAuthorizationConfigPolicy(processedConf);
 
     // check that hook to disable transforms has been added
     assertTrue("Check for transform query disabling hook",
         processedConf.getVar(ConfVars.PREEXECHOOKS).contains(DisallowTransformHook.class.getName()));
 
-    verifyParamSettability(SQLStdHiveAccessController.defaultModWhiteListSqlStdAuth, processedConf);
+    List<String> settableParams = getSettableParams();
+    verifyParamSettability(settableParams, processedConf);
+
+  }
+
+  private HiveConf newAuthEnabledConf() {
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
+    return conf;
+  }
+
+  /**
+   * @return list of parameters that should be possible to set
+   */
+  private List<String> getSettableParams() throws SecurityException, NoSuchFieldException,
+      IllegalArgumentException, IllegalAccessException {
+    // get all the variable names being converted to regex in HiveConf, using reflection
+    Field varNameField = HiveConf.class.getDeclaredField("sqlStdAuthSafeVarNames");
+    varNameField.setAccessible(true);
+    List<String> confVarList = Arrays.asList((String[]) varNameField.get(null));
+
+    // create list with variables that match some of the regexes
+    List<String> confVarRegexList = Arrays.asList("hive.convert.join.bucket.mapjoin.tez",
+        "hive.optimize.index.filter.compact.maxsize", "hive.tez.dummy", "tez.task.dummy",
+        "hive.exec.dynamic.partition", "hive.exec.dynamic.partition.mode");
+
+    // combine two lists
+    List<String> varList = new ArrayList<String>();
+    varList.addAll(confVarList);
+    varList.addAll(confVarRegexList);
+    return varList;
 
   }
 
@@ -70,7 +109,7 @@ public class TestSQLStdHiveAccessControllerHS2 {
    * @param settableParams
    * @param processedConf
    */
-  private void verifyParamSettability(String [] settableParams, HiveConf processedConf) {
+  private void verifyParamSettability(List<String> settableParams, HiveConf processedConf) {
     // verify that the whitlelist params can be set
     for (String param : settableParams) {
       try {
@@ -90,24 +129,42 @@ public class TestSQLStdHiveAccessControllerHS2 {
   }
 
   /**
-   * Test that modifying HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST config works
+   * Test that setting HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND config works
+   * @throws HiveAuthzPluginException
+   */
+  @Test
+  public void testConfigProcessingCustomSetWhitelistAppend() throws HiveAuthzPluginException {
+    // append new config params to whitelist
+    List<String> paramRegexes = Arrays.asList("hive.ctest.param", "hive.abc..*");
+    List<String> settableParams = Arrays.asList("hive.ctest.param", "hive.abc.def");
+    verifySettability(paramRegexes, settableParams,
+        ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND);
+  }
+
+  /**
+   * Test that setting HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST config works
    * @throws HiveAuthzPluginException
    */
   @Test
   public void testConfigProcessingCustomSetWhitelist() throws HiveAuthzPluginException {
+    // append new config params to whitelist
+    List<String> paramRegexes = Arrays.asList("hive.ctest.param", "hive.abc..*");
+    List<String> settableParams = Arrays.asList("hive.ctest.param", "hive.abc.def");
+    verifySettability(paramRegexes, settableParams,
+        ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
+  }
 
-    HiveConf processedConf = new HiveConf();
-    // add custom value, including one from the default, one new one
-    String[] settableParams = { SQLStdHiveAccessController.defaultModWhiteListSqlStdAuth[0],
-        "abcs.dummy.test.param" };
-   processedConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST,
-        Joiner.on(",").join(settableParams));
+  private void verifySettability(List<String> paramRegexes, List<String> settableParams,
+      ConfVars whiteListParam) throws HiveAuthzPluginException {
+    HiveConf processedConf = newAuthEnabledConf();
+    processedConf.setVar(whiteListParam,
+        Joiner.on("|").join(paramRegexes));
 
     SQLStdHiveAccessController accessController = new SQLStdHiveAccessController(null,
         processedConf, new HadoopDefaultAuthenticator(), getHS2SessionCtx());
     accessController.applyAuthorizationConfigPolicy(processedConf);
-    verifyParamSettability(settableParams, processedConf);
 
+    verifyParamSettability(settableParams, processedConf);
   }
 
   private void assertConfModificationException(HiveConf processedConf, String param) {
@@ -119,5 +176,6 @@ public class TestSQLStdHiveAccessControllerHS2 {
     }
     assertTrue("Exception should be thrown while modifying the param " + param, caughtEx);
   }
+
 
 }

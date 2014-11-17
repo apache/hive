@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -39,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
@@ -75,6 +64,16 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -387,12 +386,14 @@ public final class ColumnPrunerProcFactory {
         scanOp.setNeededColumnIDs(null);
         return null;
       }
+
       cols = cols == null ? new ArrayList<String>() : cols;
 
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
       setupNeededColumns(scanOp, inputRR, cols);
+
       return null;
     }
   }
@@ -570,7 +571,7 @@ public final class ColumnPrunerProcFactory {
       // following SEL will do CP for columns from UDTF, not adding SEL in here
       newColNames.addAll(outputCols.subList(numSelColumns, outputCols.size()));
       op.getConf().setOutputInternalColNames(newColNames);
-
+      pruneOperator(ctx, op, newColNames);
       cppCtx.getPrunedColLists().put(op, colsAfterReplacement);
       return null;
     }
@@ -600,8 +601,7 @@ public final class ColumnPrunerProcFactory {
           // revert output cols of SEL(*) to ExprNodeColumnDesc
           String[] tabcol = rr.reverseLookup(col);
           ColumnInfo colInfo = rr.get(tabcol[0], tabcol[1]);
-          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo.getType(),
-              colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
           colList.add(colExpr);
           outputColNames.add(col);
         }
@@ -609,6 +609,12 @@ public final class ColumnPrunerProcFactory {
         ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
         ((SelectDesc)select.getConf()).setColList(colList);
         ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
+        pruneOperator(ctx, select, outputColNames);
+        
+        Operator<?> udtfPath = op.getChildOperators().get(LateralViewJoinOperator.UDTF_TAG);
+        List<String> lvFCols = new ArrayList<String>(cppCtx.getPrunedColLists().get(udtfPath));
+        lvFCols = Utilities.mergeUniqElems(lvFCols, outputColNames);
+        pruneOperator(ctx, op, lvFCols);
       }
       return null;
     }
@@ -876,12 +882,16 @@ public final class ColumnPrunerProcFactory {
     RowSchema inputSchema = op.getSchema();
     if (inputSchema != null) {
       ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
-      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
-      for (ColumnInfo i: inputCols) {
-        if (cols.contains(i.getInternalName())) {
+      RowResolver oldRR = ((ColumnPrunerProcCtx)ctx).getOpToParseCtxMap().get(op).getRowResolver();
+      RowResolver newRR = new RowResolver();
+      for(ColumnInfo i : oldRR.getRowSchema().getSignature()) {
+        if ( cols.contains(i.getInternalName())) {
+          String[] nm = oldRR.reverseLookup(i.getInternalName());
+          newRR.put(nm[0], nm[1], i);
           rs.add(i);
         }
       }
+      ((ColumnPrunerProcCtx)ctx).getOpToParseCtxMap().get(op).setRowResolver(newRR);
       op.getSchema().setSignature(rs);
     }
   }

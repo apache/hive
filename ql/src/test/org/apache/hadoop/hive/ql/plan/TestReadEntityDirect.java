@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
@@ -54,6 +55,13 @@ public class TestReadEntityDirect {
     assertEquals("Checking command success", 0, ret);
     ret = driver.run("create view v1 as select * from t1").getResponseCode();
     assertEquals("Checking command success", 0, ret);
+  }
+
+  @AfterClass
+  public static void onetimeTeardown() throws Exception {
+    Driver driver = createDriver();
+    driver.run("drop table t1");
+    driver.run("drop view v1");
   }
 
   @Before

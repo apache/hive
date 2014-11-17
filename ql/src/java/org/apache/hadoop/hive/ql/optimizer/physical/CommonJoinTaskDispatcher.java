@@ -257,8 +257,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       }
     }
 
-    MapredLocalWork mapJoinLocalWork = mapJoinMapWork.getMapLocalWork();
-    MapredLocalWork childLocalWork = childMapWork.getMapLocalWork();
+    MapredLocalWork mapJoinLocalWork = mapJoinMapWork.getMapRedLocalWork();
+    MapredLocalWork childLocalWork = childMapWork.getMapRedLocalWork();
 
     if ((mapJoinLocalWork != null && mapJoinLocalWork.getBucketMapjoinContext() != null) ||
         (childLocalWork != null && childLocalWork.getBucketMapjoinContext() != null)) {
@@ -328,7 +328,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     // Step 2.3: Fill up stuff in local work
     if (mapJoinLocalWork != null) {
       if (childLocalWork == null) {
-        childMapWork.setMapLocalWork(mapJoinLocalWork);
+        childMapWork.setMapRedLocalWork(mapJoinLocalWork);
       } else {
         childLocalWork.getAliasToFetchWork().putAll(mapJoinLocalWork.getAliasToFetchWork());
         childLocalWork.getAliasToWork().putAll(mapJoinLocalWork.getAliasToWork());

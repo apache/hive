@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -59,6 +52,13 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * GenMRSkewJoinProcessor.
@@ -192,9 +192,7 @@ public final class GenMRSkewJoinProcessor {
         String newColName = i + "_VALUE_" + k; // any name, it does not matter.
         ColumnInfo columnInfo = new ColumnInfo(newColName, type, alias.toString(), false);
         columnInfos.add(columnInfo);
-        newValueExpr.add(new ExprNodeColumnDesc(
-            columnInfo.getType(), columnInfo.getInternalName(),
-            columnInfo.getTabAlias(), false));
+        newValueExpr.add(new ExprNodeColumnDesc(columnInfo));
         if (!first) {
           colNames = colNames + ",";
           colTypes = colTypes + ",";
@@ -216,9 +214,7 @@ public final class GenMRSkewJoinProcessor {
         ColumnInfo columnInfo = new ColumnInfo(joinKeys.get(k), TypeInfoFactory
             .getPrimitiveTypeInfo(joinKeyTypes.get(k)), alias.toString(), false);
         columnInfos.add(columnInfo);
-        newKeyExpr.add(new ExprNodeColumnDesc(
-            columnInfo.getType(), columnInfo.getInternalName(),
-            columnInfo.getTabAlias(), false));
+        newKeyExpr.add(new ExprNodeColumnDesc(columnInfo));
       }
 
       newJoinValues.put(alias, newValueExpr);
@@ -310,7 +306,7 @@ public final class GenMRSkewJoinProcessor {
             new FetchWork(tblDir, tableDescList.get(small_alias)));
       }
 
-      newPlan.setMapLocalWork(localPlan);
+      newPlan.setMapRedLocalWork(localPlan);
 
       // construct a map join and set it as the child operator of tblScan_op
       MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory

@@ -41,6 +41,6 @@ public class CastDecimalToBoolean extends FuncDecimalToLong {
    * Otherwise, return 1 for true.
    */
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
-    outV.vector[i] = inV.vector[i].getSignum() == 0 ? 0 : 1;
+    outV.vector[i] = inV.vector[i].getHiveDecimal().signum() == 0 ? 0 : 1;
   }
 }

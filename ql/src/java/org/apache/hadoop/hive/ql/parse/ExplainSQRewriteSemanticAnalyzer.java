@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.ExplainSQRewriteTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
@@ -55,7 +56,7 @@ public class ExplainSQRewriteSemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx
         );
 
-    Task<? extends Serializable> explTask = TaskFactory.get(work, conf);
+    ExplainSQRewriteTask explTask = (ExplainSQRewriteTask) TaskFactory.get(work, conf);
 
     fieldList = explTask.getResultSchema();
     rootTasks.add(explTask);

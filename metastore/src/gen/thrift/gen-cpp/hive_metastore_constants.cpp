@@ -53,6 +53,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   META_TABLE_STORAGE = "storage_handler";
 
+  TABLE_IS_TRANSACTIONAL = "transactional";
+
+  TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
+
 }
 
 }}} // namespace

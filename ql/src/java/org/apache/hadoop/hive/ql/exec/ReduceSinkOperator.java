@@ -25,8 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -51,9 +49,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.hash.MurmurHash;
+
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
@@ -65,10 +66,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     PTFUtils.makeTransient(ReduceSinkOperator.class, "inputAliases", "valueIndex");
   }
 
-  private static final Log LOG = LogFactory.getLog(ReduceSinkOperator.class.getName());
-  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
-  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
-  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
+  /**
+   * Counters.
+   */
+  public static enum Counter {
+    RECORDS_OUT_INTERMEDIATE
+  }
+
   private static final long serialVersionUID = 1L;
   private static final MurmurHash hash = (MurmurHash) MurmurHash.getInstance();
 
@@ -110,7 +114,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected transient int numDistributionKeys;
   protected transient int numDistinctExprs;
   protected transient String[] inputAliases;  // input aliases of this RS for join (used for PPD)
-  protected transient boolean autoParallel = false;
+  protected transient boolean useUniformHash = false;
   // picks topN K:V pairs from input.
   protected transient TopNHash reducerHash = new TopNHash();
   protected transient HiveKey keyWritable = new HiveKey();
@@ -144,12 +148,25 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private StructObjectInspector recIdInspector; // OI for the record identifier
   private IntObjectInspector bucketInspector; // OI for the bucket field in the record id
 
+  protected transient long numRows = 0;
+  protected transient long cntr = 1;
+  private final transient LongWritable recordCounter = new LongWritable();
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
+
+      numRows = 0;
+
+      String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+      if (context != null && !context.isEmpty()) {
+        context = "_" + context.replace(" ","_");
+      }
+      statsMap.put(Counter.RECORDS_OUT_INTERMEDIATE + context, recordCounter);
+
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
-      if (isDebugEnabled) {
+      if (isLogDebugEnabled) {
         LOG.debug("keys size is " + keys.size());
         for (ExprNodeDesc k : keys) {
           LOG.debug("Key exprNodeDesc " + k.getExprString());
@@ -194,7 +211,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      if (isInfoEnabled) {
+      if (isLogInfoEnabled) {
         LOG.info("Using tag = " + tag);
       }
 
@@ -217,7 +234,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
       }
 
-      autoParallel = conf.isAutoParallel();
+      useUniformHash = conf.getReducerTraits().contains(UNIFORM);
 
       firstRow = true;
       initializeChildren(hconf);
@@ -296,7 +313,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
         }
 
-        if (isInfoEnabled) {
+        if (isLogInfoEnabled) {
           LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
               conf.getNumDistributionKeys());
         }
@@ -339,10 +356,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       final int hashCode;
 
       // distKeyLength doesn't include tag, but includes buckNum in cachedKeys[0]
-      if (autoParallel && partitionEval.length > 0) {
+      if (useUniformHash && partitionEval.length > 0) {
         hashCode = computeMurmurHash(firstKey);
       } else {
-        hashCode = computeHashCode(row);
+        hashCode = computeHashCode(row, bucketNumber);
       }
 
       firstKey.setHashCode(hashCode);
@@ -391,7 +408,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // column directly.
       Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
       buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
-      if (isTraceEnabled) {
+      if (isLogTraceEnabled) {
         LOG.trace("Acid choosing bucket number " + buckNum);
       }
     } else {
@@ -438,7 +455,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
   }
 
-  private int computeHashCode(Object row) throws HiveException {
+  private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
@@ -462,10 +479,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
       }
     }
-    if (isTraceEnabled) {
-      LOG.trace("Going to return hash code " + (keyHashCode * 31 + bucketNumber));
+    int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
+    if (isLogTraceEnabled) {
+      LOG.trace("Going to return hash code " + hashCode);
     }
-    return bucketNumber < 0  ? keyHashCode : keyHashCode * 31 + bucketNumber;
+    return hashCode;
   }
 
   private boolean partitionKeysAreNull(Object row) throws HiveException {
@@ -506,6 +524,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     // Since this is a terminal operator, update counters explicitly -
     // forward is not called
     if (null != out) {
+      numRows++;
+      if (isLogInfoEnabled) {
+        if (numRows == cntr) {
+          cntr *= 10;
+          LOG.info(toString() + ": records written - " + numRows);
+        }
+      }
       out.collect(keyWritable, valueWritable);
     }
   }
@@ -535,6 +560,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
     super.closeOp(abort);
     out = null;
+    if (isLogInfoEnabled) {
+      LOG.info(toString() + ": records written - " + numRows);
+    }
+    recordCounter.set(numRows);
   }
 
   /**

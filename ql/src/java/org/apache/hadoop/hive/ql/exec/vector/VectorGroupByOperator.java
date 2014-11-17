@@ -32,11 +32,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
-import org.apache.hadoop.hive.ql.exec.KeyWrapperFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -46,12 +43,9 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
 
@@ -81,8 +75,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
 
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext = null;
-
-  private String fileKey;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -760,15 +752,8 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
-    List<String> outColNames = desc.getOutputColumnNames();
-    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
-    int outColIndex = 0;
-    for(String outCol: outColNames) {
-      mapOutCols.put(outCol,  outColIndex++);
-    }
-    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    vOutContext = new VectorizationContext(desc.getOutputColumnNames());
     vOutContext.setFileKey(vContext.getFileKey() + "/_GROUPBY_");
-    fileKey = vOutContext.getFileKey();
   }
 
   public VectorGroupByOperator() {
@@ -808,10 +793,10 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
           vrbCtx = new VectorizedRowBatchCtx();
-          vrbCtx.init(hconf, fileKey, (StructObjectInspector) outputObjInspector);
+          vrbCtx.init(vOutContext.getScratchColumnTypeMap(), (StructObjectInspector) outputObjInspector);
           outputBatch = vrbCtx.createVectorizedRowBatch();
           vectorColumnAssign = VectorColumnAssignFactory.buildAssigners(
-              outputBatch, outputObjInspector, vOutContext.getColumnMap(), conf.getOutputColumnNames());
+              outputBatch, outputObjInspector, vOutContext.getProjectionColumnMap(), conf.getOutputColumnNames());
       }
 
     } catch (HiveException he) {
@@ -851,11 +836,19 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
   @Override
   public void startGroup() throws HiveException {
     processingMode.startGroup();
+
+    // We do not call startGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.startGroup();
   }
 
   @Override
   public void endGroup() throws HiveException {
     processingMode.endGroup();
+
+    // We do not call endGroup on operators below because we are batching rows in
+    // an output batch and the semantics will not work.
+    // super.endGroup();
   }
 
   @Override

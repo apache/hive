@@ -30,7 +30,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -179,40 +178,6 @@ public class PredicateTransitivePropagate implements Transform {
       return null;
     }
 
-    // calculate filter propagation directions for each alias
-    // L<->R for innner/semi join, L->R for left outer join, R->L for right outer join
-    private int[][] getTargets(CommonJoinOperator<JoinDesc> join) {
-      JoinCondDesc[] conds = join.getConf().getConds();
-
-      int aliases = conds.length + 1;
-      Vectors vector = new Vectors(aliases);
-      for (JoinCondDesc cond : conds) {
-        int left = cond.getLeft();
-        int right = cond.getRight();
-        switch (cond.getType()) {
-          case JoinDesc.INNER_JOIN:
-          case JoinDesc.LEFT_SEMI_JOIN:
-            vector.add(left, right);
-            vector.add(right, left);
-            break;
-          case JoinDesc.LEFT_OUTER_JOIN:
-            vector.add(left, right);
-            break;
-          case JoinDesc.RIGHT_OUTER_JOIN:
-            vector.add(right, left);
-            break;
-          case JoinDesc.FULL_OUTER_JOIN:
-            break;
-        }
-      }
-      int[][] result = new int[aliases][];
-      for (int pos = 0 ; pos < aliases; pos++) {
-        // find all targets recursively
-        result[pos] = vector.traverse(pos);
-      }
-      return result;
-    }
-
     // check same filter exists already
     private boolean filterExists(ReduceSinkOperator target, ExprNodeDesc replaced) {
       Operator<?> operator = target.getParentOperators().get(0);
@@ -224,6 +189,40 @@ public class PredicateTransitivePropagate implements Transform {
       }
       return false;
     }
+  }
+
+  // calculate filter propagation directions for each alias
+  // L<->R for inner/semi join, L->R for left outer join, R->L for right outer join
+  public static int[][] getTargets(CommonJoinOperator<JoinDesc> join) {
+    JoinCondDesc[] conds = join.getConf().getConds();
+
+    int aliases = conds.length + 1;
+    Vectors vector = new Vectors(aliases);
+    for (JoinCondDesc cond : conds) {
+      int left = cond.getLeft();
+      int right = cond.getRight();
+      switch (cond.getType()) {
+        case JoinDesc.INNER_JOIN:
+        case JoinDesc.LEFT_SEMI_JOIN:
+          vector.add(left, right);
+          vector.add(right, left);
+          break;
+        case JoinDesc.LEFT_OUTER_JOIN:
+          vector.add(left, right);
+          break;
+        case JoinDesc.RIGHT_OUTER_JOIN:
+          vector.add(right, left);
+          break;
+        case JoinDesc.FULL_OUTER_JOIN:
+          break;
+      }
+    }
+    int[][] result = new int[aliases][];
+    for (int pos = 0 ; pos < aliases; pos++) {
+      // find all targets recursively
+      result[pos] = vector.traverse(pos);
+    }
+    return result;
   }
 
   private static class Vectors {
@@ -245,10 +244,11 @@ public class PredicateTransitivePropagate implements Transform {
     public int[] traverse(int pos) {
       Set<Integer> targets = new HashSet<Integer>();
       traverse(targets, pos);
-      return toArray(targets);
+      return toArray(targets, pos);
     }
 
-    private int[] toArray(Set<Integer> values) {
+    private int[] toArray(Set<Integer> values, int pos) {
+      values.remove(pos);
       int index = 0;
       int[] result = new int[values.size()];
       for (int value : values) {

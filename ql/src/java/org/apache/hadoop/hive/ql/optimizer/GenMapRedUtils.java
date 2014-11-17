@@ -716,7 +716,7 @@ public final class GenMapRedUtils {
       plan.getAliasToWork().put(alias_id, topOp);
     } else {
       // populate local work if needed
-      MapredLocalWork localPlan = plan.getMapLocalWork();
+      MapredLocalWork localPlan = plan.getMapRedLocalWork();
       if (localPlan == null) {
         localPlan = new MapredLocalWork(
             new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
@@ -735,7 +735,7 @@ public final class GenMapRedUtils {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir, tblDesc));
       }
-      plan.setMapLocalWork(localPlan);
+      plan.setMapRedLocalWork(localPlan);
     }
   }
 
@@ -770,7 +770,7 @@ public final class GenMapRedUtils {
       plan.getAliasToWork().put(alias, topOp);
     } else {
       // populate local work if needed
-      MapredLocalWork localPlan = plan.getMapLocalWork();
+      MapredLocalWork localPlan = plan.getMapRedLocalWork();
       if (localPlan == null) {
         localPlan = new MapredLocalWork(
             new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
@@ -781,7 +781,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
       localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
-      plan.setMapLocalWork(localPlan);
+      plan.setMapRedLocalWork(localPlan);
     }
   }
 

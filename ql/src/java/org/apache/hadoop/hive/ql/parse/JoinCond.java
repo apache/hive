@@ -79,4 +79,7 @@ public class JoinCond {
     this.joinType = joinType;
   }
 
+  public void setPreserved(boolean preserved) {
+    this.preserved = preserved;
+  }
 }

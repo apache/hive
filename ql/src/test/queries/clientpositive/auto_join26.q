@@ -1,4 +1,4 @@
---SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE dest_j1(key INT, cnt INT);
 set hive.auto.convert.join = true;

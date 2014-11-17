@@ -38,6 +38,9 @@ public class VectorFilterOperator extends FilterOperator {
 
   private VectorExpression conditionEvaluator = null;
 
+  // Temporary selected vector
+  private int[] temporarySelected = new int [VectorizedRowBatch.DEFAULT_SIZE];
+
   // filterMode is 1 if condition is always true, -1 if always false
   // and 0 if condition needs to be computed.
   transient private int filterMode = 0;
@@ -60,8 +63,6 @@ public class VectorFilterOperator extends FilterOperator {
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
-      statsMap.put(Counter.FILTERED, filtered_count);
-      statsMap.put(Counter.PASSED, passed_count);
     } catch (Throwable e) {
       throw new HiveException(e);
     }
@@ -84,8 +85,16 @@ public class VectorFilterOperator extends FilterOperator {
   public void processOp(Object row, int tag) throws HiveException {
 
     VectorizedRowBatch vrg = (VectorizedRowBatch) row;
-    //Evaluate the predicate expression
+
     //The selected vector represents selected rows.
+    //Clone the selected vector
+    System.arraycopy(vrg.selected, 0, temporarySelected, 0, vrg.size);
+    int [] selectedBackup = vrg.selected;
+    vrg.selected = temporarySelected;
+    int sizeBackup = vrg.size;
+    boolean selectedInUseBackup = vrg.selectedInUse;
+
+    //Evaluate the predicate expression
     switch (filterMode) {
       case 0:
         conditionEvaluator.evaluate(vrg);
@@ -101,6 +110,11 @@ public class VectorFilterOperator extends FilterOperator {
     if (vrg.size > 0) {
       forward(vrg, null);
     }
+
+    // Restore the original selected vector
+    vrg.selected = selectedBackup;
+    vrg.size = sizeBackup;
+    vrg.selectedInUse = selectedInUseBackup;
   }
 
   static public String getOperatorName() {

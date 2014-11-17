@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -153,8 +154,10 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -183,11 +186,13 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -736,8 +741,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Collections.sort(entries);
     StringBuilder sb = new StringBuilder();
     for(String entry : entries){
-      sb.append(entry);
-      sb.append((char)terminator);
+      appendNonNull(sb, entry, true);
     }
     writeToFile(sb.toString(), resFile);
   }
@@ -778,7 +782,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-    db.dropIndex(dropIdx.getTableName(), dropIdx.getIndexName(), true);
+    db.dropIndex(dropIdx.getTableName(), dropIdx.getIndexName(), dropIdx.isThrowException(), true);
     return 0;
   }
 
@@ -2201,7 +2205,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int showTables(Hive db, ShowTablesDesc showTbls) throws HiveException {
-    // get the tables for the desired pattenn - populate the output stream
+    // get the tables for the desired pattern - populate the output stream
     List<String> tbls = null;
     String dbName = showTbls.getDbName();
 
@@ -2807,7 +2811,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *          is the function we are describing
    * @throws HiveException
    */
-  private int describeFunction(DescFunctionDesc descFunc) throws HiveException {
+  private int describeFunction(DescFunctionDesc descFunc) throws HiveException, SQLException {
     String funcName = descFunc.getName();
 
     // write the results in the file
@@ -3088,6 +3092,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       List<FieldSchema> cols = null;
       List<ColumnStatisticsObj> colStats = null;
+
+      Deserializer deserializer = tbl.getDeserializer(true);
+      if (deserializer instanceof AbstractSerDe) {
+        String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
+        if (errorMsgs != null && !errorMsgs.isEmpty()) {
+          throw new SQLException(errorMsgs);
+        }
+      }
+
       if (colPath.equals(tableName)) {
         cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
             tbl.getCols() : part.getCols();
@@ -3096,7 +3109,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols.addAll(tbl.getPartCols());
         }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
+        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
@@ -3126,6 +3139,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream.close();
       outStream = null;
 
+    } catch (SQLException e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
     } finally {
@@ -3264,22 +3279,77 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // alter the table
     Table tbl = db.getTable(alterTbl.getOldName());
 
-    Partition part = null;
     List<Partition> allPartitions = null;
     if (alterTbl.getPartSpec() != null) {
-      if (alterTbl.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
-        part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
+      Map<String, String> partSpec = alterTbl.getPartSpec(); 
+      if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
+        allPartitions = new ArrayList<Partition>();
+        Partition part = db.getPartition(tbl, partSpec, false);
         if (part == null) {
+          // User provided a fully specified partition spec but it doesn't exist, fail.
           throw new HiveException(ErrorMsg.INVALID_PARTITION,
-              StringUtils.join(alterTbl.getPartSpec().keySet(), ',') + " for table " + alterTbl.getOldName());
+                StringUtils.join(alterTbl.getPartSpec().keySet(), ',') + " for table " + alterTbl.getOldName());
+
         }
-      }
-      else {
+        allPartitions.add(part);
+      } else {
+        // DDLSemanticAnalyzer has already checked if partial partition specs are allowed,
+        // thus we should not need to check it here.
         allPartitions = db.getPartitions(tbl, alterTbl.getPartSpec());
       }
     }
 
     Table oldTbl = tbl.copy();
+    if (allPartitions != null) {
+      // Alter all partitions
+      for (Partition part : allPartitions) {
+        alterTableOrSinglePartition(alterTbl, tbl, part);
+      }
+    } else {
+      // Just alter the table
+      alterTableOrSinglePartition(alterTbl, tbl, null);
+    }
+
+    if (allPartitions == null) {
+      updateModifiedParameters(tbl.getTTable().getParameters(), conf);
+      tbl.checkValidity();
+    } else {
+      for (Partition tmpPart: allPartitions) {
+        updateModifiedParameters(tmpPart.getParameters(), conf);
+      }
+    }
+
+    try {
+      if (allPartitions == null) {
+        db.alterTable(alterTbl.getOldName(), tbl);
+      } else {
+        db.alterPartitions(tbl.getTableName(), allPartitions);
+      }
+    } catch (InvalidOperationException e) {
+      LOG.error("alter table: " + stringifyException(e));
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
+    }
+
+    // This is kind of hacky - the read entity contains the old table, whereas
+    // the write entity
+    // contains the new table. This is needed for rename - both the old and the
+    // new table names are
+    // passed
+    // Don't acquire locks for any of these, we have already asked for them in DDLSemanticAnalyzer.
+    if (allPartitions != null ) {
+      for (Partition tmpPart: allPartitions) {
+        work.getInputs().add(new ReadEntity(tmpPart));
+        work.getOutputs().add(new WriteEntity(tmpPart, WriteEntity.WriteType.DDL_NO_LOCK));
+      }
+    } else {
+      work.getInputs().add(new ReadEntity(oldTbl));
+      work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
+    }
+    return 0;
+  }
+
+  private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
+      throws HiveException {
     List<FieldSchema> oldCols = (part == null ? tbl.getCols() : part.getCols());
     StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
 
@@ -3425,12 +3495,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
 
       ProtectMode mode = null;
-      if (allPartitions != null) {
-        for (Partition tmpPart: allPartitions) {
-          mode = tmpPart.getProtectMode();
-          setAlterProtectMode(protectModeEnable, protectMode, mode);
-          tmpPart.setProtectMode(mode);
-        }
+      if (part != null) {
+        mode = part.getProtectMode();
+        setAlterProtectMode(protectModeEnable, protectMode, mode);
+        part.setProtectMode(mode);
       } else {
         mode = tbl.getProtectMode();
         setAlterProtectMode(protectModeEnable,protectMode, mode);
@@ -3473,12 +3541,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(e);
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
-      /* Validation's been done at compile time. no validation is needed here. */
+      // Validation's been done at compile time. no validation is needed here.
       List<String> skewedColNames = null;
       List<List<String>> skewedValues = null;
 
       if (alterTbl.isTurnOffSkewed()) {
-        /* Convert skewed table to non-skewed table. */
+        // Convert skewed table to non-skewed table.
         skewedColNames = new ArrayList<String>();
         skewedValues = new ArrayList<List<String>>();
       } else {
@@ -3487,7 +3555,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if ( null == tbl.getSkewedInfo()) {
-        /* Convert non-skewed table to skewed table. */
+        // Convert non-skewed table to skewed table.
         SkewedInfo skewedInfo = new SkewedInfo();
         skewedInfo.setSkewedColNames(skewedColNames);
         skewedInfo.setSkewedColValues(skewedValues);
@@ -3529,59 +3597,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
-   } else {
+    } else {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
 
-    if (part == null && allPartitions == null) {
-      updateModifiedParameters(tbl.getTTable().getParameters(), conf);
-      tbl.checkValidity();
-    } else if (part != null) {
-      updateModifiedParameters(part.getParameters(), conf);
-    }
-    else {
-      for (Partition tmpPart: allPartitions) {
-        updateModifiedParameters(tmpPart.getParameters(), conf);
-      }
-    }
-
-    try {
-      if (part == null && allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl);
-      } else if (part != null) {
-        db.alterPartition(tbl.getTableName(), part);
-      }
-      else {
-        db.alterPartitions(tbl.getTableName(), allPartitions);
-      }
-    } catch (InvalidOperationException e) {
-      LOG.info("alter table: " + stringifyException(e));
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
-    }
-
-    // This is kind of hacky - the read entity contains the old table, whereas
-    // the write entity
-    // contains the new table. This is needed for rename - both the old and the
-    // new table names are
-    // passed
-    // Don't acquire locks for any of these, we have already asked for them in DDLSemanticAnalyzer.
-    if(part != null) {
-      work.getInputs().add(new ReadEntity(part));
-      work.getOutputs().add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-    else if (allPartitions != null ){
-      for (Partition tmpPart: allPartitions) {
-        work.getInputs().add(new ReadEntity(tmpPart));
-        work.getOutputs().add(new WriteEntity(tmpPart, WriteEntity.WriteType.DDL_NO_LOCK));
-      }
-    }
-    else {
-      work.getInputs().add(new ReadEntity(oldTbl));
-      work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
     return 0;
   }
-
   /**
    * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *
@@ -3901,7 +3922,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl.setInputFormatClass(crtTbl.getInputFormat());
     tbl.setOutputFormatClass(crtTbl.getOutputFormat());
 
-    // only persist input/ouput format to metadata when it is explicitly specified.
+    // only persist input/output format to metadata when it is explicitly specified.
     // Otherwise, load lazily via StorageHandler at query time.
     if (crtTbl.getInputFormat() != null && !crtTbl.getInputFormat().isEmpty()) {
       tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
@@ -3970,7 +3991,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws HiveException {
+  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws Exception {
     // Get the existing table
     Table oldtbl = db.getTable(crtTbl.getLikeTableName());
     Table tbl;
@@ -4036,12 +4057,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.unsetDataLocation();
       }
 
+      Class<? extends Deserializer> serdeClass = oldtbl.getDeserializerClass();
+
       Map<String, String> params = tbl.getParameters();
       // We should copy only those table parameters that are specified in the config.
+      SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
       String paramsStr = HiveConf.getVar(conf, HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
+
+      Set<String> retainer = new HashSet<String>();
+      if (spec != null && spec.schemaProps() != null) {
+        retainer.addAll(Arrays.asList(spec.schemaProps()));
+      }
       if (paramsStr != null) {
-        List<String> paramsList = Arrays.asList(paramsStr.split(","));
-        params.keySet().retainAll(paramsList);
+        retainer.addAll(Arrays.asList(paramsStr.split(",")));
+      }
+      if (!retainer.isEmpty()) {
+        params.keySet().retainAll(retainer);
       } else {
         params.clear();
       }

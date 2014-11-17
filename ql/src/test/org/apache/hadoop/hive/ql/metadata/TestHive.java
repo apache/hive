@@ -550,7 +550,7 @@ public class TestHive extends TestCase {
             index.getIndexName());
         assertEquals("Table names don't match for index: " + indexName, tableName,
             index.getOrigTableName());
-        assertEquals("Index table names didn't match for index: " + indexName, indexTableName,
+        assertEquals("Index table names didn't match for index: " + indexName, qIndexTableName,
             index.getIndexTableName());
         assertEquals("Index handler classes didn't match for index: " + indexName,
             indexHandlerClass, index.getIndexHandlerClass());
@@ -564,7 +564,7 @@ public class TestHive extends TestCase {
 
       // Drop index
       try {
-        hm.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, indexName, true);
+        hm.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, indexName, false, true);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to drop index: " + indexName, false);

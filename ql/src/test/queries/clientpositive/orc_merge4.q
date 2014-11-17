@@ -11,7 +11,7 @@ set hive.merge.mapfiles=false;
 INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='1')
     SELECT * FROM src;
 
-DESC FORMATTED orcfile_merge3a PARTITION (ds='1');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge3a/ds=1/;
 
 set hive.merge.mapfiles=true;
 INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='1')
@@ -20,8 +20,8 @@ INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='1')
 INSERT OVERWRITE TABLE orcfile_merge3a PARTITION (ds='2')
     SELECT * FROM src;
 
-DESC FORMATTED orcfile_merge3a PARTITION (ds='1');
-DESC FORMATTED orcfile_merge3a PARTITION (ds='2');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge3a/ds=1/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge3a/ds=2/;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b

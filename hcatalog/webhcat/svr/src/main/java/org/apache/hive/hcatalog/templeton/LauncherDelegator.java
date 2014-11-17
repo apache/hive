@@ -121,6 +121,8 @@ public class LauncherDelegator extends TempletonDelegator {
                      JobType jobType) {
     ArrayList<String> args = new ArrayList<String>();
 
+    //note that in ToolRunner this is expected to be a local FS path
+    //see GenericOptionsParser.getLibJars()
     args.add("-libjars");
 
     // Include shim and admin specified libjars
@@ -136,6 +138,7 @@ public class LauncherDelegator extends TempletonDelegator {
 
     // Internal vars
     addDef(args, TempletonControllerJob.STATUSDIR_NAME, statusdir);
+    //Use of ToolRunner "-files" option could be considered here
     addDef(args, TempletonControllerJob.COPY_NAME,
       TempletonUtils.encodeArray(copyFiles));
     addDef(args, TempletonControllerJob.OVERRIDE_CLASSPATH,

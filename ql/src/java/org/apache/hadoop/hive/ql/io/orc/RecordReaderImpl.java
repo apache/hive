@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
@@ -1189,39 +1190,18 @@ class RecordReaderImpl implements RecordReader {
         result = (LongColumnVector) previousVector;
       }
 
-      // Read present/isNull stream
-      super.nextVector(result, batchSize);
-
-      data.nextVector(result, batchSize);
-      nanoVector.isNull = result.isNull;
-      nanos.nextVector(nanoVector, batchSize);
-
-      if(result.isRepeating && nanoVector.isRepeating) {
-        batchSize = 1;
-      }
-
-      // Non repeating values preset in the vector. Iterate thru the vector and populate the time
+      result.reset();
+      Object obj = null;
       for (int i = 0; i < batchSize; i++) {
-        if (!result.isNull[i]) {
-          long ms = (result.vector[result.isRepeating ? 0 : i] + WriterImpl.BASE_TIMESTAMP)
-              * WriterImpl.MILLIS_PER_SECOND;
-          long ns = parseNanos(nanoVector.vector[nanoVector.isRepeating ? 0 : i]);
-          // the rounding error exists because java always rounds up when dividing integers
-          // -42001/1000 = -42; and -42001 % 1000 = -1 (+ 1000)
-          // to get the correct value we need
-          // (-42 - 1)*1000 + 999 = -42001
-          // (42)*1000 + 1 = 42001
-          if(ms < 0 && ns != 0) {
-            ms -= 1000;
-          }
-          // Convert millis into nanos and add the nano vector value to it
-          result.vector[i] = (ms * 1000000) + ns;
+        obj = next(obj);
+        if (obj == null) {
+          result.noNulls = false;
+          result.isNull[i] = true;
+        } else {
+          TimestampWritable writable = (TimestampWritable) obj;
+          Timestamp  timestamp = writable.getTimestamp();
+          result.vector[i] = TimestampUtils.getTimeNanoSec(timestamp);
         }
-      }
-
-      if(!(result.isRepeating && nanoVector.isRepeating)) {
-        // both have to repeat for the result to be repeating
-        result.isRepeating = false;
       }
 
       return result;
@@ -1405,12 +1385,9 @@ class RecordReaderImpl implements RecordReader {
         if (!result.isNull[0]) {
           BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
           short scaleInData = (short) scaleStream.next();
-          result.vector[0].update(bInt, scaleInData);
-
-          // Change the scale to match the schema if the scale in data is different.
-          if (scale != scaleInData) {
-            result.vector[0].changeScaleDestructive((short) scale);
-          }
+          HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
+          dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+          result.set(0, dec);
         }
       } else {
         // result vector has isNull values set, use the same to read scale vector.
@@ -1419,13 +1396,10 @@ class RecordReaderImpl implements RecordReader {
         for (int i = 0; i < batchSize; i++) {
           if (!result.isNull[i]) {
             BigInteger bInt = SerializationUtils.readBigInteger(valueStream);
-            result.vector[i].update(bInt, (short) scratchScaleVector.vector[i]);
-
-            // Change the scale to match the schema if the scale is less than in data.
-            // (HIVE-7373) If scale is bigger, then it leaves the original trailing zeros
-            if (scale < scratchScaleVector.vector[i]) {
-              result.vector[i].changeScaleDestructive((short) scale);
-            }
+            short scaleInData = (short) scratchScaleVector.vector[i];
+            HiveDecimal dec = HiveDecimal.create(bInt, scaleInData);
+            dec = HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
+            result.set(i, dec);
           }
         }
       }
@@ -2578,20 +2552,21 @@ class RecordReaderImpl implements RecordReader {
                                       PredicateLeaf predicate) {
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(index);
     Object minValue = getMin(cs);
-    // if we didn't have any values, everything must have been null
-    if (minValue == null) {
-      if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
-        return TruthValue.YES;
-      } else {
-        return TruthValue.NULL;
-      }
-    }
     Object maxValue = getMax(cs);
     return evaluatePredicateRange(predicate, minValue, maxValue);
   }
 
   static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object min,
       Object max) {
+    // if we didn't have any values, everything must have been null
+    if (min == null) {
+      if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
+        return TruthValue.YES;
+      } else {
+        return TruthValue.NULL;
+      }
+    }
+
     Location loc;
     try {
       // Predicate object and stats object can be one of the following base types

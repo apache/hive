@@ -1,4 +1,5 @@
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=minimal;
 
 -- If you look at ql/src/test/org/apache/hadoop/hive/ql/exec/vector/util/OrcFileGenerator.java
 -- which is the data generation class you'll see that those values are specified in the
@@ -58,7 +59,7 @@ EXPLAIN SELECT AVG(cint),
 FROM   alltypesorc
 WHERE  ((762 = cbigint)
         OR ((csmallint < cfloat)
-            AND ((ctimestamp2 > -10669)
+            AND ((ctimestamp2 > -5)
                  AND (cdouble != cint)))
         OR (cstring1 = 'a')
            OR ((cbigint <= -1.389)
@@ -93,7 +94,7 @@ SELECT AVG(cint),
 FROM   alltypesorc
 WHERE  ((762 = cbigint)
         OR ((csmallint < cfloat)
-            AND ((ctimestamp2 > -10669)
+            AND ((ctimestamp2 > -5)
                  AND (cdouble != cint)))
         OR (cstring1 = 'a')
            OR ((cbigint <= -1.389)
@@ -324,7 +325,10 @@ WHERE  (((cstring1 RLIKE 'a.*')
         OR ((cdouble > ctinyint)
             AND (cfloat >= cint))
            OR ((cint < cbigint)
-               AND (ctinyint > cbigint)));
+               AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
+LIMIT 50;
+
 SELECT cint,
        cdouble,
        ctimestamp2,
@@ -357,7 +361,9 @@ WHERE  (((cstring1 RLIKE 'a.*')
         OR ((cdouble > ctinyint)
             AND (cfloat >= cint))
            OR ((cint < cbigint)
-               AND (ctinyint > cbigint)));
+               AND (ctinyint > cbigint)))
+ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint
+LIMIT 50;
 
 -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
 -- Functions: VarP, Var, StDev, StDevP, Max, Sum
@@ -395,7 +401,9 @@ WHERE  (((197 > ctinyint)
         OR (cbigint = 359)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
-               AND (cfloat <= ctinyint)));
+               AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
+LIMIT 25;
 
 SELECT cint,
        cbigint,
@@ -428,7 +436,9 @@ WHERE  (((197 > ctinyint)
         OR (cbigint = 359)
         OR (cboolean1 < 0)
            OR ((cstring1 LIKE '%ss')
-               AND (cfloat <= ctinyint)));
+               AND (cfloat <= ctinyint)))
+ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2
+LIMIT 25;
 
 -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
 -- Functions: Sum, Max, Avg, Var, StDevP, VarP
@@ -466,7 +476,9 @@ WHERE    (((csmallint > -26.28)
           OR (ctinyint = -89010)
              OR ((cbigint <= cfloat)
                  AND (-26.28 <= csmallint)))
-ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble;
+ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble
+LIMIT 75;
+
 SELECT   cint,
          cstring1,
          cboolean2,
@@ -498,7 +510,8 @@ WHERE    (((csmallint > -26.28)
           OR (ctinyint = -89010)
              OR ((cbigint <= cfloat)
                  AND (-26.28 <= csmallint)))
-ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble;
+ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble
+LIMIT 75;
 
 -- TargetTypeClasses: Long, String, Double, Timestamp
 -- Functions: Avg, Min, StDevP, Sum, Var
@@ -529,7 +542,9 @@ WHERE    (((-1.389 >= cint)
               AND (cstring2 <= 'a'))
              OR ((cstring1 LIKE 'ss%')
                  AND (10.175 > cbigint)))
-ORDER BY csmallint, cstring2, cdouble;
+ORDER BY csmallint, cstring2, cdouble
+LIMIT 45;
+
 SELECT   ctimestamp1,
          cstring2,
          cdouble,
@@ -554,7 +569,8 @@ WHERE    (((-1.389 >= cint)
               AND (cstring2 <= 'a'))
              OR ((cstring1 LIKE 'ss%')
                  AND (10.175 > cbigint)))
-ORDER BY csmallint, cstring2, cdouble;
+ORDER BY csmallint, cstring2, cdouble
+LIMIT 45;
 
 -- TargetTypeClasses: Double, String, Long
 -- Functions: StDev, Sum, VarP, Count
@@ -578,7 +594,9 @@ WHERE    (((csmallint >= -257))
                OR ((cint >= cdouble)
                    AND (ctinyint <= cint))))
 GROUP BY csmallint
-ORDER BY csmallint;
+ORDER BY csmallint
+LIMIT 20;
+
 SELECT   csmallint,
          (csmallint % -75),
          STDDEV_SAMP(csmallint),
@@ -596,7 +614,8 @@ WHERE    (((csmallint >= -257))
                OR ((cint >= cdouble)
                    AND (ctinyint <= cint))))
 GROUP BY csmallint
-ORDER BY csmallint;
+ORDER BY csmallint
+LIMIT 20;
 
 -- TargetTypeClasses: Long, Double, Timestamp
 -- Functions: Var, Count, Sum, VarP, StDevP
@@ -705,14 +724,17 @@ WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
                  AND (cboolean2 IS NOT NULL))
                 AND ((cstring1 RLIKE '.*ss')
-                     AND (-10669 < ctimestamp1)))
-               OR (ctimestamp2 = -10669)
+                     AND (-3 < ctimestamp1)))
+               OR (ctimestamp2 = -5)
                OR ((ctimestamp1 < 0)
                    AND (cstring2 LIKE '%b%'))
                   OR (cdouble = cint)
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
-GROUP BY ctimestamp1, cstring1;
+GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
+LIMIT 50;
+
 SELECT   ctimestamp1,
          cstring1,
          STDDEV_POP(cint),
@@ -757,14 +779,16 @@ WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
                  AND (cboolean2 IS NOT NULL))
                 AND ((cstring1 RLIKE '.*ss')
-                     AND (-10669 < ctimestamp1)))
-               OR (ctimestamp2 = -10669)
+                     AND (-3 < ctimestamp1)))
+               OR (ctimestamp2 = -5)
                OR ((ctimestamp1 < 0)
                    AND (cstring2 LIKE '%b%'))
                   OR (cdouble = cint)
                      OR ((cboolean1 IS NULL)
                          AND (cfloat < cint))))
-GROUP BY ctimestamp1, cstring1;
+GROUP BY ctimestamp1, cstring1
+ORDER BY ctimestamp1, cstring1
+LIMIT 50;
 
 -- TargetTypeClasses: Double, Long, String, Timestamp, Bool
 -- Functions: Max, Sum, Var, Avg, Min, VarP, StDev, StDevP

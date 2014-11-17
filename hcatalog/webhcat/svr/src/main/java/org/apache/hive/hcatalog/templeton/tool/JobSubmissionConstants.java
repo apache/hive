@@ -58,4 +58,10 @@ public interface JobSubmissionConstants {
     public static final String HCAT_HOME = "HCAT_HOME";
     public static final String PIG_OPTS = "PIG_OPTS";
   }
+  public static interface Sqoop {
+    /**
+     * comma-separated list of jar names (short name) which are needed for Sqoop JDBC access
+     */
+    public static final String LIB_JARS = "templeton.sqoop.lib.jar";
+  }
 }

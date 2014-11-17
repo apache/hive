@@ -159,6 +159,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) {
+    // MR1 does not expose API required to set MR queue mapping for user
+  }
+
+  @Override
   public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
@@ -519,6 +524,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public void getMergedCredentials(JobConf jobConf) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
+  }
+
+  @Override
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
     throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
 

@@ -180,6 +180,7 @@ STAGE PLANS:
                 condition expressions:
                   0 {VALUE._col0}
                   1 
+                nullSafes: [false, true]
                 outputColumnNames: _col0
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator

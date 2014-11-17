@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.index;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -44,6 +45,13 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 
@@ -57,14 +65,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 public class IndexPredicateAnalyzer {
 
   private final Set<String> udfNames;
-  private final Set<String> allowedColumnNames;
+  private final Map<String, Set<String>> columnToUDFs;
   private FieldValidator fieldValidator;
 
   private boolean acceptsFields;
 
   public IndexPredicateAnalyzer() {
     udfNames = new HashSet<String>();
-    allowedColumnNames = new HashSet<String>();
+    columnToUDFs = new HashMap<String, Set<String>>();
   }
 
   public void setFieldValidator(FieldValidator fieldValidator) {
@@ -89,7 +97,7 @@ public class IndexPredicateAnalyzer {
    * column names are allowed.)
    */
   public void clearAllowedColumnNames() {
-    allowedColumnNames.clear();
+    columnToUDFs.clear();
   }
 
   /**
@@ -98,7 +106,22 @@ public class IndexPredicateAnalyzer {
    * @param columnName name of column to be allowed
    */
   public void allowColumnName(String columnName) {
-    allowedColumnNames.add(columnName);
+    columnToUDFs.put(columnName, udfNames);
+  }
+
+  /**
+   * add allowed functions per column
+   * @param columnName
+   * @param udfs
+   */
+  public void addComparisonOp(String columnName, String... udfs) {
+    Set<String> allowed = columnToUDFs.get(columnName);
+    if (allowed == null || allowed == udfNames) {
+      // override
+      columnToUDFs.put(columnName, new HashSet<String>(Arrays.asList(udfs)));
+    } else {
+      allowed.addAll(Arrays.asList(udfs));
+    }
   }
 
   /**
@@ -152,6 +175,32 @@ public class IndexPredicateAnalyzer {
     return residualPredicate;
   }
 
+  //Check if ExprNodeColumnDesc is wrapped in expr.
+  //If so, peel off. Otherwise return itself.
+  private ExprNodeDesc getColumnExpr(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeColumnDesc) {
+      return expr;
+    }
+    ExprNodeGenericFuncDesc funcDesc = null;
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      funcDesc = (ExprNodeGenericFuncDesc) expr;
+    }
+    if (null == funcDesc) {
+      return expr;
+    }
+    GenericUDF udf = funcDesc.getGenericUDF();
+    // check if its a simple cast expression.
+    if ((udf instanceof GenericUDFBridge || udf instanceof GenericUDFToBinary
+        || udf instanceof GenericUDFToChar || udf instanceof GenericUDFToVarchar
+        || udf instanceof GenericUDFToDecimal || udf instanceof GenericUDFToDate
+        || udf instanceof GenericUDFToUnixTimeStamp || udf instanceof GenericUDFToUtcTimestamp)
+        && funcDesc.getChildren().size() == 1
+        && funcDesc.getChildren().get(0) instanceof ExprNodeColumnDesc) {
+      return expr.getChildren().get(0);
+    }
+    return expr;
+  }
+  
   private ExprNodeDesc analyzeExpr(
     ExprNodeGenericFuncDesc expr,
     List<IndexSearchCondition> searchConditions,
@@ -182,11 +231,17 @@ public class IndexPredicateAnalyzer {
     }
     ExprNodeDesc expr1 = (ExprNodeDesc) nodeOutputs[0];
     ExprNodeDesc expr2 = (ExprNodeDesc) nodeOutputs[1];
+    // We may need to peel off the GenericUDFBridge that is added by CBO or user
+    if (expr1.getTypeInfo().equals(expr2.getTypeInfo())) {
+      expr1 = getColumnExpr(expr1);
+      expr2 = getColumnExpr(expr2);
+    }
+    
     ExprNodeDesc[] extracted = ExprNodeDescUtils.extractComparePair(expr1, expr2);
     if (extracted == null || (extracted.length > 2 && !acceptsFields)) {
       return expr;
     }
-
+    
     ExprNodeColumnDesc columnDesc;
     ExprNodeConstantDesc constantDesc;
     if (extracted[0] instanceof ExprNodeConstantDesc) {
@@ -198,12 +253,13 @@ public class IndexPredicateAnalyzer {
       constantDesc = (ExprNodeConstantDesc) extracted[1];
     }
 
-    String udfName = genericUDF.getUdfName();
-    if (!udfNames.contains(genericUDF.getUdfName())) {
+    Set<String> allowed = columnToUDFs.get(columnDesc.getColumn());
+    if (allowed == null) {
       return expr;
     }
 
-    if (!allowedColumnNames.contains(columnDesc.getColumn())) {
+    String udfName = genericUDF.getUdfName();
+    if (!allowed.contains(genericUDF.getUdfName())) {
       return expr;
     }
 
@@ -215,6 +271,13 @@ public class IndexPredicateAnalyzer {
       }
       fields = ExprNodeDescUtils.extractFields(fieldDesc);
     }
+
+    // We also need to update the expr so that the index query can be generated.
+    // Note that, hive does not support UDFToDouble etc in the query text.
+    List<ExprNodeDesc> list = new ArrayList<ExprNodeDesc>();
+    list.add(expr1);
+    list.add(expr2);
+    expr = new ExprNodeGenericFuncDesc(expr.getTypeInfo(), expr.getGenericUDF(), list);
 
     searchConditions.add(
       new IndexSearchCondition(

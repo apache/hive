@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.log4j.AppenderSkeleton;
@@ -33,6 +34,7 @@ public abstract class ShimLoader {
   private static JettyShims jettyShims;
   private static AppenderSkeleton eventCounter;
   private static HadoopThriftAuthBridge hadoopThriftAuthBridge;
+  private static SchedulerShim schedulerShim;
 
   /**
    * The names of the classes for shimming Hadoop for each major version.
@@ -87,6 +89,9 @@ public abstract class ShimLoader {
   }
 
 
+  private static final String SCHEDULER_SHIM_CLASSE =
+    "org.apache.hadoop.hive.schshim.FairSchedulerShim";
+
   /**
    * Factory method to get an instance of HadoopShims based on the
    * version of Hadoop on the classpath.
@@ -122,6 +127,13 @@ public abstract class ShimLoader {
           HadoopThriftAuthBridge.class);
     }
     return hadoopThriftAuthBridge;
+  }
+
+  public static synchronized SchedulerShim getSchedulerShims() {
+    if (schedulerShim == null) {
+      schedulerShim = createShim(SCHEDULER_SHIM_CLASSE, SchedulerShim.class);
+    }
+    return schedulerShim;
   }
 
   private static <T> T loadShims(Map<String, String> classMap, Class<T> xface) {

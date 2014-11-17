@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * Internal representation of the join tree.
  *
  */
-public class QBJoinTree implements Serializable{
+public class QBJoinTree implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   private String leftAlias;
   private String[] rightAliases;
@@ -362,5 +362,71 @@ public class QBJoinTree implements Serializable{
 
   public List<ASTNode> getPostJoinFilters() {
     return postJoinFilters;
+  }
+
+  @Override
+  public QBJoinTree clone() throws CloneNotSupportedException {
+    QBJoinTree cloned = new QBJoinTree();
+
+    // shallow copy aliasToOpInfo, we won't want to clone the operator tree here
+    cloned.setAliasToOpInfo(aliasToOpInfo == null ? null :
+        new HashMap<String, Operator<? extends OperatorDesc>>(aliasToOpInfo));
+
+    cloned.setBaseSrc(baseSrc == null ? null : baseSrc.clone());
+
+    // shallow copy ASTNode
+    cloned.setExpressions(expressions);
+    cloned.setFilters(filters);
+    cloned.setFiltersForPushing(filtersForPushing);
+
+    // clone filterMap
+    int[][] clonedFilterMap = filterMap == null ? null : new int[filterMap.length][];
+    if (filterMap != null) {
+      for (int i = 0; i < filterMap.length; i++) {
+        clonedFilterMap[i] = filterMap[i] == null ? null : filterMap[i].clone();
+      }
+    }
+    cloned.setFilterMap(clonedFilterMap);
+
+    cloned.setId(id);
+
+    // clone joinCond
+    JoinCond[] clonedJoinCond = joinCond == null ? null : new JoinCond[joinCond.length];
+    if (joinCond != null) {
+      for (int i = 0; i < joinCond.length; i++) {
+        if(joinCond[i] == null) {
+          continue;
+        }
+        JoinCond clonedCond = new JoinCond();
+        clonedCond.setJoinType(joinCond[i].getJoinType());
+        clonedCond.setLeft(joinCond[i].getLeft());
+        clonedCond.setPreserved(joinCond[i].getPreserved());
+        clonedCond.setRight(joinCond[i].getRight());
+        clonedJoinCond[i] = clonedCond;
+      }
+    }
+    cloned.setJoinCond(clonedJoinCond);
+
+    cloned.setJoinSrc(joinSrc == null ? null : joinSrc.clone());
+    cloned.setLeftAlias(leftAlias);
+    cloned.setLeftAliases(leftAliases == null ? null : leftAliases.clone());
+    cloned.setMapAliases(mapAliases == null ? null : new ArrayList<String>(mapAliases));
+    cloned.setMapSideJoin(mapSideJoin);
+    cloned.setNoOuterJoin(noOuterJoin);
+    cloned.setNoSemiJoin(noSemiJoin);
+    cloned.setNullSafes(nullsafes == null ? null : new ArrayList<Boolean>(nullsafes));
+    cloned.setRightAliases(rightAliases == null ? null : rightAliases.clone());
+    cloned.setStreamAliases(streamAliases == null ? null : new ArrayList<String>(streamAliases));
+
+    // clone postJoinFilters
+    for (ASTNode filter : postJoinFilters) {
+      cloned.getPostJoinFilters().add(filter);
+    }
+    // clone rhsSemijoin
+    for (Entry<String, ArrayList<ASTNode>> entry : rhsSemijoin.entrySet()) {
+      cloned.addRHSSemijoinColumns(entry.getKey(), entry.getValue());
+    }
+
+    return cloned;
   }
 }

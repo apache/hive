@@ -75,6 +75,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
 import com.google.common.base.Joiner;
@@ -218,6 +219,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return o1.compareTo(o2);
       }
     };
+  }
+
+  /**
+   * Load the fair scheduler queue for given user if available.
+   */
+  @Override
+  public void refreshDefaultQueue(Configuration conf, String userName) throws IOException {
+    if (StringUtils.isNotBlank(userName) && isFairScheduler(conf)) {
+      ShimLoader.getSchedulerShims().refreshDefaultQueue(conf, userName);
+    }
+  }
+
+  private boolean isFairScheduler (Configuration conf) {
+    return "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler".
+        equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
   /**
@@ -535,7 +551,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     FileStatus fileStatus = fs.getFileStatus(file);
     AclStatus aclStatus = null;
     if (isExtendedAclEnabled(conf)) {
-      aclStatus = fs.getAclStatus(file);
+      //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
+      try {
+        aclStatus = fs.getAclStatus(file);
+      } catch (Exception e) {
+        LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
+                "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+      }
     }
     return new Hadoop23FileStatus(fileStatus, aclStatus);
   }
@@ -551,19 +573,25 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
 
       if (isExtendedAclEnabled(conf)) {
-        AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-        List<AclEntry> aclEntries = aclStatus.getEntries();
-        removeBaseAclEntries(aclEntries);
+        //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
+        try {
+          AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
+          List<AclEntry> aclEntries = aclStatus.getEntries();
+          removeBaseAclEntries(aclEntries);
 
-        //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-        FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+          FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
 
-        //construct the -setfacl command
-        String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
-        run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+          //construct the -setfacl command
+          String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+          run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+        } catch (Exception e) {
+          LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
+                  "does not support ACLs but dfs.namenode.acls.enabled is set to true: " + e, e);
+        }
       } else {
         String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
         run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
@@ -753,6 +781,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public void getMergedCredentials(JobConf jobConf) throws IOException {
     jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
+  }
+
+  @Override
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
+    dest.getCredentials().mergeAll(src.getCredentials());
   }
 
   protected static final Method accessMethod;

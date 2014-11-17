@@ -156,10 +156,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       }
       mergeOp.close(abort);
 
-      if (isLogInfoEnabled) {
-        logCloseInfo();
-      }
-      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter);
+      ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter, jconf);
       mergeOp.preorderMap(rps);
     } catch (Exception e) {
       if (!abort) {
@@ -190,9 +187,6 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         row[0] = key;
         row[1] = value;
         mergeOp.processOp(row, 0);
-        if (isLogInfoEnabled) {
-          logProgress();
-        }
       }
     } catch (Throwable e) {
       abort = true;
@@ -210,6 +204,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {
     // there should be only one MRInput
     MRInputLegacy theMRInput = null;
+    LOG.info("VDK: the inputs are: " + inputs);
     for (Entry<String, LogicalInput> inp : inputs.entrySet()) {
       if (inp.getValue() instanceof MRInputLegacy) {
         if (theMRInput != null) {

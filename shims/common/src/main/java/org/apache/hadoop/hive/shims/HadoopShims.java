@@ -239,6 +239,15 @@ public interface HadoopShims {
   public String getTokenStrForm(String tokenSignature) throws IOException;
 
   /**
+   * Dynamically sets up the JAAS configuration that uses kerberos
+   * @param principal
+   * @param keyTabFile
+   * @throws IOException
+   */
+  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile)
+      throws IOException;
+
+  /**
    * Add a delegation token to the given ugi
    * @param ugi
    * @param tokenStr
@@ -322,6 +331,14 @@ public interface HadoopShims {
       String keytabFile) throws IOException;
 
   /**
+   * Convert Kerberos principal name pattern to valid Kerberos principal names.
+   * @param principal (principal name pattern)
+   * @return
+   * @throws IOException
+   */
+  public String getResolvedPrincipal(String principal) throws IOException;
+
+  /**
    * Perform kerberos re-login using the given principal and keytab, to renew
    * the credentials
    * @throws IOException
@@ -364,6 +381,15 @@ public interface HadoopShims {
    * @return
    */
   public short getDefaultReplication(FileSystem fs, Path path);
+
+  /**
+   * Reset the default fair scheduler queue mapping to end user.
+   *
+   * @param conf
+   * @param userName end user name
+   */
+  public void refreshDefaultQueue(Configuration conf, String userName)
+      throws IOException;
 
   /**
    * Create the proxy ugi for the given userid
@@ -685,6 +711,8 @@ public interface HadoopShims {
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 
   public void getMergedCredentials(JobConf jobConf) throws IOException;
+
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException;
 
   /**
    * Check if the configured UGI has access to the path for the given file system action.

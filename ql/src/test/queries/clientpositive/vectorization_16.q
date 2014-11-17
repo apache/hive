@@ -1,5 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN 
 SELECT   cstring1,
          cdouble,

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
@@ -47,8 +48,10 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -161,14 +164,15 @@ public class TezTask extends Task<TezWork> {
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
-      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf);
+      rc = monitor.monitorExecution(client, ctx.getHiveTxnManager(), conf, dag);
 
       // fetch the counters
       Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
       counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
       TezSessionPoolManager.getInstance().returnSession(session);
 
-      if (LOG.isInfoEnabled() && counters != null) {
+      if (LOG.isInfoEnabled() && counters != null
+          && conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY)) {
         for (CounterGroup group: counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {
@@ -272,6 +276,7 @@ public class TezTask extends Task<TezWork> {
 
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = DAG.create(work.getName());
+    dag.setCredentials(conf.getCredentials());
 
     for (BaseWork w: ws) {
 
@@ -358,7 +363,10 @@ public class TezTask extends Task<TezWork> {
     Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
     if (additionalLr != null) {
       for (LocalResource lr: additionalLr) {
-        resourceMap.put(utils.getBaseName(lr), lr);
+        if (lr.getType() == LocalResourceType.FILE) {
+          // TEZ AM will only localize FILE (no script operators in the AM)
+          resourceMap.put(utils.getBaseName(lr), lr);
+        }
       }
     }
 

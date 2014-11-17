@@ -23,7 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -315,9 +315,9 @@ public class TestVectorArithmeticExpressions {
 
     // test without nulls
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-2.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("1.00")));
 
     // test nulls propagation
     b = getVectorizedRowBatch3DecimalCols();
@@ -330,18 +330,18 @@ public class TestVectorArithmeticExpressions {
 
     // Verify null output data entry is not 0, but rather the value specified by design,
     // which is the minimum non-0 value, 0.01 in this case.
-    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.01")));
 
     // test that overflow produces NULL
     b = getVectorizedRowBatch3DecimalCols();
     c0 = (DecimalColumnVector) b.cols[0];
-    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    c0.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     r = (DecimalColumnVector) b.cols[2];
     expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
     assertTrue(!r.noNulls && r.isNull[0]);
 
     // verify proper null output data value
-    assertTrue(r.vector[0].equals(new Decimal128("0.01", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.01")));
 
     // test left input repeating
     b = getVectorizedRowBatch3DecimalCols();
@@ -349,25 +349,25 @@ public class TestVectorArithmeticExpressions {
     c0.isRepeating = true;
     r = (DecimalColumnVector) b.cols[2];
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("2.20")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("2.20")));
 
     // test both inputs repeating
     DecimalColumnVector c1 = (DecimalColumnVector) b.cols[1];
     c1.isRepeating = true;
     expr.evaluate(b);
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
 
     // test right input repeating
     b = getVectorizedRowBatch3DecimalCols();
     c1 = (DecimalColumnVector) b.cols[1];
     c1.isRepeating = true;
-    c1.vector[0].update("2", (short) 2);
+    c1.vector[0].set(HiveDecimal.create("2.00"));
     r = (DecimalColumnVector) b.cols[2];
     expr.evaluate(b);
-    assertTrue(r.vector[2].equals(new Decimal128("2", (short) 2)));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("2.00")));
   }
 
   // Spot check decimal column-column subtract
@@ -379,14 +379,14 @@ public class TestVectorArithmeticExpressions {
 
     // test without nulls
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-4.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("-1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-4.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("-1.00")));
 
     // test that underflow produces NULL
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
-    c0.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    c0.vector[0].set(HiveDecimal.create("-9999999999999999.99")); // set to min possible value
     r = (DecimalColumnVector) b.cols[2];
     expr.evaluate(b); // will cause underflow for result at position 0, must yield NULL
     assertTrue(!r.noNulls && r.isNull[0]);
@@ -401,16 +401,16 @@ public class TestVectorArithmeticExpressions {
 
     // test without nulls
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-3.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("1.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-3.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0.00")));
 
     // test that underflow produces NULL
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector c0 = (DecimalColumnVector) b.cols[0];
-    c0.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    c0.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     DecimalColumnVector c1 = (DecimalColumnVector) b.cols[1];
-    c1.vector[0].update("2", (short) 2);
+    c1.vector[0].set(HiveDecimal.create("2.00"));
     r = (DecimalColumnVector) b.cols[2];
     expr.evaluate(b); // will cause overflow for result at position 0, must yield NULL
     assertTrue(!r.noNulls && r.isNull[0]);
@@ -422,15 +422,15 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalColAddDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(1);
+    HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalColAddDecimalScalar(0, d, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-2.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("1")));
 
     // test null propagation
     b = getVectorizedRowBatch3DecimalCols();
@@ -449,7 +449,7 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
 
     // test repeating case for null value
     b = getVectorizedRowBatch3DecimalCols();
@@ -466,7 +466,7 @@ public class TestVectorArithmeticExpressions {
     // test that overflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    in.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -480,16 +480,16 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalColDivideDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128("2.00", (short) 2);
+    HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalColDivideDecimalScalar(0, d, 2);
 
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("0.60", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-1.65", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.6")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-1.65")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // test null propagation
     b = getVectorizedRowBatch3DecimalCols();
@@ -508,7 +508,7 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("0.60", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.6")));
 
     // test repeating case for null value
     b = getVectorizedRowBatch3DecimalCols();
@@ -525,7 +525,7 @@ public class TestVectorArithmeticExpressions {
     // test that zero-divide produces null for all output values
     b = getVectorizedRowBatch3DecimalCols();
     in = (DecimalColumnVector) b.cols[0];
-    expr = new DecimalColDivideDecimalScalar(0, new Decimal128("0", (short) 2), 2);
+    expr = new DecimalColDivideDecimalScalar(0, HiveDecimal.create("0"), 2);
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -539,14 +539,14 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalScalarDivideDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128("3.96", (short) 2);  // 1.20 * 3.30
+    HiveDecimal d = HiveDecimal.create("3.96");  // 1.20 * 3.30
     VectorExpression expr = new DecimalScalarDivideDecimalColumn(d, 0, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("3.30", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-1.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("3.3")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-1.2")));
     assertFalse(r.noNulls); // entry 2 is null due to zero-divide
     assertTrue(r.isNull[2]);
 
@@ -567,7 +567,7 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("3.30", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("3.3")));
 
     // test repeating case for null value
     b = getVectorizedRowBatch3DecimalCols();
@@ -586,30 +586,32 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalColModuloDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128("2.00", (short) 2);
+    HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalColModuloDecimalScalar(0, d, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-1.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("1.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-1.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // try again with some different data values and divisor
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("15.40", (short) 2);
-    in.vector[1].update("-17.20", (short) 2);
-    in.vector[2].update("70.00", (short) 2);
-    d.update("4.75", (short) 2);
+    in.vector[0].set(HiveDecimal.create("15.40"));
+    in.vector[1].set(HiveDecimal.create("-17.20"));
+    in.vector[2].set(HiveDecimal.create("70.00"));
+    d = HiveDecimal.create("4.75");
+    expr = new DecimalColModuloDecimalScalar(0, d, 2);
 
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("1.15", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-2.95", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("3.50", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("1.15")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-2.95")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("3.50")));
 
     // try a zero-divide to show a repeating NULL is produced
-    d.update("0", (short) 2);
+    d = HiveDecimal.create("0.00");
+    expr = new DecimalColModuloDecimalScalar(0, d, 2);
     expr.evaluate(b);
     assertFalse(r.noNulls);
     assertTrue(r.isNull[0]);
@@ -620,27 +622,28 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalScalarModuloDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128("2.00", (short) 2);
+    HiveDecimal d = HiveDecimal.create("2.00");
     VectorExpression expr = new DecimalScalarModuloDecimalColumn(d, 0, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("0.80", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("2.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.80")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("2.00")));
     assertFalse(r.noNulls); // entry 2 will be null due to zero-divide
     assertTrue(r.isNull[2]);
 
     // try again with some different data values
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("0.50", (short) 2);
-    in.vector[1].update("0.80", (short) 2);
-    in.vector[2].update("0.70", (short) 2);
+    expr = new DecimalScalarModuloDecimalColumn(d, 0, 2);
+    in.vector[0].set(HiveDecimal.create("0.50"));
+    in.vector[1].set(HiveDecimal.create("0.80"));
+    in.vector[2].set(HiveDecimal.create("0.70"));
 
     expr.evaluate(b);
-    assertTrue(r.vector[0].equals(new Decimal128("0.00", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("0.40", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0.60", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.00")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("0.40")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0.60")));
   }
 
   @Test
@@ -648,16 +651,16 @@ public class TestVectorArithmeticExpressions {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
     for (int i = 0; i < 3; i++) {
-      in1.vector[i] = new Decimal128("0.50", (short) 2);
+      in1.vector[i].set(HiveDecimal.create("0.50"));
     }
     VectorExpression expr = new DecimalColDivideDecimalColumn(0, 1, 2);
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
 
     // all divides are by 0.50 so the result column is 2 times col 0.
-    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.4")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-6.6")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // test null on left
     b.cols[0].noNulls = false;
@@ -692,14 +695,14 @@ public class TestVectorArithmeticExpressions {
     b.cols[0].isRepeating = true;
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[2].equals(new Decimal128("1.20", (short) 2)));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("1.2")));
 
     // test repeating on right
     b = getVectorizedRowBatch3DecimalCols();
     b.cols[1].isRepeating = true;
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // test both repeating
     b = getVectorizedRowBatch3DecimalCols();
@@ -708,11 +711,11 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("1.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("1.2")));
 
     // test zero-divide to show it results in NULL
     b = getVectorizedRowBatch3DecimalCols();
-    ((DecimalColumnVector) b.cols[1]).vector[0].update(0);
+    ((DecimalColumnVector) b.cols[1]).vector[0].set(HiveDecimal.create("0"));
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -725,15 +728,15 @@ public class TestVectorArithmeticExpressions {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in1 = (DecimalColumnVector) b.cols[1];
     for (int i = 0; i < 3; i++) {
-      in1.vector[i] = new Decimal128("0.50", (short) 2);
+      in1.vector[i].set(HiveDecimal.create("0.50"));
     }
     VectorExpression expr = new DecimalColModuloDecimalColumn(0, 1, 2);
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
 
-    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-0.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-0.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
   }
 
   /* Spot check correctness of decimal column subtract decimal scalar. The case for
@@ -742,20 +745,20 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalColSubtractDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(1);
+    HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalColSubtractDecimalScalar(0, d, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("0.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-4.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("-1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("0.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-4.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("-1")));
 
     // test that underflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    in.vector[0].set(HiveDecimal.create("-9999999999999999.99")); // set to min possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -768,20 +771,20 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalColMultiplyDecimalScalar() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(2);
+    HiveDecimal d = HiveDecimal.create(2);
     VectorExpression expr = new DecimalColMultiplyDecimalScalar(0, d, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.40")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-6.60")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // test that overflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    in.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -794,15 +797,15 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalScalarAddDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(1);
+    HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalScalarAddDecimalColumn(d, 0, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-2.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-2.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("1")));
 
     // test null propagation
     b = getVectorizedRowBatch3DecimalCols();
@@ -821,7 +824,7 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertTrue(r.isRepeating);
-    assertTrue(r.vector[0].equals(new Decimal128("2.20", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.20")));
 
     // test repeating case for null value
     b = getVectorizedRowBatch3DecimalCols();
@@ -838,7 +841,7 @@ public class TestVectorArithmeticExpressions {
     // test that overflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    in.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -851,20 +854,20 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalScalarSubtractDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(1);
+    HiveDecimal d = HiveDecimal.create(1);
     VectorExpression expr = new DecimalScalarSubtractDecimalColumn(d, 0, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("-0.20", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("4.30", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("1.00", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("-0.20")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("4.30")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("1")));
 
     // test that overflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("-9999999999999999.99", (short) 2); // set to min possible value
+    in.vector[0].set(HiveDecimal.create("-9999999999999999.99")); // set to min possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -878,20 +881,20 @@ public class TestVectorArithmeticExpressions {
   @Test
   public void testDecimalScalarMultiplyDecimalColumn() {
     VectorizedRowBatch b = getVectorizedRowBatch3DecimalCols();
-    Decimal128 d = new Decimal128(2);
+    HiveDecimal d = HiveDecimal.create(2);
     VectorExpression expr = new DecimalScalarMultiplyDecimalColumn(d, 0, 2);
 
     // test without nulls
     expr.evaluate(b);
     DecimalColumnVector r = (DecimalColumnVector) b.cols[2];
-    assertTrue(r.vector[0].equals(new Decimal128("2.40", (short) 2)));
-    assertTrue(r.vector[1].equals(new Decimal128("-6.60", (short) 2)));
-    assertTrue(r.vector[2].equals(new Decimal128("0", (short) 2)));
+    assertTrue(r.vector[0].getHiveDecimal().equals(HiveDecimal.create("2.40")));
+    assertTrue(r.vector[1].getHiveDecimal().equals(HiveDecimal.create("-6.60")));
+    assertTrue(r.vector[2].getHiveDecimal().equals(HiveDecimal.create("0")));
 
     // test that overflow produces null
     b = getVectorizedRowBatch3DecimalCols();
     DecimalColumnVector in = (DecimalColumnVector) b.cols[0];
-    in.vector[0].update("9999999999999999.99", (short) 2); // set to max possible value
+    in.vector[0].set(HiveDecimal.create("9999999999999999.99")); // set to max possible value
     expr.evaluate(b);
     r = (DecimalColumnVector) b.cols[2];
     assertFalse(r.noNulls);
@@ -905,13 +908,13 @@ public class TestVectorArithmeticExpressions {
     b.cols[0] = v0 = new DecimalColumnVector(18, 2);
     b.cols[1] = v1 = new DecimalColumnVector(18, 2);
     b.cols[2] = new DecimalColumnVector(18, 2);
-    v0.vector[0].update("1.20", (short) 2);
-    v0.vector[1].update("-3.30", (short) 2);
-    v0.vector[2].update("0", (short) 2);
+    v0.vector[0].set(HiveDecimal.create("1.20"));
+    v0.vector[1].set(HiveDecimal.create("-3.30"));
+    v0.vector[2].set(HiveDecimal.create("0"));
 
-    v1.vector[0].update("1.00", (short) 2);
-    v1.vector[1].update("1.00", (short) 2);
-    v1.vector[2].update("1.00", (short) 2);
+    v1.vector[0].set(HiveDecimal.create("1.00"));
+    v1.vector[1].set(HiveDecimal.create("1.00"));
+    v1.vector[2].set(HiveDecimal.create("1.00"));
 
     b.size = 3;
 

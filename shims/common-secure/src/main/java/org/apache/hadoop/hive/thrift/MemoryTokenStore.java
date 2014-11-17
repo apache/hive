@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 
 /**
@@ -108,8 +109,7 @@ public class MemoryTokenStore implements DelegationTokenStore {
   }
 
   @Override
-  public void setStore(Object hmsHandler) throws TokenStoreException {
+  public void init(Object hmsHandler, ServerMode smode) throws TokenStoreException {
     // no-op
   }
-
 }

@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
@@ -44,6 +46,7 @@ import org.apache.hadoop.io.Writable;
  * format and which is deserialized in a lazy, i.e. on-demand fashion.
  *
  */
+@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
 public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
 
   private List<String> columnNames;

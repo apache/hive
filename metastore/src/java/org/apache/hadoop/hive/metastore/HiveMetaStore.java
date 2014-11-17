@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -148,24 +149,30 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -186,6 +193,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -1429,17 +1437,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return (ms.getTable(dbname, name) != null);
     }
 
-    private void drop_table_core(final RawStore ms, final String dbname, final String name,
-        final boolean deleteData, final EnvironmentContext envContext)
-        throws NoSuchObjectException, MetaException, IOException,
-        InvalidObjectException, InvalidInputException {
+    private boolean drop_table_core(final RawStore ms, final String dbname, final String name,
+        final boolean deleteData, final EnvironmentContext envContext,
+        final String indexName) throws NoSuchObjectException,
+        MetaException, IOException, InvalidObjectException, InvalidInputException {
       boolean success = false;
       boolean isExternal = false;
       Path tblPath = null;
       List<Path> partPaths = null;
       Table tbl = null;
-      isExternal = false;
-      boolean isIndexTable = false;
       try {
         ms.openTransaction();
         // drop any partitions
@@ -1453,8 +1459,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
-        isIndexTable = isIndexTable(tbl);
-        if (isIndexTable) {
+        boolean isIndexTable = isIndexTable(tbl);
+        if (indexName == null && isIndexTable) {
           throw new RuntimeException(
               "The table " + name + " is an index table. Please do drop index instead.");
         }
@@ -1476,7 +1482,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
           if (!wh.isWritable(tblPath.getParent())) {
-            throw new MetaException("Table metadata not deleted since " +
+            String target = indexName == null ? "Table" : "Index table";
+            throw new MetaException(target + " metadata not deleted since " +
                 tblPath.getParent() + " is not writable by " +
                 hiveConf.getUser());
           }
@@ -1487,17 +1494,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getPartitionKeys(), deleteData && !isExternal);
 
         if (!ms.dropTable(dbname, name)) {
-          throw new MetaException("Unable to drop table");
+          String tableName = dbname + "." + name;
+          throw new MetaException(indexName == null ? "Unable to drop table " + tableName:
+              "Unable to drop index table " + tableName + " for index " + indexName);
         }
         success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && !isExternal) {
-          boolean ifPurge = false;
-          if (envContext != null){
-            ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
-          }
+          boolean ifPurge = envContext != null &&
+              Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge);
           // Delete the data in the table
@@ -1510,6 +1517,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           listener.onDropTable(dropTableEvent);
         }
       }
+      return success;
     }
 
     /**
@@ -1653,8 +1661,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        drop_table_core(getMS(), dbname, name, deleteData, envContext);
-        success = true;
+        success = drop_table_core(getMS(), dbname, name, deleteData, envContext, null);
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
@@ -3209,7 +3216,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean success = false;
       Exception ex = null;
+      Index oldIndex = null;
       try {
+        oldIndex = get_index_by_name(dbname, base_table_name, index_name);
+
+        firePreEvent(new PreAlterIndexEvent(oldIndex, newIndex, this));
+
         getMS().alterIndex(dbname, base_table_name, index_name, newIndex);
         success = true;
       } catch (InvalidObjectException e) {
@@ -3226,6 +3238,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("alter_index", success, ex, base_table_name);
+        for (MetaStoreEventListener listener : listeners) {
+          AlterIndexEvent alterIndexEvent = new AlterIndexEvent(oldIndex, newIndex, success, this);
+          listener.onAlterIndex(alterIndexEvent);
+        }
       }
       return;
     }
@@ -3355,7 +3371,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ret = tbl.getSd().getCols();
         } else {
           try {
-            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl);
+            Deserializer s = MetaStoreUtils.getDeserializer(hiveConf, tbl, false);
             ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
           } catch (SerDeException e) {
             StringUtils.stringifyException(e);
@@ -3771,6 +3787,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         ms.openTransaction();
+        firePreEvent(new PreAddIndexEvent(index, this));
+
         Index old_index = null;
         try {
           old_index = get_index_by_name(index.getDbName(), index
@@ -3818,6 +3836,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           ms.rollbackTransaction();
         }
+        for (MetaStoreEventListener listener : listeners) {
+          AddIndexEvent addIndexEvent = new AddIndexEvent(index, success, this);
+          listener.onAddIndex(addIndexEvent);
+        }
       }
     }
 
@@ -3852,16 +3874,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
 
       boolean success = false;
+      Index index = null;
       Path tblPath = null;
       List<Path> partPaths = null;
       try {
         ms.openTransaction();
 
         // drop the underlying index table
-        Index index = get_index_by_name(dbName, tblName, indexName);
-        if (index == null) {
-          throw new NoSuchObjectException(indexName + " doesn't exist");
-        }
+        index = get_index_by_name(dbName, tblName, indexName);  // throws exception if not exists
+
+        firePreEvent(new PreDropIndexEvent(index, this));
+
         ms.dropIndex(dbName, tblName, indexName);
 
         String idxTblName = index.getIndexTableName();
@@ -3882,26 +3905,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
 
           // Drop the partitions and get a list of partition locations which need to be deleted
-          partPaths = dropPartitionsAndGetLocations(ms, dbName, idxTblName, tblPath,
+          partPaths = dropPartitionsAndGetLocations(ms, qualified[0], qualified[1], tblPath,
               tbl.getPartitionKeys(), deleteData);
 
-          if (!ms.dropTable(dbName, idxTblName)) {
+          if (!ms.dropTable(qualified[0], qualified[1])) {
             throw new MetaException("Unable to drop underlying data table "
-                + idxTblName + " for index " + idxTblName);
+                + qualified[0] + "." + qualified[1] + " for index " + indexName);
           }
         }
         success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-          return false;
         } else if (deleteData && tblPath != null) {
           deletePartitionData(partPaths);
           deleteTableData(tblPath);
           // ok even if the data is not deleted
         }
+        for (MetaStoreEventListener listener : listeners) {
+          DropIndexEvent dropIndexEvent = new DropIndexEvent(index, success, this);
+          listener.onDropIndex(dropIndexEvent);
+        }
       }
-      return true;
+      return success;
     }
 
     @Override
@@ -3920,7 +3946,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         rethrowException(e);
       } finally {
-        endFunction("drop_index_by_name", ret != null, ex, tblName);
+        endFunction("get_index_by_name", ret != null, ex, tblName);
       }
       return ret;
     }
@@ -5695,7 +5721,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       Lock startLock = new ReentrantLock();
       Condition startCondition = startLock.newCondition();
-      MetaStoreThread.BooleanPointer startedServing = new MetaStoreThread.BooleanPointer();
+      AtomicBoolean startedServing = new AtomicBoolean();
       startMetaStoreThreads(conf, startLock, startCondition, startedServing);
       startMetaStore(cli.port, ShimLoader.getHadoopThriftAuthBridge(), conf, startLock,
           startCondition, startedServing);
@@ -5742,12 +5768,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       HiveConf conf, Lock startLock, Condition startCondition,
-      MetaStoreThread.BooleanPointer startedServing) throws Throwable {
+      AtomicBoolean startedServing) throws Throwable {
     try {
       isMetaStoreRemote = true;
       // Server will create new threads up to max as necessary. After an idle
-      // period, it will destory threads to keep the number of threads in the
+      // period, it will destroy threads to keep the number of threads in the
       // pool to min.
+      int maxMessageSize = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE);
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
@@ -5771,7 +5798,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
         // start delegation token manager
-        saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS());
+        saslServer.startDelegationTokenSecretManager(conf, baseHandler.getMS(), ServerMode.METASTORE);
         transFactory = saslServer.createTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(
@@ -5799,6 +5826,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           .processor(processor)
           .transportFactory(transFactory)
           .protocolFactory(new TBinaryProtocol.Factory())
+          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 
@@ -5824,7 +5852,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   private static void signalOtherThreadsToStart(final TServer server, final Lock startLock,
                                                 final Condition startCondition,
-                                                final MetaStoreThread.BooleanPointer startedServing) {
+                                                final AtomicBoolean startedServing) {
     // A simple thread to wait until the server has started and then signal the other threads to
     // begin
     Thread t = new Thread() {
@@ -5839,7 +5867,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } while (!server.isServing());
         startLock.lock();
         try {
-          startedServing.boolVal = true;
+          startedServing.set(true);
           startCondition.signalAll();
         } finally {
           startLock.unlock();
@@ -5855,7 +5883,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   private static void startMetaStoreThreads(final HiveConf conf, final Lock startLock,
                                             final Condition startCondition, final
-                                            MetaStoreThread.BooleanPointer startedServing) {
+                                            AtomicBoolean startedServing) {
     // A thread is spun up to start these other threads.  That's because we can't start them
     // until after the TServer has started, but once TServer.serve is called we aren't given back
     // control.
@@ -5873,7 +5901,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
-          while (!startedServing.boolVal) startCondition.await();
+          while (!startedServing.get()) startCondition.await();
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
@@ -5933,7 +5961,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setHiveConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new MetaStoreThread.BooleanPointer(), new MetaStoreThread.BooleanPointer());
+    thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
   }
 }

@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -92,7 +91,6 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -134,6 +132,8 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.StringUtils;
@@ -197,7 +197,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Called whenever this object is instantiated using ReflectionUils, and also
+   * Called whenever this object is instantiated using ReflectionUtils, and also
    * on connection retries. In cases of connection retries, conf will usually
    * contain modified values.
    */
@@ -267,7 +267,7 @@ public class ObjectStore implements RawStore, Configurable {
     isInitialized = pm != null;
     if (isInitialized) {
       expressionProxy = createExpressionProxy(hiveConf);
-      directSql = new MetaStoreDirectSql(pm);
+      directSql = new MetaStoreDirectSql(pm, hiveConf);
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
         " created in the thread with id: " + Thread.currentThread().getId());
@@ -466,12 +466,15 @@ public class ObjectStore implements RawStore, Configurable {
     if (currentTransaction.isActive()
         && transactionStatus != TXN_STATUS.ROLLBACK) {
       transactionStatus = TXN_STATUS.ROLLBACK;
-      // could already be rolled back
-      currentTransaction.rollback();
-      // remove all detached objects from the cache, since the transaction is
-      // being rolled back they are no longer relevant, and this prevents them
-      // from reattaching in future transactions
-      pm.evictAll();
+      try {
+        // could already be rolled back
+        currentTransaction.rollback();
+      } finally {
+        // remove all detached objects from the cache, since the transaction is
+        // being rolled back they are no longer relevant, and this prevents them
+        // from reattaching in future transactions
+        pm.evictAll();
+      }
     }
   }
 
@@ -523,6 +526,39 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
+    MetaException ex = null;
+    Database db = null;
+    try {
+      db = getDatabaseInternal(name);
+    } catch (MetaException e) {
+      // Signature restriction to NSOE, and NSOE being a flat exception prevents us from
+      // setting the cause of the NSOE as the MetaException. We should not lose the info
+      // we got here, but it's very likely that the MetaException is irrelevant and is
+      // actually an NSOE message, so we should log it and throw an NSOE with the msg.
+      ex = e;
+    }
+    if (db == null) {
+      LOG.warn("Failed to get database " + name +", returning NoSuchObjectException", ex);
+      throw new NoSuchObjectException(name + (ex == null ? "" : (": " + ex.getMessage())));
+    }
+    return db;
+  }
+
+  public Database getDatabaseInternal(String name) throws MetaException, NoSuchObjectException {
+    return new GetDbHelper(name, null, true, true) {
+      @Override
+      protected Database getSqlResult(GetHelper<Database> ctx) throws MetaException {
+        return directSql.getDatabase(dbName);
+      }
+
+      @Override
+      protected Database getJdoResult(GetHelper<Database> ctx) throws MetaException, NoSuchObjectException {
+        return getJDODatabase(dbName);
+      }
+    }.run(false);
+   }
+
+  public Database getJDODatabase(String name) throws NoSuchObjectException {
     MDatabase mdb = null;
     boolean commited = false;
     try {
@@ -1968,7 +2004,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+        return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
       }
       @Override
       protected List<Partition> getJdoResult(
@@ -2021,7 +2057,7 @@ public class ObjectStore implements RawStore, Configurable {
           List<String> partNames = new LinkedList<String>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
               ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
-          result = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+          result = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
         }
         return result;
       }
@@ -2105,14 +2141,16 @@ public class ObjectStore implements RawStore, Configurable {
     result.addAll(getPartitionNamesNoTxn(
         table.getDbName(), table.getTableName(), maxParts));
     List<String> columnNames = new ArrayList<String>();
+    List<PrimitiveTypeInfo> typeInfos = new ArrayList<PrimitiveTypeInfo>();
     for (FieldSchema fs : table.getPartitionKeys()) {
       columnNames.add(fs.getName());
+      typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
       defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     }
     return expressionProxy.filterPartitionsByExpr(
-        columnNames, expr, defaultPartName, result);
+        columnNames, typeInfos, expr, defaultPartName, result);
   }
 
   /**
@@ -2282,7 +2320,14 @@ public class ObjectStore implements RawStore, Configurable {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
       this.dbName = dbName.toLowerCase();
-      this.tblName = tblName.toLowerCase();
+      if (tblName != null){
+        this.tblName = tblName.toLowerCase();
+      } else {
+        // tblName can be null in cases of Helper being used at a higher
+        // abstraction level, such as with datbases
+        this.tblName = null;
+        this.table = null;
+      }
       this.doTrace = LOG.isDebugEnabled();
       this.isInTxn = isActiveTransaction();
 
@@ -2331,7 +2376,7 @@ public class ObjectStore implements RawStore, Configurable {
     private void start(boolean initTable) throws MetaException, NoSuchObjectException {
       start = doTrace ? System.nanoTime() : 0;
       openTransaction();
-      if (initTable) {
+      if (initTable && (tblName != null)) {
         table = ensureGetTable(dbName, tblName);
       }
     }
@@ -2342,7 +2387,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
-      LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+      LOG.warn("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
       if (!allowJdo) {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
@@ -2395,6 +2440,27 @@ public class ObjectStore implements RawStore, Configurable {
     @Override
     protected String describeResult() {
       return results.size() + " entries";
+    }
+  }
+
+  private abstract class GetDbHelper extends GetHelper<Database> {
+    /**
+     * GetHelper for returning db info using directSql/JDO.
+     * Since this is a db-level call, tblName is ignored, and null is passed irrespective of what is passed in.
+     * @param dbName The Database Name
+     * @param tblName Placeholder param to match signature, always ignored.
+     * @param allowSql Whether or not we allow DirectSQL to perform this query.
+     * @param allowJdo Whether or not we allow ORM to perform this query.
+     * @throws MetaException
+     */
+    public GetDbHelper(
+        String dbName, String tblName, boolean allowSql, boolean allowJdo) throws MetaException {
+      super(dbName,null,allowSql,allowJdo);
+    }
+
+    @Override
+    protected String describeResult() {
+      return "db details for db " + dbName;
     }
   }
 
@@ -2665,7 +2731,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("table " + name + " doesn't exist");
       }
 
-      // For now only alter name, owner, paramters, cols, bucketcols are allowed
+      // For now only alter name, owner, parameters, cols, bucketcols are allowed
       oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(newt.getTableName().toLowerCase());
       oldt.setParameters(newt.getParameters());
@@ -2708,7 +2774,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("index " + name + " doesn't exist");
       }
 
-      // For now only alter paramters are allowed
+      // For now only alter parameters are allowed
       oldi.setParameters(newi.getParameters());
 
       // commit the changes
@@ -2878,7 +2944,7 @@ public class ObjectStore implements RawStore, Configurable {
     MColumnDescriptor mcd = msd.getCD();
     // Because there is a 1-N relationship between CDs and SDs,
     // we must set the SD's CD to null first before dropping the storage descriptor
-    // to satisfy foriegn key constraints.
+    // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
   }
@@ -3019,19 +3085,26 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Index convertToIndex(MIndex mIndex) throws MetaException {
-    if(mIndex == null) {
+    if (mIndex == null) {
       return null;
     }
+
+    MTable origTable = mIndex.getOrigTable();
+    MTable indexTable = mIndex.getIndexTable();
+
+    String[] qualified = MetaStoreUtils.getQualifiedName(
+        origTable.getDatabase().getName(), indexTable.getTableName());
+    String indexTableName = qualified[0] + "." + qualified[1];
 
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
-    mIndex.getOrigTable().getDatabase().getName(),
-    mIndex.getOrigTable().getTableName(),
+    origTable.getDatabase().getName(),
+    origTable.getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
-    mIndex.getIndexTable().getTableName(),
-    this.convertToStorageDescriptor(mIndex.getSd()),
+    indexTableName,
+    convertToStorageDescriptor(mIndex.getSd()),
     mIndex.getParameters(),
     mIndex.getDeferredRebuild());
 

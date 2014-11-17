@@ -76,5 +76,5 @@ PREHOOK: query: show indexes on src_rc_concatenate_test
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show indexes on src_rc_concatenate_test
 POSTHOOK: type: SHOWINDEXES
-src_rc_concatenate_test_index	src_rc_concatenate_test	key                 	default__src_rc_concatenate_test_src_rc_concatenate_test_index__	compact             	
+src_rc_concatenate_test_index	src_rc_concatenate_test	key                 	default.default__src_rc_concatenate_test_src_rc_concatenate_test_index__	compact             	
 FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: can not do merge because source table default.src_rc_concatenate_test is indexed.

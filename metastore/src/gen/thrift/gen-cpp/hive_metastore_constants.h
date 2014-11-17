@@ -36,6 +36,8 @@ class hive_metastoreConstants {
   std::string FILE_INPUT_FORMAT;
   std::string FILE_OUTPUT_FORMAT;
   std::string META_TABLE_STORAGE;
+  std::string TABLE_IS_TRANSACTIONAL;
+  std::string TABLE_NO_AUTO_COMPACT;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

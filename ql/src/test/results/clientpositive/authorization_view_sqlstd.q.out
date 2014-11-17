@@ -180,7 +180,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
@@ -206,7 +205,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 role_v
-
 PREHOOK: query: grant all on table vt2 to role role_v
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt2

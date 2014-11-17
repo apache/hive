@@ -13,7 +13,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 testrole
-
 PREHOOK: query: drop role TESTROLE
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role TESTROLE
@@ -24,7 +23,6 @@ POSTHOOK: query: show roles
 POSTHOOK: type: SHOW_ROLES
 admin
 public
-
 PREHOOK: query: create role TESTROLE
 PREHOOK: type: CREATEROLE
 POSTHOOK: query: create role TESTROLE
@@ -36,7 +34,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 testrole
-
 PREHOOK: query: grant role testROLE to user hive_admin_user
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant role testROLE to user hive_admin_user
@@ -56,7 +53,6 @@ POSTHOOK: type: SHOW_ROLES
 admin
 public
 testrole
-
 PREHOOK: query: create role TESTRoLE
 PREHOOK: type: CREATEROLE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Role testrole already exists.

@@ -76,29 +76,16 @@ public class TestHCatStorer extends HCatBaseTest {
   private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
     new HashMap<String, Set<String>>() {{
       put(IOConstants.AVRO, new HashSet<String>() {{
-        add("testBagNStruct");
-        add("testDateCharTypes");
-        add("testDynamicPartitioningMultiPartColsInDataNoSpec");
-        add("testDynamicPartitioningMultiPartColsInDataPartialSpec");
-        add("testMultiPartColsInData");
-        add("testPartColsInData");
-        add("testStoreFuncAllSimpleTypes");
-        add("testStoreFuncSimple");
-        add("testStoreInPartiitonedTbl");
-        add("testStoreMultiTables");
-        add("testStoreWithNoCtorArgs");
-        add("testStoreWithNoSchema");
-        add("testWriteChar");
-        add("testWriteDate");
-        add("testWriteDate2");
-        add("testWriteDate3");
-        add("testWriteDecimal");
-        add("testWriteDecimalX");
-        add("testWriteDecimalXY");
-        add("testWriteSmallint");
-        add("testWriteTimestamp");
-        add("testWriteTinyint");
-        add("testWriteVarchar");
+        add("testDateCharTypes"); // incorrect precision
+          // expected:<0      xxxxx   yyy     5.2[]> but was:<0       xxxxx   yyy     5.2[0]>
+        add("testWriteDecimalXY"); // incorrect precision
+          // expected:<1.2[]> but was:<1.2[0]>
+        add("testWriteSmallint");  // doesn't have a notion of small, and saves the full value as an int, so no overflow
+          // expected:<null> but was:<32768>
+        add("testWriteTimestamp"); // does not support timestamp
+          // TypeInfoToSchema.createAvroPrimitive : UnsupportedOperationException
+        add("testWriteTinyint"); // doesn't have a notion of tiny, and saves the full value as an int, so no overflow
+          // expected:<null> but was:<300>
       }});
       put(IOConstants.PARQUETFILE, new HashSet<String>() {{
         add("testBagNStruct");

@@ -21,9 +21,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLServerSocket;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 
@@ -32,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
@@ -42,12 +47,16 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class helps in some aspects of authentication. It creates the proper Thrift classes for the
  * given configuration as well as helps with authenticating requests.
  */
 public class HiveAuthFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
+
 
   public enum AuthTypes {
     NOSASL("NOSASL"),
@@ -98,7 +107,7 @@ public class HiveAuthFactory {
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
         // start delegation token manager
         try {
-          saslServer.startDelegationTokenSecretManager(conf, null);
+          saslServer.startDelegationTokenSecretManager(conf, null, ServerMode.HIVESERVER2);
         } catch (IOException e) {
           throw new TTransportException("Failed to start token manager", e);
         }
@@ -209,6 +218,7 @@ public class HiveAuthFactory {
     throws TTransportException {
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
+      // Wildcard bind
       serverAddress = new InetSocketAddress(portNum);
     } else {
       serverAddress = new InetSocketAddress(hiveHost, portNum);
@@ -217,71 +227,100 @@ public class HiveAuthFactory {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-    String keyStorePassWord) throws TTransportException, UnknownHostException {
+      String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
+      UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
-      new TSSLTransportFactory.TSSLTransportParameters();
+        new TSSLTransportFactory.TSSLTransportParameters();
     params.setKeyStore(keyStorePath, keyStorePassWord);
-
-    InetAddress serverAddress;
+    InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
-      serverAddress = InetAddress.getLocalHost();
+      // Wildcard bind
+      serverAddress = new InetSocketAddress(portNum);
     } else {
-      serverAddress = InetAddress.getByName(hiveHost);
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
     }
-    return TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress, params);
+    TServerSocket thriftServerSocket =
+        TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress.getAddress(), params);
+    if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
+      List<String> sslVersionBlacklistLocal = new ArrayList<String>();
+      for (String sslVersion : sslVersionBlacklist) {
+        sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
+      }
+      SSLServerSocket sslServerSocket = (SSLServerSocket) thriftServerSocket.getServerSocket();
+      List<String> enabledProtocols = new ArrayList<String>();
+      for (String protocol : sslServerSocket.getEnabledProtocols()) {
+        if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
+          LOG.debug("Disabling SSL Protocol: " + protocol);
+        } else {
+          enabledProtocols.add(protocol);
+        }
+      }
+      sslServerSocket.setEnabledProtocols(enabledProtocols.toArray(new String[0]));
+      LOG.info("SSL Server Socket Enabled Protocols: "
+          + Arrays.toString(sslServerSocket.getEnabledProtocols()));
+    }
+    return thriftServerSocket;
   }
 
   // retrieve delegation token for the given user
   public String getDelegationToken(String owner, String renewer) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException(
+          "Delegation token only supported over kerberos authentication", "08S01");
     }
 
     try {
       String tokenStr = saslServer.getDelegationTokenWithService(owner, renewer, HS2_CLIENT_TOKEN);
       if (tokenStr == null || tokenStr.isEmpty()) {
-        throw new HiveSQLException("Received empty retrieving delegation token for user " + owner);
+        throw new HiveSQLException(
+            "Received empty retrieving delegation token for user " + owner, "08S01");
       }
       return tokenStr;
     } catch (IOException e) {
-      throw new HiveSQLException("Error retrieving delegation token for user " + owner, e);
+      throw new HiveSQLException(
+          "Error retrieving delegation token for user " + owner, "08S01", e);
     } catch (InterruptedException e) {
-      throw new HiveSQLException("delegation token retrieval interrupted", e);
+      throw new HiveSQLException("delegation token retrieval interrupted", "08S01", e);
     }
   }
 
   // cancel given delegation token
   public void cancelDelegationToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException(
+          "Delegation token only supported over kerberos authentication", "08S01");
     }
     try {
       saslServer.cancelDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException("Error canceling delegation token " + delegationToken, e);
+      throw new HiveSQLException(
+          "Error canceling delegation token " + delegationToken, "08S01", e);
     }
   }
 
   public void renewDelegationToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException(
+          "Delegation token only supported over kerberos authentication", "08S01");
     }
     try {
       saslServer.renewDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException("Error renewing delegation token " + delegationToken, e);
+      throw new HiveSQLException(
+          "Error renewing delegation token " + delegationToken, "08S01", e);
     }
   }
 
   public String getUserFromToken(String delegationToken) throws HiveSQLException {
     if (saslServer == null) {
-      throw new HiveSQLException("Delegation token only supported over kerberos authentication");
+      throw new HiveSQLException(
+          "Delegation token only supported over kerberos authentication", "08S01");
     }
     try {
       return saslServer.getUserFromToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException("Error extracting user from delegation token " + delegationToken,
-                                 e);
+      throw new HiveSQLException(
+          "Error extracting user from delegation token " + delegationToken, "08S01", e);
     }
   }
 
@@ -302,7 +341,7 @@ public class HiveAuthFactory {
       }
     } catch (IOException e) {
       throw new HiveSQLException(
-        "Failed to validate proxy privilege of " + realUser + " for " + proxyUser, e);
+        "Failed to validate proxy privilege of " + realUser + " for " + proxyUser, "08S01", e);
     }
   }
 

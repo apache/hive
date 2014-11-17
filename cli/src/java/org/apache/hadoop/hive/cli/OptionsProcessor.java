@@ -83,20 +83,6 @@ public class OptionsProcessor {
         .withDescription("Use value for given property")
         .create());
 
-    // -h hostname/ippaddress
-    options.addOption(OptionBuilder
-        .hasArg()
-        .withArgName("hostname")
-        .withDescription("connecting to Hive Server on remote host")
-        .create('h'));
-
-    // -p port
-    options.addOption(OptionBuilder
-        .hasArg()
-        .withArgName("port")
-        .withDescription("connecting to Hive Server on port number")
-        .create('p'));
-
     // Substitution option -d, --define
     options.addOption(OptionBuilder
         .withValueSeparator()
@@ -168,10 +154,6 @@ public class OptionsProcessor {
     ss.fileName = commandLine.getOptionValue('f');
 
     ss.setIsVerbose(commandLine.hasOption('v'));
-
-    ss.host = (String) commandLine.getOptionValue('h');
-
-    ss.port = Integer.parseInt((String) commandLine.getOptionValue('p', "10000"));
 
     String[] initFiles = commandLine.getOptionValues('i');
     if (null != initFiles) {

@@ -19,7 +19,8 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.AbstractService;
+import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.TSetIpAddressProcessor;
 import org.apache.hive.service.cli.*;
@@ -53,7 +55,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   protected static HiveAuthFactory hiveAuthFactory;
 
   protected int portNum;
-  protected InetSocketAddress serverAddress;
+  protected InetAddress serverIPAddress;
   protected String hiveHost;
   protected TServer server;
   protected org.eclipse.jetty.server.Server httpServer;
@@ -75,12 +77,20 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   @Override
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
-
     // Initialize common server configs needed in both binary & http modes
     String portString;
     hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
     if (hiveHost == null) {
       hiveHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+    }
+    try {
+      if (hiveHost != null && !hiveHost.isEmpty()) {
+        serverIPAddress = InetAddress.getByName(hiveHost);
+      } else {
+        serverIPAddress = InetAddress.getLocalHost();
+      }
+    } catch (UnknownHostException e) {
+      throw new ServiceException(e);
     }
     // HTTP mode
     if (HiveServer2.isHTTPTransportMode(hiveConf)) {
@@ -104,11 +114,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       } else {
         portNum = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT);
       }
-    }
-    if (hiveHost != null && !hiveHost.isEmpty()) {
-      serverAddress = new InetSocketAddress(hiveHost, portNum);
-    } else {
-      serverAddress = new InetSocketAddress(portNum);
     }
     minWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS);
     maxWorkerThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS);
@@ -148,8 +153,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return portNum;
   }
 
-  public InetSocketAddress getServerAddress() {
-    return serverAddress;
+  public InetAddress getServerIPAddress() {
+    return serverIPAddress;
   }
 
   @Override
