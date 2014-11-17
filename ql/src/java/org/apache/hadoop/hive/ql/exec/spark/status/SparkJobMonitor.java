@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.spark.JobExecutionStatus;
 
 /**
  * SparkJobMonitor monitor a single Spark job status in a loop until job finished/failed/killed.
@@ -59,26 +60,18 @@ public class SparkJobMonitor {
     boolean done = false;
     int failedCounter = 0;
     int rc = 0;
-    SparkJobState lastState = null;
+    JobExecutionStatus lastState = null;
     Map<String, SparkStageProgress> lastProgressMap = null;
     long startTime = 0;
 
     while (true) {
-
       try {
-        Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
-        SparkJobState state = sparkJobStatus.getState();
-
-        if (state != lastState || state == SparkJobState.RUNNING) {
+        JobExecutionStatus state = sparkJobStatus.getState();
+        if (state != null && (state != lastState || state == JobExecutionStatus.RUNNING)) {
           lastState = state;
+          Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
 
           switch (state) {
-          case SUBMITTED:
-            console.printInfo("Status: Submitted");
-            break;
-          case INITING:
-            console.printInfo("Status: Initializing");
-            break;
           case RUNNING:
             if (!running) {
               // print job stages.
@@ -110,14 +103,7 @@ public class SparkJobMonitor {
             running = false;
             done = true;
             break;
-          case KILLED:
-            console.printInfo("Status: Killed");
-            running = false;
-            done = true;
-            rc = 1;
-            break;
           case FAILED:
-          case ERROR:
             console.printError("Status: Failed");
             running = false;
             done = true;
@@ -187,17 +173,17 @@ public class SparkJobMonitor {
               String.format("%s: %d(+%d)/%d\t", stageName, complete, running, total));
           }
         } else {
-          double cost = progress.getCumulativeTime() / 1000.0;
           /* stage is waiting for input/slots or complete */
           if (failed > 0) {
             /* tasks finished but some failed */
             reportBuffer.append(
-              String.format(
-                "%s: %d(-%d)/%d Finished in %,.2fs\t", stageName, complete, failed, total, cost));
+                String.format(
+                    "%s: %d(-%d)/%d Finished with failed tasks\t",
+                    stageName, complete, failed, total));
           } else {
             if (complete == total) {
               reportBuffer.append(
-                String.format("%s: %d/%d Finished in %,.2fs\t", stageName, complete, total, cost));
+                  String.format("%s: %d/%d Finished\t", stageName, complete, total));
             } else {
               reportBuffer.append(String.format("%s: %d/%d\t", stageName, complete, total));
             }
