@@ -55,6 +55,7 @@ public class SparkHashTableSinkOperator
   protected void initializeOp(Configuration hconf) throws HiveException {
     ObjectInspector[] inputOIs = new ObjectInspector[conf.getTagLength()];
     inputOIs[tag] = inputObjInspectors[0];
+    conf.setTagOrder(new Byte[]{ tag });
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
   }
