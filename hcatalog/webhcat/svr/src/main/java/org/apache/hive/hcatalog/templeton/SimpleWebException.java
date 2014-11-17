@@ -32,7 +32,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  * instead map our own so that Jersey doesn't log our exceptions as
  * error in the output log.  See SimpleExceptionMapper.
  */
-public class SimpleWebException extends Throwable {
+public class SimpleWebException extends Exception {
   public int httpCode;
   public Map<String, Object> params;
 
