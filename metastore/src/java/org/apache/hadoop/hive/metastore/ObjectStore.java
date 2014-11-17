@@ -466,12 +466,15 @@ public class ObjectStore implements RawStore, Configurable {
     if (currentTransaction.isActive()
         && transactionStatus != TXN_STATUS.ROLLBACK) {
       transactionStatus = TXN_STATUS.ROLLBACK;
-      // could already be rolled back
-      currentTransaction.rollback();
-      // remove all detached objects from the cache, since the transaction is
-      // being rolled back they are no longer relevant, and this prevents them
-      // from reattaching in future transactions
-      pm.evictAll();
+      try {
+        // could already be rolled back
+        currentTransaction.rollback();
+      } finally {
+        // remove all detached objects from the cache, since the transaction is
+        // being rolled back they are no longer relevant, and this prevents them
+        // from reattaching in future transactions
+        pm.evictAll();
+      }
     }
   }
 
