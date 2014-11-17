@@ -121,8 +121,8 @@ public class TestHiveKVResultCache {
     HashSet<Long> primaryRowKeys = new HashSet<Long>();
     HashSet<Long> separateRowKeys = new HashSet<Long>();
     for (Tuple2<HiveKey, BytesWritable> item: output) {
-      String key = new String(item._1.getBytes());
-      String value = new String(item._2.getBytes());
+      String key = bytesWritableToString(item._1);
+      String value = bytesWritableToString(item._2);
       String prefix = key.substring(0, key.indexOf('_'));
       Long id = Long.valueOf(key.substring(5 + prefix.length()));
       if (prefix.equals(prefix1)) {
@@ -137,6 +137,18 @@ public class TestHiveKVResultCache {
     }
     assertEquals(separateRows, separateRowKeys.size());
     assertEquals(primaryRows, primaryRowKeys.size());
+  }
+
+  /**
+   * Convert a BytesWritable to a string.
+   * Don't use {@link BytesWritable#copyBytes()}
+   * so as to be compatible with hadoop 1
+   */
+  private static String bytesWritableToString(BytesWritable bw) {
+    int size = bw.getLength();
+    byte[] bytes = new byte[size];
+    System.arraycopy(bw.getBytes(), 0, bytes, 0, size);
+    return new String(bytes);
   }
 
   private static class MyHiveFunctionResultList extends HiveBaseFunctionResultList {
