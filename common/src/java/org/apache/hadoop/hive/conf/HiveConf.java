@@ -205,6 +205,10 @@ public class HiveConf extends Configuration {
     PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
         "Query plan format serialization between client and task nodes. \n" +
         "Two supported values are : kryo and javaXML. Kryo is default."),
+    STAGINGDIR("hive.exec.stagingdir", ".hive-staging",
+        "Directory name that will be created inside table locations in order to support HDFS encryption." +
+        "This is the replacement of ${hive.exec.scratchdir} for all Hive statements that deals with +" +
+        "HDFS encryption zones. ${hive.exec.scratchdir} is still used for other temporary, such as job plans."),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive",
         "HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
@@ -726,6 +730,10 @@ public class HiveConf extends Configuration {
         "cardinality (4 in the example above), is more than this value, a new MR job is added under the\n" +
         "assumption that the original group by will reduce the data size."),
 
+    // Max filesize used to do a single copy (after that, distcp is used)
+    HIVE_EXEC_COPYFILE_MAXSIZE("hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
+        "Maximum file size (in Mb) that Hive uses to do single HDFS copies between directories." +
+        "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
 
     // for hive udtf operator
     HIVEUDTFAUTOPROGRESS("hive.udtf.auto.progress", false,

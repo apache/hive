@@ -696,7 +696,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       //      LOG.info("Searching for "+dynPathSpec);
       Path pathPattern = new Path(dynPathSpec);
-      FileStatus[] status = fs.globStatus(pathPattern);
+      FileStatus[] status = fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
       partitionsDiscoveredByPath = new LinkedHashMap<String, Map<String, String>>();
       contextDiscoveredByPath = new LinkedHashMap<String, JobContext>();

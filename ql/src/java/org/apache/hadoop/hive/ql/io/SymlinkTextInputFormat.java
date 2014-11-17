@@ -23,19 +23,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -192,7 +188,7 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
       List<Path> targetPaths, List<Path> symlinkPaths) throws IOException {
     for (Path symlinkDir : symlinksDirs) {
       FileSystem fileSystem = symlinkDir.getFileSystem(conf);
-      FileStatus[] symlinks = fileSystem.listStatus(symlinkDir);
+      FileStatus[] symlinks = fileSystem.listStatus(symlinkDir, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
       // Read paths from each symlink file.
       for (FileStatus symlink : symlinks) {

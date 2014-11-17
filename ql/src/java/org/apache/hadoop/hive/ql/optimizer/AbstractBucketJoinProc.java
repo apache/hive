@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -80,7 +81,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     List<String> fileNames = new ArrayList<String>();
     try {
       FileSystem fs = location.getFileSystem(pGraphContext.getConf());
-      FileStatus[] files = fs.listStatus(new Path(location.toString()));
+      FileStatus[] files = fs.listStatus(new Path(location.toString()), FileUtils.HIDDEN_FILES_PATH_FILTER);
       if (files != null) {
         for (FileStatus file : files) {
           fileNames.add(file.getPath().toString());

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -177,6 +178,11 @@ public class SessionState {
       "hive.internal.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
+
+  /**
+   * Gets information about HDFS encryption
+   */
+  private HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
 
   /**
    * Lineage state.
@@ -372,6 +378,21 @@ public class SessionState {
     return txnAutoCommit;
   }
 
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
+    if (hdfsEncryptionShim == null) {
+      try {
+        FileSystem fs = FileSystem.get(conf);
+        if (fs.getUri().getScheme().equals("hdfs")) {
+          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        }
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
+
+    return hdfsEncryptionShim;
+  }
+
   /**
    * Singleton Session object per thread.
    *
@@ -404,7 +425,6 @@ public class SessionState {
    * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
-
     setCurrentSessionState(startSs);
 
     if (startSs.hiveHist == null){
