@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.Driver;
@@ -123,22 +124,23 @@ public final class IndexUtils {
       Partition part) throws HiveException {
     LOG.info("checking index staleness...");
     try {
-      FileSystem partFs = part.getDataLocation().getFileSystem(hive.getConf());
-      FileStatus partFss = partFs.getFileStatus(part.getDataLocation());
-      String ts = index.getParameters().get(part.getSpec().toString());
-      if (ts == null) {
+      String indexTs = index.getParameters().get(part.getSpec().toString());
+      if (indexTs == null) {
         return false;
       }
-      long indexTs = Long.parseLong(ts);
-      LOG.info(partFss.getModificationTime());
-      LOG.info(ts);
-      if (partFss.getModificationTime() > indexTs) {
-        LOG.info("index is stale on the partitions that matched " + part.getSpec());
-        return false;
+
+      FileSystem partFs = part.getDataLocation().getFileSystem(hive.getConf());
+      FileStatus[] parts = partFs.listStatus(part.getDataLocation(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+      for (FileStatus status : parts) {
+        if (status.getModificationTime() > Long.parseLong(indexTs)) {
+          LOG.info("Index is stale on partition '" + part.getName()
+              + "'. Modified time (" + status.getModificationTime() + ") for '" + status.getPath()
+              + "' is higher than index creation time (" + indexTs + ").");
+          return false;
+        }
       }
     } catch (IOException e) {
-      LOG.info("failed to grab timestamp info");
-      throw new HiveException(e);
+      throw new HiveException("Failed to grab timestamp information from partition '" + part.getName() + "': " + e.getMessage(), e);
     }
     return true;
   }
@@ -156,22 +158,23 @@ public final class IndexUtils {
     for (Index index : indexes) {
       LOG.info("checking index staleness...");
       try {
-        FileSystem srcFs = src.getPath().getFileSystem(hive.getConf());
-        FileStatus srcFss= srcFs.getFileStatus(src.getPath());
-        String ts = index.getParameters().get("base_timestamp");
-        if (ts == null) {
+        String indexTs = index.getParameters().get("base_timestamp");
+        if (indexTs == null) {
           return false;
         }
-        long indexTs = Long.parseLong(ts);
-        LOG.info(srcFss.getModificationTime());
-        LOG.info(ts);
-        if (srcFss.getModificationTime() > indexTs) {
-          LOG.info("index is stale ");
-          return false;
+
+        FileSystem srcFs = src.getPath().getFileSystem(hive.getConf());
+        FileStatus[] srcs = srcFs.listStatus(src.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+        for (FileStatus status : srcs) {
+          if (status.getModificationTime() > Long.parseLong(indexTs)) {
+            LOG.info("Index is stale on table '" + src.getTableName()
+                + "'. Modified time (" + status.getModificationTime() + ") for '" + status.getPath()
+                + "' is higher than index creation time (" + indexTs + ").");
+            return false;
+          }
         }
       } catch (IOException e) {
-        LOG.info("failed to grab timestamp info");
-        throw new HiveException(e);
+        throw new HiveException("Failed to grab timestamp information from table '" + src.getTableName() + "': " + e.getMessage(), e);
       }
     }
     return true;

@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,6 +35,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.crypto.key.KeyProvider;
+import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -54,6 +58,8 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hdfs.client.HdfsAdmin;
+import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
@@ -75,6 +81,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
@@ -735,6 +742,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
     ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
     ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
+    ret.put("HADOOPSECURITYKEYPROVIDER", "hadoop.security.key.provider.path");
     return ret;
  }
 
@@ -903,5 +911,132 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
     }
+  }
+
+  @Override
+  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
+    int rc;
+
+    // Creates the command-line parameters for distcp
+    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
+
+    try {
+      Class clazzDistCp = Class.forName("org.apache.hadoop.tools.DistCp");
+      Constructor c = clazzDistCp.getConstructor();
+      c.setAccessible(true);
+      Tool distcp = (Tool)c.newInstance();
+      distcp.setConf(conf);
+      rc = distcp.run(params);
+    } catch (ClassNotFoundException e) {
+      throw new IOException("Cannot find DistCp class package: " + e.getMessage());
+    } catch (NoSuchMethodException e) {
+      throw new IOException("Cannot get DistCp constructor: " + e.getMessage());
+    } catch (Exception e) {
+      throw new IOException("Cannot execute DistCp process: " + e, e);
+    }
+
+    return (0 == rc);
+  }
+
+  public static class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
+    /**
+     * Gets information about key encryption metadata
+     */
+    private KeyProvider keyProvider = null;
+
+    /**
+     * Gets information about HDFS encryption zones
+     */
+    private HdfsAdmin hdfsAdmin = null;
+
+    public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
+      hdfsAdmin = new HdfsAdmin(uri, conf);
+
+      try {
+        String keyProviderPath = conf.get(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"), null);
+        if (keyProviderPath != null) {
+          keyProvider = new KMSClientProvider(new URI(keyProviderPath), conf);
+        }
+      } catch (URISyntaxException e) {
+        throw new IOException("Invalid HDFS security key provider path", e);
+      } catch (Exception e) {
+        throw new IOException("Cannot create HDFS security object: ", e);
+      }
+    }
+
+    @Override
+    public boolean isPathEncrypted(Path path) throws IOException {
+      return (hdfsAdmin.getEncryptionZoneForPath(path) != null);
+    }
+
+    @Override
+    public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException {
+      EncryptionZone zone1, zone2;
+
+      zone1 = hdfsAdmin.getEncryptionZoneForPath(path1);
+      zone2 = hdfsAdmin.getEncryptionZoneForPath(path2);
+
+      if (zone1 == null && zone2 == null) {
+        return true;
+      } else if (zone1 == null || zone2 == null) {
+        return false;
+      }
+
+      return zone1.equals(zone2);
+    }
+
+    @Override
+    public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
+      EncryptionZone zone1, zone2;
+
+      zone1 = hdfsAdmin.getEncryptionZoneForPath(path1);
+      zone2 = hdfsAdmin.getEncryptionZoneForPath(path2);
+
+      if (zone1 == null && zone2 == null) {
+        return 0;
+      } else if (zone1 == null) {
+        return -1;
+      } else if (zone2 == null) {
+        return 1;
+      }
+
+      return compareKeyStrength(zone1.getKeyName(), zone2.getKeyName());
+    }
+
+    /**
+     * Compares two encryption key strengths.
+     *
+     * @param keyname1 Keyname to compare
+     * @param keyname2 Keyname to compare
+     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @throws IOException If an error occurred attempting to get key metadata
+     */
+    private int compareKeyStrength(String keyname1, String keyname2) throws IOException {
+      KeyProvider.Metadata meta1, meta2;
+
+      if (keyProvider == null) {
+        throw new IOException("HDFS security key provider is not configured on your server.");
+      }
+
+      meta1 = keyProvider.getMetadata(keyname1);
+      meta2 = keyProvider.getMetadata(keyname2);
+
+      if (meta1.getBitLength() < meta2.getBitLength()) {
+        return -1;
+      } else if (meta1.getBitLength() == meta2.getBitLength()) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  }
+
+  @Override
+  public HadoopShims.HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
+    URI uri = fs.getUri();
+    if ("hdfs".equals(uri.getScheme())) {
+      return new HdfsEncryptionShim(uri, conf);
+    }
+    return new HadoopShims.NoopHdfsEncryptionShim();
   }
 }

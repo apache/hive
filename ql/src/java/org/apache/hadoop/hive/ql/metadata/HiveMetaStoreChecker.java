@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -147,7 +148,7 @@ public class HiveMetaStoreChecker {
 
     for (Path dbPath : dbPaths) {
       FileSystem fs = dbPath.getFileSystem(conf);
-      FileStatus[] statuses = fs.listStatus(dbPath);
+      FileStatus[] statuses = fs.listStatus(dbPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       for (FileStatus status : statuses) {
 
         if (status.isDir() && !tableNames.contains(status.getPath().getName())) {
@@ -362,7 +363,7 @@ public class HiveMetaStoreChecker {
   private void getAllLeafDirs(Path basePath, Set<Path> allDirs, FileSystem fs)
       throws IOException {
 
-    FileStatus[] statuses = fs.listStatus(basePath);
+    FileStatus[] statuses = fs.listStatus(basePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
     boolean directoryFound=false;
 
     for (FileStatus status : statuses) {

@@ -365,7 +365,10 @@ public class QTestUtil {
   }
 
   public void shutdown() throws Exception {
-    cleanUp();
+    if (System.getenv(QTEST_LEAVE_FILES) == null) {
+      cleanUp();
+    }
+    
     setup.tearDown();
     if (mr != null) {
       mr.shutdown();
@@ -1178,7 +1181,8 @@ public class QTestUtil {
       ".*DagName:.*",
       ".*Input:.*/data/files/.*",
       ".*Output:.*/data/files/.*",
-      ".*total number of created files now is.*"
+      ".*total number of created files now is.*",
+      ".*.hive-staging.*"
   });
 
   public int checkCliDriverResults(String tname) throws Exception {

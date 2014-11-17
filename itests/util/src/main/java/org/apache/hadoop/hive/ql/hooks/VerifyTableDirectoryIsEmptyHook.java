@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.util.Arrays;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -30,7 +32,7 @@ public class VerifyTableDirectoryIsEmptyHook implements ExecuteWithHookContext {
     for (WriteEntity output : hookContext.getOutputs()) {
       Path tableLocation = new Path(output.getTable().getDataLocation().toString());
       FileSystem fs = tableLocation.getFileSystem(SessionState.get().getConf());
-      assert(fs.listStatus(tableLocation).length == 0);
+      assert(fs.listStatus(tableLocation, FileUtils.HIDDEN_FILES_PATH_FILTER).length == 0);
     }
   }
 }

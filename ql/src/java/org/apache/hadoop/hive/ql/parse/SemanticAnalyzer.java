@@ -22,14 +22,15 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -58,8 +59,10 @@ import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -236,8 +239,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+
+import javax.security.auth.login.LoginException;
+
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRelBase;
 import org.eigenbase.rel.Aggregation;
@@ -1790,7 +1799,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 throw new SemanticException(e);
               }
               try {
-                fname = ctx.getExternalTmpPath(
+                fname = ctx.getExtTmpPathRelTo(
                     FileUtils.makeQualified(location, conf)).toString();
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
@@ -1806,7 +1815,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             } else {
               // This is the only place where isQuery is set to true; it defaults to false.
               qb.setIsQuery(true);
-              fname = ctx.getMRTmpPath().toString();
+              Path table_path = getStrongestEncryptedTablePath(qb);
+              if (table_path == null) {
+                fname = ctx.getMRTmpPath().toString();
+              } else {
+                fname = ctx.getMRTmpPath(table_path.toUri()).toString();
+              }
               ctx.setResDir(new Path(fname));
             }
           }
@@ -1861,6 +1875,68 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Gets the strongest encrypted table path.
+   *
+   * @param qb The QB object that contains a list of all table locations.
+   * @return The strongest encrypted path
+   * @throws HiveException if an error occurred attempting to compare the encryption strength
+   */
+  private Path getStrongestEncryptedTablePath(QB qb) throws HiveException {
+    List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
+    Path strongestPath = null;
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+
+    /* Walk through all found table locations to get the most encrypted table */
+    for (String alias : tabAliases) {
+      Table tab = qb.getMetaData().getTableForAlias(alias);
+      if (tab != null) {
+        Path tablePath = tab.getDataLocation();
+        if (tablePath != null) {
+          try {
+            if (strongestPath == null) {
+              strongestPath = tablePath;
+            } else if (hdfsEncryptionShim != null
+                && tablePath.toUri().getScheme().equals("hdfs")
+                && hdfsEncryptionShim.isPathEncrypted(tablePath))
+            {
+              if (hdfsEncryptionShim.comparePathKeyStrength(tablePath, strongestPath) > 0) {
+                strongestPath = tablePath;
+              }
+            }
+          } catch (IOException e) {
+            throw new HiveException("Cannot search for the most secure table path", e);
+          }
+        }
+      }
+    }
+
+    /* Check for writing permissions on the selected location. */
+    if (strongestPath != null && strongestPath.toUri().getScheme().equals("hdfs")) {
+      try {
+        FileSystem fs = strongestPath.getFileSystem(SessionState.get().getConf());
+        UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(SessionState.get().getConf());
+        FileStatus status = fs.getFileStatus(strongestPath);
+
+        FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName());
+      } catch (AccessControlException e) {
+        try {
+          if (hdfsEncryptionShim == null || !hdfsEncryptionShim.isPathEncrypted(strongestPath)) {
+            strongestPath = null;
+          } else {
+            throw new HiveException(e.getMessage(), e);
+          }
+        } catch (IOException e1) {
+          throw new HiveException(e.getMessage(), e);
+        }
+      } catch (Exception e) {
+        throw new HiveException(e.getMessage(), e);
+      }
+    }
+
+    return strongestPath;
   }
 
   private void replaceViewReferenceWithDefinition(QB qb, Table tab,
@@ -6050,7 +6126,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-        queryTmpdir = ctx.getExternalTmpPath(dest_path);
+        queryTmpdir = ctx.getExtTmpPathRelTo(dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -6231,7 +6307,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExternalTmpPath(qPath);
+          queryTmpdir = ctx.getExtTmpPathRelTo(qPath);
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -6411,7 +6487,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir).toString();
+      String statsTmpLoc = ctx.getExtTmpPathRelTo(queryTmpdir).toString();
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }
@@ -9541,7 +9617,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath()).toString();
+        String statsTmpLoc = ctx.getExtTmpPathRelTo(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
         conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
       }
