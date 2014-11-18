@@ -809,6 +809,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void alter_table_with_environment_context(1:string dbname, 2:string tbl_name,
       3:Table new_tbl, 4:EnvironmentContext environment_context)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
+  // alter table not only applies to future partitions but also cascade to existing partitions
+  void alter_table_with_cascade(1:string dbname, 2:string tbl_name, 3:Table new_tbl, 4:bool cascade)
+                       throws (1:InvalidOperationException o1, 2:MetaException o2)
   // the following applies to only tables that have partitions
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)

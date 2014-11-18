@@ -443,6 +443,11 @@ public class Hive {
    */
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
+    alterTable(tblName, newTbl, false);
+  }
+
+  public void alterTable(String tblName, Table newTbl, boolean cascade)
+      throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     try {
       // Remove the DDL_TIME so it gets refreshed
@@ -450,7 +455,7 @@ public class Hive {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       newTbl.checkValidity();
-      getMSC().alter_table(names[0], names[1], newTbl.getTTable());
+      getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {

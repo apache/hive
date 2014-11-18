@@ -3281,7 +3281,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     List<Partition> allPartitions = null;
     if (alterTbl.getPartSpec() != null) {
-      Map<String, String> partSpec = alterTbl.getPartSpec(); 
+      Map<String, String> partSpec = alterTbl.getPartSpec();
       if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
         allPartitions = new ArrayList<Partition>();
         Partition part = db.getPartition(tbl, partSpec, false);
@@ -3321,7 +3321,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl);
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade());
       } else {
         db.alterPartitions(tbl.getTableName(), allPartitions);
       }
