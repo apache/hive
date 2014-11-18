@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+
 /**
  * SparkMapJoinOptimizer cloned from ConvertJoinMapJoin is an optimization that replaces a common join
  * (aka shuffle join) with a map join (aka broadcast or fragment replicate
@@ -89,6 +90,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
     LOG.info("Estimated number of buckets " + numBuckets);
     int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets);
+
     /* TODO: handle this later
     if (mapJoinConversionPos < 0) {
       // we cannot convert to bucket map join, we cannot convert to
@@ -153,14 +155,15 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1);
 
 
-    /*
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
+      /*
       int pos = 0; // it doesn't matter which position we use in this case.
       convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+      */
       return null;
-    }*/
+    }
 
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos);
     // map join operator by default has no bucket cols
@@ -271,6 +274,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     mergeJoinOp.cloneOriginalParentsList(mergeJoinOp.getParentOperators());
   }
   */
+
   private void setAllChildrenTraitsToNull(Operator<? extends OperatorDesc> currentOp) {
     if (currentOp instanceof ReduceSinkOperator) {
       return;
