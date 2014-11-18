@@ -3257,13 +3257,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Table newTable)
         throws InvalidOperationException, MetaException {
       // Do not set an environment context.
-      alter_table_with_environment_context(dbname, name, newTable, null);
+      alter_table_core(dbname,name, newTable, null, false);
+    }
+
+    @Override
+    public void alter_table_with_cascade(final String dbname, final String name,
+        final Table newTable, final boolean cascade)
+        throws InvalidOperationException, MetaException {
+      // Do not set an environment context.
+      alter_table_core(dbname,name, newTable, null, cascade);
     }
 
     @Override
     public void alter_table_with_environment_context(final String dbname,
         final String name, final Table newTable,
         final EnvironmentContext envContext)
+        throws InvalidOperationException, MetaException {
+      alter_table_core(dbname, name, newTable, envContext, false);
+    }
+
+    private void alter_table_core(final String dbname, final String name, final Table newTable,
+        final EnvironmentContext envContext, final boolean cascade)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": db=" + dbname + " tbl=" + name
           + " newtbl=" + newTable.getTableName());
@@ -3279,7 +3293,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         Table oldt = get_table_core(dbname, name);
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
-        alterHandler.alterTable(getMS(), wh, dbname, name, newTable);
+        alterHandler.alterTable(getMS(), wh, dbname, name, newTable, cascade);
         success = true;
 
         for (MetaStoreEventListener listener : listeners) {

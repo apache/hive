@@ -311,6 +311,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     alter_table(dbname, tbl_name, new_tbl, null);
   }
 
+  @Override
+  public void alter_table(String dbname, String tbl_name, Table new_tbl, boolean cascade)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
+  }
+
   public void alter_table(String dbname, String tbl_name, Table new_tbl,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
     client.alter_table_with_environment_context(dbname, tbl_name, new_tbl, envContext);
