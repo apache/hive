@@ -72,13 +72,14 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import jline.ClassNameCompletor;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.FileNameCompletor;
-import jline.History;
-import jline.SimpleCompletor;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
+import jline.console.completer.FileNameCompleter;
+import jline.console.ConsoleReader;
+import jline.console.history.History;
+import jline.console.history.FileHistory;
 
+import jline.internal.Log;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.OptionBuilder;
@@ -111,7 +112,7 @@ public class BeeLine implements Closeable {
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
   public static final String COMMAND_PREFIX = "!";
-  private final Completor beeLineCommandCompletor;
+  private final Completer beeLineCommandCompleter;
   private Collection<Driver> drivers = null;
   private final BeeLineOpts opts = new BeeLineOpts(this, System.getProperties());
   private String lastProgress = null;
@@ -159,19 +160,19 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"quit", "done", "exit"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"connect", "open"},
-          new Completor[] {new SimpleCompletor(getConnectionURLExamples())}),
+          new Completer[] {new StringsCompleter(getConnectionURLExamples())}),
       new ReflectiveCommandHandler(this, new String[] {"describe"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"indexes"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"primarykeys"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"exportedkeys"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"manual"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"importedkeys"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"procedures"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"tables"},
@@ -179,16 +180,16 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"typeinfo"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"columns"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"reconnect"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"dropall"},
-          new Completor[] {new TableNameCompletor(this)}),
+          new Completer[] {new TableNameCompletor(this)}),
       new ReflectiveCommandHandler(this, new String[] {"history"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"metadata"},
-          new Completor[] {
-              new SimpleCompletor(getMetadataMethodNames())}),
+          new Completer[] {
+              new StringsCompleter(getMetadataMethodNames())}),
       new ReflectiveCommandHandler(this, new String[] {"nativesql"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"dbinfo"},
@@ -198,7 +199,7 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"verbose"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"run"},
-          new Completor[] {new FileNameCompletor()}),
+          new Completer[] {new FileNameCompleter()}),
       new ReflectiveCommandHandler(this, new String[] {"batch"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"list"},
@@ -208,9 +209,9 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"go", "#"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"script"},
-          new Completor[] {new FileNameCompletor()}),
+          new Completer[] {new FileNameCompleter()}),
       new ReflectiveCommandHandler(this, new String[] {"record"},
-          new Completor[] {new FileNameCompletor()}),
+          new Completer[] {new FileNameCompleter()}),
       new ReflectiveCommandHandler(this, new String[] {"brief"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"close"},
@@ -218,22 +219,22 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"closeall"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"isolation"},
-          new Completor[] {new SimpleCompletor(getIsolationLevels())}),
+          new Completer[] {new StringsCompleter(getIsolationLevels())}),
       new ReflectiveCommandHandler(this, new String[] {"outputformat"},
-          new Completor[] {new SimpleCompletor(
+          new Completer[] {new StringsCompleter(
               formats.keySet().toArray(new String[0]))}),
       new ReflectiveCommandHandler(this, new String[] {"autocommit"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"commit"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"properties"},
-          new Completor[] {new FileNameCompletor()}),
+          new Completer[] {new FileNameCompleter()}),
       new ReflectiveCommandHandler(this, new String[] {"rollback"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"help", "?"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"set"},
-          getOpts().optionCompletors()),
+          getOpts().optionCompleters()),
       new ReflectiveCommandHandler(this, new String[] {"save"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"scan"},
@@ -245,7 +246,7 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[] {"call"},
           null),
       new ReflectiveCommandHandler(this, new String[] {"nullemptystring"},
-          new Completor[] {new BooleanCompletor()}),
+          new Completer[] {new BooleanCompleter()}),
   };
 
 
@@ -258,7 +259,7 @@ public class BeeLine implements Closeable {
 
   static {
     try {
-      Class.forName("jline.ConsoleReader");
+      Class.forName("jline.console.ConsoleReader");
     } catch (Throwable t) {
       throw new ExceptionInInitializerError("jline-missing");
     }
@@ -469,13 +470,14 @@ public class BeeLine implements Closeable {
     int status = beeLine.begin(args, inputStream);
 
     if (!Boolean.getBoolean(BeeLineOpts.PROPERTY_NAME_EXIT)) {
-      System.exit(status);
+        System.exit(status);
     }
   }
 
 
   public BeeLine() {
-    beeLineCommandCompletor = new BeeLineCommandCompletor(this);
+    beeLineCommandCompleter = new BeeLineCommandCompleter(BeeLineCommandCompleter.getCompleters
+        (this));
     reflector = new Reflector(this);
 
     // attempt to dynamically load signal handler
@@ -737,7 +739,7 @@ public class BeeLine implements Closeable {
       ConsoleReader reader = getConsoleReader(inputStream);
       return execute(reader, false);
     } finally {
-      close();
+        close();
     }
   }
 
@@ -792,14 +794,16 @@ public class BeeLine implements Closeable {
   public ConsoleReader getConsoleReader(InputStream inputStream) throws IOException {
     if (inputStream != null) {
       // ### NOTE: fix for sf.net bug 879425.
-      consoleReader = new ConsoleReader(inputStream, new PrintWriter(getOutputStream(), true));
+      consoleReader = new ConsoleReader(inputStream, getOutputStream());
     } else {
       consoleReader = new ConsoleReader();
     }
 
-    // setup history
-    ByteArrayInputStream historyBuffer = null;
+    //disable the expandEvents for the purpose of backward compatibility
+    consoleReader.setExpandEvents(false);
 
+    // setup history
+    ByteArrayOutputStream hist = null;
     if (new File(getOpts().getHistoryFile()).isFile()) {
       try {
         // save the current contents of the history buffer. This gets
@@ -808,13 +812,12 @@ public class BeeLine implements Closeable {
         // input before the output will cause the previous commands
         // to not be saved to the buffer.
         FileInputStream historyIn = new FileInputStream(getOpts().getHistoryFile());
-        ByteArrayOutputStream hist = new ByteArrayOutputStream();
+        hist = new ByteArrayOutputStream();
         int n;
         while ((n = historyIn.read()) != -1) {
           hist.write(n);
         }
         historyIn.close();
-        historyBuffer = new ByteArrayInputStream(hist.toByteArray());
       } catch (Exception e) {
         handleException(e);
       }
@@ -822,25 +825,46 @@ public class BeeLine implements Closeable {
 
     try {
       // now set the output for the history
-      PrintWriter historyOut = new PrintWriter(new FileWriter(getOpts().getHistoryFile()), true);
-      consoleReader.getHistory().setOutput(historyOut);
+      consoleReader.setHistory(new FileHistory(new File(getOpts().getHistoryFile())));
     } catch (Exception e) {
       handleException(e);
     }
 
     if (inputStream instanceof FileInputStream) {
-      // from script.. no need to load history and no need of completor, either
+      // from script.. no need to load history and no need of completer, either
       return consoleReader;
     }
     try {
       // now load in the previous history
-      if (historyBuffer != null) {
-        consoleReader.getHistory().load(historyBuffer);
+      if (hist != null) {
+        History h = consoleReader.getHistory();
+        if (h instanceof FileHistory) {
+          ((FileHistory) consoleReader.getHistory()).load(new ByteArrayInputStream(hist
+              .toByteArray()));
+        } else {
+          consoleReader.getHistory().add(hist.toString());
+        }
       }
     } catch (Exception e) {
-      handleException(e);
+        handleException(e);
     }
-    consoleReader.addCompletor(new BeeLineCompletor(this));
+
+    // add shutdown hook to flush the history to history file
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        @Override
+        public void run() {
+            History h = consoleReader.getHistory();
+            if (h instanceof FileHistory) {
+                try {
+                    ((FileHistory) h).flush();
+                } catch (IOException e) {
+                    error(e);
+                }
+            }
+        }
+    }));
+
+    consoleReader.addCompleter(new BeeLineCompleter(this));
     return consoleReader;
   }
 
@@ -1563,7 +1587,7 @@ public class BeeLine implements Closeable {
 
     if (!knownOnly) {
       classNames.addAll(Arrays.asList(
-          ClassNameCompletor.getClassNames()));
+          ClassNameCompleter.getClassNames()));
     }
 
     classNames.addAll(KNOWN_DRIVERS);
@@ -1782,8 +1806,8 @@ public class BeeLine implements Closeable {
     return connections;
   }
 
-  Completor getCommandCompletor() {
-    return beeLineCommandCompletor;
+  Completer getCommandCompletor() {
+    return beeLineCommandCompleter;
   }
 
   public boolean isExit() {

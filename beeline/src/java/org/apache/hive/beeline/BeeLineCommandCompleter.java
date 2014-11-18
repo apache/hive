@@ -21,31 +21,30 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import jline.ArgumentCompletor;
-import jline.Completor;
-import jline.MultiCompletor;
-import jline.NullCompletor;
-import jline.SimpleCompletor;
+import jline.console.completer.AggregateCompleter;
+import jline.console.completer.Completer;
+import jline.console.completer.NullCompleter;
+import jline.console.completer.StringsCompleter;
 
-class BeeLineCommandCompletor extends MultiCompletor {
-  private final BeeLine beeLine;
+class BeeLineCommandCompleter extends AggregateCompleter {
 
-  public BeeLineCommandCompletor(BeeLine beeLine) {
-    this.beeLine = beeLine;
-    List<ArgumentCompletor> completors = new LinkedList<ArgumentCompletor>();
+  public BeeLineCommandCompleter(List<Completer> completers) {
+    super(completers);
+  }
+
+  public static List<Completer> getCompleters(BeeLine beeLine){
+    List<Completer> completers = new LinkedList<Completer>();
 
     for (int i = 0; i < beeLine.commandHandlers.length; i++) {
       String[] cmds = beeLine.commandHandlers[i].getNames();
       for (int j = 0; cmds != null && j < cmds.length; j++) {
-        Completor[] comps = beeLine.commandHandlers[i].getParameterCompletors();
-        List<Completor> compl = new LinkedList<Completor>();
-        compl.add(new SimpleCompletor(BeeLine.COMMAND_PREFIX + cmds[j]));
-        compl.addAll(Arrays.asList(comps));
-        compl.add(new NullCompletor()); // last param no complete
-        completors.add(new ArgumentCompletor(
-            compl.toArray(new Completor[0])));
+        List<Completer> compl = new LinkedList<Completer>();
+        compl.add(new StringsCompleter(BeeLine.COMMAND_PREFIX + cmds[j]));
+        compl.addAll(Arrays.asList(beeLine.commandHandlers[i].getParameterCompleters()));
+        compl.add(new NullCompleter()); // last param no complete
+        completers.add(new AggregateCompleter(compl.toArray(new Completer[0])));
       }
     }
-    setCompletors(completors.toArray(new Completor[0]));
+    return completers;
   }
 }

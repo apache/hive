@@ -24,10 +24,10 @@ package org.apache.hive.beeline;
 
 import java.util.List;
 
-import jline.Completor;
-import jline.SimpleCompletor;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
-class TableNameCompletor implements Completor {
+class TableNameCompletor implements Completer {
   private final BeeLine beeLine;
 
   /**
@@ -41,7 +41,7 @@ class TableNameCompletor implements Completor {
     if (beeLine.getDatabaseConnection() == null) {
       return -1;
     }
-    return new SimpleCompletor(beeLine.getDatabaseConnection().getTableNames(true))
+    return new StringsCompleter(beeLine.getDatabaseConnection().getTableNames(true))
         .complete(buf, pos, cand);
   }
 }
