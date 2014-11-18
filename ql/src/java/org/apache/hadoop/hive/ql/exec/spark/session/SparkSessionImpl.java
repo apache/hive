@@ -18,12 +18,17 @@
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.spark.SparkClient;
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -31,10 +36,12 @@ import java.util.UUID;
  * SparkClient which is shared by all SparkSession instances.
  */
 public class SparkSessionImpl implements SparkSession {
+  private static final Log LOG = LogFactory.getLog(SparkSession.class);
+
   private HiveConf conf;
   private boolean isOpen;
   private final String sessionId;
-  private SparkClient sparkClient;
+  private HiveSparkClient hiveSparkClient;
 
   public SparkSessionImpl() {
     sessionId = makeSessionId();
@@ -49,8 +56,9 @@ public class SparkSessionImpl implements SparkSession {
   @Override
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
-    sparkClient = SparkClient.getInstance(driverContext.getCtx().getConf());
-    return sparkClient.execute(driverContext, sparkWork);
+    Configuration hiveConf = driverContext.getCtx().getConf();
+    hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(hiveConf);
+    return hiveSparkClient.execute(driverContext, sparkWork);
   }
 
   @Override
@@ -71,10 +79,14 @@ public class SparkSessionImpl implements SparkSession {
   @Override
   public void close() {
     isOpen = false;
-    if (sparkClient != null) {
-      sparkClient.close();
+    if (hiveSparkClient != null) {
+      try {
+        hiveSparkClient.close();
+      } catch (IOException e) {
+        LOG.error("Failed to close spark session (" + sessionId + ").", e);
+      }
     }
-    sparkClient = null;
+    hiveSparkClient = null;
   }
 
   public static String makeSessionId() {

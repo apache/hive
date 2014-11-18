@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 /**
  * Contains utilities methods used as part of Spark tasks
  */
@@ -40,5 +46,26 @@ public class SparkUtilities {
     BytesWritable copy = new BytesWritable();
     copy.set(bw);
     return copy;
+  }
+
+  public static URL getURL(String path) throws MalformedURLException {
+    if (path == null) {
+      return null;
+    }
+
+    URL url = null;
+    try {
+      URI uri = new URI(path);
+      if (uri.getScheme() != null) {
+        url = uri.toURL();
+      } else {
+        // if no file schema in path, we assume it's file on local fs.
+        url = new File(path).toURI().toURL();
+      }
+    } catch (URISyntaxException e) {
+      // do nothing here, just return null if input path is not a valid URI.
+    }
+
+    return url;
   }
 }

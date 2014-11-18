@@ -15,38 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.spark.status;
+package org.apache.hadoop.hive.ql.exec.spark;
 
-public class SparkJobRef {
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
 
-  private String jobId;
+import java.io.Closeable;
+import java.io.Serializable;
 
-  private SparkJobStatus sparkJobStatus;
-
-  public SparkJobRef() {}
-
-  public SparkJobRef(String jobId) {
-    this.jobId = jobId;
-  }
-
-  public SparkJobRef(String jobId, SparkJobStatus sparkJobStatus) {
-    this.jobId = jobId;
-    this.sparkJobStatus = sparkJobStatus;
-  }
-
-  public String getJobId() {
-    return jobId;
-  }
-
-  public void setJobId(String jobId) {
-    this.jobId = jobId;
-  }
-
-  public SparkJobStatus getSparkJobStatus() {
-    return sparkJobStatus;
-  }
-
-  public void setSparkJobStatus(SparkJobStatus sparkJobStatus) {
-    this.sparkJobStatus = sparkJobStatus;
-  }
+public interface HiveSparkClient extends Serializable, Closeable {
+  /**
+   * HiveSparkClient should generate Spark RDD graph by given sparkWork and driverContext,
+   * and submit RDD graph to Spark cluster.
+   * @param driverContext
+   * @param sparkWork
+   * @return SparkJobRef could be used to track spark job progress and metrics.
+   * @throws Exception
+   */
+  public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception;
 }

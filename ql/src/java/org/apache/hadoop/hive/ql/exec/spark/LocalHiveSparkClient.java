@@ -18,18 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,30 +43,30 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
 import scala.Tuple2;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-public class SparkClient implements Serializable {
+/**
+ * LocalSparkClient submit Spark job in local driver, it's responsible for build spark client
+ * environment and execute spark work.
+ */
+public class LocalHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
   protected static transient final Log LOG = LogFactory
-      .getLog(SparkClient.class);
+      .getLog(LocalHiveSparkClient.class);
 
   private static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
-  private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
-  private static final String SPARK_DEFAULT_MASTER = "local";
-  private static final String SAPRK_DEFAULT_APP_NAME = "Hive on Spark";
+  private static LocalHiveSparkClient client;
 
-  private static SparkClient client;
-
-  public static synchronized SparkClient getInstance(Configuration hiveConf) {
+  public static synchronized LocalHiveSparkClient getInstance(SparkConf sparkConf) {
     if (client == null) {
-      client = new SparkClient(hiveConf);
+      client = new LocalHiveSparkClient(sparkConf);
     }
     return client;
   }
@@ -86,21 +78,19 @@ public class SparkClient implements Serializable {
    * @return a tuple, the first element is the shuffle memory per task in bytes,
    *  the second element is the number of total cores usable by the client
    */
-  public static Tuple2<Long, Integer>
-      getMemoryAndCores(Configuration hiveConf) {
-    SparkClient client = getInstance(hiveConf);
-    SparkContext sc = client.sc.sc();
-    SparkConf sparkConf = sc.conf();
-    int cores = sparkConf.getInt("spark.executor.cores", sc.defaultParallelism());
+  public Tuple2<Long, Integer> getMemoryAndCores() {
+    SparkContext sparkContext = sc.sc();
+    SparkConf sparkConf = sparkContext.conf();
+    int cores = sparkConf.getInt("spark.executor.cores", 1);
     double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
     // sc.executorMemory() is in MB, need to convert to bytes
     long memoryPerTask =
-      (long) (sc.executorMemory() * memoryFraction * 1024 * 1024 / cores);
-    int executors = sc.getExecutorMemoryStatus().size();
+      (long) (sparkContext.executorMemory() * memoryFraction * 1024 * 1024 / cores);
+    int executors = sparkContext.getExecutorMemoryStatus().size();
     int totalCores = executors * cores;
     LOG.info("Spark cluster current has executors: " + executors
       + ", cores per executor: " + cores + ", memory per executor: "
-      + sc.executorMemory() + "M, shuffle memoryFraction: " + memoryFraction);
+      + sparkContext.executorMemory() + "M, shuffle memoryFraction: " + memoryFraction);
     return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTask),
       Integer.valueOf(totalCores));
   }
@@ -113,71 +103,13 @@ public class SparkClient implements Serializable {
 
   private JobMetricsListener jobMetricsListener;
 
-  private SparkClient(Configuration hiveConf) {
-    SparkConf sparkConf = initiateSparkConf(hiveConf);
+  private LocalHiveSparkClient(SparkConf sparkConf) {
     sc = new JavaSparkContext(sparkConf);
     jobMetricsListener = new JobMetricsListener();
     sc.sc().listenerBus().addListener(jobMetricsListener);
   }
 
-  private SparkConf initiateSparkConf(Configuration hiveConf) {
-    SparkConf sparkConf = new SparkConf();
-
-    // set default spark configurations.
-    sparkConf.set("spark.master", SPARK_DEFAULT_MASTER);
-    sparkConf.set("spark.app.name", SAPRK_DEFAULT_APP_NAME);
-    sparkConf.set("spark.serializer",
-        "org.apache.spark.serializer.KryoSerializer");
-    sparkConf.set("spark.default.parallelism", "1");
-    // load properties from spark-defaults.conf.
-    InputStream inputStream = null;
-    try {
-      inputStream = this.getClass().getClassLoader()
-          .getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
-      if (inputStream != null) {
-        LOG.info("loading spark properties from:" + SPARK_DEFAULT_CONF_FILE);
-        Properties properties = new Properties();
-        properties.load(inputStream);
-        for (String propertyName : properties.stringPropertyNames()) {
-          if (propertyName.startsWith("spark")) {
-            String value = properties.getProperty(propertyName);
-            sparkConf.set(propertyName, properties.getProperty(propertyName));
-            LOG.info(String.format(
-                "load spark configuration from %s (%s -> %s).",
-                SPARK_DEFAULT_CONF_FILE, propertyName, value));
-          }
-        }
-      }
-    } catch (IOException e) {
-      LOG.info("Failed to open spark configuration file:"
-          + SPARK_DEFAULT_CONF_FILE, e);
-    } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          LOG.debug("Failed to close inputstream.", e);
-        }
-      }
-    }
-
-    // load properties from hive configurations.
-    Iterator<Map.Entry<String, String>> iterator = hiveConf.iterator();
-    while (iterator.hasNext()) {
-      Map.Entry<String, String> entry = iterator.next();
-      String propertyName = entry.getKey();
-      if (propertyName.startsWith("spark")) {
-        String value = entry.getValue();
-        sparkConf.set(propertyName, value);
-        LOG.info(String.format(
-            "load spark configuration from hive configuration (%s -> %s).",
-            propertyName, value));
-      }
-    }
-
-    return sparkConf;
-  }
-
+  @Override
   public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Context ctx = driverContext.getCtx();
     HiveConf hiveConf = (HiveConf) ctx.getConf();
@@ -192,11 +124,10 @@ public class SparkClient implements Serializable {
 
     SparkCounters sparkCounters = new SparkCounters(sc, hiveConf);
     Map<String, List<String>> prefixes = sparkWork.getRequiredCounterPrefix();
-    // register spark counters before submit spark job.
     if (prefixes != null) {
       for (String group : prefixes.keySet()) {
-        for (String counter : prefixes.get(group)) {
-          sparkCounters.createCounter(group, counter);
+        for (String counterName : prefixes.get(group)) {
+          sparkCounters.createCounter(group, counterName);
         }
       }
     }
@@ -211,12 +142,11 @@ public class SparkClient implements Serializable {
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
     // We use Spark RDD async action to submit job as it's the only way to get jobId now.
     JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-    // As we always use foreach action to submit RDD graph, it would only trigger one job.
+    // As we always use foreach action to submit RDD graph, it would only trigger on job.
     int jobId = future.jobIds().get(0);
     SimpleSparkJobStatus sparkJobStatus =
-        new SimpleSparkJobStatus(sc, jobId, jobMetricsListener,
-            sparkCounters, future);
-    return new SparkJobRef(jobId, sparkJobStatus);
+      new SimpleSparkJobStatus(sc, jobId, jobMetricsListener, sparkCounters, future);
+    return new SparkJobRef(Integer.toString(jobId), sparkJobStatus);
   }
 
   /**
@@ -275,7 +205,8 @@ public class SparkClient implements Serializable {
       }
     }
   }
-  
+
+  @Override
   public void close() {
     sc.stop();
     client = null;
