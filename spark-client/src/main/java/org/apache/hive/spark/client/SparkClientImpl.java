@@ -190,7 +190,7 @@ class SparkClientImpl implements SparkClient {
         LOG.info("No spark.home provided, calling SparkSubmit directly.");
         argv.add(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath());
 
-        if (master.startsWith("local") || master.startsWith("mesos") || master.endsWith("-client")) {
+        if (master.startsWith("local") || master.startsWith("mesos") || master.endsWith("-client") || master.startsWith("spark")) {
           String mem = conf.get("spark.driver.memory");
           if (mem != null) {
             argv.add("-Xms" + mem);

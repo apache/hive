@@ -110,15 +110,17 @@ public class SparkTask extends Task<SparkWork> {
 
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
-      sparkCounters = sparkJobStatus.getCounter();
-      SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
-      monitor.startMonitor();
-      SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
-      if (LOG.isInfoEnabled() && sparkStatistics != null) {
-        LOG.info(String.format("=====Spark Job[%d] statistics=====", jobRef.getJobId()));
-        logSparkStatistic(sparkStatistics);
+      if (sparkJobStatus != null) {
+        sparkCounters = sparkJobStatus.getCounter();
+        SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
+        monitor.startMonitor();
+        SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
+        if (LOG.isInfoEnabled() && sparkStatistics != null) {
+          LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
+          logSparkStatistic(sparkStatistics);
+        }
+        sparkJobStatus.cleanup();
       }
-      sparkJobStatus.cleanup();
       rc = 0;
     } catch (Exception e) {
       LOG.error("Failed to execute spark task.", e);

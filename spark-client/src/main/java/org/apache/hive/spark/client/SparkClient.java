@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
  * Defines the API for the Spark remote client.
  */
 @InterfaceAudience.Private
-public interface SparkClient {
+public interface SparkClient extends Serializable {
 
   /**
    * Submits a job for asynchronous execution.
