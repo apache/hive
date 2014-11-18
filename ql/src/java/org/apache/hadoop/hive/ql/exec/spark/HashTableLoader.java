@@ -65,7 +65,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   @Override
   public void load(
       MapJoinTableContainer[] mapJoinTables,
-      MapJoinTableContainerSerDe[] mapJoinTableSerdes) throws HiveException {
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage) throws HiveException {
 
     String currentInputPath = context.getCurrentInputPath().toString();
     LOG.info("******* Load from HashTable for input file: " + currentInputPath);
