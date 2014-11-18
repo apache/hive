@@ -308,7 +308,7 @@ public class LlapInputFormat<T>
         } else {
           c.reset();
           c.noNulls = !hasNulls;
-          currentVectorSlice.copyDecimals(c.vector, hasNulls ? c.isNull : null, 0);
+          // TODO#: currentVectorSlice.copyDecimals(c.vector, hasNulls ? c.isNull : null, 0);
           if (hasNulls) {
             NullUtil.setNullDataEntriesDecimal(c, false, null, rowCount);
           }

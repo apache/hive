@@ -76,7 +76,7 @@ public class DecimalColumnVector extends ColumnVector {
   public void fill(Decimal128 value) {
     noNulls = true;
     isRepeating = true;
-    vector[0] = value;
+    // TODO#: vector[0] = value;
   }
 
   // Fill the column vector with nulls
