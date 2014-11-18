@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.*;
 
@@ -1104,7 +1105,7 @@ public class TestTxnHandler {
     conn.commit();
     txnHandler.closeDbConn(conn);
 
-    final MetaStoreThread.BooleanPointer sawDeadlock = new MetaStoreThread.BooleanPointer();
+    final AtomicBoolean sawDeadlock = new AtomicBoolean();
 
     final Connection conn1 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
     final Connection conn2 = txnHandler.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
@@ -1131,7 +1132,7 @@ public class TestTxnHandler {
                   LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
                       "exception is " + e.getClass().getName() + " msg is <" + e
                       .getMessage() + ">");
-                  sawDeadlock.boolVal = true;
+                  sawDeadlock.set(true);
                 }
               }
               conn1.rollback();
@@ -1161,7 +1162,7 @@ public class TestTxnHandler {
                   LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
                       "exception is " + e.getClass().getName() + " msg is <" + e
                       .getMessage() + ">");
-                  sawDeadlock.boolVal = true;
+                  sawDeadlock.set(true);
                 }
               }
               conn2.rollback();
@@ -1175,9 +1176,9 @@ public class TestTxnHandler {
         t2.start();
         t1.join();
         t2.join();
-        if (sawDeadlock.boolVal) break;
+        if (sawDeadlock.get()) break;
       }
-      assertTrue(sawDeadlock.boolVal);
+      assertTrue(sawDeadlock.get());
     } finally {
       conn1.rollback();
       txnHandler.closeDbConn(conn1);

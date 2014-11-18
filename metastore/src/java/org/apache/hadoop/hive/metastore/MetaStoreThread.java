@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * A thread that runs in the metastore, separate from the threads in the thrift service.
  */
@@ -49,21 +51,12 @@ public interface MetaStoreThread {
    *               thread should then assure that the loop has been gone completely through at
    *               least once.
    */
-  void init(BooleanPointer stop, BooleanPointer looped) throws MetaException;
+  void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException;
 
   /**
    * Run the thread in the background.  This must not be called until
-   * {@link #init(org.apache.hadoop.hive.metastore.MetaStoreThread.BooleanPointer)} has
+   * {@link ##init(java.util.concurrent.atomic.AtomicBoolean, java.util.concurrent.atomic.AtomicBoolean)} has
    * been called.
    */
   void start();
-
-  class BooleanPointer {
-    public boolean boolVal;
-
-    public BooleanPointer() {
-      boolVal = false;
-    }
-  }
-
 }

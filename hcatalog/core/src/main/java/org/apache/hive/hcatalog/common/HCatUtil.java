@@ -84,8 +84,9 @@ public class HCatUtil {
   private static volatile HiveClientCache hiveClientCache;
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
-    if (j.getConfiguration().get("mapred.task.id", "").equals("") &&
-        !("true".equals(j.getConfiguration().get("pig.illustrating")))) {
+    if (j.getConfiguration().get("pig.job.converted.fetch", "").equals("") &&
+          j.getConfiguration().get("mapred.task.id", "").equals("") &&
+          !("true".equals(j.getConfiguration().get("pig.illustrating")))) {
       return false;
     }
     return true;

@@ -109,6 +109,7 @@ TOK_DATE;
 TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
+TOK_TIMESTAMPLITERAL;
 TOK_STRING;
 TOK_CHAR;
 TOK_VARCHAR;
@@ -340,6 +341,8 @@ TOK_VIRTUAL_TABLE;
 TOK_VIRTUAL_TABREF;
 TOK_ANONYMOUS;
 TOK_COL_NAME;
+TOK_URI_TYPE;
+TOK_SERVER_TYPE;
 }
 
 
@@ -1485,11 +1488,15 @@ privilegeObject
 privObject
     : (KW_DATABASE|KW_SCHEMA) identifier -> ^(TOK_DB_TYPE identifier)
     | KW_TABLE? tableName partitionSpec? -> ^(TOK_TABLE_TYPE tableName partitionSpec?)
+    | KW_URI (path=StringLiteral) ->  ^(TOK_URI_TYPE $path)
+    | KW_SERVER identifier -> ^(TOK_SERVER_TYPE identifier)
     ;
 
 privObjectCols
     : (KW_DATABASE|KW_SCHEMA) identifier -> ^(TOK_DB_TYPE identifier)
     | KW_TABLE? tableName (LPAREN cols=columnNameList RPAREN)? partitionSpec? -> ^(TOK_TABLE_TYPE tableName $cols? partitionSpec?)
+    | KW_URI (path=StringLiteral) ->  ^(TOK_URI_TYPE $path)
+    | KW_SERVER identifier -> ^(TOK_SERVER_TYPE identifier)
     ;
 
 privilegeList

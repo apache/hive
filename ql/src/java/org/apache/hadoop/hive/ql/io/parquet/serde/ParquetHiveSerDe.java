@@ -63,6 +63,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import parquet.hadoop.ParquetOutputFormat;
+import parquet.hadoop.ParquetWriter;
 import parquet.io.api.Binary;
 
 /**
@@ -70,12 +72,17 @@ import parquet.io.api.Binary;
  * A ParquetHiveSerDe for Hive (with the deprecated package mapred)
  *
  */
-@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES})
+@SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+        ParquetOutputFormat.COMPRESSION})
 public class ParquetHiveSerDe extends AbstractSerDe {
   public static final Text MAP_KEY = new Text("key");
   public static final Text MAP_VALUE = new Text("value");
   public static final Text MAP = new Text("map");
   public static final Text ARRAY = new Text("bag");
+
+  // default compression type for parquet output format
+  private static final String DEFAULTCOMPRESSION =
+          ParquetWriter.DEFAULT_COMPRESSION_CODEC_NAME.name();
 
   // Map precision to the number bytes needed for binary conversion.
   public static final int PRECISION_TO_BYTE_COUNT[] = new int[38];
@@ -99,6 +106,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   private LAST_OPERATION status;
   private long serializedSize;
   private long deserializedSize;
+  private String compressionType;
 
   @Override
   public final void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
@@ -109,6 +117,9 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     // Get column names and sort order
     final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+
+    // Get compression properties
+    compressionType = tbl.getProperty(ParquetOutputFormat.COMPRESSION, DEFAULTCOMPRESSION);
 
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();

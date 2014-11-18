@@ -21,27 +21,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.TreeSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -66,9 +45,9 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -103,6 +82,27 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.TreeSet;
 
 public class TestInputOutputFormat {
 
@@ -1032,6 +1032,24 @@ public class TestInputOutputFormat {
     reader.close();
   }
 
+  static class SimpleRow implements Writable {
+    Text z;
+
+    public SimpleRow(Text t) {
+      this.z = t;
+    }
+
+    @Override
+    public void write(DataOutput dataOutput) throws IOException {
+      throw new UnsupportedOperationException("unsupported");
+    }
+
+    @Override
+    public void readFields(DataInput dataInput) throws IOException {
+      throw new UnsupportedOperationException("unsupported");
+    }
+  }
+
   static class NestedRow implements Writable {
     int z;
     MyRow r;
@@ -1620,14 +1638,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(580, split.getLength());
+    assertEquals(582, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(601, split.getLength());
+    assertEquals(603, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -1635,7 +1653,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(225, combineSplit.getLength(bucket));
+      assertEquals(227, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);
@@ -1685,4 +1703,89 @@ public class TestInputOutputFormat {
     assertEquals("cost", leaves.get(0).getColumnName());
     assertEquals(PredicateLeaf.Operator.IS_NULL, leaves.get(0).getOperator());
   }
+
+  @Test
+  @SuppressWarnings("unchecked,deprecation")
+  public void testSplitElimination() throws Exception {
+    Properties properties = new Properties();
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(NestedRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    SerDe serde = new OrcSerde();
+    OutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    conf.setInt("mapred.max.split.size", 50);
+    RecordWriter writer =
+        outFormat.getRecordWriter(fs, conf, testFilePath.toString(),
+            Reporter.NULL);
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(1,2,3), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(4,5,6), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new NestedRow(7,8,9), inspector));
+    writer.close(Reporter.NULL);
+    serde = new OrcSerde();
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+            .startAnd()
+            .lessThan("z", new Integer(0))
+            .end()
+            .build();
+    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("hive.io.file.readcolumn.names", "z,r");
+    properties.setProperty("columns", "z,r");
+    properties.setProperty("columns.types", "int:struct<x:int,y:int>");
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    inspector = (StructObjectInspector) serde.getObjectInspector();
+    InputFormat<?,?> in = new OrcInputFormat();
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    InputSplit[] splits = in.getSplits(conf, 1);
+    assertEquals(0, splits.length);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked,deprecation")
+  public void testSplitEliminationNullStats() throws Exception {
+    Properties properties = new Properties();
+    StructObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = (StructObjectInspector)
+          ObjectInspectorFactory.getReflectionObjectInspector(SimpleRow.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    SerDe serde = new OrcSerde();
+    OutputFormat<?, ?> outFormat = new OrcOutputFormat();
+    conf.setInt("mapred.max.split.size", 50);
+    RecordWriter writer =
+        outFormat.getRecordWriter(fs, conf, testFilePath.toString(),
+            Reporter.NULL);
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.write(NullWritable.get(),
+        serde.serialize(new SimpleRow(null), inspector));
+    writer.close(Reporter.NULL);
+    serde = new OrcSerde();
+    SearchArgument sarg =
+        SearchArgumentFactory.newBuilder()
+            .startAnd()
+            .lessThan("z", new String("foo"))
+            .end()
+            .build();
+    conf.set("sarg.pushdown", sarg.toKryo());
+    conf.set("hive.io.file.readcolumn.names", "z");
+    properties.setProperty("columns", "z");
+    properties.setProperty("columns.types", "string");
+    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    inspector = (StructObjectInspector) serde.getObjectInspector();
+    InputFormat<?,?> in = new OrcInputFormat();
+    FileInputFormat.setInputPaths(conf, testFilePath.toString());
+    InputSplit[] splits = in.getSplits(conf, 1);
+    assertEquals(0, splits.length);
+  }
+
 }

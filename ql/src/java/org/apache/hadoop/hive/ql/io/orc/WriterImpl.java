@@ -2230,7 +2230,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         .setMetadataLength(metadataLength)
         .setMagic(OrcFile.MAGIC)
         .addVersion(version.getMajor())
-        .addVersion(version.getMinor());
+        .addVersion(version.getMinor())
+        .setWriterVersion(OrcFile.WriterVersion.HIVE_8732.getId());
     if (compress != CompressionKind.NONE) {
       builder.setCompressionBlockSize(bufferSize);
     }

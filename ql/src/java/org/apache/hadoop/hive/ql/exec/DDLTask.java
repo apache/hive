@@ -741,8 +741,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Collections.sort(entries);
     StringBuilder sb = new StringBuilder();
     for(String entry : entries){
-      sb.append(entry);
-      sb.append((char)terminator);
+      appendNonNull(sb, entry, true);
     }
     writeToFile(sb.toString(), resFile);
   }

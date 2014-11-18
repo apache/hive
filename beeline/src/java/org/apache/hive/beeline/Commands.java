@@ -725,7 +725,7 @@ public class Commands {
 
         String extra = beeLine.getConsoleReader().readLine(prompt.toString());
         if (!beeLine.isComment(extra)) {
-          line += " " + extra;
+          line += "\n" + extra;
         }
       }
     } catch (Exception e) {

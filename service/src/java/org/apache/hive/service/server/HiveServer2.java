@@ -250,10 +250,10 @@ public class HiveServer2 extends CompositeService {
   }
 
   private String getServerInstanceURI(HiveConf hiveConf) throws Exception {
-    if ((thriftCLIService == null) || (thriftCLIService.getServerAddress() == null)) {
+    if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
-    return thriftCLIService.getServerAddress().getHostAddress() + ":"
+    return thriftCLIService.getServerIPAddress().getHostName() + ":"
         + thriftCLIService.getPortNumber();
   }
 

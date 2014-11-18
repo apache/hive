@@ -43,8 +43,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[Order(col:a, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: alter index t1_index on t1 rebuild
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@t1

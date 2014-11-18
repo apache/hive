@@ -68,10 +68,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.service.HiveClient;
-import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.thrift.TException;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -150,50 +147,7 @@ public class CliDriver {
             stringifyException(e));
         ret = 1;
       }
-    } else if (ss.isRemoteMode()) { // remote mode -- connecting to remote hive server
-      HiveClient client = ss.getClient();
-      PrintStream out = ss.out;
-      PrintStream err = ss.err;
-
-      try {
-        client.execute(cmd_trimmed);
-        List<String> results;
-        do {
-          results = client.fetchN(LINES_TO_FETCH);
-          for (String line : results) {
-            out.println(line);
-          }
-        } while (results.size() == LINES_TO_FETCH);
-      } catch (HiveServerException e) {
-        ret = e.getErrorCode();
-        if (ret != 0) { // OK if ret == 0 -- reached the EOF
-          String errMsg = e.getMessage();
-          if (errMsg == null) {
-            errMsg = e.toString();
-          }
-          ret = e.getErrorCode();
-          err.println("[Hive Error]: " + errMsg);
-        }
-      } catch (TException e) {
-        String errMsg = e.getMessage();
-        if (errMsg == null) {
-          errMsg = e.toString();
-        }
-        ret = -10002;
-        err.println("[Thrift Error]: " + errMsg);
-      } finally {
-        try {
-          client.clean();
-        } catch (TException e) {
-          String errMsg = e.getMessage();
-          if (errMsg == null) {
-            errMsg = e.toString();
-          }
-          err.println("[Thrift Error]: Hive server is not cleaned due to thrift exception: "
-              + errMsg);
-        }
-      }
-    } else { // local mode
+    }  else { // local mode
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
         ret = processLocalCmd(cmd, proc, ss);
@@ -694,31 +648,6 @@ public class CliDriver {
    */
   private  int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
       throws Exception {
-
-    // connect to Hive Server
-    if (ss.getHost() != null) {
-      ss.connect();
-      if (ss.isRemoteMode()) {
-        prompt = "[" + ss.host + ':' + ss.port + "] " + prompt;
-        char[] spaces = new char[prompt.length()];
-        Arrays.fill(spaces, ' ');
-        prompt2 = new String(spaces);
-      }
-    }
-
-    // CLI remote mode is a thin client: only load auxJars in local mode
-    if (!ss.isRemoteMode()) {
-      // hadoop-20 and above - we need to augment classpath using hiveconf
-      // components
-      // see also: code in ExecDriver.java
-      ClassLoader loader = conf.getClassLoader();
-      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-      if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
-      }
-      conf.setClassLoader(loader);
-      Thread.currentThread().setContextClassLoader(loader);
-    }
 
     CliDriver cli = new CliDriver();
     cli.setHiveVariables(oproc.getHiveVariables());

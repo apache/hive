@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -748,8 +749,9 @@ public class Hive {
         throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
       }
 
-      org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().deepCopy();
-      SerDeInfo serdeInfo = storageDescriptor.getSerdeInfo();
+      SerDeInfo serdeInfo = new SerDeInfo();
+      serdeInfo.setName(indexTblName);
+
       if(serde != null) {
         serdeInfo.setSerializationLib(serde);
       } else {
@@ -762,6 +764,7 @@ public class Hive {
         }
       }
 
+      serdeInfo.setParameters(new HashMap<String, String>());
       if (fieldDelim != null) {
         serdeInfo.getParameters().put(FIELD_DELIM, fieldDelim);
         serdeInfo.getParameters().put(SERIALIZATION_FORMAT, fieldDelim);
@@ -788,18 +791,8 @@ public class Hive {
         }
       }
 
-      storageDescriptor.setLocation(null);
-      if (location != null) {
-        storageDescriptor.setLocation(location);
-      }
-      storageDescriptor.setInputFormat(inputFormat);
-      storageDescriptor.setOutputFormat(outputFormat);
-
-      Map<String, String> params = new HashMap<String,String>();
-
       List<FieldSchema> indexTblCols = new ArrayList<FieldSchema>();
       List<Order> sortCols = new ArrayList<Order>();
-      storageDescriptor.setBucketCols(null);
       int k = 0;
       Table metaBaseTbl = new Table(baseTbl);
       for (int i = 0; i < metaBaseTbl.getCols().size(); i++) {
@@ -814,9 +807,6 @@ public class Hive {
         throw new RuntimeException(
             "Check the index columns, they should appear in the table being indexed.");
       }
-
-      storageDescriptor.setCols(indexTblCols);
-      storageDescriptor.setSortCols(sortCols);
 
       int time = (int) (System.currentTimeMillis() / 1000);
       org.apache.hadoop.hive.metastore.api.Table tt = null;
@@ -851,8 +841,21 @@ public class Hive {
 
       String tdname = Utilities.getDatabaseName(tableName);
       String ttname = Utilities.getTableName(tableName);
+
+      StorageDescriptor indexSd = new StorageDescriptor(
+          indexTblCols,
+          location,
+          inputFormat,
+          outputFormat,
+          false/*compressed - not used*/,
+          -1/*numBuckets - default is -1 when the table has no buckets*/,
+          serdeInfo,
+          null/*bucketCols*/,
+          sortCols,
+          null/*parameters*/);
+
       Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
-          storageDescriptor, params, deferredRebuild);
+          indexSd, new HashMap<String,String>(), deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
       }

@@ -19,6 +19,7 @@ insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc
 set hive.exec.orc.write.format=0.11;
 insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
 insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
+insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
 
 -- 5 files total
 analyze table orc_merge5b compute statistics noscan;

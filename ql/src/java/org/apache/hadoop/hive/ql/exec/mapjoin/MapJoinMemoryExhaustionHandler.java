@@ -55,22 +55,30 @@ public class MapJoinMemoryExhaustionHandler {
     this.console = console;
     this.maxMemoryUsage = maxMemoryUsage;
     this.memoryMXBean = ManagementFactory.getMemoryMXBean();
-    long maxHeapSize = memoryMXBean.getHeapMemoryUsage().getMax();
+    this.maxHeapSize = getMaxHeapSize(memoryMXBean);
+    percentageNumberFormat = NumberFormat.getInstance();
+    percentageNumberFormat.setMinimumFractionDigits(2);
+    LOG.info("JVM Max Heap Size: " + this.maxHeapSize);
+  }
+
+  public static long getMaxHeapSize() {
+    return getMaxHeapSize(ManagementFactory.getMemoryMXBean());
+  }
+
+  private static long getMaxHeapSize(MemoryMXBean bean) {
+    long maxHeapSize = bean.getHeapMemoryUsage().getMax();
     /*
      * According to the javadoc, getMax() can return -1. In this case
      * default to 200MB. This will probably never actually happen.
      */
     if(maxHeapSize == -1) {
-      this.maxHeapSize = 200L * 1024L * 1024L;
       LOG.warn("MemoryMXBean.getHeapMemoryUsage().getMax() returned -1, " +
           "defaulting maxHeapSize to 200MB");
-    } else {
-      this.maxHeapSize = maxHeapSize;
+      return 200L * 1024L * 1024L;
     }
-    percentageNumberFormat = NumberFormat.getInstance();
-    percentageNumberFormat.setMinimumFractionDigits(2);
-    LOG.info("JVM Max Heap Size: " + this.maxHeapSize);
+    return maxHeapSize;
   }
+
   /**
    * Throws MapJoinMemoryExhaustionException when the JVM has consumed the
    * configured percentage of memory. The arguments are used simply for the error
