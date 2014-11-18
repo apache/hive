@@ -69,7 +69,7 @@ public class Cleaner extends CompactorThread {
       // This is solely for testing.  It checks if the test has set the looped value to false,
       // and if so remembers that and then sets it to true at the end.  We have to check here
       // first to make sure we go through a complete iteration of the loop before resetting it.
-      boolean setLooped = !looped.boolVal;
+      boolean setLooped = !looped.get();
       // Make sure nothing escapes this run method and kills the metastore at large,
       // so wrap it in a big catch Throwable statement.
       try {
@@ -137,16 +137,16 @@ public class Cleaner extends CompactorThread {
 
         // Now, go back to bed until it's time to do this again
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime >= cleanerCheckInterval || stop.boolVal)  continue;
+        if (elapsedTime >= cleanerCheckInterval || stop.get())  continue;
         else Thread.sleep(cleanerCheckInterval - elapsedTime);
       } catch (Throwable t) {
         LOG.error("Caught an exception in the main loop of compactor cleaner, " +
             StringUtils.stringifyException(t));
       }
       if (setLooped) {
-        looped.boolVal = true;
+        looped.set(true);
       }
-    } while (!stop.boolVal);
+    } while (!stop.get());
   }
 
   private Set<Long> findRelatedLocks(CompactionInfo ci, ShowLocksResponse locksResponse) {

@@ -21,6 +21,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -32,6 +34,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * tasks. Every method in this class may return null, indicating no task
  * needs to be executed or can throw a SemanticException.
  */
+@LimitedPrivate(value = { "Apache Hive, Apache Sentry (incubating)" })
+@Evolving
 public interface HiveAuthorizationTaskFactory {
   public Task<? extends Serializable> createCreateRoleTask(ASTNode node, HashSet<ReadEntity> inputs,
       HashSet<WriteEntity> outputs) throws SemanticException;

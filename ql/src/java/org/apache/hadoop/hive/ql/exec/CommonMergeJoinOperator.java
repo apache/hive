@@ -438,8 +438,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       WritableComparable key_1 = (WritableComparable) k1.get(i);
       WritableComparable key_2 = (WritableComparable) k2.get(i);
       if (key_1 == null && key_2 == null) {
-        return nullsafes != null && nullsafes[i] ? 0 : -1; // just return k1 is
-                                                           // smaller than k2
+        if (nullsafes != null && nullsafes[i]) {
+          continue;
+        } else {
+          return -1;
+        }
       } else if (key_1 == null) {
         return -1;
       } else if (key_2 == null) {

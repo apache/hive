@@ -1,4 +1,5 @@
 Structure for TestFileDump.testDump.orc
+File Version: 0.12 with HIVE_8732
 Rows: 21000
 Compression: ZLIB
 Compression size: 10000
@@ -187,6 +188,6 @@ Stripes:
     Row group index column 3:
       Entry 0: count: 1000 min: Darkness, max: worst positions: 0,0,0
 
-File length: 270760 bytes
+File length: 270762 bytes
 Padding length: 0 bytes
 Padding ratio: 0%

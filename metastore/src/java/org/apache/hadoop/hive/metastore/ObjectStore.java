@@ -132,6 +132,8 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.util.StringUtils;
@@ -265,7 +267,7 @@ public class ObjectStore implements RawStore, Configurable {
     isInitialized = pm != null;
     if (isInitialized) {
       expressionProxy = createExpressionProxy(hiveConf);
-      directSql = new MetaStoreDirectSql(pm);
+      directSql = new MetaStoreDirectSql(pm, hiveConf);
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
         " created in the thread with id: " + Thread.currentThread().getId());
@@ -1999,7 +2001,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+        return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
       }
       @Override
       protected List<Partition> getJdoResult(
@@ -2052,7 +2054,7 @@ public class ObjectStore implements RawStore, Configurable {
           List<String> partNames = new LinkedList<String>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
               ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
-          result = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+          result = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
         }
         return result;
       }
@@ -2136,14 +2138,16 @@ public class ObjectStore implements RawStore, Configurable {
     result.addAll(getPartitionNamesNoTxn(
         table.getDbName(), table.getTableName(), maxParts));
     List<String> columnNames = new ArrayList<String>();
+    List<PrimitiveTypeInfo> typeInfos = new ArrayList<PrimitiveTypeInfo>();
     for (FieldSchema fs : table.getPartitionKeys()) {
       columnNames.add(fs.getName());
+      typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
       defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     }
     return expressionProxy.filterPartitionsByExpr(
-        columnNames, expr, defaultPartName, result);
+        columnNames, typeInfos, expr, defaultPartName, result);
   }
 
   /**

@@ -67,7 +67,7 @@ NULL
 -0.333
 -0.33
 -0.3
-0.00000
+0
 0
 0
 0.01
@@ -78,8 +78,8 @@ NULL
 0.33
 0.333
 1
-1.0
-1.00000
+1
+1
 1.12
 1.122
 2
@@ -87,11 +87,11 @@ NULL
 3.14
 3.14
 3.14
-3.140
+3.14
 10
 20
 100
-124.00
+124
 125.2
 200
 PREHOOK: query: SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key
@@ -110,7 +110,7 @@ NULL
 -0.333
 -0.33
 -0.3
-0.00000
+0
 0.01
 0.02
 0.1
@@ -126,7 +126,7 @@ NULL
 10
 20
 100
-124.00
+124
 125.2
 200
 PREHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
@@ -185,7 +185,7 @@ POSTHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
 NULL
 NULL
-0.000
+0
 0
 100
 10
@@ -204,7 +204,7 @@ NULL
 -0.3
 -0.33
 -0.333
-1.0
+1
 2
 3.14
 -1.12
@@ -212,13 +212,13 @@ NULL
 -1.122
 1.12
 1.122
-124.00
+124
 125.2
 NULL
 3.14
 3.14
-3.140
-1.000
+3.14
+1
 NULL
 NULL
 PREHOOK: query: DROP TABLE DECIMAL_5_txt

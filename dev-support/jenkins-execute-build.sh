@@ -19,15 +19,34 @@ test -n "$BRANCH" || fail "BRANCH must be specified"
 test -n "$API_ENDPOINT" || fail "API_ENDPOINT must be specified"
 test -n "$LOG_ENDPOINT" || fail "LOG_ENDPOINT must be specified"
 test -n "$API_PASSWORD" || fail "API_PASSWORD must be specified"
-export JIRA_NAME="HIVE-${ISSUE_NUM}"
+if [[ -n "$ISSUE_NUM" ]]
+then
+  export JIRA_NAME="HIVE-${ISSUE_NUM}"
+fi
 export ROOT=$PWD
 export JIRA_ROOT_URL="https://issues.apache.org"
 export BUILD_TAG="${BUILD_TAG##jenkins-}"
-echo $JIRA_NAME
+if [[ -n "$JIRA_NAME" ]]
+then
+  echo $JIRA_NAME
+fi
 set -x
 env
 
-process_jira
+if [[ -n "$JIRA_NAME" ]]
+then
+  process_jira
+fi
+
+profile=$BUILD_PROFILE
+if [[ -z "$profile" ]]
+then
+  profile=$DEFAULT_BUILD_PROFILE
+fi
+if [[ -z "$profile" ]]
+then
+  fail "Could not find build profile"
+fi
 
 test -d hive/build/ || mkdir -p hive/build/
 cd hive/build/
@@ -35,17 +54,13 @@ rm -rf ptest2
 svn co http://svn.apache.org/repos/asf/hive/trunk/testutils/ptest2/ ptest2
 cd ptest2
 
-# sanity check the profile
-case "$BUILD_PROFILE" in
-  trunk-mr1);;
-  trunk-mr2);;
-  *)
-  echo "Unknown profile '$BUILD_PROFILE'"
-  exit 1
-  ;;
-esac
 mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$WORKSPACE/.m2
 set +e
+optionalArgs=()
+if [[ -n "$JIRA_NAME" ]]
+then
+  optionalArgs=(--patch "${JIRA_ROOT_URL}${PATCH_URL}" --jira "$JIRA_NAME")
+fi
 java -cp "target/hive-ptest-1.0-classes.jar:target/lib/*" org.apache.hive.ptest.api.client.PTestClient --endpoint "$API_ENDPOINT" \
   --logsEndpoint "$LOG_ENDPOINT" \
   --command testStart \
@@ -53,8 +68,7 @@ java -cp "target/hive-ptest-1.0-classes.jar:target/lib/*" org.apache.hive.ptest.
   --password $API_PASSWORD \
   --outputDir target/ \
   --testHandle "$BUILD_TAG" \
-  --patch "${JIRA_ROOT_URL}${PATCH_URL}" \
-  --jira "$JIRA_NAME" ${BUILD_OPTS} "$@"
+  ${optionalArgs[@]} ${BUILD_OPTS} "$@"
 ret=$?
 cd target/
 if [[ -f test-results.tar.gz ]]

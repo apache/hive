@@ -1,0 +1,66 @@
+PREHOOK: query: -- This test checks that selecting from an acid table and inserting into a non-acid table works.
+create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sample_06
+POSTHOOK: query: -- This test checks that selecting from an acid table and inserting into a non-acid table works.
+create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sample_06
+PREHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@sample_06
+POSTHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@sample_06
+POSTHOOK: Lineage: sample_06.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: sample_06.gpa EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: sample_06.name EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from sample_06 where gpa = 3.00
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_06
+#### A masked pattern was here ####
+POSTHOOK: query: select * from sample_06 where gpa = 3.00
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_06
+#### A masked pattern was here ####
+eee	32	3
+ccc	32	3
+bbb	32	3
+ddd	35	3
+aaa	35	3
+PREHOOK: query: create table tab1 (name varchar(50), age int, gpa decimal(3, 2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
+POSTHOOK: query: create table tab1 (name varchar(50), age int, gpa decimal(3, 2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1
+PREHOOK: query: insert into table tab1 select * from sample_06 where gpa = 3.00
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_06
+PREHOOK: Output: default@tab1
+POSTHOOK: query: insert into table tab1 select * from sample_06 where gpa = 3.00
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_06
+POSTHOOK: Output: default@tab1
+POSTHOOK: Lineage: tab1.age SIMPLE [(sample_06)sample_06.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: tab1.gpa SIMPLE [(sample_06)sample_06.FieldSchema(name:gpa, type:decimal(3,2), comment:null), ]
+POSTHOOK: Lineage: tab1.name SIMPLE [(sample_06)sample_06.FieldSchema(name:name, type:varchar(50), comment:null), ]
+PREHOOK: query: select * from tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1
+#### A masked pattern was here ####
+eee	32	3
+ccc	32	3
+bbb	32	3
+ddd	35	3
+aaa	35	3

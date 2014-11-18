@@ -72,6 +72,9 @@
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
+    <!-- To add additional exclude patterns set this property -->
+    <test.excludes.additional></test.excludes.additional>
+
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
@@ -797,6 +800,7 @@
             <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
             <exclude>**/TestHiveServer2Concurrency.java</exclude>
             <exclude>**/TestHiveMetaStore.java</exclude>
+            <exclude>${test.excludes.additional}</exclude>
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -881,6 +885,11 @@
 	    <exclude>**/gen-java/**</exclude>
 	    <exclude>**/testdata/**</exclude>
 	    <exclude>**/ptest2/*.md</exclude>
+	    <exclude>**/test/org/apache/hadoop/hive/hbase/avro/**</exclude>
+	    <exclude>**/avro_test.avpr</exclude>
+	    <exclude>**/xmlReport.pl</exclude>
+	    <exclude>**/*.html</exclude>
+	    <exclude>**/sit</exclude>
 	  </excludes>
 	</configuration>
       </plugin>

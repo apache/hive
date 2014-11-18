@@ -139,7 +139,11 @@ public class JDBCStatsPublisher implements StatsPublisher {
           + " stats: " + JDBCStatsUtils.getSupportedStatistics());
       return false;
     }
-    LOG.info("Stats publishing for key " + fileID);
+    String rowId = JDBCStatsUtils.truncateRowId(fileID);
+    if (LOG.isInfoEnabled()) {
+      String truncateSuffix = (rowId != fileID) ? " (from " + fileID + ")" : ""; // object equality
+      LOG.info("Stats publishing for key " + rowId + truncateSuffix);
+    }
 
     Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
       @Override
@@ -153,7 +157,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
 
     for (int failures = 0;; failures++) {
       try {
-        insStmt.setString(1, fileID);
+        insStmt.setString(1, rowId);
         for (int i = 0; i < JDBCStatsUtils.getSupportedStatistics().size(); i++) {
           insStmt.setString(i + 2, stats.get(supportedStatistics.get(i)));
         }
@@ -172,10 +176,10 @@ public class JDBCStatsPublisher implements StatsPublisher {
             for (i = 0; i < JDBCStatsUtils.getSupportedStatistics().size(); i++) {
               updStmt.setString(i + 1, stats.get(supportedStatistics.get(i)));
             }
-            updStmt.setString(supportedStatistics.size() + 1, fileID);
+            updStmt.setString(supportedStatistics.size() + 1, rowId);
             updStmt.setString(supportedStatistics.size() + 2,
                 stats.get(JDBCStatsUtils.getBasicStat()));
-            updStmt.setString(supportedStatistics.size() + 3, fileID);
+            updStmt.setString(supportedStatistics.size() + 3, rowId);
             Utilities.executeWithRetry(execUpdate, updStmt, waitWindow, maxRetries);
             return true;
           } catch (SQLRecoverableException ue) {

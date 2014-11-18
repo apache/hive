@@ -21,7 +21,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: drop database dba1
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:dba1
@@ -37,7 +36,6 @@ POSTHOOK: query: -- check if dropping db as another user fails
 show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: create database dba2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dba2
@@ -49,5 +47,4 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPDATABASE [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=dba2]]

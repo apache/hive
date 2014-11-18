@@ -22,10 +22,11 @@ fail() {
 # Exports two variables of import:
 # * BUILD_PROFILE - the profile which the ptest server understands
 # * BUILD_OPTS - additional test options to be sent to ptest cli
+# * PATCH_URL - the URL to the patch file
 process_jira() {
   test -n "$BRANCH" || fail "BRANCH must be specified"
   test -n "$JIRA_ROOT_URL" || fail "JIRA_ROOT_URL must be specified"
-  test -n "$JIRA_NAME" || fail "API_PASSWORD must be specified"
+  test -n "$JIRA_NAME" || fail "JIRA_NAME must be specified"
   JIRA_TEXT=$(mktemp)
   trap "rm -f $JIRA_TEXT" EXIT
   curl -s -S --location --retry 3 "${JIRA_ROOT_URL}/jira/browse/${JIRA_NAME}" > $JIRA_TEXT
@@ -39,7 +40,7 @@ process_jira() {
     fail "$JIRA_NAME is not \"Patch Available\". Exiting."
   fi
   # pull attachments from JIRA (hack stolen from hadoop since rest api doesn't show attachments)
-  PATCH_URL=$(grep -o '"/jira/secure/attachment/[0-9]*/[^"]*' $JIRA_TEXT | \
+  export PATCH_URL=$(grep -o '"/jira/secure/attachment/[0-9]*/[^"]*' $JIRA_TEXT | \
     grep -v -e 'htm[l]*$' | sort | tail -1 | \
     grep -o '/jira/secure/attachment/[0-9]*/[^"]*')
   if [[ -z "$PATCH_URL" ]]

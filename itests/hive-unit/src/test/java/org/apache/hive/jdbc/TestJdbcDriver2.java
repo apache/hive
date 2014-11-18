@@ -51,6 +51,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -105,6 +106,7 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
     Class.forName(driverName);
     Connection con1 = getConnection("default");
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE.varname, "" + true);
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);

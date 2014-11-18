@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * The proxy interface that metastore uses to manipulate and apply
@@ -37,12 +38,14 @@ public interface PartitionExpressionProxy {
 
   /**
    * Filters the partition names via serialized Hive expression.
-   * @param columnNames Partition column names in the underlying table.
+   * @param partColumnNames Partition column names in the underlying table.
+   * @param partColumnTypeInfos Partition column types in the underlying table
    * @param expr Serialized expression.
    * @param defaultPartitionName Default partition name from job or server configuration.
    * @param partitionNames Partition names; the list is modified in place.
    * @return Whether there were any unknown partitions preserved in the name list.
    */
-  public boolean filterPartitionsByExpr(List<String> columnNames, byte[] expr,
+  public boolean filterPartitionsByExpr(List<String> partColumnNames,
+      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr,
       String defaultPartitionName, List<String> partitionNames) throws MetaException;
 }

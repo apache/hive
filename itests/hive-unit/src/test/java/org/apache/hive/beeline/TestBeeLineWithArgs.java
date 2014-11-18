@@ -529,7 +529,7 @@ public class TestBeeLineWithArgs {
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
         "select count(*) from " + tableName + ";\n";
-    final String EXPECTED_PATTERN = "Parsing command";
+    final String EXPECTED_PATTERN = "number of splits";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()));
   }
 

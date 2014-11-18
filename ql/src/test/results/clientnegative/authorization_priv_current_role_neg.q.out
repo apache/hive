@@ -42,7 +42,6 @@ show current roles
 POSTHOOK: type: SHOW_ROLES
 public
 role2
-
 PREHOOK: query: grant all on table tpriv_current_role to user user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@tpriv_current_role

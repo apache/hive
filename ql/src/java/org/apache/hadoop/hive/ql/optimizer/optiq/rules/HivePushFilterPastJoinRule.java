@@ -38,114 +38,121 @@ import org.eigenbase.sql.SqlKind;
 
 public abstract class HivePushFilterPastJoinRule extends PushFilterPastJoinRule {
 
-	public static final HivePushFilterPastJoinRule FILTER_ON_JOIN = new HivePushFilterIntoJoinRule();
+  public static final HivePushFilterPastJoinRule FILTER_ON_JOIN = new HivePushFilterIntoJoinRule();
 
-	public static final HivePushFilterPastJoinRule JOIN = new HivePushDownJoinConditionRule();
+  public static final HivePushFilterPastJoinRule JOIN           = new HivePushDownJoinConditionRule();
 
-	/**
-	 * Creates a PushFilterPastJoinRule with an explicit root operand.
-	 */
-	protected HivePushFilterPastJoinRule(RelOptRuleOperand operand, String id,
-			boolean smart, RelFactories.FilterFactory filterFactory,
-			RelFactories.ProjectFactory projectFactory) {
-		super(operand, id, smart, filterFactory, projectFactory);
-	}
+  /**
+   * Creates a PushFilterPastJoinRule with an explicit root operand.
+   */
+  protected HivePushFilterPastJoinRule(RelOptRuleOperand operand, String id, boolean smart,
+      RelFactories.FilterFactory filterFactory, RelFactories.ProjectFactory projectFactory) {
+    super(operand, id, smart, filterFactory, projectFactory);
+  }
 
-	/**
-	 * Rule that tries to push filter expressions into a join condition and into
-	 * the inputs of the join.
-	 */
-	public static class HivePushFilterIntoJoinRule extends
-			HivePushFilterPastJoinRule {
-		public HivePushFilterIntoJoinRule() {
-			super(RelOptRule.operand(FilterRelBase.class,
-					RelOptRule.operand(JoinRelBase.class, RelOptRule.any())),
-					"HivePushFilterPastJoinRule:filter", true,
-					HiveFilterRel.DEFAULT_FILTER_FACTORY,
-					HiveProjectRel.DEFAULT_PROJECT_FACTORY);
-		}
+  /**
+   * Rule that tries to push filter expressions into a join condition and into
+   * the inputs of the join.
+   */
+  public static class HivePushFilterIntoJoinRule extends HivePushFilterPastJoinRule {
+    public HivePushFilterIntoJoinRule() {
+      super(RelOptRule.operand(FilterRelBase.class,
+          RelOptRule.operand(JoinRelBase.class, RelOptRule.any())),
+          "HivePushFilterPastJoinRule:filter", true, HiveFilterRel.DEFAULT_FILTER_FACTORY,
+          HiveProjectRel.DEFAULT_PROJECT_FACTORY);
+    }
 
-		@Override
-		public void onMatch(RelOptRuleCall call) {
-			FilterRelBase filter = call.rel(0);
-			JoinRelBase join = call.rel(1);
-			super.perform(call, filter, join);
-		}
-	}
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      FilterRelBase filter = call.rel(0);
+      JoinRelBase join = call.rel(1);
+      super.perform(call, filter, join);
+    }
+  }
 
-	public static class HivePushDownJoinConditionRule extends
-			HivePushFilterPastJoinRule {
-		public HivePushDownJoinConditionRule() {
-			super(RelOptRule.operand(JoinRelBase.class, RelOptRule.any()),
-					"HivePushFilterPastJoinRule:no-filter", true,
-					HiveFilterRel.DEFAULT_FILTER_FACTORY,
-					HiveProjectRel.DEFAULT_PROJECT_FACTORY);
-		}
+  public static class HivePushDownJoinConditionRule extends HivePushFilterPastJoinRule {
+    public HivePushDownJoinConditionRule() {
+      super(RelOptRule.operand(JoinRelBase.class, RelOptRule.any()),
+          "HivePushFilterPastJoinRule:no-filter", true, HiveFilterRel.DEFAULT_FILTER_FACTORY,
+          HiveProjectRel.DEFAULT_PROJECT_FACTORY);
+    }
 
-		@Override
-		public void onMatch(RelOptRuleCall call) {
-			JoinRelBase join = call.rel(0);
-			super.perform(call, null, join);
-		}
-	}
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      JoinRelBase join = call.rel(0);
+      super.perform(call, null, join);
+    }
+  }
 
-	/*
-	 * Any predicates pushed down to joinFilters that aren't equality
-	 * conditions: put them back as aboveFilters because Hive doesn't support
-	 * not equi join conditions.
-	 */
-	@Override
-	protected void validateJoinFilters(List<RexNode> aboveFilters,
-			List<RexNode> joinFilters, JoinRelBase join, JoinRelType joinType) {
-		if (joinType.equals(JoinRelType.INNER)) {
-			ListIterator<RexNode> filterIter = joinFilters.listIterator();
-			while (filterIter.hasNext()) {
-				RexNode exp = filterIter.next();
-				if (exp instanceof RexCall) {
-					RexCall c = (RexCall) exp;
-					if (c.getOperator().getKind() == SqlKind.EQUALS) {
-						boolean validHiveJoinFilter = true;
-						for (RexNode rn : c.getOperands()) {
-							// NOTE: Hive dis-allows projections from both left
-							// &
-							// right side
-							// of join condition. Example: Hive disallows
-							// (r1.x=r2.x)=(r1.y=r2.y) on join condition.
-							if (filterRefersToBothSidesOfJoin(rn, join)) {
-								validHiveJoinFilter = false;
-								break;
-							}
-						}
-						if (validHiveJoinFilter)
-							continue;
-					}
-				}
-				aboveFilters.add(exp);
-				filterIter.remove();
-			}
-		}
-	}
+  /*
+   * Any predicates pushed down to joinFilters that aren't equality conditions:
+   * put them back as aboveFilters because Hive doesn't support not equi join
+   * conditions.
+   */
+  @Override
+  protected void validateJoinFilters(List<RexNode> aboveFilters, List<RexNode> joinFilters,
+      JoinRelBase join, JoinRelType joinType) {
+    if (joinType.equals(JoinRelType.INNER)) {
+      ListIterator<RexNode> filterIter = joinFilters.listIterator();
+      while (filterIter.hasNext()) {
+        RexNode exp = filterIter.next();
 
-	private boolean filterRefersToBothSidesOfJoin(RexNode filter, JoinRelBase j) {
-		boolean refersToBothSides = false;
+        if (exp instanceof RexCall) {
+          RexCall c = (RexCall) exp;
+          boolean validHiveJoinFilter = false;
 
-		int joinNoOfProjects = j.getRowType().getFieldCount();
-		BitSet filterProjs = new BitSet(joinNoOfProjects);
-		BitSet allLeftProjs = new BitSet(joinNoOfProjects);
-		BitSet allRightProjs = new BitSet(joinNoOfProjects);
-		allLeftProjs.set(0, j.getInput(0).getRowType().getFieldCount(), true);
-		allRightProjs.set(j.getInput(0).getRowType().getFieldCount(),
-				joinNoOfProjects, true);
+          if ((c.getOperator().getKind() == SqlKind.EQUALS)) {
+            validHiveJoinFilter = true;
+            for (RexNode rn : c.getOperands()) {
+              // NOTE: Hive dis-allows projections from both left & right side
+              // of join condition. Example: Hive disallows
+              // (r1.x +r2.x)=(r1.y+r2.y) on join condition.
+              if (filterRefersToBothSidesOfJoin(rn, join)) {
+                validHiveJoinFilter = false;
+                break;
+              }
+            }
+          } else if ((c.getOperator().getKind() == SqlKind.LESS_THAN)
+              || (c.getOperator().getKind() == SqlKind.GREATER_THAN)
+              || (c.getOperator().getKind() == SqlKind.LESS_THAN_OR_EQUAL)
+              || (c.getOperator().getKind() == SqlKind.GREATER_THAN_OR_EQUAL)) {
+            validHiveJoinFilter = true;
+            // NOTE: Hive dis-allows projections from both left & right side of
+            // join in in equality condition. Example: Hive disallows (r1.x <
+            // r2.x) on join condition.
+            if (filterRefersToBothSidesOfJoin(c, join)) {
+              validHiveJoinFilter = false;
+            }
+          }
 
-		InputFinder inputFinder = new InputFinder(filterProjs);
-		filter.accept(inputFinder);
+          if (validHiveJoinFilter)
+            continue;
+        }
 
-		if (allLeftProjs.intersects(filterProjs)
-				&& allRightProjs.intersects(filterProjs))
-			refersToBothSides = true;
+        aboveFilters.add(exp);
+        filterIter.remove();
+      }
+    }
+  }
 
-		return refersToBothSides;
-	}
+  private boolean filterRefersToBothSidesOfJoin(RexNode filter, JoinRelBase j) {
+    boolean refersToBothSides = false;
+
+    int joinNoOfProjects = j.getRowType().getFieldCount();
+    BitSet filterProjs = new BitSet(joinNoOfProjects);
+    BitSet allLeftProjs = new BitSet(joinNoOfProjects);
+    BitSet allRightProjs = new BitSet(joinNoOfProjects);
+    allLeftProjs.set(0, j.getInput(0).getRowType().getFieldCount(), true);
+    allRightProjs.set(j.getInput(0).getRowType().getFieldCount(), joinNoOfProjects, true);
+
+    InputFinder inputFinder = new InputFinder(filterProjs);
+    filter.accept(inputFinder);
+
+    if (allLeftProjs.intersects(filterProjs) && allRightProjs.intersects(filterProjs))
+      refersToBothSides = true;
+
+    return refersToBothSides;
+  }
 }
 
 // End PushFilterPastJoinRule.java

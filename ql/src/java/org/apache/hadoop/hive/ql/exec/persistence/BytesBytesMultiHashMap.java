@@ -149,19 +149,38 @@ public final class BytesBytesMultiHashMap {
 
   /** We have 39 bits to store list pointer from the first record; this is size limit */
   final static long MAX_WB_SIZE = ((long)1) << 38;
+  /** 8 Gb of refs is the max capacity if memory limit is not specified. If someone has 100s of
+   * Gbs of memory (this might happen pretty soon) we'd need to string together arrays anyway. */
+  private final static int DEFAULT_MAX_CAPACITY = 1024 * 1024 * 1024;
 
-  public BytesBytesMultiHashMap(int initialCapacity, float loadFactor, int wbSize) {
+  public BytesBytesMultiHashMap(int initialCapacity,
+      float loadFactor, int wbSize, long memUsage, int defaultCapacity) {
     if (loadFactor < 0 || loadFactor > 1) {
       throw new AssertionError("Load factor must be between (0, 1].");
     }
+    assert initialCapacity > 0;
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
+    // 8 bytes per long in the refs, assume data will be empty. This is just a sanity check.
+    int maxCapacity =  (memUsage <= 0) ? DEFAULT_MAX_CAPACITY
+        : (int)Math.min((long)DEFAULT_MAX_CAPACITY, memUsage / 8);
+    if (maxCapacity < initialCapacity || initialCapacity <= 0) {
+      // Either initialCapacity is too large, or nextHighestPowerOfTwo overflows
+      initialCapacity = (Long.bitCount(maxCapacity) == 1)
+          ? maxCapacity : nextLowestPowerOfTwo(maxCapacity);
+    }
+
     validateCapacity(initialCapacity);
     startingHashBitCount = 63 - Long.numberOfLeadingZeros(initialCapacity);
     this.loadFactor = loadFactor;
     refs = new long[initialCapacity];
     writeBuffers = new WriteBuffers(wbSize, MAX_WB_SIZE);
     resizeThreshold = (int)(initialCapacity * this.loadFactor);
+  }
+
+  @VisibleForTesting
+  BytesBytesMultiHashMap(int initialCapacity, float loadFactor, int wbSize) {
+    this(initialCapacity, loadFactor, wbSize, -1, 100000);
   }
 
   /** The source of keys and values to put into hashtable; avoids byte copying. */
@@ -642,6 +661,10 @@ public final class BytesBytesMultiHashMap {
 
   private static int nextHighestPowerOfTwo(int v) {
     return Integer.highestOneBit(v) << 1;
+  }
+
+  private static int nextLowestPowerOfTwo(int v) {
+    return Integer.highestOneBit(v);
   }
 
   @VisibleForTesting

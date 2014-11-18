@@ -240,6 +240,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           new MapJoinDesc(null, null, joinDesc.getExprs(), null, null,
               joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
               joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
+      mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
+      mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
+      mapJoinDesc.resetOrder();
     }
 
     @SuppressWarnings("unchecked")

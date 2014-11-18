@@ -52,6 +52,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -143,7 +144,9 @@ public class HiveConnection implements java.sql.Connection {
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (isEmbeddedMode) {
-      client = new EmbeddedThriftBinaryCLIService();
+      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
+      embeddedClient.init(new HiveConf());
+      client = embeddedClient;
     } else {
       // extract user/password from JDBC connection properties if its not supplied in the
       // connection URL

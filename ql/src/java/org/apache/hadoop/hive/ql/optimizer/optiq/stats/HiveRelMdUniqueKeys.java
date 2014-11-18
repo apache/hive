@@ -38,6 +38,7 @@ import org.eigenbase.rel.metadata.Metadata;
 import org.eigenbase.rel.metadata.ReflectiveRelMetadataProvider;
 import org.eigenbase.rel.metadata.RelMdUniqueKeys;
 import org.eigenbase.rel.metadata.RelMetadataProvider;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.hep.HepRelVertex;
 import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
@@ -100,7 +101,7 @@ public class HiveRelMdUniqueKeys {
           cStat.getRange().minValue != null) {
         double r = cStat.getRange().maxValue.doubleValue() - 
             cStat.getRange().minValue.doubleValue() + 1;
-        isKey = (numRows == r);
+        isKey = (Math.abs(numRows - r) < RelOptUtil.EPSILON);
       }
       if ( isKey ) {
         BitSet key = new BitSet();

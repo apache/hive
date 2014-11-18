@@ -45,6 +45,8 @@ import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.fusesource.jansi.Ansi;
 
+import com.google.common.base.Preconditions;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -130,6 +132,11 @@ public class TezJobMonitor {
         }
       }
     });
+  }
+
+  public static void initShutdownHook() {
+    Preconditions.checkNotNull(shutdownList,
+        "Shutdown hook was not properly initialized");
   }
 
   public TezJobMonitor() {
@@ -290,6 +297,7 @@ public class TezJobMonitor {
             break;
           case INITING:
             console.printInfo("Status: Initializing");
+            startTime = System.currentTimeMillis();
             break;
           case RUNNING:
             if (!running) {
