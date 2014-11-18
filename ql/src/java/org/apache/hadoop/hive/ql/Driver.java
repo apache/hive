@@ -520,8 +520,8 @@ public class Driver implements CommandProcessor {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
-      task.getJSONPlan(ps, astStringTree, sem.getRootTasks(), sem.getFetchTask(),
-          false, true, true);
+      List<Task<?>> rootTasks = sem.getRootTasks();
+      task.getJSONPlan(ps, astStringTree, rootTasks, sem.getFetchTask(), false, true, true);
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);
