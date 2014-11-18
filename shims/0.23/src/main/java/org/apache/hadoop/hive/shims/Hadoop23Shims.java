@@ -36,7 +36,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
-import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
+import org.apache.hadoop.crypto.key.KeyProviderFactory;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -955,7 +955,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       try {
         String keyProviderPath = conf.get(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"), null);
         if (keyProviderPath != null) {
-          keyProvider = new KMSClientProvider(new URI(keyProviderPath), conf);
+          keyProvider = KeyProviderFactory.get(new URI(keyProviderPath), conf);
         }
       } catch (URISyntaxException e) {
         throw new IOException("Invalid HDFS security key provider path", e);
