@@ -28,7 +28,6 @@
   <name>Hive Query Language</name>
 
   <properties>
-    <calcite.version>0.9.2-incubating</calcite.version>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
