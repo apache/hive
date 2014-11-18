@@ -15,21 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package org.apache.hive.beeline;
 
-import java.util.List;
-
-import jline.Completor;
-import jline.SimpleCompletor;
+import jline.console.completer.StringsCompleter;
 
 /**
  * JLine completor boolean value (true/false)
  */
-class BooleanCompletor extends SimpleCompletor {
+class BooleanCompleter extends StringsCompleter {
 
-  public BooleanCompletor(){
+  public BooleanCompleter(){
     super(new String[] {"true", "false"});
   }
 

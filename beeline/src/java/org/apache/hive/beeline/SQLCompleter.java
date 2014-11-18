@@ -30,21 +30,21 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import jline.SimpleCompletor;
+import jline.console.completer.StringsCompleter;
 
-class SQLCompletor extends SimpleCompletor {
-  private final BeeLine beeLine;
+class SQLCompleter extends StringsCompleter {
 
-  public SQLCompletor(BeeLine beeLine, boolean skipmeta)
+  public SQLCompleter(Set<String> completions){
+    super(completions);
+  }
+
+  public static Set<String> getSQLCompleters(BeeLine beeLine, boolean skipmeta)
       throws IOException, SQLException {
-    super(new String[0]);
-    this.beeLine = beeLine;
-
     Set<String> completions = new TreeSet<String>();
 
     // add the default SQL completions
     String keywords = new BufferedReader(new InputStreamReader(
-        SQLCompletor.class.getResourceAsStream(
+        SQLCompleter.class.getResourceAsStream(
             "/sql-keywords.properties"))).readLine();
 
     // now add the keywords from the current connection
@@ -85,7 +85,6 @@ class SQLCompletor extends SimpleCompletor {
       }
     }
 
-    // set the Strings that will be completed
-    setCandidateStrings(completions.toArray(new String[0]));
+    return completions;
   }
 }

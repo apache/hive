@@ -24,20 +24,20 @@ package org.apache.hive.beeline;
 
 import java.util.List;
 
-import jline.Completor;
+import jline.console.completer.Completer;
 
 /**
  * Completor for BeeLine. It dispatches to sub-completors based on the
  * current arguments.
  *
  */
-class BeeLineCompletor implements Completor {
+class BeeLineCompleter implements Completer {
   private final BeeLine beeLine;
 
   /**
    * @param beeLine
    */
-  BeeLineCompletor(BeeLine beeLine) {
+  BeeLineCompleter(BeeLine beeLine) {
     this.beeLine = beeLine;
   }
 
@@ -47,8 +47,8 @@ class BeeLineCompletor implements Completor {
         && !buf.startsWith(BeeLine.COMMAND_PREFIX + "sql")) {
       return beeLine.getCommandCompletor().complete(buf, pos, cand);
     } else {
-      if (beeLine.getDatabaseConnection() != null && beeLine.getDatabaseConnection().getSQLCompletor() != null) {
-        return beeLine.getDatabaseConnection().getSQLCompletor().complete(buf, pos, cand);
+      if (beeLine.getDatabaseConnection() != null && beeLine.getDatabaseConnection().getSQLCompleter() != null) {
+        return beeLine.getDatabaseConnection().getSQLCompleter().complete(buf, pos, cand);
       } else {
         return -1;
       }
