@@ -43,7 +43,8 @@ public interface PredicateLeaf {
    * The possible types for sargs.
    */
   public static enum Type {
-    INTEGER, // all of the integer types
+    INTEGER, // all of the integer types except long
+    LONG,
     FLOAT,   // float and double
     STRING,  // string, char, varchar
     DATE,
@@ -53,12 +54,20 @@ public interface PredicateLeaf {
   }
 
   /**
+   * file format which supports search arguments
+   */
+  public static enum FileFormat {
+    ORC,
+    PARQUET
+  }
+
+  /**
    * Get the operator for the leaf.
    */
   public Operator getOperator();
 
   /**
-   * Get the type of the column and literal.
+   * Get the type of the column and literal by the file format.
    */
   public Type getType();
 
@@ -69,14 +78,17 @@ public interface PredicateLeaf {
   public String getColumnName();
 
   /**
-   * Get the literal half of the predicate leaf.
-   * @return a Long, Double, or String
+   * Get the literal half of the predicate leaf. Adapt the original type for what orc needs
+   * @return a Long, Double, or String for Orc and a Int, Long, Double, or String for parquet
    */
-  public Object getLiteral();
+  public Object getLiteral(FileFormat format);
 
   /**
    * For operators with multiple literals (IN and BETWEEN), get the literals.
-   * @return the list of literals (Longs, Doubles, or Strings)
+   *
+   * @return the list of literals (Longs, Doubles, or Strings) for orc or the list of literals
+   * (Integer, Longs, Doubles, or String) for parquet
    */
-  public List<Object> getLiteralList();
+  public List<Object> getLiteralList(FileFormat format);
+
 }

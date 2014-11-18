@@ -2388,7 +2388,7 @@ class RecordReaderImpl implements RecordReader {
       // the stats object is converted to text and comparison is performed.
       // When STRINGs are converted to other base types, NumberFormat exception
       // can occur in which case TruthValue.YES_NO_NULL value is returned
-      Object baseObj = predicate.getLiteral();
+      Object baseObj = predicate.getLiteral(PredicateLeaf.FileFormat.ORC);
       Object minValue = getConvertedStatsObj(min, baseObj);
       Object maxValue = getConvertedStatsObj(max, baseObj);
       Object predObj = getBaseObjectForComparison(baseObj, minValue);
@@ -2432,7 +2432,7 @@ class RecordReaderImpl implements RecordReader {
         if (minValue.equals(maxValue)) {
           // for a single value, look through to see if that value is in the
           // set
-          for (Object arg : predicate.getLiteralList()) {
+          for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
             predObj = getBaseObjectForComparison(arg, minValue);
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN) {
@@ -2442,7 +2442,7 @@ class RecordReaderImpl implements RecordReader {
           return TruthValue.NO_NULL;
         } else {
           // are all of the values outside of the range?
-          for (Object arg : predicate.getLiteralList()) {
+          for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
             predObj = getBaseObjectForComparison(arg, minValue);
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN || loc == Location.MIDDLE ||
@@ -2453,7 +2453,7 @@ class RecordReaderImpl implements RecordReader {
           return TruthValue.NO_NULL;
         }
       case BETWEEN:
-        List<Object> args = predicate.getLiteralList();
+        List<Object> args = predicate.getLiteralList(PredicateLeaf.FileFormat.ORC);
         Object predObj1 = getBaseObjectForComparison(args.get(0), minValue);
 
         loc = compareToRange((Comparable) predObj1, minValue, maxValue);

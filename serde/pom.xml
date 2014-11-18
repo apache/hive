@@ -75,6 +75,11 @@
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>parquet-hadoop-bundle</artifactId>
+      <version>${parquet.version}</version>
+    </dependency>
 
       <!-- test inter-project -->
     <dependency>
