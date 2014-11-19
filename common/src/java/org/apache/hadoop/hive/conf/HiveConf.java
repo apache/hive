@@ -375,9 +375,9 @@ public class HiveConf extends Configuration {
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
-    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
+    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 10,
         "The number of times to retry a HMSHandler call if there were a connection error."),
-    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "1000ms",
+    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "2000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "The time between HMSHandler retry attempts on failure."),
     HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false,
         "Whether to force reloading of the HMSHandler configuration (including\n" +
