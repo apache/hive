@@ -457,39 +457,35 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
+                Static Partition Specification: ds=2/
                 Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
 #### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Static Partition Specification: ds=2/
-                  Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns k1,k2,k3,k4
+                      columns.comments    
+                      columns.types string:string:string:string
 #### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        bucket_count -1
-                        columns k1,k2,k3,k4
-                        columns.comments    
-                        columns.types string:string:string:string
+                      name default.dst_union22
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                        name default.dst_union22
-                        partition_columns ds
-                        partition_columns.types string
-                        serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dst_union22
-                  TotalFiles: 1
-                  GatherStats: true
-                  MultiFileSpray: false
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dst_union22
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
           TableScan
             alias: dst_union22_delta
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
@@ -504,39 +500,35 @@ STAGE PLANS:
                 Statistics: Num rows: 166 Data size: 5622 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Static Partition Specification: ds=2/
                     Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
 #### A masked pattern was here ####
-                      NumFilesPerFileSink: 1
-                      Static Partition Specification: ds=2/
-                      Statistics: Num rows: 348 Data size: 9684 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          bucket_count -1
+                          columns k1,k2,k3,k4
+                          columns.comments    
+                          columns.types string:string:string:string
 #### A masked pattern was here ####
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          properties:
-                            bucket_count -1
-                            columns k1,k2,k3,k4
-                            columns.comments    
-                            columns.types string:string:string:string
+                          name default.dst_union22
+                          partition_columns ds
+                          partition_columns.types string
+                          serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                            name default.dst_union22
-                            partition_columns ds
-                            partition_columns.types string
-                            serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
-                            serialization.format 1
-                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dst_union22
-                      TotalFiles: 1
-                      GatherStats: true
-                      MultiFileSpray: false
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dst_union22
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

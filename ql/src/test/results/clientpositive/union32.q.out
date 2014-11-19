@@ -61,14 +61,10 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: double)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
                   Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: double)
-                    sort order: +
-                    Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -78,14 +74,10 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: double)
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
                   Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: double)
-                    sort order: +
-                    Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double)

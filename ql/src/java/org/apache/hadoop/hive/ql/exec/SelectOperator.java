@@ -138,12 +138,6 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
       return false;
     }
 
-    //Select *
-    if(this.getConf().isSelStarNoCompute() ||
-        this.getConf().isSelectStar()) {
-      return true;
-    }
-
     //Check whether the have the same schema
     if(!OperatorUtils.sameRowSchema(this, this.getParentOperators().get(0))) {
       return false;

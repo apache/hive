@@ -180,16 +180,15 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Select Operator
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
-                      auto parallelism: false
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -409,16 +408,15 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 0
-                Select Operator
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
-                      auto parallelism: false
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -760,16 +758,15 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 0
-                Select Operator
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
-                      auto parallelism: false
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1135,16 +1132,15 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Select Operator
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
-                      auto parallelism: false
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -1394,16 +1390,15 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 0
-                Select Operator
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions: _col0 (type: bigint)
-                      auto parallelism: false
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

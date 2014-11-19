@@ -251,17 +251,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -356,17 +354,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -538,17 +534,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -680,17 +674,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -831,17 +823,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -936,17 +926,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1069,17 +1057,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1174,17 +1160,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1308,17 +1292,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1431,17 +1413,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1539,17 +1519,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1647,17 +1625,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1783,17 +1759,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1902,20 +1876,16 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '2008-04-08' (type: string)
-                    outputColumnNames: ds
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: ds (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1925,17 +1895,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1960,16 +1928,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -2409,17 +2373,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -2644,17 +2606,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -2768,17 +2728,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -2894,9 +2852,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -2904,22 +2867,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 6
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 6
         Reducer 4 
             Reduce Operator Tree:
               Merge Join Operator
@@ -2929,17 +2881,15 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
+                    value expressions: _col0 (type: bigint)
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -2966,9 +2916,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -2976,22 +2931,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 6
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 6
         Union 3 
             Vertex: Union 3
 
@@ -3091,9 +3035,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3101,22 +3050,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 6
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 6
         Reducer 4 
             Reduce Operator Tree:
               Merge Join Operator
@@ -3127,20 +3065,16 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col2
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col2 (type: string)
-                  outputColumnNames: _col2
+                Group By Operator
+                  keys: _col2 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col2 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -3167,9 +3101,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3177,22 +3116,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 6
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 6
         Union 3 
             Vertex: Union 3
 
@@ -3281,40 +3209,32 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: ds (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: ds (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 11 
             Reduce Operator Tree:
               Group By Operator
@@ -3323,9 +3243,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3333,34 +3258,23 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 5
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 8
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 5
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 8
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -3369,9 +3283,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3379,34 +3298,23 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 5
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 8
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 5
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 8
         Reducer 4 
             Reduce Operator Tree:
               Merge Join Operator
@@ -3434,26 +3342,20 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
         Reducer 9 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
         Union 3 
             Vertex: Union 3
         Union 7 
@@ -3521,17 +3423,15 @@ STAGE PLANS:
                     input vertices:
                       1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -3668,17 +3568,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -3831,17 +3729,15 @@ STAGE PLANS:
                     input vertices:
                       1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -3977,17 +3873,15 @@ STAGE PLANS:
                     input vertices:
                       1 Map 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4087,17 +3981,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4208,17 +4100,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4342,37 +4232,31 @@ STAGE PLANS:
                     input vertices:
                       1 Reducer 4
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '2008-04-08' (type: string)
-                    outputColumnNames: ds
+                  Group By Operator
+                    keys: ds (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: ds (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -4397,31 +4281,27 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Dynamic Partitioning Event Operator
-                        Target Input: srcpart
-                        Partition key expr: ds
-                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        Target column: ds
-                        Target Vertex: Map 1
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Target column: ds
+                      Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -4592,17 +4472,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 1
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -4766,17 +4644,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4919,17 +4795,15 @@ STAGE PLANS:
                       input vertices:
                         0 Map 1
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -5034,20 +4908,16 @@ STAGE PLANS:
                     input vertices:
                       1 Union 3
                     Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col2 (type: string)
-                      outputColumnNames: _col2
+                    Group By Operator
+                      keys: _col2 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col2 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -5074,9 +4944,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -5084,22 +4959,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 4
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 4
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
@@ -5126,9 +4990,14 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Select Operator
-                    expressions: _col0 (type: string)
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
                     outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -5136,22 +5005,11 @@ STAGE PLANS:
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                        Select Operator
-                          expressions: _col0 (type: string)
-                          outputColumnNames: _col0
-                          Group By Operator
-                            keys: _col0 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0
-                            Dynamic Partitioning Event Operator
-                              Target Input: srcpart
-                              Partition key expr: ds
-                              Target column: ds
-                              Target Vertex: Map 4
+                        Dynamic Partitioning Event Operator
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Target column: ds
+                          Target Vertex: Map 4
         Union 3 
             Vertex: Union 3
 
@@ -5253,17 +5111,15 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 1100 Data size: 103400 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 1100 Data size: 103400 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                          value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
                 TableScan

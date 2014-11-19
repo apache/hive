@@ -157,19 +157,17 @@ STAGE PLANS:
                         0 Map 3
                       Position of Big Table: 1
                       Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -590,19 +588,17 @@ STAGE PLANS:
                         1 Map 1
                       Position of Big Table: 0
                       Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -904,19 +900,17 @@ STAGE PLANS:
                         1 Map 1
                       Position of Big Table: 0
                       Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 31 Data size: 3196 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
