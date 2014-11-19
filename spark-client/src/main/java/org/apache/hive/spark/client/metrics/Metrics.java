@@ -19,7 +19,6 @@ package org.apache.hive.spark.client.metrics;
 
 import java.io.Serializable;
 
-import com.google.common.base.Optional;
 import org.apache.spark.executor.TaskMetrics;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -48,14 +47,14 @@ public class Metrics implements Serializable {
   /** The number of on-disk bytes spilled by tasks. */
   public final long diskBytesSpilled;
   /** If tasks read from a HadoopRDD or from persisted data, metrics on how much data was read. */
-  public final Optional<InputMetrics> inputMetrics;
+  public final InputMetrics inputMetrics;
   /**
    * If tasks read from shuffle output, metrics on getting shuffle data. This includes read metrics
    * aggregated over all the tasks' shuffle dependencies.
    */
-  public final Optional<ShuffleReadMetrics> shuffleReadMetrics;
+  public final ShuffleReadMetrics shuffleReadMetrics;
   /** If tasks wrote to shuffle output, metrics on the written shuffle data. */
-  public final Optional<ShuffleWriteMetrics> shuffleWriteMetrics;
+  public final ShuffleWriteMetrics shuffleWriteMetrics;
 
   public Metrics(
       long executorDeserializeTime,
@@ -65,9 +64,9 @@ public class Metrics implements Serializable {
       long resultSerializationTime,
       long memoryBytesSpilled,
       long diskBytesSpilled,
-      Optional<InputMetrics> inputMetrics,
-      Optional<ShuffleReadMetrics> shuffleReadMetrics,
-      Optional<ShuffleWriteMetrics> shuffleWriteMetrics) {
+      InputMetrics inputMetrics,
+      ShuffleReadMetrics shuffleReadMetrics,
+      ShuffleWriteMetrics shuffleWriteMetrics) {
     this.executorDeserializeTime = executorDeserializeTime;
     this.executorRunTime = executorRunTime;
     this.resultSize = resultSize;
@@ -94,24 +93,16 @@ public class Metrics implements Serializable {
       optionalShuffleWriteMetrics(metrics));
   }
 
-  private static final Optional<InputMetrics> optionalInputMetric(TaskMetrics metrics) {
-    return metrics.inputMetrics().isDefined()
-      ? Optional.of(new InputMetrics(metrics))
-      : Optional.<InputMetrics>absent();
+  private static final InputMetrics optionalInputMetric(TaskMetrics metrics) {
+    return metrics.inputMetrics().isDefined() ? new InputMetrics(metrics) : null;
   }
 
-  private static final Optional<ShuffleReadMetrics>
-      optionalShuffleReadMetric(TaskMetrics metrics) {
-    return metrics.shuffleReadMetrics().isDefined()
-      ? Optional.of(new ShuffleReadMetrics(metrics))
-      : Optional.<ShuffleReadMetrics>absent();
+  private static final ShuffleReadMetrics optionalShuffleReadMetric(TaskMetrics metrics) {
+    return metrics.shuffleReadMetrics().isDefined() ? new ShuffleReadMetrics(metrics) : null;
   }
 
-  private static final Optional<ShuffleWriteMetrics>
-      optionalShuffleWriteMetrics(TaskMetrics metrics) {
-    return metrics.shuffleWriteMetrics().isDefined()
-      ? Optional.of(new ShuffleWriteMetrics(metrics))
-      : Optional.<ShuffleWriteMetrics>absent();
+  private static final ShuffleWriteMetrics optionalShuffleWriteMetrics(TaskMetrics metrics) {
+    return metrics.shuffleWriteMetrics().isDefined() ? new ShuffleWriteMetrics(metrics) : null;
   }
 
 }
