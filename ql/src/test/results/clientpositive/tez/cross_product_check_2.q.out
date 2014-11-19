@@ -222,20 +222,16 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -284,15 +280,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -337,20 +329,16 @@ STAGE PLANS:
                     input vertices:
                       1 Map 3
                     Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -394,15 +382,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -453,20 +437,16 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -505,50 +485,42 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string)
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col0}
-                    keys:
-                      0 
-                      1 
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col0}
+                  keys:
+                    0 
+                    1 
+                  outputColumnNames: _col0, _col1
+                  input vertices:
+                    1 Reducer 2
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1
-                    input vertices:
-                      1 Reducer 2
-                    Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

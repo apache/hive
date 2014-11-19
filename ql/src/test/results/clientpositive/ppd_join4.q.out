@@ -66,14 +66,10 @@ STAGE PLANS:
                   sort order: +
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
-        Select Operator
+        Reduce Output Operator
+          key expressions: 'a' (type: string)
+          sort order: +
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-1
     Map Reduce

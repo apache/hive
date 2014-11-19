@@ -272,18 +272,14 @@ STAGE PLANS:
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_4
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.src_4
 
   Stage: Stage-0
     Move Operator
@@ -677,18 +673,14 @@ STAGE PLANS:
                 1 _col0 (type: string), _col1 (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.src_4
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_4
       Local Work:
         Map Reduce Local Work
 
