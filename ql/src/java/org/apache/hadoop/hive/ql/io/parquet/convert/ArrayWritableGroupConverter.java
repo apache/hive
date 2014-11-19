@@ -54,6 +54,7 @@ public class ArrayWritableGroupConverter extends HiveGroupConverter {
     if (isMap) {
       mapPairContainer = new Writable[2];
     }
+    currentValue = null;
   }
 
   @Override
