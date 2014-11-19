@@ -197,18 +197,22 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
-
-    if (!inputFormats.containsKey(inputFormatClass)) {
+    InputFormat<WritableComparable, Writable> instance = inputFormats.get(inputFormatClass);
+    if (instance == null) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
+        instance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
             .newInstance(inputFormatClass, job);
-        inputFormats.put(inputFormatClass, newInstance);
+        // HBase input formats are not thread safe today. See HIVE-8808.
+        String inputFormatName = inputFormatClass.getName().toLowerCase();
+        if (!inputFormatName.contains("hbase")) {
+          inputFormats.put(inputFormatClass, instance);
+        }
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return inputFormats.get(inputFormatClass);
+    return instance;
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,
