@@ -84,6 +84,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     implements InputFormat<ImmutableBytesWritable, ResultWritable> {
 
   static final Log LOG = LogFactory.getLog(HiveHBaseTableInputFormat.class);
+  private static final Object hbaseTableMonitor = new Object();
 
   @Override
   public RecordReader<ImmutableBytesWritable, ResultWritable> getRecordReader(
@@ -427,6 +428,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
   @Override
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
+    synchronized (hbaseTableMonitor) {
+      return getSplitsInternal(jobConf, numSplits);
+    }
+  }
+
+  private InputSplit[] getSplitsInternal(JobConf jobConf, int numSplits) throws IOException {
 
     //obtain delegation tokens for the job
     if (UserGroupInformation.getCurrentUser().hasKerberosCredentials()) {
