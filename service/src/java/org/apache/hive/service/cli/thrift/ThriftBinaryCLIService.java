@@ -81,7 +81,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(serverSocket)
           .processorFactory(processorFactory).transportFactory(transportFactory)
           .protocolFactory(new TBinaryProtocol.Factory())
-          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
+          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize))
           .executorService(executorService);
 
       // TCP Server
