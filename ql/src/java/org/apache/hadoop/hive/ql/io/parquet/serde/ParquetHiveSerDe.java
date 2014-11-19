@@ -229,14 +229,11 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     final List<Writable> array = new ArrayList<Writable>();
     if (sourceArray != null) {
       for (final Object curObj : sourceArray) {
-        final Writable newObj = createObject(curObj, subInspector);
-        if (newObj != null) {
-          array.add(newObj);
-        }
+        array.add(createObject(curObj, subInspector));
       }
     }
     if (array.size() > 0) {
-      final ArrayWritable subArray = new ArrayWritable(array.get(0).getClass(),
+      final ArrayWritable subArray = new ArrayWritable(Writable.class,
           array.toArray(new Writable[array.size()]));
       return new ArrayWritable(Writable.class, new Writable[] {subArray});
     } else {
