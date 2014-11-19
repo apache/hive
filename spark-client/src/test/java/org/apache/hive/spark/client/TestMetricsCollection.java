@@ -19,7 +19,6 @@ package org.apache.hive.spark.client;
 
 import java.util.Arrays;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -62,9 +61,7 @@ public class TestMetricsCollection {
   public void testOptionalMetrics() {
     long value = taskValue(1, 1, 1L);
     Metrics metrics = new Metrics(value, value, value, value, value, value, value,
-        Optional.<InputMetrics>absent(),
-        Optional.<ShuffleReadMetrics>absent(),
-        Optional.<ShuffleWriteMetrics>absent());
+        null, null, null);
 
     MetricsCollection collection = new MetricsCollection();
     for (int i : Arrays.asList(1, 2)) {
@@ -72,18 +69,18 @@ public class TestMetricsCollection {
     }
 
     Metrics global = collection.getAllMetrics();
-    assertFalse(global.inputMetrics.isPresent());
-    assertFalse(global.shuffleReadMetrics.isPresent());
-    assertFalse(global.shuffleWriteMetrics.isPresent());
+    assertNull(global.inputMetrics);
+    assertNull(global.shuffleReadMetrics);
+    assertNull(global.shuffleWriteMetrics);
 
     collection.addMetrics(3, 1, 1, makeMetrics(3, 1, 1));
 
     Metrics global2 = collection.getAllMetrics();
-    assertTrue(global2.inputMetrics.isPresent());
-    assertEquals(taskValue(3, 1, 1), global2.inputMetrics.get().bytesRead);
+    assertNotNull(global2.inputMetrics);
+    assertEquals(taskValue(3, 1, 1), global2.inputMetrics.bytesRead);
 
-    assertTrue(global2.shuffleReadMetrics.isPresent());
-    assertTrue(global2.shuffleWriteMetrics.isPresent());
+    assertNotNull(global2.shuffleReadMetrics);
+    assertNotNull(global2.shuffleWriteMetrics);
   }
 
   @Test
@@ -92,28 +89,24 @@ public class TestMetricsCollection {
 
     long value = taskValue(1, 1, 1);
     Metrics metrics1 = new Metrics(value, value, value, value, value, value, value,
-      Optional.fromNullable(new InputMetrics(DataReadMethod.Memory, value)),
-      Optional.<ShuffleReadMetrics>absent(),
-      Optional.<ShuffleWriteMetrics>absent());
+      new InputMetrics(DataReadMethod.Memory, value), null, null);
     Metrics metrics2 = new Metrics(value, value, value, value, value, value, value,
-      Optional.fromNullable(new InputMetrics(DataReadMethod.Disk, value)),
-      Optional.<ShuffleReadMetrics>absent(),
-      Optional.<ShuffleWriteMetrics>absent());
+      new InputMetrics(DataReadMethod.Disk, value), null, null);
 
     collection.addMetrics(1, 1, 1, metrics1);
     collection.addMetrics(1, 1, 2, metrics2);
 
     Metrics global = collection.getAllMetrics();
-    assertTrue(global.inputMetrics.isPresent());
-    assertEquals(DataReadMethod.Multiple, global.inputMetrics.get().readMethod);
+    assertNotNull(global.inputMetrics);
+    assertEquals(DataReadMethod.Multiple, global.inputMetrics.readMethod);
   }
 
   private Metrics makeMetrics(int jobId, int stageId, long taskId) {
     long value = 1000000 * jobId + 1000 * stageId + taskId;
     return new Metrics(value, value, value, value, value, value, value,
-      Optional.fromNullable(new InputMetrics(DataReadMethod.Memory, value)),
-      Optional.fromNullable(new ShuffleReadMetrics((int) value, (int) value, value, value)),
-      Optional.fromNullable(new ShuffleWriteMetrics(value, value)));
+      new InputMetrics(DataReadMethod.Memory, value),
+      new ShuffleReadMetrics((int) value, (int) value, value, value),
+      new ShuffleWriteMetrics(value, value));
   }
 
   /**
@@ -157,19 +150,16 @@ public class TestMetricsCollection {
     assertEquals(expected, metrics.memoryBytesSpilled);
     assertEquals(expected, metrics.diskBytesSpilled);
 
-    InputMetrics im = metrics.inputMetrics.get();
-    assertEquals(DataReadMethod.Memory, im.readMethod);
-    assertEquals(expected, im.bytesRead);
+    assertEquals(DataReadMethod.Memory, metrics.inputMetrics.readMethod);
+    assertEquals(expected, metrics.inputMetrics.bytesRead);
 
-    ShuffleReadMetrics srm = metrics.shuffleReadMetrics.get();
-    assertEquals(expected, srm.remoteBlocksFetched);
-    assertEquals(expected, srm.localBlocksFetched);
-    assertEquals(expected, srm.fetchWaitTime);
-    assertEquals(expected, srm.remoteBytesRead);
+    assertEquals(expected, metrics.shuffleReadMetrics.remoteBlocksFetched);
+    assertEquals(expected, metrics.shuffleReadMetrics.localBlocksFetched);
+    assertEquals(expected, metrics.shuffleReadMetrics.fetchWaitTime);
+    assertEquals(expected, metrics.shuffleReadMetrics.remoteBytesRead);
 
-    ShuffleWriteMetrics swm = metrics.shuffleWriteMetrics.get();
-    assertEquals(expected, swm.shuffleBytesWritten);
-    assertEquals(expected, swm.shuffleWriteTime);
+    assertEquals(expected, metrics.shuffleWriteMetrics.shuffleBytesWritten);
+    assertEquals(expected, metrics.shuffleWriteMetrics.shuffleWriteTime);
   }
 
 }

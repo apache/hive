@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
@@ -178,53 +177,50 @@ public class MetricsCollection {
         memoryBytesSpilled += m.memoryBytesSpilled;
         diskBytesSpilled += m.diskBytesSpilled;
 
-        if (m.inputMetrics.isPresent()) {
+        if (m.inputMetrics != null) {
           hasInputMetrics = true;
-          InputMetrics im = m.inputMetrics.get();
           if (readMethod == null) {
-            readMethod = im.readMethod;
-          } else if (readMethod != im.readMethod) {
+            readMethod = m.inputMetrics.readMethod;
+          } else if (readMethod != m.inputMetrics.readMethod) {
             readMethod = DataReadMethod.Multiple;
           }
-          bytesRead += im.bytesRead;
+          bytesRead += m.inputMetrics.bytesRead;
         }
 
-        if (m.shuffleReadMetrics.isPresent()) {
-          ShuffleReadMetrics srm = m.shuffleReadMetrics.get();
+        if (m.shuffleReadMetrics != null) {
           hasShuffleReadMetrics = true;
-          remoteBlocksFetched += srm.remoteBlocksFetched;
-          localBlocksFetched += srm.localBlocksFetched;
-          fetchWaitTime += srm.fetchWaitTime;
-          remoteBytesRead += srm.remoteBytesRead;
+          remoteBlocksFetched += m.shuffleReadMetrics.remoteBlocksFetched;
+          localBlocksFetched += m.shuffleReadMetrics.localBlocksFetched;
+          fetchWaitTime += m.shuffleReadMetrics.fetchWaitTime;
+          remoteBytesRead += m.shuffleReadMetrics.remoteBytesRead;
         }
 
-        if (m.shuffleWriteMetrics.isPresent()) {
-          ShuffleWriteMetrics swm = m.shuffleWriteMetrics.get();
+        if (m.shuffleWriteMetrics != null) {
           hasShuffleWriteMetrics = true;
-          shuffleBytesWritten += swm.shuffleBytesWritten;
-          shuffleWriteTime += swm.shuffleWriteTime;
+          shuffleBytesWritten += m.shuffleWriteMetrics.shuffleBytesWritten;
+          shuffleWriteTime += m.shuffleWriteMetrics.shuffleWriteTime;
         }
       }
 
-      Optional<InputMetrics> inputMetrics = Optional.absent();
+      InputMetrics inputMetrics = null;
       if (hasInputMetrics) {
-        inputMetrics = Optional.of(new InputMetrics(readMethod, bytesRead));
+        inputMetrics = new InputMetrics(readMethod, bytesRead);
       }
 
-      Optional<ShuffleReadMetrics> shuffleReadMetrics = Optional.absent();
+      ShuffleReadMetrics shuffleReadMetrics = null;
       if (hasShuffleReadMetrics) {
-        shuffleReadMetrics = Optional.of(new ShuffleReadMetrics(
+        shuffleReadMetrics = new ShuffleReadMetrics(
           remoteBlocksFetched,
           localBlocksFetched,
           fetchWaitTime,
-          remoteBytesRead));
+          remoteBytesRead);
       }
 
-      Optional<ShuffleWriteMetrics> shuffleWriteMetrics = Optional.absent();
+      ShuffleWriteMetrics shuffleWriteMetrics = null;
       if (hasShuffleReadMetrics) {
-        shuffleWriteMetrics = Optional.of(new ShuffleWriteMetrics(
+        shuffleWriteMetrics = new ShuffleWriteMetrics(
           shuffleBytesWritten,
-          shuffleWriteTime));
+          shuffleWriteTime);
       }
 
       return new Metrics(
