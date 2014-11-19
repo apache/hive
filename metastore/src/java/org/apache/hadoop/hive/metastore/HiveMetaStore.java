@@ -5840,7 +5840,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           .processor(processor)
           .transportFactory(transFactory)
           .protocolFactory(new TBinaryProtocol.Factory())
-          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
+          .inputProtocolFactory(
+              new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize))
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 
