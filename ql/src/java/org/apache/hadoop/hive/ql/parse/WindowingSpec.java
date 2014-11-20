@@ -288,8 +288,8 @@ public class WindowingSpec {
         if ( order.getExpressions().size() > 1 ) {
           throw new SemanticException("Range based Window Frame can have only 1 Sort Key");
         }
+        vbs.setExpression(order.getExpressions().get(0).getExpression());
       }
-      vbs.setExpression(order.getExpressions().get(0).getExpression());
     }
   }
 
