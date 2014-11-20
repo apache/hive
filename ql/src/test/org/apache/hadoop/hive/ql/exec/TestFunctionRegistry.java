@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -379,7 +380,7 @@ public class TestFunctionRegistry extends TestCase {
   protected void tearDown() {
   }
 
-  public void testIsRankingFunction() {
+  public void testIsRankingFunction() throws Exception {
     Assert.assertTrue(FunctionRegistry.isRankingFunction("rank"));
     Assert.assertTrue(FunctionRegistry.isRankingFunction("dense_rank"));
     Assert.assertTrue(FunctionRegistry.isRankingFunction("percent_rank"));
@@ -387,7 +388,7 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertFalse(FunctionRegistry.isRankingFunction("min"));
   }
 
-  public void testImpliesOrder() {
+  public void testImpliesOrder() throws Exception {
     Assert.assertTrue(FunctionRegistry.impliesOrder("rank"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("dense_rank"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("percent_rank"));

@@ -1752,6 +1752,13 @@ public class HiveConf extends Configuration {
         "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
         "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
         "If set to false, all Hive jobs go to the 'hive' user's queue."),
+    HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
+        "Comma separated list of builtin udf names allowed in queries.\n" +
+        "An empty whitelist allows all builtin udfs to be executed. " +
+        " The udf black list takes precedence over udf white list"),
+    HIVE_SERVER2_BUILTIN_UDF_BLACKLIST("hive.server2.builtin.udf.blacklist", "",
+         "Comma separated list of udfs names. These udfs will not be allowed in queries." +
+         " The udf black list takes precedence over udf white list"),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,12 +31,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -385,6 +388,110 @@ public class TestJdbcWithMiniHS2 {
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
+  }
+
+  /** Test UDF whitelist
+   *   - verify default value
+   *   - verify udf allowed with default whitelist
+   *   - verify udf allowed with specific whitelist
+   *   - verify udf disallowed when not in whitelist
+   * @throws Exception
+   */
+  @Test
+  public void testUdfWhiteList() throws Exception {
+    HiveConf testConf = new HiveConf();
+    assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST).isEmpty());
+    // verify that udf in default whitelist can be executed
+    Statement stmt = hs2Conn.createStatement();
+    stmt.executeQuery("SELECT substr('foobar', 4) ");
+    hs2Conn.close();
+    miniHS2.stop();
+
+    // setup whitelist
+    Set<String> funcNames = FunctionRegistry.getFunctionNames();
+    funcNames.remove("reflect");
+    String funcNameStr = "";
+    for (String funcName : funcNames) {
+      funcNameStr += "," + funcName;
+    }
+    funcNameStr = funcNameStr.substring(1); // remove ',' at begining
+    testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST, funcNameStr);
+    miniHS2 = new MiniHS2(testConf);
+    miniHS2.start(new HashMap<String, String>());
+
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    stmt = hs2Conn.createStatement();
+    // verify that udf in whitelist can be executed
+    stmt.executeQuery("SELECT substr('foobar', 3) ");
+
+    // verify that udf not in whitelist fails
+    try {
+      stmt.executeQuery("SELECT reflect('java.lang.String', 'valueOf', 1) ");
+      fail("reflect() udf invocation should fail");
+    } catch (SQLException e) {
+      // expected
+    }
+  }
+
+  /** Test UDF blacklist
+   *   - verify default value
+   *   - verify udfs allowed with default blacklist
+   *   - verify udf disallowed when in blacklist
+   * @throws Exception
+   */
+  @Test
+  public void testUdfBlackList() throws Exception {
+    HiveConf testConf = new HiveConf();
+    assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST).isEmpty());
+
+    Statement stmt = hs2Conn.createStatement();
+    // verify that udf in default whitelist can be executed
+    stmt.executeQuery("SELECT substr('foobar', 4) ");
+
+    miniHS2.stop();
+    testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect");
+    miniHS2 = new MiniHS2(testConf);
+    miniHS2.start(new HashMap<String, String>());
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    stmt = hs2Conn.createStatement();
+
+    try {
+      stmt.executeQuery("SELECT reflect('java.lang.String', 'valueOf', 1) ");
+      fail("reflect() udf invocation should fail");
+    } catch (SQLException e) {
+      // expected
+    }
+  }
+
+  /** Test UDF blacklist overrides whitelist
+   * @throws Exception
+   */
+  @Test
+  public void testUdfBlackListOverride() throws Exception {
+    // setup whitelist
+    HiveConf testConf = new HiveConf();
+
+    Set<String> funcNames = FunctionRegistry.getFunctionNames();
+    String funcNameStr = "";
+    for (String funcName : funcNames) {
+      funcNameStr += "," + funcName;
+    }
+    funcNameStr = funcNameStr.substring(1); // remove ',' at begining
+    testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST, funcNameStr);
+    testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect");
+    miniHS2 = new MiniHS2(testConf);
+    miniHS2.start(new HashMap<String, String>());
+
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    Statement stmt = hs2Conn.createStatement();
+
+    // verify that udf in black list fails even though it's included in whitelist
+    try {
+      stmt.executeQuery("SELECT reflect('java.lang.String', 'valueOf', 1) ");
+      fail("reflect() udf invocation should fail");
+    } catch (SQLException e) {
+      // expected
+    }
   }
 
   /**

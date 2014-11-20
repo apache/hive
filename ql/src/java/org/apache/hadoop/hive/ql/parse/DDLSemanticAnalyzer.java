@@ -3020,9 +3020,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static ExprNodeGenericFuncDesc makeBinaryPredicate(
-      String fn, ExprNodeDesc left, ExprNodeDesc right) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
+      String fn, ExprNodeDesc left, ExprNodeDesc right) throws SemanticException {
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
   }
 
   /**
