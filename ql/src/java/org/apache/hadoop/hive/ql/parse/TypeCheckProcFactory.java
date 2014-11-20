@@ -118,10 +118,11 @@ public class TypeCheckProcFactory {
     ASTNode expr = (ASTNode) nd;
     TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
 
+    if (ctx == null) return null;
     RowResolver input = ctx.getInputRR();
     ExprNodeDesc desc = null;
 
-    if ((ctx == null) || (input == null) || (!ctx.getAllowGBExprElimination())) {
+    if ((input == null) || (!ctx.getAllowGBExprElimination())) {
       return null;
     }
 
