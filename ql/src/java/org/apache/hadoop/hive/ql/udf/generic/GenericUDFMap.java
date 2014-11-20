@@ -82,17 +82,10 @@ public class GenericUDFMap extends GenericUDF {
       }
     }
 
-    ObjectInspector keyOI = keyOIResolver.get();
-    ObjectInspector valueOI = valueOIResolver.get();
-
-    if (keyOI == null) {
-      keyOI = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
-    }
-    if (valueOI == null) {
-      valueOI = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
-    }
+    ObjectInspector keyOI =
+        keyOIResolver.get(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    ObjectInspector valueOI =
+        valueOIResolver.get(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
 
     converters = new Converter[arguments.length];
 
