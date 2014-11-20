@@ -441,8 +441,9 @@ public final class CorrelationUtilities {
    */
   protected static void isNullOperator(Operator<?> operator) throws SemanticException {
     if (operator == null) {
-      throw new SemanticException("Operator " + operator.getName() + " (ID: " +
-          operator.getIdentifier() + ") is null.");
+      // throw new SemanticException("Operator " + operator.getName() + " (ID: " +
+      //     operator.getIdentifier() + ") is null.");
+      throw new SemanticException("bad exception handling");
     }
   }
 
