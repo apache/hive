@@ -92,8 +92,8 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
         columns);
     for (int c = 0; c < columns; c++) {
       // can be null for void type
-      ObjectInspector oi = columnTypeResolvers[c].get();
-      outputFieldOIs.add(oi == null ? parentFields[0].get(c).getFieldObjectInspector() : oi);
+      ObjectInspector fieldOI = parentFields[0].get(c).getFieldObjectInspector();
+      outputFieldOIs.add(columnTypeResolvers[c].get(fieldOI));
     }
 
     // create output row ObjectInspector

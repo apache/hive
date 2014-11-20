@@ -158,7 +158,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -3702,11 +3701,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<String> columnNames = new ArrayList<String>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < col_list.size(); i++) {
-      // Replace NULL with CAST(NULL AS STRING)
-      if (col_list.get(i) instanceof ExprNodeNullDesc) {
-        col_list.set(i, new ExprNodeConstantDesc(
-            TypeInfoFactory.stringTypeInfo, null));
-      }
       String outputCol = getColumnInternalName(i);
       colExprMap.put(outputCol, col_list.get(i));
       columnNames.add(outputCol);

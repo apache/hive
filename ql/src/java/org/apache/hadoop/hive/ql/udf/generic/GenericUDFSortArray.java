@@ -82,10 +82,7 @@ public class GenericUDFSortArray extends GenericUDF {
       ((ListObjectInspector)(arguments[0])).getListElementObjectInspector();
     argumentOIs = arguments;
     converters = new Converter[arguments.length];
-    ObjectInspector returnOI = returnOIResolver.get();
-    if (returnOI == null) {
-      returnOI = elementObjectInspector;
-    }
+    ObjectInspector returnOI = returnOIResolver.get(elementObjectInspector);
     converters[0] = ObjectInspectorConverters.getConverter(elementObjectInspector, returnOI);
 
     return ObjectInspectorFactory.getStandardListObjectInspector(returnOI);
