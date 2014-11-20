@@ -34,11 +34,13 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -101,6 +103,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
   private StructObjectInspector[] valueStructInspectors;
   /* this is only used in the error code path */
   private List<VectorExpressionWriter>[] valueStringWriters;
+  private MapredLocalWork localWork = null;
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
     super.init(job, output, reporter);
@@ -197,8 +200,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
     }
 
     ExecMapperContext execContext = new ExecMapperContext(job);
+    localWork = gWork.getMapRedLocalWork();
     execContext.setJc(jc);
-    execContext.setLocalWork(gWork.getMapRedLocalWork());
+    execContext.setLocalWork(localWork);
     reducer.setExecContext(execContext);
 
     reducer.setReporter(rp);
@@ -209,6 +213,14 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
     try {
       LOG.info(reducer.dump(0));
       reducer.initialize(jc, rowObjectInspector);
+
+      if (localWork != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : localWork.getDummyParentOp()) {
+          dummyOp.setExecContext(execContext);
+          dummyOp.initialize(jc, null);
+        }
+      }
+
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -218,6 +230,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
         throw new RuntimeException("Reduce operator initialization failed", e);
       }
     }
+
   }
 
   @Override
@@ -416,6 +429,13 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
       }
 
       reducer.close(abort);
+
+      if (localWork != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : localWork.getDummyParentOp()) {
+          dummyOp.close(abort);
+        }
+      }
+
       ReportStats rps = new ReportStats(rp, jc);
       reducer.preorderMap(rps);
 

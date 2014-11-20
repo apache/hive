@@ -67,7 +67,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainer[] mapJoinTables,
       MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage) throws HiveException {
 
-    String currentInputPath = context.getCurrentInputPath().toString();
+    // Note: it's possible that a MJ operator is in a ReduceWork, in which case the
+    // currentInputPath will be null. But, since currentInputPath is only interesting
+    // for bucket join case, and for bucket join the MJ operator will always be in
+    // a MapWork, this should be OK.
+    String currentInputPath =
+        context.getCurrentInputPath() == null ? null : context.getCurrentInputPath().toString();
+
     LOG.info("******* Load from HashTable for input file: " + currentInputPath);
     MapredLocalWork localWork = context.getLocalWork();
     try {
