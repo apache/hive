@@ -59,7 +59,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeCreateFunction(ast);
     }
     if (ast.getToken().getType() == HiveParser.TOK_DROPFUNCTION) {
-      analyzeDropFunction(ast);
+        analyzeDropFunction(ast);
     }
 
     LOG.info("analyze done");

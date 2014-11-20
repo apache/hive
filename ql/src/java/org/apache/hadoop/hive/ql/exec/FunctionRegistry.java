@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -41,6 +42,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -147,6 +149,9 @@ import org.apache.hive.common.util.AnnotationUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -668,8 +673,12 @@ public final class FunctionRegistry {
     return functionInfo;
   }
 
-  public static FunctionInfo getFunctionInfo(String functionName) {
-    return getFunctionInfo(mFunctions, functionName);
+  public static FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
+    FunctionInfo functionInfo = getFunctionInfo(mFunctions, functionName);
+    if (functionInfo != null && functionInfo.isBlockedFunction()) {
+      throw new SemanticException ("UDF " + functionName + " is not allowed");
+    }
+    return functionInfo;
   }
 
   /**
@@ -771,7 +780,13 @@ public final class FunctionRegistry {
   public static Set<String> getFunctionSynonyms(String funcName) {
     Set<String> synonyms = new HashSet<String>();
 
-    FunctionInfo funcInfo = getFunctionInfo(funcName);
+    FunctionInfo funcInfo;
+    try {
+      funcInfo = getFunctionInfo(funcName);
+    } catch (SemanticException e) {
+      LOG.warn("Failed to load " + funcName);
+      funcInfo = null;
+    }
     if (null == funcInfo) {
       return synonyms;
     }
@@ -1246,7 +1261,7 @@ public final class FunctionRegistry {
     }
   }
 
-  public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
+  public static GenericUDAFResolver getGenericUDAFResolver(String functionName) throws SemanticException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Looking up GenericUDAF: " + functionName);
     }
@@ -1543,16 +1558,18 @@ public final class FunctionRegistry {
   /**
    * A shortcut to get the "index" GenericUDF. This is used for getting elements
    * out of array and getting values out of map.
+   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForIndex() {
-    return FunctionRegistry.getFunctionInfo("index").getGenericUDF();
+    return FunctionRegistry.getFunctionInfo(mFunctions, "index").getGenericUDF();
   }
 
   /**
    * A shortcut to get the "and" GenericUDF.
+   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForAnd() {
-    return FunctionRegistry.getFunctionInfo("and").getGenericUDF();
+    return FunctionRegistry.getFunctionInfo(mFunctions, "and").getGenericUDF();
   }
 
   /**
@@ -1924,8 +1941,9 @@ public final class FunctionRegistry {
    *          name of function
    * @return true if a GenericUDF or GenericUDAF exists for this name and implyOrder is true, false
    *         otherwise.
+   * @throws SemanticException
    */
-  public static boolean impliesOrder(String functionName) {
+  public static boolean impliesOrder(String functionName) throws SemanticException {
 
     FunctionInfo info = getFunctionInfo(functionName);
     if (info != null) {
@@ -1951,13 +1969,13 @@ public final class FunctionRegistry {
     windowFunctions.put(functionName.toLowerCase(), wInfo);
   }
 
-  public static boolean isTableFunction(String name)
+  public static boolean isTableFunction(String name) throws SemanticException
   {
     FunctionInfo tFInfo = getFunctionInfo(name);
     return tFInfo != null && !tFInfo.isInternalTableFunction() && tFInfo.isTableFunction();
   }
 
-  public static TableFunctionResolver getTableFunctionResolver(String name)
+  public static TableFunctionResolver getTableFunctionResolver(String name) throws SemanticException
   {
     FunctionInfo tfInfo = getFunctionInfo(name);
     if(tfInfo.isTableFunction()) {
@@ -1966,7 +1984,7 @@ public final class FunctionRegistry {
     return null;
   }
 
-  public static TableFunctionResolver getWindowingTableFunction()
+  public static TableFunctionResolver getWindowingTableFunction() throws SemanticException
   {
     return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
@@ -1993,8 +2011,9 @@ public final class FunctionRegistry {
    *          name of a function
    * @return true if function is a UDAF, has WindowFunctionDescription annotation and the annotations
    *         confirms a ranking function, false otherwise
+   * @throws SemanticException
    */
-  public static boolean isRankingFunction(String name) {
+  public static boolean isRankingFunction(String name) throws SemanticException {
     FunctionInfo info = getFunctionInfo(name);
     if (info == null) {
       return false;
@@ -2025,5 +2044,58 @@ public final class FunctionRegistry {
       return;
     }
     nativeUdfs.add(fi.getFunctionClass());
+  }
+
+  /**
+   * Setup blocked flag for all builtin UDFs as per udf whitelist and blacklist
+   * @param whiteList
+   * @param blackList
+   */
+  public static void setupPermissionsForBuiltinUDFs(String whiteListStr,
+      String blackListStr) {
+    List<String> whiteList = Lists.newArrayList(
+        Splitter.on(",").trimResults().omitEmptyStrings().split(whiteListStr));
+    List<String> blackList = Lists.newArrayList(
+        Splitter.on(",").trimResults().omitEmptyStrings().split(blackListStr));
+
+    for ( Entry<String, FunctionInfo> funcEntry : mFunctions.entrySet()) {
+      funcEntry.getValue().setBlockedFunction(
+          isUdfBlocked(funcEntry.getKey(), whiteList, blackList));
+    }
+  }
+
+  /**
+   * Check if the function belongs to whitelist or blacklist
+   * @param functionName
+   * @param whiteList
+   * @param blackList
+   * @return true if the given udf is to be blocked
+   */
+  private static boolean isUdfBlocked(String functionName,
+      List<String> whiteList, List<String> blackList) {
+    boolean inWhiteList = false;
+    boolean inBlackList = false;
+
+    if (whiteList.isEmpty()) {
+      // if whitelist is empty, all udfs are allowed
+      inWhiteList = true;
+    } else {
+      for (String allowedFunction : whiteList) {
+        if (functionName.equalsIgnoreCase(allowedFunction)) {
+          inWhiteList = true;
+          break;
+        }
+      }
+    }
+
+    for (String blockedFunction : blackList) {
+      if (functionName.equalsIgnoreCase(blockedFunction)) {
+        inBlackList = true;
+        break;
+      }
+    }
+
+    // blacklist setting takes presendence on whitelist
+    return !inWhiteList || inBlackList;
   }
 }

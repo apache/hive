@@ -47,6 +47,8 @@ public class FunctionInfo implements CommonFunctionInfo {
 
   private Class<? extends TableFunctionResolver>  tableFunctionResolver;
 
+  private boolean blockedFunction;
+
   public FunctionInfo(boolean isNative, String displayName,
       GenericUDF genericUDF) {
     this.isNative = isNative;
@@ -190,4 +192,13 @@ public class FunctionInfo implements CommonFunctionInfo {
   public boolean isTableFunction() {
     return null != tableFunctionResolver;
   }
+
+  public boolean isBlockedFunction() {
+    return blockedFunction;
+  }
+
+  public void setBlockedFunction(boolean blockedFunction) {
+    this.blockedFunction = blockedFunction;
+  }
+
 }
