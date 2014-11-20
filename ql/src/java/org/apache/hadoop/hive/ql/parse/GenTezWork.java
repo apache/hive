@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,6 +42,13 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -109,10 +109,14 @@ public class GenTezWork implements NodeProcessor {
       // operator graph. There's typically two reasons for that: a) mux/demux
       // b) multi insert. Mux/Demux will hit the same leaf again, multi insert
       // will result into a vertex with multiple FS or RS operators.
-
-      // At this point we don't have to do anything special in this case. Just
-      // run through the regular paces w/o creating a new task.
-      work = context.rootToWorkMap.get(root);
+      if (context.childToWorkMap.containsKey(operator)) {
+        // if we've seen both root and child, we can bail.
+        return null;
+      } else {
+        // At this point we don't have to do anything special in this case. Just
+        // run through the regular paces w/o creating a new task.
+        work = context.rootToWorkMap.get(root);
+      }
     } else {
       // create a new vertex
       if (context.preceedingWork == null) {
