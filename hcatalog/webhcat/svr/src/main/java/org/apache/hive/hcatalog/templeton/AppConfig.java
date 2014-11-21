@@ -28,12 +28,14 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
@@ -224,14 +226,8 @@ public class AppConfig extends Configuration {
    * support/debugging.  Later it may be worth adding a REST call which will return this data.
    */
   private String dumpEnvironent() {
-    StringBuilder sb = new StringBuilder("WebHCat environment:\n");
-    Map<String, String> env = System.getenv();
-    List<String> propKeys = new ArrayList<String>(env.keySet());
-    Collections.sort(propKeys);
-    for(String propKey : propKeys) {
-      sb.append(propKey).append('=').append(env.get(propKey)).append('\n');
-    }
-    sb.append("Configration properties: \n");
+    StringBuilder sb = TempletonUtils.dumpPropMap("========WebHCat System.getenv()========", System.getenv());
+    sb.append("START========WebHCat AppConfig.iterator()========: \n");
     Iterator<Map.Entry<String, String>> configIter = this.iterator();
     List<Map.Entry<String, String>> configVals = new ArrayList<Map.Entry<String, String>>();
     while(configIter.hasNext()) {
@@ -245,8 +241,19 @@ public class AppConfig extends Configuration {
     });
     for(Map.Entry<String, String> entry : configVals) {
       //use get() to make sure variable substitution works
-      sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
+      if(entry.getKey().toLowerCase().contains("path")) {
+        StringTokenizer st = new StringTokenizer(get(entry.getKey()), File.pathSeparator);
+        sb.append(entry.getKey()).append("=\n");
+        while(st.hasMoreTokens()) {
+          sb.append("    ").append(st.nextToken()).append(File.pathSeparator).append('\n');
+        }
+      }
+      else {
+        sb.append(entry.getKey()).append('=').append(get(entry.getKey())).append('\n');
+      }
     }
+    sb.append("END========WebHCat AppConfig.iterator()========: \n");
+    sb.append(TempletonUtils.dumpPropMap("========WebHCat System.getProperties()========", System.getProperties()));
     return sb.toString();
   }
   public void startCleanup() {

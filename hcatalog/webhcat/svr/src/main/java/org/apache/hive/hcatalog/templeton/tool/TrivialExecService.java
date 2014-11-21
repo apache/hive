@@ -20,7 +20,6 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 
 /**
@@ -61,16 +61,47 @@ final class TrivialExecService {
       pb.environment().remove(key);
     }
     pb.environment().putAll(environmentVariables);
-    logDebugInfo("Starting process with env:", pb.environment());
+    logDebugInfo("========Starting process with env:========", pb.environment());
+    printContentsOfDir(".");
     return pb.start();
   }
   private static void logDebugInfo(String msg, Map<String, String> props) {
-    LOG.info(msg);
-    List<String> keys = new ArrayList<String>();
-    keys.addAll(props.keySet());
-    Collections.sort(keys);
-    for(String key : keys) {
-      LOG.info(key + "=" + props.get(key));
-    }    
+    StringBuilder sb = TempletonUtils.dumpPropMap(msg, props);
+    LOG.info(sb.toString());
+    String sqoopHome = props.get("SQOOP_HOME");
+    if(TempletonUtils.isset(sqoopHome)) {
+      //this is helpful when Sqoop is installed on each node in the cluster to make sure
+      //relevant jars (JDBC in particular) are present on the node running the command
+      printContentsOfDir(sqoopHome + File.separator+ "lib");
+    }
+  }
+  /**
+   * Print files and directories in current directory. Will list files in the sub-directory (only 1 level deep)
+   * time honored tradition in WebHCat of borrowing from Oozie
+   */
+  private static void printContentsOfDir(String dir) {
+    File folder = new File(dir);
+    StringBuilder sb = new StringBuilder("Files in '").append(dir).append("' dir:").append(folder.getAbsolutePath()).append('\n');
+
+    File[] listOfFiles = folder.listFiles();
+    for (File fileName : listOfFiles) {
+      if (fileName.isFile()) {
+        sb.append("File: ").append(fileName.getName()).append('\n');
+      }
+      else if (fileName.isDirectory()) {
+        sb.append("Dir: ").append(fileName.getName()).append('\n');
+        File subDir = new File(fileName.getName());
+        File[] moreFiles = subDir.listFiles();
+        for (File subFileName : moreFiles) {
+          if (subFileName.isFile()) {
+            sb.append("--File: ").append(subFileName.getName()).append('\n');
+          }
+          else if (subFileName.isDirectory()) {
+            sb.append("--Dir: ").append(subFileName.getName()).append('\n');
+          }
+        }
+      }
+    }
+    LOG.info(sb.toString());
   }
 }
