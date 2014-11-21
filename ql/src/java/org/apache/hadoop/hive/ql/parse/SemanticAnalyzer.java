@@ -1815,13 +1815,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             } else {
               // This is the only place where isQuery is set to true; it defaults to false.
               qb.setIsQuery(true);
-              Path table_path = getStrongestEncryptedTablePath(qb);
-              if (table_path == null) {
-                fname = ctx.getMRTmpPath().toString();
-              } else {
-                fname = ctx.getMRTmpPath(table_path.toUri()).toString();
-              }
-              ctx.setResDir(new Path(fname));
+              Path stagingPath = getStagingDirectoryPathname(qb);
+              fname = stagingPath.toString();
+              ctx.setResDir(stagingPath);
             }
           }
           qb.getMetaData().setDestForAlias(name, fname,
@@ -1878,6 +1874,81 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Checks if a given path is encrypted (valid only for HDFS files)
+   * @param path The path to check for encryption
+   * @return True if the path is encrypted; False if it is not encrypted
+   * @throws HiveException If an error occurs while checking for encryption
+   */
+  private boolean isPathEncrypted(Path path) throws HiveException {
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+
+    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+    if (hdfsEncryptionShim != null) {
+      try {
+        if (hdfsEncryptionShim.isPathEncrypted(path)) {
+          return true;
+        }
+      } catch (Exception e) {
+        throw new HiveException("Unable to determine if " + path + "is encrypted: " + e, e);
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Compares to path key encryption strenghts.
+   *
+   * @param p1 Path to an HDFS file system
+   * @param p2 Path to an HDFS file system
+   * @return -1 if strength is weak; 0 if is equals; 1 if it is stronger
+   * @throws HiveException If an error occurs while comparing key strengths.
+   */
+  private int comparePathKeyStrength(Path p1, Path p2) throws HiveException {
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+
+    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+    if (hdfsEncryptionShim != null) {
+      try {
+        return hdfsEncryptionShim.comparePathKeyStrength(p1, p2);
+      } catch (Exception e) {
+        throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
+      }
+    }
+
+    return 0; // Non-encrypted path (or equals strength)
+  }
+
+  /**
+   * Checks if a given path has read-only access permissions.
+   *
+   * @param path The path to check for read-only permissions.
+   * @return True if the path is read-only; False otherwise.
+   * @throws HiveException If an error occurs while checking file permissions.
+   */
+  private boolean isPathReadOnly(Path path) throws HiveException {
+    HiveConf conf = SessionState.get().getConf();
+    try {
+      FileSystem fs = path.getFileSystem(conf);
+      UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      FileStatus status = fs.getFileStatus(path);
+
+      // We just check for writing permissions. If it fails with AccessControException, then it
+      // means the location may be read-only.
+      FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName());
+
+      // Path has writing permissions
+      return false;
+    } catch (AccessControlException e) {
+      // An AccessControlException may be caused for other different errors,
+      // but we take it as if our path is read-only
+      return true;
+    } catch (Exception e) {
+      throw new HiveException("Unable to determine if " + path + " is read only: " + e, e);
+    }
+  }
+
+  /**
    * Gets the strongest encrypted table path.
    *
    * @param qb The QB object that contains a list of all table locations.
@@ -1887,7 +1958,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Path getStrongestEncryptedTablePath(QB qb) throws HiveException {
     List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
     Path strongestPath = null;
-    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
 
     /* Walk through all found table locations to get the most encrypted table */
     for (String alias : tabAliases) {
@@ -1898,45 +1968,61 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           try {
             if (strongestPath == null) {
               strongestPath = tablePath;
-            } else if (hdfsEncryptionShim != null
-                && tablePath.toUri().getScheme().equals("hdfs")
-                && hdfsEncryptionShim.isPathEncrypted(tablePath))
+            } else if (tablePath.toUri().getScheme().equals("hdfs")
+                && isPathEncrypted(tablePath)
+                && comparePathKeyStrength(tablePath, strongestPath) > 0)
             {
-              if (hdfsEncryptionShim.comparePathKeyStrength(tablePath, strongestPath) > 0) {
-                strongestPath = tablePath;
-              }
+              strongestPath = tablePath;
             }
-          } catch (IOException e) {
-            throw new HiveException("Cannot search for the most secure table path", e);
+          } catch (HiveException e) {
+            throw new HiveException("Unable to find the most secure table path: " + e, e);
           }
         }
-      }
-    }
-
-    /* Check for writing permissions on the selected location. */
-    if (strongestPath != null && strongestPath.toUri().getScheme().equals("hdfs")) {
-      try {
-        FileSystem fs = strongestPath.getFileSystem(SessionState.get().getConf());
-        UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(SessionState.get().getConf());
-        FileStatus status = fs.getFileStatus(strongestPath);
-
-        FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName());
-      } catch (AccessControlException e) {
-        try {
-          if (hdfsEncryptionShim == null || !hdfsEncryptionShim.isPathEncrypted(strongestPath)) {
-            strongestPath = null;
-          } else {
-            throw new HiveException(e.getMessage(), e);
-          }
-        } catch (IOException e1) {
-          throw new HiveException(e.getMessage(), e);
-        }
-      } catch (Exception e) {
-        throw new HiveException(e.getMessage(), e);
       }
     }
 
     return strongestPath;
+  }
+
+  /**
+   * Gets the staging directory where MR files will be stored temporary.
+   * It walks through the QB plan to find the correct location where save temporary files. This
+   * temporary location (or staging directory) may be created inside encrypted tables locations for
+   * security reasons. If the QB has read-only tables, then the older scratch directory will be used,
+   * or a permission error will be thrown if the requested query table is encrypted and the old scratch
+   * directory is not.
+   *
+   * @param qb The QB object that contains a list of all table locations.
+   * @return The path to the staging directory.
+   * @throws HiveException If an error occurs while identifying the correct staging location.
+   */
+  private Path getStagingDirectoryPathname(QB qb) throws HiveException {
+    Path stagingPath = null, tablePath;
+
+    // Looks for the most encrypted table location (if there is one)
+    tablePath = getStrongestEncryptedTablePath(qb);
+    if (tablePath != null) {
+      // Only HDFS paths can be checked for encryption
+      if (tablePath.toUri().getScheme().equals("hdfs")) {
+        if (isPathReadOnly(tablePath) && isPathEncrypted(tablePath)) {
+          Path tmpPath = ctx.getMRTmpPath();
+          if (comparePathKeyStrength(tablePath, tmpPath) < 0) {
+            throw new HiveException("Read-only encrypted tables cannot be read " +
+                "if the scratch directory is not encrypted (or encryption is weak)");
+          } else {
+            stagingPath = tmpPath;
+          }
+        }
+      }
+
+      if (stagingPath == null) {
+        stagingPath = ctx.getMRTmpPath(tablePath.toUri());
+      }
+    } else {
+      stagingPath = ctx.getMRTmpPath();
+    }
+
+    return stagingPath;
   }
 
   private void replaceViewReferenceWithDefinition(QB qb, Table tab,
