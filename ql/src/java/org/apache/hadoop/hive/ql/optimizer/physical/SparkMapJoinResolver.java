@@ -160,16 +160,10 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
           for (BaseWork parentWork : originalWork.getParents(work)) {
             if (containsOp(parentWork,SparkHashTableSinkOperator.class)) {
               parentWork.getMapRedLocalWork().setTmpHDFSPath(tmpPath);
-              parentWork.getMapRedLocalWork().setDummyParentOp(
-                  new ArrayList<Operator<? extends OperatorDesc>>());
             }
           }
 
-          bigTableLocalWork.setAliasToWork(
-              new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
-          bigTableLocalWork.setAliasToFetchWork(new LinkedHashMap<String, FetchWork>());
           bigTableLocalWork.setTmpPath(tmpPath);
-
           // TODO: set inputFileChangeSensitive and BucketMapjoinContext,
           // TODO: enable non-staged mapjoin
         }
