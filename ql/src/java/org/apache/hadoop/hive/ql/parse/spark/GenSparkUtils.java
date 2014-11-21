@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
 
 import java.util.ArrayList;
 import java.util.Deque;
@@ -182,6 +184,15 @@ public class GenSparkUtils {
         context.inputs, partitions, root, alias, context.conf, false);
   }
 
+  private void collectOperators (Operator<?> op, List<Operator<?>> opList) {
+    opList.add(op);
+    for (Object child : op.getChildOperators()) {
+      if (child != null) {
+        collectOperators((Operator<?>)child, opList);
+      }
+    }
+  }
+
   // removes any union operator and clones the plan
   public void removeUnionOperators(Configuration conf, GenSparkProcContext context,
       BaseWork work)
@@ -195,6 +206,29 @@ public class GenSparkUtils {
 
     // need to clone the plan.
     List<Operator<?>> newRoots = Utilities.cloneOperatorTree(conf, roots);
+
+    // Build a map to map the original FileSinkOperator and the cloned FileSinkOperators
+    // This map is used for set the stats flag for the cloned FileSinkOperators in later process
+    Iterator<Operator<?>> newRoots_it = newRoots.iterator();
+    for (Operator<?> root : roots) {
+      Operator<?> newRoot = newRoots_it.next();
+      List<Operator<?>> newOpQueue = new LinkedList<Operator<?>>();
+      collectOperators (newRoot, newOpQueue);
+      List<Operator<?>> opQueue = new LinkedList<Operator<?>>();
+      collectOperators (root, opQueue);
+      Iterator<Operator<?>> newOpQueue_it = newOpQueue.iterator();
+      for (Operator<?> op : opQueue) {
+        Operator<?> newOp = newOpQueue_it.next();
+        if (op instanceof FileSinkOperator) {
+          List<FileSinkOperator> fileSinkList = context.fileSinkMap.get((FileSinkOperator)op);
+          if (fileSinkList == null) {
+            fileSinkList = new LinkedList<FileSinkOperator>();
+          }
+          fileSinkList.add((FileSinkOperator)newOp);
+          context.fileSinkMap.put((FileSinkOperator)op, fileSinkList);
+        }
+      }
+    }
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
@@ -272,8 +306,17 @@ public class GenSparkUtils {
         GenMapRedUtils.isInsertInto(parseContext, fileSink);
     HiveConf hconf = parseContext.getConf();
 
-    boolean chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-        hconf, fileSink, context.currentTask, isInsertTable);
+    boolean  chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
+         hconf, fileSink, context.currentTask, isInsertTable);
+    // Set stats config for FileSinkOperators which are cloned from the fileSink
+    List<FileSinkOperator> fileSinkList = context.fileSinkMap.get(fileSink);
+    if (fileSinkList != null) {
+      for (FileSinkOperator fsOp : fileSinkList) {
+        fsOp.getConf().setGatherStats(fileSink.getConf().isGatherStats());
+        fsOp.getConf().setStatsReliable(fileSink.getConf().isStatsReliable());
+        fsOp.getConf().setMaxStatsKeyPrefixLength(fileSink.getConf().getMaxStatsKeyPrefixLength());
+      }
+    }
 
     Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
         chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
