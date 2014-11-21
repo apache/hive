@@ -882,4 +882,8 @@ public class HiveStringUtils {
     }
     return len;
   }
+
+  public static String normalizeIdentifier(String identifier) {
+	  return identifier.trim().toLowerCase();
+	}
 }
