@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.exec.spark.session;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 public interface SparkSession {
   /**
    * Initializes a Spark session for DAG execution.
    */
-  public void open(HiveConf conf);
+  public void open(HiveConf conf) throws HiveException;
 
   /**
    * Submit given <i>sparkWork</i> to SparkClient
