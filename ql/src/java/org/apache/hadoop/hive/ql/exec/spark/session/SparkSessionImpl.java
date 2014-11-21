@@ -26,15 +26,13 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.spark.SparkException;
 
 import java.io.IOException;
 import java.util.UUID;
 
-/**
- * Simple implementation of <i>SparkSession</i> which currently just submits jobs to
- * SparkClient which is shared by all SparkSession instances.
- */
 public class SparkSessionImpl implements SparkSession {
   private static final Log LOG = LogFactory.getLog(SparkSession.class);
 
@@ -48,16 +46,19 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public void open(HiveConf conf) {
+  public void open(HiveConf conf) throws HiveException {
     this.conf = conf;
     isOpen = true;
+    try {
+      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf);
+    } catch (Exception e) {
+      throw new HiveException("Failed to create spark client.", e);
+    }
   }
 
   @Override
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
-    Configuration hiveConf = driverContext.getCtx().getConf();
-    hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(hiveConf);
     return hiveSparkClient.execute(driverContext, sparkWork);
   }
 
