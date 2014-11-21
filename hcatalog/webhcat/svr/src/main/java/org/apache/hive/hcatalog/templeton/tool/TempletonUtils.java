@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -407,5 +410,35 @@ public class TempletonUtils {
       throw new RuntimeException(e);
     }
     return null;
+  }
+  public static StringBuilder dumpPropMap(String header, Properties props) {
+    Map<String, String> map = new HashMap<String, String>();
+    for(Map.Entry<Object, Object> ent : props.entrySet()) {
+      map.put(ent.getKey().toString(), ent.getValue() == null ? null : ent.getValue().toString());
+    }
+    return dumpPropMap(header, map);
+  }
+  public static StringBuilder dumpPropMap(String header, Map<String, String> map) {
+    StringBuilder sb = new StringBuilder("START").append(header).append(":\n");
+    List<String> propKeys = new ArrayList<String>(map.keySet());
+    Collections.sort(propKeys);
+    for(String propKey : propKeys) {
+      if(propKey.toLowerCase().contains("path")) {
+        StringTokenizer st = new StringTokenizer(map.get(propKey), File.pathSeparator);
+        if(st.countTokens() > 1) {
+          sb.append(propKey).append("=\n");
+          while (st.hasMoreTokens()) {
+            sb.append("    ").append(st.nextToken()).append(File.pathSeparator).append('\n');
+          }
+        }
+        else {
+          sb.append(propKey).append('=').append(map.get(propKey)).append('\n');
+        }
+      }
+      else {
+        sb.append(propKey).append('=').append(map.get(propKey)).append('\n');
+      }
+    }
+    return sb.append("END").append(header).append('\n');
   }
 }
