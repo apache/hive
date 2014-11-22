@@ -276,6 +276,10 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     MapJoinDesc mjDesc = mapJoinOp.getConf();
     HiveConf conf = context.conf;
 
+    // Unlike in MR, we may call this method multiple times, for each
+    // small table HTS. But, since it's idempotent, it should be OK.
+    mjDesc.resetOrder();
+
     float hashtableMemoryUsage;
     if (hasGroupBy(mapJoinOp, context)) {
       hashtableMemoryUsage = conf.getFloatVar(
