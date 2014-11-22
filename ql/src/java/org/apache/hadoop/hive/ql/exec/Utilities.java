@@ -1841,7 +1841,7 @@ public final class Utilities {
       Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
       serializer.initialize(null, tableInfo.getProperties());
       outputClass = serializer.getSerializedClass();
-      hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+      hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, conf.getTableInfo());
     } catch (SerDeException e) {
       throw new HiveException(e);
     } catch (InstantiationException e) {
@@ -3309,7 +3309,7 @@ public final class Utilities {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static Path createEmptyFile(Path hiveScratchDir,
-      Class<? extends HiveOutputFormat> outFileFormat, JobConf job,
+      HiveOutputFormat outFileFormat, JobConf job,
       int sequenceNumber, Properties props, boolean dummyRow)
           throws IOException, InstantiationException, IllegalAccessException {
 
@@ -3325,7 +3325,7 @@ public final class Utilities {
     String newFile = newDir + Path.SEPARATOR + "emptyFile";
     Path newFilePath = new Path(newFile);
 
-    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
+    RecordWriter recWriter = outFileFormat.getHiveRecordWriter(job, newFilePath,
         Text.class, false, props, null);
     if (dummyRow) {
       // empty files are omitted at CombineHiveInputFormat.
@@ -3341,28 +3341,29 @@ public final class Utilities {
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyPartition(Path path, JobConf job, MapWork work,
       Path hiveScratchDir, String alias, int sequenceNumber)
-          throws IOException, InstantiationException, IllegalAccessException {
+          throws Exception {
 
     String strPath = path.toString();
 
     // The input file does not exist, replace it by a empty file
     PartitionDesc partDesc = work.getPathToPartitionInfo().get(strPath);
-    boolean nonNative = partDesc.getTableDesc().isNonNative();
-    boolean oneRow = partDesc.getInputFileFormatClass() == OneNullRowInputFormat.class;
-    Properties props = SerDeUtils.createOverlayedProperties(
-        partDesc.getTableDesc().getProperties(), partDesc.getProperties());
-    Class<? extends HiveOutputFormat> outFileFormat = partDesc.getOutputFileFormatClass();
-
-    if (nonNative) {
+    if (partDesc.getTableDesc().isNonNative()) {
       // if this isn't a hive table we can't create an empty file for it.
       return path;
     }
 
+    Properties props = SerDeUtils.createOverlayedProperties(
+        partDesc.getTableDesc().getProperties(), partDesc.getProperties());
+    HiveOutputFormat outFileFormat = HiveFileFormatUtils.getHiveOutputFormat(job, partDesc);
+
+    boolean oneRow = partDesc.getInputFileFormatClass() == OneNullRowInputFormat.class;
+
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job,
         sequenceNumber, props, oneRow);
 
-
-    LOG.info("Changed input file to " + newPath);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Changed input file " + strPath + " to empty file " + newPath);
+    }
 
     // update the work
     String strNewPath = newPath.toString();
@@ -3384,23 +3385,23 @@ public final class Utilities {
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyTable(JobConf job, MapWork work,
       Path hiveScratchDir, String alias, int sequenceNumber)
-          throws IOException, InstantiationException, IllegalAccessException {
+          throws Exception {
 
     TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
-    Properties props = tableDesc.getProperties();
-    boolean nonNative = tableDesc.isNonNative();
-    Class<? extends HiveOutputFormat> outFileFormat = tableDesc.getOutputFileFormatClass();
-
-    if (nonNative) {
+    if (tableDesc.isNonNative()) {
       // if this isn't a hive table we can't create an empty file for it.
       return null;
     }
 
+    Properties props = tableDesc.getProperties();
+    HiveOutputFormat outFileFormat = HiveFileFormatUtils.getHiveOutputFormat(job, tableDesc);
+
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job,
         sequenceNumber, props, false);
 
-
-    LOG.info("Changed input file to " + newPath.toString());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Changed input file for alias " + alias + " to " + newPath);
+    }
 
     // update the work
 

@@ -523,7 +523,7 @@ public class RowContainer<ROW extends List<Object>>
       tmpFile.deleteOnExit();
 
       // rFile = new RandomAccessFile(tmpFile, "rw");
-      HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
+      HiveOutputFormat<?, ?> hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(jc, tblDesc);
       tempOutPath = new Path(tmpFile.toString());
       JobConf localJc = getLocalFSJobConfClone(jc);
       rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,

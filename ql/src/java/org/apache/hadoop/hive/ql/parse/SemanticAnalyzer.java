@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -216,6 +215,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.eigenbase.rel.AggregateCall;
 import org.eigenbase.rel.AggregateRelBase;
 import org.eigenbase.rel.Aggregation;
@@ -1735,7 +1735,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
 
           Class<?> outputFormatClass = ts.tableHandle.getOutputFormatClass();
-          if (!HiveOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+          if (!ts.tableHandle.isNonNative() &&
+              !HiveOutputFormat.class.isAssignableFrom(outputFormatClass)) {
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
                 .getMsg(ast, "The class is " + outputFormatClass.toString()));
           }
@@ -12449,7 +12450,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
-  private boolean isAcidOutputFormat(Class<? extends HiveOutputFormat> of) {
+  private boolean isAcidOutputFormat(Class<? extends OutputFormat> of) {
     Class<?>[] interfaces = of.getInterfaces();
     for (Class<?> iface : interfaces) {
       if (iface.equals(AcidOutputFormat.class)) {
@@ -12467,7 +12468,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             AcidUtils.Operation.INSERT);
   }
 
-  private AcidUtils.Operation getAcidType(Class<? extends HiveOutputFormat> of) {
+  private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of) {
     if (SessionState.get() == null || !SessionState.get().getTxnMgr().supportsAcid()) {
       return AcidUtils.Operation.NOT_ACID;
     } else if (isAcidOutputFormat(of)) {
