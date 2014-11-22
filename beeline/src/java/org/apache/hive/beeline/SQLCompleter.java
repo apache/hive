@@ -31,8 +31,12 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import jline.console.completer.StringsCompleter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 class SQLCompleter extends StringsCompleter {
+  private static final Log LOG = LogFactory.getLog(SQLCompleter.class.getName());
+
 
   public SQLCompleter(Set<String> completions){
     super(completions);
@@ -50,23 +54,33 @@ class SQLCompleter extends StringsCompleter {
     // now add the keywords from the current connection
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getSQLKeywords();
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      LOG.debug("fail to get SQL key words from database metadata due to the exception: " + e, e);
     }
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getStringFunctions();
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      LOG.debug(
+        "fail to get string function names from database metadata due to the exception: " + e, e);
     }
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getNumericFunctions();
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      LOG.debug(
+        "fail to get numeric function names from database metadata due to the exception: " + e, e);
     }
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getSystemFunctions();
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      LOG.debug(
+        "fail to get system function names from database metadata due to the exception: " + e, e);
     }
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getTimeDateFunctions();
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      LOG.debug(
+        "fail to get time date function names from database metadata due to the exception: " + e,
+        e);
     }
 
     // also allow lower-case versions of all the keywords
