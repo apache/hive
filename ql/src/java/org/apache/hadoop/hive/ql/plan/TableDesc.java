@@ -28,12 +28,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 
 /**
  * TableDesc.
@@ -42,7 +41,7 @@ import org.apache.hadoop.mapred.InputFormat;
 public class TableDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   private Class<? extends InputFormat> inputFileFormatClass;
-  private Class<? extends HiveOutputFormat> outputFileFormatClass;
+  private Class<? extends OutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
 
@@ -59,7 +58,7 @@ public class TableDesc implements Serializable, Cloneable {
       final Class<?> outputFormatClass, final Properties properties) {
     this.inputFileFormatClass = inputFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFormatClass, false);
+        .getOutputFormatSubstitute(outputFormatClass);
     this.properties = properties;
   }
 
@@ -94,13 +93,13 @@ public class TableDesc implements Serializable, Cloneable {
     this.inputFileFormatClass = inputFileFormatClass;
   }
 
-  public Class<? extends HiveOutputFormat> getOutputFileFormatClass() {
+  public Class<? extends OutputFormat> getOutputFileFormatClass() {
     return outputFileFormatClass;
   }
 
-  public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
+  public void setOutputFileFormatClass(Class<?> outputFileFormatClass) {
     this.outputFileFormatClass = HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFileFormatClass, false);
+        .getOutputFormatSubstitute(outputFileFormatClass);
   }
 
   @Explain(displayName = "properties", normalExplain = false)
@@ -142,12 +141,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "output format")
   public String getOutputFileFormatClassName() {
-    if (getOutputFileFormatClass().getName() == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
-      return HiveFileFormatUtils.getRealOutputFormatClassName();
-    }
-    else {
-      return getOutputFileFormatClass().getName();
-    }
+    return getOutputFileFormatClass().getName();
   }
 
   public boolean isNonNative() {

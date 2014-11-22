@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -43,9 +42,9 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
@@ -70,7 +69,7 @@ public class Partition implements Serializable {
    * These fields are cached. The information comes from tPartition.
    */
   private Deserializer deserializer;
-  private Class<? extends HiveOutputFormat> outputFormatClass;
+  private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
 
   /**
@@ -186,16 +185,14 @@ public class Partition implements Serializable {
       return;
     }
 
-    String partName = "";
     if (table.isPartitioned()) {
       try {
-        partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+        String partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
         if (tPartition.getSd().getLocation() == null) {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(
-              table.getDataLocation().toString(), partName);
+            Path partPath = new Path(table.getDataLocation(), partName);
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -287,18 +284,16 @@ public class Partition implements Serializable {
   public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
     this.outputFormatClass = outputFormatClass;
     tPartition.getSd().setOutputFormat(HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFormatClass, false).toString());
+        .getOutputFormatSubstitute(outputFormatClass).toString());
   }
 
   final public Class<? extends InputFormat> getInputFormatClass()
       throws HiveException {
     if (inputFormatClass == null) {
-      String clsName = null;
-      if (tPartition != null && tPartition.getSd() != null) {
-        clsName = tPartition.getSd().getInputFormat();
-      }
+      // sd can be null for views
+      String clsName = tPartition.getSd() == null ? null : tPartition.getSd().getInputFormat();
       if (clsName == null) {
-        clsName = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
+        return inputFormatClass = table.getInputFormatClass();
       }
       try {
         inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
@@ -310,25 +305,18 @@ public class Partition implements Serializable {
     return inputFormatClass;
   }
 
-  final public Class<? extends HiveOutputFormat> getOutputFormatClass()
+  final public Class<? extends OutputFormat> getOutputFormatClass()
       throws HiveException {
     if (outputFormatClass == null) {
-      String clsName = null;
-      if (tPartition != null && tPartition.getSd() != null) {
-        clsName = tPartition.getSd().getOutputFormat();
-      }
+      // sd can be null for views
+      String clsName = tPartition.getSd() == null ? null : tPartition.getSd().getOutputFormat();
       if (clsName == null) {
-        clsName = HiveSequenceFileOutputFormat.class.getName();
+        return outputFormatClass = table.getOutputFormatClass();
       }
       try {
-        Class<?> c = (Class.forName(clsName, true,
-            Utilities.getSessionSpecifiedClassLoader()));
+        Class<?> c = Class.forName(clsName, true, Utilities.getSessionSpecifiedClassLoader());
         // Replace FileOutputFormat for backward compatibility
-        if (!HiveOutputFormat.class.isAssignableFrom(c)) {
-          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,false);
-        } else {
-          outputFormatClass = (Class<? extends HiveOutputFormat>)c;
-        }
+        outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
       } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
