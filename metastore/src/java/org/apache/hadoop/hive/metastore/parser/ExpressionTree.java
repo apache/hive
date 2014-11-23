@@ -446,7 +446,7 @@ public class ExpressionTree {
       // columns have been excluded above, so it will either compare w/string or fail.
       Object val = value;
       if (value instanceof Date) {
-        val = HiveMetaStore.PARTITION_DATE_FORMAT.format((Date)value);
+        val = HiveMetaStore.PARTITION_DATE_FORMAT.get().format((Date)value);
       }
       boolean isStringValue = val instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {
