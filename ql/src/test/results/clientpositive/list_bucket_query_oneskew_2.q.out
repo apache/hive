@@ -758,20 +758,24 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: (x = 484) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                aggregations: count(1)
-                keys: x (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: 484 (type: int)
+                outputColumnNames: x
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: x (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col1 (type: bigint)
-                  auto parallelism: false
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: _col1 (type: bigint)
+                    auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
