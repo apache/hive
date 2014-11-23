@@ -229,11 +229,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static boolean isMetaStoreRemote = false;
 
   /** A fixed date format to be used for hive partition column values. */
-  public static final DateFormat PARTITION_DATE_FORMAT;
-  static {
-    PARTITION_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    PARTITION_DATE_FORMAT.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-  }
+  public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
+       new ThreadLocal<DateFormat>() {
+    @Override
+    protected DateFormat initialValue() {
+      DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      return val;
+    };
+  };
 
   /**
    * default port on which to start the Hive server
