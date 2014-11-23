@@ -47,7 +47,7 @@ public enum ETypeConverter {
   EDOUBLE_CONVERTER(Double.TYPE) {
     @Override
 
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addDouble(final double value) {
@@ -58,7 +58,7 @@ public enum ETypeConverter {
   },
   EBOOLEAN_CONVERTER(Boolean.TYPE) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addBoolean(final boolean value) {
@@ -69,7 +69,7 @@ public enum ETypeConverter {
   },
   EFLOAT_CONVERTER(Float.TYPE) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addFloat(final float value) {
@@ -80,7 +80,7 @@ public enum ETypeConverter {
   },
   EINT32_CONVERTER(Integer.TYPE) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
@@ -91,7 +91,7 @@ public enum ETypeConverter {
   },
   EINT64_CONVERTER(Long.TYPE) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
@@ -102,7 +102,7 @@ public enum ETypeConverter {
   },
   EBINARY_CONVERTER(Binary.class) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new BinaryConverter<BytesWritable>(type, parent, index) {
         @Override
         protected BytesWritable convert(Binary binary) {
@@ -113,7 +113,7 @@ public enum ETypeConverter {
   },
   ESTRING_CONVERTER(String.class) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new BinaryConverter<Text>(type, parent, index) {
         @Override
         protected Text convert(Binary binary) {
@@ -124,7 +124,7 @@ public enum ETypeConverter {
   },
   EDECIMAL_CONVERTER(BigDecimal.class) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new BinaryConverter<HiveDecimalWritable>(type, parent, index) {
         @Override
         protected HiveDecimalWritable convert(Binary binary) {
@@ -135,7 +135,7 @@ public enum ETypeConverter {
   },
   ETIMESTAMP_CONVERTER(TimestampWritable.class) {
     @Override
-    Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent) {
       return new BinaryConverter<TimestampWritable>(type, parent, index) {
         @Override
         protected TimestampWritable convert(Binary binary) {
@@ -157,10 +157,10 @@ public enum ETypeConverter {
     return _type;
   }
 
-  abstract Converter getConverter(final PrimitiveType type, final int index, final HiveGroupConverter parent);
+  abstract PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent);
 
-  public static Converter getNewConverter(final PrimitiveType type, final int index,
-      final HiveGroupConverter parent) {
+  public static PrimitiveConverter getNewConverter(final PrimitiveType type, final int index,
+      final ConverterParent parent) {
     if (type.isPrimitive() && (type.asPrimitiveType().getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT96))) {
       //TODO- cleanup once parquet support Timestamp type annotation.
       return ETypeConverter.ETIMESTAMP_CONVERTER.getConverter(type, index, parent);
@@ -183,11 +183,11 @@ public enum ETypeConverter {
 
   public abstract static class BinaryConverter<T extends Writable> extends PrimitiveConverter {
     protected final PrimitiveType type;
-    private final HiveGroupConverter parent;
+    private final ConverterParent parent;
     private final int index;
     private ArrayList<T> lookupTable;
 
-    public BinaryConverter(PrimitiveType type, HiveGroupConverter parent, int index) {
+    public BinaryConverter(PrimitiveType type, ConverterParent parent, int index) {
       this.type = type;
       this.parent = parent;
       this.index = index;
