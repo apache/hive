@@ -1,0 +1,45 @@
+PREHOOK: query: -- this test creates a Parquet table with an array of single-field structs
+-- as written by parquet-avro
+
+CREATE TABLE parquet_avro_array_of_single_field_structs (
+    single_element_groups ARRAY<STRUCT<count: BIGINT>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_avro_array_of_single_field_structs
+POSTHOOK: query: -- this test creates a Parquet table with an array of single-field structs
+-- as written by parquet-avro
+
+CREATE TABLE parquet_avro_array_of_single_field_structs (
+    single_element_groups ARRAY<STRUCT<count: BIGINT>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_avro_array_of_single_field_structs
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/AvroSingleFieldGroupInList.parquet'
+OVERWRITE INTO TABLE parquet_avro_array_of_single_field_structs
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_avro_array_of_single_field_structs
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/AvroSingleFieldGroupInList.parquet'
+OVERWRITE INTO TABLE parquet_avro_array_of_single_field_structs
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_avro_array_of_single_field_structs
+PREHOOK: query: SELECT * FROM parquet_avro_array_of_single_field_structs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_avro_array_of_single_field_structs
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_avro_array_of_single_field_structs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_avro_array_of_single_field_structs
+#### A masked pattern was here ####
+[{"count":1234},{"count":2345}]
+PREHOOK: query: DROP TABLE parquet_avro_array_of_single_field_structs
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_avro_array_of_single_field_structs
+PREHOOK: Output: default@parquet_avro_array_of_single_field_structs
+POSTHOOK: query: DROP TABLE parquet_avro_array_of_single_field_structs
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_avro_array_of_single_field_structs
+POSTHOOK: Output: default@parquet_avro_array_of_single_field_structs
