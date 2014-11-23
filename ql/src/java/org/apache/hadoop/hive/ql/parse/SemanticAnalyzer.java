@@ -400,8 +400,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
     opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
     nameToSplitSample = new HashMap<String, SplitSample>();
-    topOps = new HashMap<String, Operator<? extends OperatorDesc>>();
-    topSelOps = new HashMap<String, Operator<? extends OperatorDesc>>();
+    // Must be deterministic order maps - see HIVE-8707
+    topOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
+    topSelOps = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
     loadTableWork = new ArrayList<LoadTableDesc>();
     loadFileWork = new ArrayList<LoadFileDesc>();
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
@@ -9641,7 +9642,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     // First generate all the opInfos for the elements in the from clause
-    Map<String, Operator> aliasToOpInfo = new HashMap<String, Operator>();
+    // Must be deterministic order map - see HIVE-8707
+    Map<String, Operator> aliasToOpInfo = new LinkedHashMap<String, Operator>();
 
     // Recurse over the subqueries to fill the subquery part of the plan
     for (String alias : qb.getSubqAliases()) {

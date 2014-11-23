@@ -19,14 +19,14 @@ JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-3 depends on stages: Stage-8
-  Stage-7 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-5
+  Stage-9 is a root stage
+  Stage-2 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-2
+  Stage-6 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:y 
@@ -48,7 +48,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -96,7 +96,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         yy 
@@ -118,7 +118,7 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -205,12 +205,12 @@ JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-1 depends on stages: Stage-5
-  Stage-0 depends on stages: Stage-1
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:y 
@@ -232,7 +232,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -400,14 +400,14 @@ JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-3 depends on stages: Stage-8
-  Stage-7 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-5
+  Stage-9 is a root stage
+  Stage-2 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-2
+  Stage-6 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:y 
@@ -429,7 +429,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -477,7 +477,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         yy 
@@ -499,7 +499,7 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -586,12 +586,12 @@ JOIN src1 yy
 ON xx.key=yy.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-1 depends on stages: Stage-5
-  Stage-0 depends on stages: Stage-1
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
         xx:y 
@@ -613,7 +613,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan

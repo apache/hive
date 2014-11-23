@@ -128,6 +128,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -147,18 +159,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -232,6 +232,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -251,18 +263,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -338,6 +338,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
@@ -357,18 +369,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -436,6 +436,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -451,18 +463,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -545,6 +545,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -564,18 +576,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -646,18 +646,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
-          TableScan
             alias: t3
             Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -677,6 +665,18 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 7 Data size: 51 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1071,6 +1071,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -1090,18 +1102,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: (2 * _col0) (type: int)
                     Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1173,6 +1173,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -1204,18 +1216,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1306,6 +1306,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key is not null and value is not null) (type: boolean)
+              Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int), value (type: string)
+                sort order: ++
+                Map-reduce partition columns: key (type: int), value (type: string)
+                Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -1325,17 +1336,6 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                     Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int), value (type: string)
-                sort order: ++
-                Map-reduce partition columns: key (type: int), value (type: string)
-                Statistics: Num rows: 6 Data size: 44 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1562,6 +1562,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
@@ -1582,14 +1590,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1687,6 +1687,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
@@ -1707,14 +1715,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1815,6 +1815,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
@@ -1835,14 +1843,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1943,6 +1943,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
@@ -1963,14 +1971,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2071,6 +2071,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
@@ -2091,14 +2099,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2201,6 +2201,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: int)
+              sort order: +
+              Map-reduce partition columns: key (type: int)
+              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
@@ -2221,14 +2229,6 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: key (type: int)
               Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: int)
-              sort order: +
-              Map-reduce partition columns: key (type: int)
-              Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2343,6 +2343,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: int)
+                sort order: +
+                Map-reduce partition columns: key (type: int)
+                Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+                value expressions: value (type: string)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -2362,18 +2374,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: int)
-                sort order: +
-                Map-reduce partition columns: key (type: int)
-                Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2511,6 +2511,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (value is not null and (key > 100)) (type: boolean)
+              Statistics: Num rows: 3 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: value (type: string)
+                sort order: +
+                Map-reduce partition columns: value (type: string)
+                Statistics: Num rows: 3 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key (type: int)
+          TableScan
             alias: b
             Statistics: Num rows: 11 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -2530,18 +2542,6 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            alias: a
-            Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (value is not null and (key > 100)) (type: boolean)
-              Statistics: Num rows: 3 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: value (type: string)
-                sort order: +
-                Map-reduce partition columns: value (type: string)
-                Statistics: Num rows: 3 Data size: 22 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:

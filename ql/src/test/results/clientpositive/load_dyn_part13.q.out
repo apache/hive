@@ -69,12 +69,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > 20) and (key < 40)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key < 20) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string), '33' (type: string)
+                expressions: key (type: string), value (type: string), '22' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -89,12 +89,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key < 20) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((key > 20) and (key < 40)) (type: boolean)
+              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), value (type: string), '22' (type: string)
+                expressions: key (type: string), value (type: string), '33' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 Union
                   Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

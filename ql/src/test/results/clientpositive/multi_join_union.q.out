@@ -49,12 +49,12 @@ src12 b ON (a.key = b.key) JOIN
 (SELECT * FROM (SELECT * FROM src13 UNION ALL SELECT * FROM src14)a )c ON c.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-6 depends on stages: Stage-8
-  Stage-0 depends on stages: Stage-6
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a 
@@ -122,7 +122,7 @@ STAGE PLANS:
                       0 _col6 (type: string)
                       1 _col1 (type: string)
 
-  Stage: Stage-6
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan

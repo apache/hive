@@ -63,7 +63,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x2
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -86,7 +86,7 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: x1
+            alias: x2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -262,13 +262,13 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery1:tmp-subquery1:y1 
+        null-subquery2:tmp-subquery2:y2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery1:tmp-subquery1:y1 
+        null-subquery2:tmp-subquery2:y2 
           TableScan
-            alias: y1
+            alias: y2
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -285,7 +285,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x1
+            alias: x2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -313,13 +313,13 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:tmp-subquery2:y2 
+        null-subquery1:tmp-subquery1:y1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery2:tmp-subquery2:y2 
+        null-subquery1:tmp-subquery1:y1 
           TableScan
-            alias: y2
+            alias: y1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -343,7 +343,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 550 Data size: 5842 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: x2
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -505,13 +505,13 @@ FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
 ORDER BY tmp.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-6 depends on stages: Stage-4
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -638,7 +638,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-RUN: Stage-4:MAPRED
+RUN: Stage-1:MAPRED
 RUN: Stage-6:MAPREDLOCAL
 RUN: Stage-2:MAPRED
 
@@ -751,13 +751,13 @@ STAGE PLANS:
   Stage: Stage-17
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        tmp2:y2 
+        tmp1:y1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        tmp2:y2 
+        tmp1:y1 
           TableScan
-            alias: y2
+            alias: y1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -774,7 +774,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x2
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -821,11 +821,11 @@ STAGE PLANS:
   Stage: Stage-15
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $INTNAME 
+        $INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $INTNAME 
+        $INTNAME1 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -911,11 +911,11 @@ STAGE PLANS:
   Stage: Stage-16
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $INTNAME1 
+        $INTNAME 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $INTNAME1 
+        $INTNAME 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -993,13 +993,13 @@ STAGE PLANS:
   Stage: Stage-18
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        tmp1:y1 
+        tmp2:y2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        tmp1:y1 
+        tmp2:y2 
           TableScan
-            alias: y1
+            alias: y2
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1016,7 +1016,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x1
+            alias: x2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1197,7 +1197,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x2
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1224,7 +1224,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: x1
+            alias: x2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1426,21 +1426,21 @@ GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-10 depends on stages: Stage-2, Stage-7 , consists of Stage-12, Stage-13, Stage-3
-  Stage-12 has a backup stage: Stage-3
+  Stage-1 is a root stage
+  Stage-10 depends on stages: Stage-1, Stage-6 , consists of Stage-12, Stage-13, Stage-2
+  Stage-12 has a backup stage: Stage-2
   Stage-8 depends on stages: Stage-12
-  Stage-4 depends on stages: Stage-3, Stage-8, Stage-9
-  Stage-5 depends on stages: Stage-4
-  Stage-13 has a backup stage: Stage-3
+  Stage-3 depends on stages: Stage-2, Stage-8, Stage-9
+  Stage-4 depends on stages: Stage-3
+  Stage-13 has a backup stage: Stage-2
   Stage-9 depends on stages: Stage-13
-  Stage-3
+  Stage-2
   Stage-14 is a root stage
-  Stage-2 depends on stages: Stage-14
-  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-14
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1478,11 +1478,11 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $INTNAME 
+        $INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $INTNAME 
+        $INTNAME1 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -1520,7 +1520,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1544,7 +1544,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1568,11 +1568,11 @@ STAGE PLANS:
   Stage: Stage-13
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $INTNAME1 
+        $INTNAME 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $INTNAME1 
+        $INTNAME 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -1610,7 +1610,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1618,13 +1618,13 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 13 Data size: 99 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 13 Data size: 99 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1669,7 +1669,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-2
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1748,14 +1748,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-RUN: Stage-7:MAPRED
+RUN: Stage-1:MAPRED
 RUN: Stage-14:MAPREDLOCAL
-RUN: Stage-2:MAPRED
+RUN: Stage-6:MAPRED
 RUN: Stage-10:CONDITIONAL
 RUN: Stage-12:MAPREDLOCAL
 RUN: Stage-8:MAPRED
+RUN: Stage-3:MAPRED
 RUN: Stage-4:MAPRED
-RUN: Stage-5:MAPRED
 128	1
 146	1
 150	1
@@ -1804,13 +1804,13 @@ GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-6 is a root stage
+  Stage-1 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
         tmp2:y2 
@@ -1832,7 +1832,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1942,7 +1942,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1997,9 +1997,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-6:MAPREDLOCAL
+RUN: Stage-1:MAPRED
 RUN: Stage-2:MAPRED
-RUN: Stage-3:MAPRED
 128	1
 146	1
 150	1
@@ -2194,21 +2194,21 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-17 is a root stage
   Stage-2 depends on stages: Stage-17
-  Stage-16 depends on stages: Stage-2, Stage-7
+  Stage-16 depends on stages: Stage-2, Stage-8
   Stage-4 depends on stages: Stage-16
   Stage-18 is a root stage
-  Stage-7 depends on stages: Stage-18
+  Stage-8 depends on stages: Stage-18
   Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-17
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:x-subquery2:tmp:a 
+        null-subquery1:x-subquery1:tmp:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery2:x-subquery2:tmp:a 
+        null-subquery1:x-subquery1:tmp:a 
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2374,11 +2374,11 @@ STAGE PLANS:
   Stage: Stage-18
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery1:x-subquery1:tmp:a 
+        null-subquery2:x-subquery2:tmp:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery1:x-subquery1:tmp:a 
+        null-subquery2:x-subquery2:tmp:a 
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2393,7 +2393,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2471,7 +2471,7 @@ POSTHOOK: Input: default@src
 RUN: Stage-17:MAPREDLOCAL
 RUN: Stage-18:MAPREDLOCAL
 RUN: Stage-2:MAPRED
-RUN: Stage-7:MAPRED
+RUN: Stage-8:MAPRED
 RUN: Stage-16:MAPREDLOCAL
 RUN: Stage-4:MAPRED
 0

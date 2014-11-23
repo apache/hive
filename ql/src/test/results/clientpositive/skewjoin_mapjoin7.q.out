@@ -65,23 +65,23 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-16 is a root stage
   Stage-2 depends on stages: Stage-16
-  Stage-3 depends on stages: Stage-2, Stage-8
+  Stage-3 depends on stages: Stage-2, Stage-6
   Stage-17 is a root stage
-  Stage-8 depends on stages: Stage-17
+  Stage-6 depends on stages: Stage-17
   Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-16
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:subq1-subquery2:a 
+        null-subquery1:subq1-subquery1:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery2:subq1-subquery2:a 
+        null-subquery1:subq1-subquery1:a 
           TableScan
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -117,7 +117,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not (key = '2'))) (type: boolean)
+              predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Map Join Operator
                 condition map:
@@ -146,7 +146,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key = '2')) (type: boolean)
+              predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Map Join Operator
                 condition map:
@@ -209,14 +209,14 @@ STAGE PLANS:
   Stage: Stage-17
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery1:subq1-subquery1:a 
+        null-subquery2:subq1-subquery2:a 
           Fetch Operator
             limit: -1
         subquery2:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery1:subq1-subquery1:a 
+        null-subquery2:subq1-subquery2:a 
           TableScan
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -245,7 +245,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-8
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan

@@ -1934,11 +1934,74 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_orc
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: p_mfgr (type: string)
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                    auto parallelism: true
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: part_orc
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
+                    columns.comments         
+                    columns.types int:string:string:string:string:int:string:double:string
+#### A masked pattern was here ####
+                    name default.part_orc
+                    numFiles 1
+                    numRows 26
+                    rawDataSize 16042
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 2599
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
+                      columns.comments         
+                      columns.types int:string:string:string:string:int:string:double:string
+#### A masked pattern was here ####
+                      name default.part_orc
+                      numFiles 1
+                      numRows 26
+                      rawDataSize 16042
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 2599
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.part_orc
+                  name: default.part_orc
+            Truncated Path -> Alias:
+              /part_orc [part_orc]
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -2005,70 +2068,30 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /part_orc [p1]
             Execution mode: vectorized
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: part_orc
-                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: part_orc
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE true
-                    bucket_count -1
-                    columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
-                    columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                    name default.part_orc
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 16042
-                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2599
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                
-                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE true
-                      bucket_count -1
-                      columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
-                      columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                      name default.part_orc
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 16042
-                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2599
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part_orc
-                  name: default.part_orc
-            Truncated Path -> Alias:
-              /part_orc [part_orc]
         Reducer 2 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      isSamplingPred: false
+                      predicate: _col0 is not null (type: boolean)
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                        auto parallelism: true
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -2105,29 +2128,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        Reducer 4 
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Extract
-                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                PTF Operator
-                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      isSamplingPred: false
-                      predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                        tag: 0
-                        value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                        auto parallelism: true
 
   Stage: Stage-0
     Fetch Operator
@@ -4129,12 +4129,75 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_orc
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: p_mfgr (type: string)
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                    auto parallelism: true
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: part_orc
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
+                    columns.comments         
+                    columns.types int:string:string:string:string:int:string:double:string
+#### A masked pattern was here ####
+                    name default.part_orc
+                    numFiles 1
+                    numRows 26
+                    rawDataSize 16042
+                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 2599
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
+                      columns.comments         
+                      columns.types int:string:string:string:string:int:string:double:string
+#### A masked pattern was here ####
+                      name default.part_orc
+                      numFiles 1
+                      numRows 26
+                      rawDataSize 16042
+                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 2599
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.part_orc
+                  name: default.part_orc
+            Truncated Path -> Alias:
+              /part_orc [part_orc]
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -4201,70 +4264,30 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /part_orc [p1]
             Execution mode: vectorized
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: part_orc
-                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: p_mfgr (type: string)
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string), ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
-                    auto parallelism: true
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: part_orc
-                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE true
-                    bucket_count -1
-                    columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
-                    columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                    name default.part_orc
-                    numFiles 1
-                    numRows 26
-                    rawDataSize 16042
-                    serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 2599
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                
-                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE true
-                      bucket_count -1
-                      columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
-                      columns.types int:string:string:string:string:int:string:double:string
-#### A masked pattern was here ####
-                      name default.part_orc
-                      numFiles 1
-                      numRows 26
-                      rawDataSize 16042
-                      serialization.ddl struct part_orc { i32 p_partkey, string p_name, string p_mfgr, string p_brand, string p_type, i32 p_size, string p_container, double p_retailprice, string p_comment}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 2599
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part_orc
-                  name: default.part_orc
-            Truncated Path -> Alias:
-              /part_orc [part_orc]
         Reducer 2 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col5, _col7
+                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      isSamplingPred: false
+                      predicate: _col0 is not null (type: boolean)
+                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                        auto parallelism: true
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -4284,7 +4307,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                   auto parallelism: true
-        Reducer 3 
+        Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
               Extract
@@ -4316,29 +4339,6 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: false
                       MultiFileSpray: false
-        Reducer 5 
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Extract
-                Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                PTF Operator
-                  Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                    Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      isSamplingPred: false
-                      predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                        tag: 0
-                        value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-                        auto parallelism: true
 
   Stage: Stage-0
     Fetch Operator

@@ -218,14 +218,20 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: d
-                  Statistics: Num rows: 0 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 0 Data size: 170 Basic stats: PARTIAL Column stats: NONE
-                    tag: 1
-                    auto parallelism: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                      tag: 0
+                      auto parallelism: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -238,22 +244,22 @@ STAGE PLANS:
                     ds 2008-04-08
                   properties:
                     COLUMN_STATS_ACCURATE true
-                    bucket_count 3
+                    bucket_count 2
                     bucket_field_name key
                     columns key,value
                     columns.comments  
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_medium
-                    numFiles 3
+                    name default.bucket_small
+                    numFiles 2
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct bucket_medium { string key, string value}
+                    serialization.ddl struct bucket_small { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 170
+                    totalSize 114
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
@@ -261,24 +267,24 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
-                      bucket_count 3
+                      bucket_count 2
                       bucket_field_name key
                       columns key,value
                       columns.comments  
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_medium
+                      name default.bucket_small
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct bucket_medium { string key, string value}
+                      serialization.ddl struct bucket_small { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_medium
-                  name: default.bucket_medium
+                    name: default.bucket_small
+                  name: default.bucket_small
             Truncated Path -> Alias:
-              /bucket_medium/ds=2008-04-08 [d]
+              /bucket_small/ds=2008-04-08 [a]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -367,13 +373,13 @@ STAGE PLANS:
                         0 
                         1 
                         2 
-                      Estimated key counts: Map 5 => 1, Map 2 => 1
+                      Estimated key counts: Map 1 => 1, Map 2 => 1
                       keys:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
                       input vertices:
-                        0 Map 5
+                        0 Map 1
                         1 Map 2
                       Position of Big Table: 2
                       Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
@@ -387,7 +393,7 @@ STAGE PLANS:
                           0 
                           1 
                         input vertices:
-                          1 Map 1
+                          1 Map 5
                         Position of Big Table: 0
                         Statistics: Num rows: 139 Data size: 14064 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -506,20 +512,14 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  alias: d
+                  Statistics: Num rows: 0 Data size: 170 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      auto parallelism: true
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 0 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+                    tag: 1
+                    auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -532,22 +532,22 @@ STAGE PLANS:
                     ds 2008-04-08
                   properties:
                     COLUMN_STATS_ACCURATE true
-                    bucket_count 2
+                    bucket_count 3
                     bucket_field_name key
                     columns key,value
                     columns.comments  
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_small
-                    numFiles 2
+                    name default.bucket_medium
+                    numFiles 3
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.ddl struct bucket_medium { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 114
+                    totalSize 170
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
@@ -555,24 +555,24 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
-                      bucket_count 2
+                      bucket_count 3
                       bucket_field_name key
                       columns key,value
                       columns.comments  
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_small
+                      name default.bucket_medium
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.ddl struct bucket_medium { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_small
-                  name: default.bucket_small
+                    name: default.bucket_medium
+                  name: default.bucket_medium
             Truncated Path -> Alias:
-              /bucket_small/ds=2008-04-08 [a]
+              /bucket_medium/ds=2008-04-08 [d]
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:

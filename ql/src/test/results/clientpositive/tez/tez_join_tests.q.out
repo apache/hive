@@ -12,13 +12,23 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 6 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 4 <- Map 7 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: key (type: string)
+                    sort order: +
+                    Map-reduce partition columns: key (type: string)
+                    Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -29,7 +39,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: string)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: string)
-        Map 6 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -40,16 +50,6 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: string)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     value expressions: key (type: string)
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
-                    Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator

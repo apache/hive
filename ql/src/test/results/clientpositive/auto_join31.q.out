@@ -41,17 +41,16 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: _col1 (type: string)
+                key expressions: _col0 (type: string)
                 sort order: +
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string)
+          expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -70,7 +69,7 @@ STAGE PLANS:
         $INTNAME 
           Fetch Operator
             limit: -1
-        $INTNAME1 
+        $INTNAME2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -85,7 +84,7 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
                 2 _col0 (type: string)
-        $INTNAME1 
+        $INTNAME2 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -156,14 +155,14 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $INTNAME1 
+        $INTNAME 
           Fetch Operator
             limit: -1
-        $INTNAME2 
+        $INTNAME1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $INTNAME1 
+        $INTNAME 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -174,7 +173,7 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
                 2 _col0 (type: string)
-        $INTNAME2 
+        $INTNAME1 
           TableScan
             HashTable Sink Operator
               condition expressions:
@@ -231,13 +230,13 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -268,17 +267,18 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: _col0 (type: string)
+                key expressions: _col1 (type: string)
                 sort order: +
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: string)
-          outputColumnNames: _col0
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -304,8 +304,8 @@ STAGE PLANS:
                 value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-          outputColumnNames: _col0, _col1
+          expressions: VALUE._col0 (type: string)
+          outputColumnNames: _col0
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false

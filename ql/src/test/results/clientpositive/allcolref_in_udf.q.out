@@ -82,18 +82,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(key) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(key) (type: double)
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
-          TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -104,6 +92,18 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: (key + 1) (type: double)
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                value expressions: key (type: string), value (type: string)
+          TableScan
+            alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(key) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
         Join Operator

@@ -2166,12 +2166,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2267,9 +2267,19 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            GatherStats: false
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+              tag: 0
+              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+              auto parallelism: false
           TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2285,16 +2295,6 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
                 auto parallelism: false
-          TableScan
-            GatherStats: false
-            Reduce Output Operator
-              key expressions: _col0 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-              tag: 0
-              value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-              auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4679,13 +4679,13 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -4781,9 +4781,19 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            GatherStats: false
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
+              tag: 0
+              value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+              auto parallelism: false
           TableScan
             alias: p1
             Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4799,22 +4809,12 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
                 auto parallelism: false
-          TableScan
-            GatherStats: false
-            Reduce Output Operator
-              key expressions: _col0 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-              tag: 0
-              value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
-              auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10003
+            base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -4907,7 +4907,7 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -4925,7 +4925,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -mr-10002
+            base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:

@@ -78,27 +78,6 @@ STAGE PLANS:
             alias: inputtbl1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: key (type: string), 3 (type: int)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              Union
-                Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
-          TableScan
-            alias: inputtbl1
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
               expressions: key (type: string), 1 (type: int)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -121,6 +100,27 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: string), 2 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+              Union
+                Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 90 Basic stats: PARTIAL Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.outputtbl1
+          TableScan
+            alias: inputtbl1
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: key (type: string), 3 (type: int)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
               Union

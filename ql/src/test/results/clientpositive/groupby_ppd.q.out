@@ -21,7 +21,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: d
+            alias: c
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (bar = 1) (type: boolean)
@@ -47,7 +47,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           TableScan
-            alias: c
+            alias: d
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (bar = 1) (type: boolean)

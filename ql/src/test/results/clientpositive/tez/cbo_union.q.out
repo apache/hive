@@ -25,13 +25,13 @@ POSTHOOK: Input: default@cbo_t2@dt=2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
-2	2	2	2.0	true	2014
-2	2	2	2.0	true	2014
-2	2	2	2.0	true	2014
-2	2	2	2.0	true	2014
-2	2	2	2.0	true	2014
 null	null	NULL	NULL	NULL	2014
 null	null	NULL	NULL	NULL	2014
  1	 1	1	1.0	true	2014
@@ -45,13 +45,13 @@ null	null	NULL	NULL	NULL	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
+2	2	2	2.0	true	2014
+2	2	2	2.0	true	2014
+2	2	2	2.0	true	2014
+2	2	2	2.0	true	2014
+2	2	2	2.0	true	2014
 null	null	NULL	NULL	NULL	2014
 null	null	NULL	NULL	NULL	2014
 PREHOOK: query: select key from (select key, c_int from (select * from cbo_t1 union all select * from cbo_t2 where cbo_t2.key >=0)r1 union all select key, c_int from cbo_t3)r2 where key >=0 order by key

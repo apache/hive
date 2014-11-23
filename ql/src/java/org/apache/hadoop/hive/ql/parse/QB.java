@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,17 +104,19 @@ public class QB {
   }
 
   public QB(String outer_id, String alias, boolean isSubQ) {
-    aliasToTabs = new HashMap<String, String>();
-    aliasToSubq = new HashMap<String, QBExpr>();
-    aliasToProps = new HashMap<String, Map<String, String>>();
+    // Must be deterministic order maps - see HIVE-8707
+    aliasToTabs = new LinkedHashMap<String, String>();
+    aliasToSubq = new LinkedHashMap<String, QBExpr>();
+    aliasToProps = new LinkedHashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
     if (alias != null) {
       alias = alias.toLowerCase();
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    ptfNodeToSpec = new HashMap<ASTNode, PTFInvocationSpec>();
-    destToWindowingSpec = new HashMap<String, WindowingSpec>();
+    // Must be deterministic order maps - see HIVE-8707
+    ptfNodeToSpec = new LinkedHashMap<ASTNode, PTFInvocationSpec>();
+    destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
   }
 
@@ -320,7 +323,8 @@ public class QB {
   }
 
   public void addPTFNodeToSpec(ASTNode node, PTFInvocationSpec spec) {
-    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
+    // Must be deterministic order map - see HIVE-8707
+    ptfNodeToSpec = ptfNodeToSpec == null ? new LinkedHashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
     ptfNodeToSpec.put(node, spec);
   }
 
