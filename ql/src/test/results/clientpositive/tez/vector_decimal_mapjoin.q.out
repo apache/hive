@@ -38,24 +38,10 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: r
-                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (cint = 6981) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: 6981 (type: int)
-                      sort order: +
-                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: cdecimal2 (type: decimal(23,14))
-            Execution mode: vectorized
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: l
@@ -74,7 +60,7 @@ STAGE PLANS:
                         1 6981 (type: int)
                       outputColumnNames: _col1, _col9
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col9 (type: decimal(23,14))
@@ -87,6 +73,20 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: r
+                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cint = 6981) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: 6981 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: cdecimal2 (type: decimal(23,14))
             Execution mode: vectorized
 
   Stage: Stage-0

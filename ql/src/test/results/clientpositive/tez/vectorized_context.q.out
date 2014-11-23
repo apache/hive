@@ -110,16 +110,17 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: household_demographics
-                  Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: NONE
+                  alias: store_sales
+                  Statistics: Num rows: 6075 Data size: 72736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: hd_demo_sk is not null (type: boolean)
-                    Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: hd_demo_sk (type: int)
+                      key expressions: ss_store_sk (type: int)
                       sort order: +
-                      Map-reduce partition columns: hd_demo_sk (type: int)
-                      Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
+                      Map-reduce partition columns: ss_store_sk (type: int)
+                      Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: ss_hdemo_sk (type: int), ss_net_profit (type: double)
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -140,7 +141,7 @@ STAGE PLANS:
                         1 s_store_sk (type: int)
                       outputColumnNames: _col1, _col2, _col7
                       input vertices:
-                        0 Map 3
+                        0 Map 1
                       Statistics: Num rows: 3341 Data size: 338652 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -153,7 +154,7 @@ STAGE PLANS:
                           1 hd_demo_sk (type: int)
                         outputColumnNames: _col2, _col7
                         input vertices:
-                          1 Map 1
+                          1 Map 3
                         Statistics: Num rows: 3675 Data size: 372517 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col7 (type: string), _col2 (type: double)
@@ -173,17 +174,16 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
-                  Statistics: Num rows: 6075 Data size: 72736 Basic stats: COMPLETE Column stats: NONE
+                  alias: household_demographics
+                  Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
-                    Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
+                    predicate: hd_demo_sk is not null (type: boolean)
+                    Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: ss_store_sk (type: int)
+                      key expressions: hd_demo_sk (type: int)
                       sort order: +
-                      Map-reduce partition columns: ss_store_sk (type: int)
-                      Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: ss_hdemo_sk (type: int), ss_net_profit (type: double)
+                      Map-reduce partition columns: hd_demo_sk (type: int)
+                      Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
 
   Stage: Stage-0

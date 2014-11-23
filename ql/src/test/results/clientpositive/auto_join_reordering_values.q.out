@@ -179,21 +179,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dim_pay_date
-            Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: date is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: date (type: string)
-                sort order: +
-                Map-reduce partition columns: date (type: string)
-                Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
-                tag: 1
-                auto parallelism: false
-          TableScan
             alias: orderpayment
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
@@ -208,6 +193,21 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
                 value expressions: dealid (type: int), cityid (type: int), userid (type: int)
+                auto parallelism: false
+          TableScan
+            alias: dim_pay_date
+            Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: date is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: date (type: string)
+                sort order: +
+                Map-reduce partition columns: date (type: string)
+                Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                tag: 1
                 auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -257,7 +257,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [dim_pay_date, orderpayment]
+        /orderpayment_small [orderpayment, dim_pay_date]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator

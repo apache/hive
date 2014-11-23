@@ -22,7 +22,7 @@ STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-1 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0
+  Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-4
@@ -111,7 +111,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 

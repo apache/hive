@@ -17,12 +17,12 @@ left outer join alltypesorc hd
 ) t1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-2
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         t1:cd 
@@ -55,7 +55,7 @@ STAGE PLANS:
                 0 _col0 (type: tinyint)
                 1 ctinyint (type: tinyint)
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan

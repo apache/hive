@@ -34,7 +34,7 @@ FROM (SELECT t1.key, p1.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-9
+  Stage-2 depends on stages: Stage-1, Stage-10
   Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
   Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
@@ -42,7 +42,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-6
   Stage-7 depends on stages: Stage-6
-  Stage-9 is a root stage
+  Stage-10 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -171,9 +171,17 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-9
+  Stage: Stage-10
     Map Reduce
       Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              key expressions: key (type: string)
+              sort order: +
+              Map-reduce partition columns: key (type: string)
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: p2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -183,14 +191,6 @@ STAGE PLANS:
               Map-reduce partition columns: key (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: value (type: string)
-          TableScan
-            alias: t2
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              key expressions: key (type: string)
-              sort order: +
-              Map-reduce partition columns: key (type: string)
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -242,4 +242,4 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_l1
 POSTHOOK: Lineage: dest_l1.key EXPRESSION [(src1)t1.FieldSchema(name:key, type:string, comment:default), (src1)t2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_l1.value EXPRESSION [(src)p2.FieldSchema(name:value, type:string, comment:default), (src)p1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_l1.value EXPRESSION [(src)p1.FieldSchema(name:value, type:string, comment:default), (src)p2.FieldSchema(name:value, type:string, comment:default), ]

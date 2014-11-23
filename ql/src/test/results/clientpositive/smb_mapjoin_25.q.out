@@ -63,16 +63,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
-            Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (key = 5) (type: boolean)
-              Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: 5 (type: int)
-                sort order: +
-                Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-          TableScan
             alias: a
             Statistics: Num rows: 52 Data size: 208 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -82,6 +72,16 @@ STAGE PLANS:
                 key expressions: 5 (type: int)
                 sort order: +
                 Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: b
+            Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key = 5) (type: boolean)
+              Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: 5 (type: int)
+                sort order: +
+                Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -144,16 +144,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: d
-            Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (key = 5) (type: boolean)
-              Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: 5 (type: int)
-                sort order: +
-                Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
-          TableScan
             alias: c
             Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -163,6 +153,16 @@ STAGE PLANS:
                 key expressions: 5 (type: int)
                 sort order: +
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: d
+            Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key = 5) (type: boolean)
+              Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: 5 (type: int)
+                sort order: +
+                Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:

@@ -84,35 +84,6 @@ STAGE PLANS:
             alias: inputtbl1
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: key (type: string), UDFToLong(2) (type: bigint)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                    name: default.outputtbl1
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.outputtbl1
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: inputtbl1
-            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
               expressions: key (type: string)
               outputColumnNames: key
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
@@ -144,7 +115,17 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 name: default.outputtbl1
 
-  Stage: Stage-3
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: default.outputtbl1
+
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -152,6 +133,25 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: string), UDFToLong(1) (type: bigint)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.outputtbl1
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inputtbl1
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: key (type: string), UDFToLong(2) (type: bigint)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
               File Output Operator

@@ -138,7 +138,7 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket3out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
@@ -204,12 +204,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-2 depends on stages: Stage-8
-  Stage-0 depends on stages: Stage-2
+  Stage-9 is a root stage
+  Stage-3 depends on stages: Stage-9
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a 
@@ -418,7 +418,7 @@ STAGE PLANS:
                 1 
               Position of Big Table: 0
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -704,7 +704,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[27][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big

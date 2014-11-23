@@ -16,7 +16,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t1
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -27,7 +27,7 @@ STAGE PLANS:
                 Map-reduce partition columns: cint (type: int)
                 Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
