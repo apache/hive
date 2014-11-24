@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import java.util.List;
 
@@ -32,7 +33,9 @@ public class MockPartitionExpressionForMetastore implements PartitionExpressionP
   }
 
   @Override
-  public boolean filterPartitionsByExpr(List<String> columnNames, byte[] expr, String defaultPartitionName, List<String> partitionNames) throws MetaException {
+  public boolean filterPartitionsByExpr(List<String> partColumnNames,
+      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
+      List<String> partitionNames) throws MetaException {
     return false;
   }
 }
