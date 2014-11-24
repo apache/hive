@@ -774,6 +774,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context) {
+    return context.getJobConf();
+  }
+
+  @Override
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
     return FileSystem.newInstance(uri, conf);
   }

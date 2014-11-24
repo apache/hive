@@ -889,6 +889,11 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public JobConf getJobConf(JobContext context) {
+    return context.getJobConf();
+  }
+
+  @Override
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
     boolean origDisableHDFSCache =
         conf.getBoolean("fs." + uri.getScheme() + ".impl.disable.cache", false);

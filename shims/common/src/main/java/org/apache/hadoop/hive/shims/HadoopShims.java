@@ -708,6 +708,13 @@ public interface HadoopShims {
    */
   public Configuration getConfiguration(JobContext context);
 
+  /**
+   * Get job conf from the old style JobContext.
+   * @param context job context
+   * @return job conf
+   */
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context);
+
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 
   public void getMergedCredentials(JobConf jobConf) throws IOException;
