@@ -1135,7 +1135,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       String postfix=null;
       if (taskIndependent) {
         // key = "database.table/SP/DP/"LB/
-        prefix = conf.getTableInfo().getTableName();
+        // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
+        // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
+        prefix = conf.getTableInfo().getTableName().toLowerCase();
       } else {
         // key = "prefix/SP/DP/"LB/taskID/
         prefix = conf.getStatsAggPrefix();
