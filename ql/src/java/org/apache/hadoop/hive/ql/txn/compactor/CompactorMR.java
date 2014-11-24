@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -697,9 +698,10 @@ public class CompactorMR {
 
     @Override
     public void commitJob(JobContext context) throws IOException {
-      Path tmpLocation = new Path(context.getJobConf().get(TMP_LOCATION));
-      Path finalLocation = new Path(context.getJobConf().get(FINAL_LOCATION));
-      FileSystem fs = tmpLocation.getFileSystem(context.getJobConf());
+      JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
+      Path tmpLocation = new Path(conf.get(TMP_LOCATION));
+      Path finalLocation = new Path(conf.get(FINAL_LOCATION));
+      FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
 
@@ -713,8 +715,9 @@ public class CompactorMR {
 
     @Override
     public void abortJob(JobContext context, int status) throws IOException {
-      Path tmpLocation = new Path(context.getJobConf().get(TMP_LOCATION));
-      FileSystem fs = tmpLocation.getFileSystem(context.getJobConf());
+      JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
+      Path tmpLocation = new Path(conf.get(TMP_LOCATION));
+      FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Removing " + tmpLocation.toString());
       fs.delete(tmpLocation, true);
     }
