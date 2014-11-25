@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string);
 
 EXPLAIN

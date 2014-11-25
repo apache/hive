@@ -1,4 +1,4 @@
-
+-- SORT_QUERY_RESULTS
 
 create table join_rc1(key string, value string) stored as RCFile;
 create table join_rc2(key string, value string) stored as RCFile;
