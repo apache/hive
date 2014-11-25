@@ -18,6 +18,8 @@
 package org.apache.hive.spark.client;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +40,8 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   private T result;
   private Throwable error;
 
+  private final List<Integer> sparkJobIds;
+
   JobHandleImpl(SparkClientImpl client, String jobId) {
     this.client = client;
     this.jobId = jobId;
@@ -45,6 +49,7 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     this.metrics = new MetricsCollection();
     this.cancelled = new AtomicBoolean();
     this.completed = false;
+    this.sparkJobIds = new CopyOnWriteArrayList<Integer>();
   }
 
   /** Requests a running job to be cancelled. */
@@ -101,6 +106,11 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   @Override
   public MetricsCollection getMetrics() {
     return metrics;
+  }
+
+  @Override
+  public List<Integer> getSparkJobIds() {
+    return sparkJobIds;
   }
 
   private T get(long timeout) throws ExecutionException, InterruptedException, TimeoutException {

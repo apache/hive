@@ -38,7 +38,7 @@ import org.apache.spark.executor.TaskMetrics;
 
 import scala.Option;
 
-public class SimpleSparkJobStatus implements SparkJobStatus {
+public class LocalSparkJobStatus implements SparkJobStatus {
 
   private final JavaSparkContext sparkContext;
   private int jobId;
@@ -48,7 +48,7 @@ public class SimpleSparkJobStatus implements SparkJobStatus {
   private SparkCounters sparkCounters;
   private JavaFutureAction<Void> future;
 
-  public SimpleSparkJobStatus(JavaSparkContext sparkContext, int jobId,
+  public LocalSparkJobStatus(JavaSparkContext sparkContext, int jobId,
       JobMetricsListener jobMetricsListener, SparkCounters sparkCounters,
       JavaFutureAction<Void> future) {
     this.sparkContext = sparkContext;

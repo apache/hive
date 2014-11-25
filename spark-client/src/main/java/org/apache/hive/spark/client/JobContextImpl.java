@@ -20,14 +20,20 @@ package org.apache.hive.spark.client;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 class JobContextImpl implements JobContext {
 
   private final JavaSparkContext sc;
   private final ThreadLocal<MonitorCallback> monitorCb;
+  private final Map<String, List<JavaFutureAction<?>>> monitoredJobs;
 
   public JobContextImpl(JavaSparkContext sc) {
     this.sc = sc;
     this.monitorCb = new ThreadLocal<MonitorCallback>();
+    monitoredJobs = new ConcurrentHashMap<String, List<JavaFutureAction<?>>>();
   }
 
 
@@ -42,11 +48,17 @@ class JobContextImpl implements JobContext {
     return job;
   }
 
+  @Override
+  public Map<String, List<JavaFutureAction<?>>> getMonitoredJobs() {
+    return monitoredJobs;
+  }
+
   void setMonitorCb(MonitorCallback cb) {
     monitorCb.set(cb);
   }
 
   void stop() {
+    monitoredJobs.clear();
     sc.stop();
   }
 

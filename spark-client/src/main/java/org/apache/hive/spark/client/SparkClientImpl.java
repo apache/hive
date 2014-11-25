@@ -319,6 +319,17 @@ class SparkClientImpl implements SparkClient {
         } else {
           LOG.warn("Received result for unknown job {}", jr.id);
         }
+      } else if (message instanceof Protocol.JobSubmitted) {
+        Protocol.JobSubmitted jobSubmitted = (Protocol.JobSubmitted) message;
+        JobHandleImpl<?> handle = jobs.get(jobSubmitted.clientJobId);
+        if (handle != null) {
+          LOG.info("Received spark job ID: {} for {}",
+              jobSubmitted.sparkJobId, jobSubmitted.clientJobId);
+          handle.getSparkJobIds().add(jobSubmitted.sparkJobId);
+        } else {
+          LOG.warn("Received spark job ID: {} for unknown job {}",
+              jobSubmitted.sparkJobId, jobSubmitted.clientJobId);
+        }
       }
     }
 

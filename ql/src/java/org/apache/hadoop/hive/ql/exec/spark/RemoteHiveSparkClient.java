@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -122,8 +123,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
         return null;
       }
     });
-    jobHandle.get();
-    return new SparkJobRef(jobHandle.getClientJobId());
+    return new SparkJobRef(jobHandle.getClientJobId(), new RemoteSparkJobStatus(remoteClient, jobHandle));
   }
 
   private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {

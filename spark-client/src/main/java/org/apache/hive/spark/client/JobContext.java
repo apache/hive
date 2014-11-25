@@ -22,6 +22,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Holds runtime information about the job execution context.
  *
@@ -41,5 +44,10 @@ public interface JobContext {
    * @return The job (unmodified).
    */
   <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job);
+
+  /**
+   * Return a map from client job Id to corresponding JavaFutureActions
+   */
+  Map<String, List<JavaFutureAction<?>>> getMonitoredJobs();
 
 }

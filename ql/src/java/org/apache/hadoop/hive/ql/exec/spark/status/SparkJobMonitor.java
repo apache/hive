@@ -62,12 +62,13 @@ public class SparkJobMonitor {
     int rc = 0;
     JobExecutionStatus lastState = null;
     Map<String, SparkStageProgress> lastProgressMap = null;
-    long startTime = 0;
+    long startTime = -1;
 
     while (true) {
       try {
         JobExecutionStatus state = sparkJobStatus.getState();
-        if (state != null && (state != lastState || state == JobExecutionStatus.RUNNING)) {
+        if (state != null && state != JobExecutionStatus.UNKNOWN &&
+            (state != lastState || state == JobExecutionStatus.RUNNING)) {
           lastState = state;
           Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
 
@@ -97,9 +98,13 @@ public class SparkJobMonitor {
           case SUCCEEDED:
             printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
-            double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-            console.printInfo("Status: Finished successfully in " +
-              String.format("%.2f seconds", duration));
+            if (startTime < 0) {
+              console.printInfo("Status: Finished successfully within a check interval.");
+            } else {
+              double duration = (System.currentTimeMillis() - startTime) / 1000.0;
+              console.printInfo("Status: Finished successfully in " +
+                  String.format("%.2f seconds", duration));
+            }
             running = false;
             done = true;
             break;

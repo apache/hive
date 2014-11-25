@@ -125,4 +125,21 @@ final class Protocol {
 
   }
 
+  /**
+   * Inform the client that a new spark job has been submitted for the client job
+   */
+  static class JobSubmitted implements Serializable {
+    final String clientJobId;
+    final int sparkJobId;
+
+    JobSubmitted(String clientJobId, int sparkJobId) {
+      this.clientJobId = clientJobId;
+      this.sparkJobId = sparkJobId;
+    }
+
+    JobSubmitted() {
+      this(null, -1);
+    }
+  }
+
 }
