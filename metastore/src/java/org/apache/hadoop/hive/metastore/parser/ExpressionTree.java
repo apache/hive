@@ -367,20 +367,8 @@ public class ExpressionTree {
             partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder);
         return;
       }
-
-      String keyEqual = FileUtils.escapePathName(keyName) + "=";
-      String valString = "partitionName.substring(";
-      String indexOfKeyStr = "";
-      if (partitionColumnIndex != 0) {
-        keyEqual = "/" + keyEqual;
-        indexOfKeyStr = "partitionName.indexOf(\"" + keyEqual + "\") + ";
-        valString += indexOfKeyStr;
-      }
-      valString += keyEqual.length();
-      if (partitionColumnIndex != (partitionColumnCount - 1)) {
-        valString += ", partitionName.concat(\"/\").indexOf(\"/\", " + indexOfKeyStr + keyEqual.length() + ")";
-      }
-      valString += ")";
+      //get the value for a partition key form MPartition.values (PARTITION_KEY_VALUES)
+      String valString = "values.get(" + partitionColumnIndex + ")";
 
       if (operator == Operator.LIKE) {
         if (isReverseOrder) {
