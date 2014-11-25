@@ -28,11 +28,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default in-memory token store implementation.
  */
 public class MemoryTokenStore implements DelegationTokenStore {
+  private static final Logger LOG = LoggerFactory.getLogger(MemoryTokenStore.class);
 
   private final Map<Integer, String> masterKeys
       = new ConcurrentHashMap<Integer, String>();
@@ -56,17 +59,26 @@ public class MemoryTokenStore implements DelegationTokenStore {
   @Override
   public int addMasterKey(String s) {
     int keySeq = masterKeySeq.getAndIncrement();
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("addMasterKey: s = " + s + ", keySeq = " + keySeq);
+    }
     masterKeys.put(keySeq, s);
     return keySeq;
   }
 
   @Override
   public void updateMasterKey(int keySeq, String s) {
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("updateMasterKey: s = " + s + ", keySeq = " + keySeq);
+    }
     masterKeys.put(keySeq, s);
   }
 
   @Override
   public boolean removeMasterKey(int keySeq) {
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("removeMasterKey: keySeq = " + keySeq);
+    }
     return masterKeys.remove(keySeq) != null;
   }
 
@@ -79,18 +91,28 @@ public class MemoryTokenStore implements DelegationTokenStore {
   public boolean addToken(DelegationTokenIdentifier tokenIdentifier,
     DelegationTokenInformation token) {
     DelegationTokenInformation tokenInfo = tokens.putIfAbsent(tokenIdentifier, token);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + (tokenInfo == null));
+    }
     return (tokenInfo == null);
   }
 
   @Override
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) {
     DelegationTokenInformation tokenInfo = tokens.remove(tokenIdentifier);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", removed = " + (tokenInfo != null));
+    }
     return tokenInfo != null;
   }
 
   @Override
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier) {
-    return tokens.get(tokenIdentifier);
+    DelegationTokenInformation result = tokens.get(tokenIdentifier);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("getToken: tokenIdentifier = " + tokenIdentifier + ", result = " + result);
+    }
+    return result;
   }
 
   @Override

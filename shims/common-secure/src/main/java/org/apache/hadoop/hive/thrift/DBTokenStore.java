@@ -28,17 +28,25 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DBTokenStore implements DelegationTokenStore {
-
+  private static final Logger LOG = LoggerFactory.getLogger(DBTokenStore.class);
 
   @Override
   public int addMasterKey(String s) throws TokenStoreException {
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("addMasterKey: s = " + s);
+    }
     return (Integer)invokeOnRawStore("addMasterKey", new Object[]{s},String.class);
   }
 
   @Override
   public void updateMasterKey(int keySeq, String s) throws TokenStoreException {
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("updateMasterKey: s = " + s + ", keySeq = " + keySeq);
+    }
     invokeOnRawStore("updateMasterKey", new Object[] {Integer.valueOf(keySeq), s},
         Integer.class, String.class);
   }
@@ -62,8 +70,12 @@ public class DBTokenStore implements DelegationTokenStore {
       String identifier = TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier);
       String tokenStr = Base64.encodeBase64URLSafeString(
         HiveDelegationTokenSupport.encodeDelegationTokenInformation(token));
-      return (Boolean)invokeOnRawStore("addToken", new Object[] {identifier, tokenStr},
+      boolean result = (Boolean)invokeOnRawStore("addToken", new Object[] {identifier, tokenStr},
         String.class, String.class);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + result);
+      }
+      return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
     }
@@ -75,7 +87,14 @@ public class DBTokenStore implements DelegationTokenStore {
     try {
       String tokenStr = (String)invokeOnRawStore("getToken", new Object[] {
           TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
-      return (null == tokenStr) ? null : HiveDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
+      DelegationTokenInformation result = null;
+      if (tokenStr != null) {
+        result = HiveDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
+      }
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("getToken: tokenIdentifier = " + tokenIdentifier + ", result = " + result);
+      }
+      return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
     }
@@ -84,8 +103,12 @@ public class DBTokenStore implements DelegationTokenStore {
   @Override
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) throws TokenStoreException{
     try {
-      return (Boolean)invokeOnRawStore("removeToken", new Object[] {
+      boolean result = (Boolean)invokeOnRawStore("removeToken", new Object[] {
         TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + result);
+      }
+      return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
     }
