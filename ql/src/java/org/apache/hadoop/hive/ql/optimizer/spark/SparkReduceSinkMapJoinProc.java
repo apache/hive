@@ -113,6 +113,11 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
                         NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
     GenSparkProcContext context = (GenSparkProcContext) procContext;
+
+    if (!nd.getClass().equals(MapJoinOperator.class)) {
+      return null;
+    }
+
     MapJoinOperator mapJoinOp = (MapJoinOperator)nd;
 
     if (stack.size() < 2 || !(stack.get(stack.size() - 2) instanceof ReduceSinkOperator)) {
