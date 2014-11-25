@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
@@ -276,6 +277,12 @@ public class SparkCompiler extends TaskCompiler {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping null scan query optimization");
+    }
+
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
+      physicalCtx = new MetadataOnlyOptimizer().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping metadata only query optimization");
     }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
