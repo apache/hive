@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
@@ -212,6 +214,20 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return result;
+  }
+
+  @Override
+  public Operator<? extends OperatorDesc> getReducer(MapWork mapWork) {
+    List<BaseWork> children = getWork().getChildren(mapWork);
+    if (children.size() != 1) {
+      return null;
+    }
+
+    if (!(children.get(0) instanceof ReduceWork)) {
+      return null;
+    }
+
+    return ((ReduceWork) children.get(0)).getReducer();
   }
 
   public SparkCounters getSparkCounters() {
