@@ -2,6 +2,8 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
