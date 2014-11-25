@@ -48,8 +48,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class SparkClientImpl implements SparkClient {
+  private static final long serialVersionUID = 1L;
 
-  private final static Logger LOG = LoggerFactory.getLogger(SparkClientImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SparkClientImpl.class);
+  
+  private static final String DEFAULT_CONNECTION_TIMEOUT = "60"; // In seconds
 
   private final Map<String, String> conf;
   private final AtomicInteger childIdGenerator;
@@ -68,8 +71,8 @@ class SparkClientImpl implements SparkClient {
     this.jobs = Maps.newConcurrentMap();
     this.driverThread = startDriver();
 
-    long connectTimeout = Integer.parseInt(
-        Optional.fromNullable(conf.get("spark.client.connectTimeout")).or("10")) * 1000;
+    long connectTimeout = 1000 * Integer.parseInt(
+        Optional.fromNullable(conf.get("spark.client.connectTimeout")).or(DEFAULT_CONNECTION_TIMEOUT));
     long endTime = System.currentTimeMillis() + connectTimeout;
 
     synchronized (this) {
