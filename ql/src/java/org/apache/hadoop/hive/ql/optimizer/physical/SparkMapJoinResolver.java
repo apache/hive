@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,6 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -88,8 +86,8 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
     public SparkMapJoinTaskDispatcher(PhysicalContext pc) {
       super();
       physicalContext = pc;
-      sparkWorkMap = new HashMap<BaseWork, SparkWork>();
-      dependencyGraph = new HashMap<SparkWork, List<SparkWork>>();
+      sparkWorkMap = new LinkedHashMap<BaseWork, SparkWork>();
+      dependencyGraph = new LinkedHashMap<SparkWork, List<SparkWork>>();
     }
 
     // Move the specified work from the sparkWork to the targetWork
@@ -228,7 +226,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
           }
         }
 
-        Map<SparkWork, SparkTask> createdTaskMap = new HashMap<SparkWork, SparkTask>();
+        Map<SparkWork, SparkTask> createdTaskMap = new LinkedHashMap<SparkWork, SparkTask>();
 
         // Now create SparkTasks from the SparkWorks, also set up dependency
         for (SparkWork work : dependencyGraph.keySet()) {

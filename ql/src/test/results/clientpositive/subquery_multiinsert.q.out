@@ -1,11 +1,15 @@
-PREHOOK: query: CREATE TABLE src_4(
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_4(
   key STRING, 
   value STRING
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_4
-POSTHOOK: query: CREATE TABLE src_4(
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_4(
   key STRING, 
   value STRING
 )
@@ -881,17 +885,17 @@ POSTHOOK: query: select * from src_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_4
 #### A masked pattern was here ####
-98	val_98
+90	val_90
+90	val_90
+90	val_90
 92	val_92
+95	val_95
+95	val_95
 96	val_96
-95	val_95
+97	val_97
+97	val_97
 98	val_98
-90	val_90
-95	val_95
-90	val_90
-97	val_97
-90	val_90
-97	val_97
+98	val_98
 PREHOOK: query: select * from src_5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_5

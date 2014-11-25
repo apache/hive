@@ -1,5 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE part_staging;
 DROP TABLE part_orc;
 

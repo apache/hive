@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -58,9 +60,12 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
+import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkMapJoinOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.spark.SplitSparkWorkResolver;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
@@ -114,8 +119,8 @@ public class SparkCompiler extends TaskCompiler {
         new SetSparkReducerParallelism());
 
     // TODO: need to research and verify support convert join to map join optimization.
-    //opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
-    //    JoinOperator.getOperatorName() + "%"), new SparkMapJoinOptimizer());
+    opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
+        JoinOperator.getOperatorName() + "%"), new SparkMapJoinOptimizer());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -147,8 +152,8 @@ public class SparkCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
 
-    //opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
-    //    MapJoinOperator.getOperatorName() + "%"), new SparkReduceSinkMapJoinProc());
+    opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
+        MapJoinOperator.getOperatorName() + "%"), new SparkReduceSinkMapJoinProc());
 
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
         FileSinkOperator.getOperatorName() + "%"),
@@ -264,6 +269,8 @@ public class SparkCompiler extends TaskCompiler {
        pCtx.getFetchTask());
 
     physicalCtx = new SplitSparkWorkResolver().resolve(physicalCtx);
+
+    physicalCtx = new SparkMapJoinResolver().resolve(physicalCtx);
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);

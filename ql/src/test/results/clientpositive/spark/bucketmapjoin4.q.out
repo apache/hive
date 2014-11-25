@@ -175,16 +175,15 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -197,14 +196,16 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: false
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      Position of Big Table: 0
+            Local Work:
+              Map Reduce Local Work
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -252,7 +253,12 @@ STAGE PLANS:
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
               /srcbucket_mapjoin [b]
-        Map 3 
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -262,14 +268,52 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: false
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col1, _col6
+                      input vertices:
+                        1 Map 1
+                      Position of Big Table: 0
+                      Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+#### A masked pattern was here ####
+                          NumFilesPerFileSink: 1
+                          Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              properties:
+                                bucket_count -1
+                                columns key,value1,value2
+                                columns.comments   
+                                columns.types string:string:string
+#### A masked pattern was here ####
+                                name default.bucketmapjoin_tmp_result
+                                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                                serialization.format 1
+                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: default.bucketmapjoin_tmp_result
+                          TotalFiles: 1
+                          GatherStats: true
+                          MultiFileSpray: false
+            Local Work:
+              Map Reduce Local Work
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -317,47 +361,6 @@ STAGE PLANS:
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
               /srcbucket_mapjoin [a]
-        Reducer 2 
-            Needs Tagging: true
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0}
-                outputColumnNames: _col0, _col1, _col6
-                Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.comments   
-                          columns.types string:string:string
-#### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
 
   Stage: Stage-2
     Dependency Collection
@@ -544,16 +547,15 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -566,14 +568,16 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: false
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      Position of Big Table: 0
+            Local Work:
+              Map Reduce Local Work
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -621,7 +625,12 @@ STAGE PLANS:
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
               /srcbucket_mapjoin [b]
-        Map 3 
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -631,14 +640,57 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 13 Data size: 1375 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: false
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col1, _col6
+                      input vertices:
+                        1 Map 1
+                      Position of Big Table: 0
+                      Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+#### A masked pattern was here ####
+                          NumFilesPerFileSink: 1
+                          Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              properties:
+                                COLUMN_STATS_ACCURATE true
+                                bucket_count -1
+                                columns key,value1,value2
+                                columns.comments   
+                                columns.types string:string:string
+#### A masked pattern was here ####
+                                name default.bucketmapjoin_tmp_result
+                                numFiles 2
+                                numRows 464
+                                rawDataSize 8519
+                                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                                serialization.format 1
+                                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                totalSize 8983
+#### A masked pattern was here ####
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: default.bucketmapjoin_tmp_result
+                          TotalFiles: 1
+                          GatherStats: true
+                          MultiFileSpray: false
+            Local Work:
+              Map Reduce Local Work
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -686,52 +738,6 @@ STAGE PLANS:
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
               /srcbucket_mapjoin [a]
-        Reducer 2 
-            Needs Tagging: true
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0}
-                outputColumnNames: _col0, _col1, _col6
-                Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
-                    Statistics: Num rows: 14 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          COLUMN_STATS_ACCURATE true
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.comments   
-                          columns.types string:string:string
-#### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          numFiles 1
-                          numRows 464
-                          rawDataSize 8519
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          totalSize 8983
-#### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
 
   Stage: Stage-2
     Dependency Collection
@@ -752,7 +758,7 @@ STAGE PLANS:
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
-                numFiles 1
+                numFiles 2
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
