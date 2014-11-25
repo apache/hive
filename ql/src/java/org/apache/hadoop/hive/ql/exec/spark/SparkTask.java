@@ -28,8 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -70,10 +68,11 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
   private static final long serialVersionUID = 1L;
@@ -96,18 +95,9 @@ public class SparkTask extends Task<SparkWork> {
     try {
       printConfigInfo();
       sparkSessionManager = SparkSessionManagerImpl.getInstance();
-      sparkSession = SessionState.get().getSparkSession();
+      sparkSession = SparkUtilities.getSparkSession(conf, sparkSessionManager);
 
-      // Spark configurations are updated close the existing session
-      if(conf.getSparkConfigUpdated()){
-        sparkSessionManager.closeSession(sparkSession);
-        sparkSession =  null;
-        conf.setSparkConfigUpdated(false);
-      }
-      sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
-      SessionState.get().setSparkSession(sparkSession);
       SparkWork sparkWork = getWork();
-
       sparkWork.setRequiredCounterPrefix(getCounterPrefixes());
 
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);

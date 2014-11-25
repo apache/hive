@@ -17,8 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,16 +47,13 @@ import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
 import org.apache.hive.spark.client.SparkClientFactory;
+import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 
 /**
  * RemoteSparkClient is a wrapper of {@link org.apache.hive.spark.client.SparkClient}, which
@@ -66,17 +69,31 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static transient final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient SparkClient remoteClient;
+  private transient SparkConf sparkConf;
 
   private transient List<String> localJars = new ArrayList<String>();
 
   private transient List<String> localFiles = new ArrayList<String>();
 
-  RemoteHiveSparkClient(Map<String, String> sparkConf) throws IOException, SparkException {
-    SparkClientFactory.initialize(sparkConf);
-    remoteClient = SparkClientFactory.createClient(sparkConf);
+  RemoteHiveSparkClient(Map<String, String> conf) throws IOException, SparkException {
+    SparkClientFactory.initialize(conf);
+    sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
+    remoteClient = SparkClientFactory.createClient(conf);
   }
 
   @Override
+  public SparkConf getSparkConf() {
+    return sparkConf;
+  }
+
+  @Override
+  public int getExecutorCount() throws Exception {
+    Future<Integer> handler = remoteClient.getExecutorCount();
+    return handler.get().intValue();
+  }
+
+  @Override
+  @SuppressWarnings("serial")
   public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
     final Context ctx = driverContext.getCtx();
     final HiveConf hiveConf = (HiveConf) ctx.getConf();

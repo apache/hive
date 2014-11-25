@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
-import java.io.IOException;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -27,18 +26,19 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
-import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
-import org.apache.hadoop.hive.ql.exec.spark.LocalHiveSparkClient;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 
-import org.apache.spark.SparkException;
 import scala.Tuple2;
 
 /**
@@ -73,51 +73,55 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
     context.getVisitedReduceSinks().add(sink);
 
-
     if (desc.getNumReducers() <= 0) {
       if (constantReducers > 0) {
         LOG.info("Parallelism for reduce sink " + sink + " set by user to " + constantReducers);
         desc.setNumReducers(constantReducers);
       } else {
         try {
-          // TODO try to make this still work after integration with remote spark context, so that we
-          // don't break test, we should implement automatic calculate reduce number for remote spark
-          // client and refactor code later, track it with HIVE-8855.
-          HiveSparkClient sparkClient = HiveSparkClientFactory.createHiveSparkClient(context.getConf());
-          if (sparkClient instanceof LocalHiveSparkClient) {
-            LocalHiveSparkClient localHiveSparkClient = (LocalHiveSparkClient)sparkClient;
-            long numberOfBytes = 0;
+          long numberOfBytes = 0;
 
-            // we need to add up all the estimates from the siblings of this reduce sink
-            for (Operator<? extends OperatorDesc> sibling:
-              sink.getChildOperators().get(0).getParentOperators()) {
-              if (sibling.getStatistics() != null) {
-                numberOfBytes += sibling.getStatistics().getDataSize();
-              } else {
-                LOG.warn("No stats available from: " + sibling);
+          // we need to add up all the estimates from the siblings of this reduce sink
+          for (Operator<? extends OperatorDesc> sibling:
+            sink.getChildOperators().get(0).getParentOperators()) {
+            if (sibling.getStatistics() != null) {
+              numberOfBytes += sibling.getStatistics().getDataSize();
+            } else {
+              LOG.warn("No stats available from: " + sibling);
+            }
+          }
+
+          if (sparkMemoryAndCores == null) {
+            SparkSessionManager sparkSessionManager = null;
+            SparkSession sparkSession = null;
+            try {
+              sparkSessionManager = SparkSessionManagerImpl.getInstance();
+              sparkSession = SparkUtilities.getSparkSession(
+                context.getConf(), sparkSessionManager);
+              sparkMemoryAndCores = sparkSession.getMemoryAndCores();
+            } finally {
+              if (sparkSession != null && sparkSessionManager != null) {
+                try {
+                  sparkSessionManager.returnSession(sparkSession);
+                } catch(HiveException ex) {
+                  LOG.error("Failed to return the session to SessionManager", ex);
+                }
               }
             }
-
-            if (sparkMemoryAndCores == null) {
-              sparkMemoryAndCores = localHiveSparkClient.getMemoryAndCores();
-            }
-
-            // Divide it by 2 so that we can have more reducers
-            long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
-            int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
-              maxReducers, false);
-
-            // If there are more cores, use the number of cores
-            int cores = sparkMemoryAndCores._2.intValue();
-            if (numReducers < cores) {
-              numReducers = cores;
-            }
-            LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
-            desc.setNumReducers(numReducers);
-
-          } else {
-            sparkClient.close();
           }
+
+          // Divide it by 2 so that we can have more reducers
+          long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
+          int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
+            maxReducers, false);
+
+          // If there are more cores, use the number of cores
+          int cores = sparkMemoryAndCores._2.intValue();
+          if (numReducers < cores) {
+            numReducers = cores;
+          }
+          LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
+          desc.setNumReducers(numReducers);
         } catch (Exception e) {
           LOG.warn("Failed to create spark client.", e);
         }

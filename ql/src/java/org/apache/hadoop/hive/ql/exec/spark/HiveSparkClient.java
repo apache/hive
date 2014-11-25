@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.Closeable;
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-
-import java.io.Closeable;
-import java.io.Serializable;
+import org.apache.spark.SparkConf;
 
 public interface HiveSparkClient extends Serializable, Closeable {
   /**
@@ -34,4 +35,11 @@ public interface HiveSparkClient extends Serializable, Closeable {
    * @throws Exception
    */
   public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception;
+
+  public SparkConf getSparkConf();
+
+  /**
+   * Get the count of executors
+   */
+  public int getExecutorCount() throws Exception;
 }

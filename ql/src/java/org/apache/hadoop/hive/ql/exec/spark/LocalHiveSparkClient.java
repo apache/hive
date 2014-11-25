@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,15 +41,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import scala.Tuple2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 
 /**
  * LocalSparkClient submit Spark job in local driver, it's responsible for build spark client
@@ -71,30 +70,6 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     return client;
   }
 
-  /**
-   * Get Spark shuffle memory per task, and total number of cores. This
-   * information can be used to estimate how many reducers a task can have.
-   *
-   * @return a tuple, the first element is the shuffle memory per task in bytes,
-   *  the second element is the number of total cores usable by the client
-   */
-  public Tuple2<Long, Integer> getMemoryAndCores() {
-    SparkContext sparkContext = sc.sc();
-    SparkConf sparkConf = sparkContext.conf();
-    int cores = sparkConf.getInt("spark.executor.cores", 1);
-    double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
-    // sc.executorMemory() is in MB, need to convert to bytes
-    long memoryPerTask =
-      (long) (sparkContext.executorMemory() * memoryFraction * 1024 * 1024 / cores);
-    int executors = sparkContext.getExecutorMemoryStatus().size();
-    int totalCores = executors * cores;
-    LOG.info("Spark cluster current has executors: " + executors
-      + ", cores per executor: " + cores + ", memory per executor: "
-      + sparkContext.executorMemory() + "M, shuffle memoryFraction: " + memoryFraction);
-    return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTask),
-      Integer.valueOf(totalCores));
-  }
-
   private JavaSparkContext sc;
 
   private List<String> localJars = new ArrayList<String>();
@@ -107,6 +82,16 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     sc = new JavaSparkContext(sparkConf);
     jobMetricsListener = new JobMetricsListener();
     sc.sc().listenerBus().addListener(jobMetricsListener);
+  }
+
+  @Override
+  public SparkConf getSparkConf() {
+    return sc.sc().conf();
+  }
+
+  @Override
+  public int getExecutorCount() {
+    return sc.sc().getExecutorMemoryStatus().size();
   }
 
   @Override

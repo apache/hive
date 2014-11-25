@@ -17,14 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.io.BytesWritable;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
+import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.io.BytesWritable;
 
 /**
  * Contains utilities methods used as part of Spark tasks
@@ -67,5 +72,20 @@ public class SparkUtilities {
     }
 
     return url;
+  }
+
+  public static SparkSession getSparkSession(HiveConf conf,
+      SparkSessionManager sparkSessionManager) throws HiveException {
+    SparkSession sparkSession = SessionState.get().getSparkSession();
+
+    // Spark configurations are updated close the existing session
+    if(conf.getSparkConfigUpdated()){
+      sparkSessionManager.closeSession(sparkSession);
+      sparkSession =  null;
+      conf.setSparkConfigUpdated(false);
+    }
+    sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
+    SessionState.get().setSparkSession(sparkSession);
+    return sparkSession;
   }
 }

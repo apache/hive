@@ -17,21 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
-import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.spark.SparkException;
+import org.apache.spark.SparkConf;
 
-import java.io.IOException;
-import java.util.UUID;
+import scala.Tuple2;
+
+import com.google.common.base.Preconditions;
 
 public class SparkSessionImpl implements SparkSession {
   private static final Log LOG = LogFactory.getLog(SparkSession.class);
@@ -60,6 +62,23 @@ public class SparkSessionImpl implements SparkSession {
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
     return hiveSparkClient.execute(driverContext, sparkWork);
+  }
+
+  @Override
+  public Tuple2<Long, Integer> getMemoryAndCores() throws Exception {
+    SparkConf sparkConf = hiveSparkClient.getSparkConf();
+    int cores = sparkConf.getInt("spark.executor.cores", 1);
+    double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
+    int executorMemoryInMB = sparkConf.getInt("spark.executor.memory", 512);
+    long memoryPerTaskInBytes =
+      (long) (executorMemoryInMB * memoryFraction * 1024 * 1024 / cores);
+    int executors = hiveSparkClient.getExecutorCount();
+    int totalCores = executors * cores;
+    LOG.info("Spark cluster current has executors: " + executors
+      + ", cores per executor: " + cores + ", memory per executor: "
+      + executorMemoryInMB + "M, shuffle memoryFraction: " + memoryFraction);
+    return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
+      Integer.valueOf(totalCores));
   }
 
   @Override
