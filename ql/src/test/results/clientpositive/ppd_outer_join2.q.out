@@ -1,4 +1,6 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  FROM 
   src a
  RIGHT OUTER JOIN 
@@ -7,7 +9,9 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  FROM 
   src a
  RIGHT OUTER JOIN 
