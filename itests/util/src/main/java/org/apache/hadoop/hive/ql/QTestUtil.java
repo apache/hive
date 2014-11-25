@@ -222,7 +222,7 @@ public class QTestUtil {
 
   public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
       Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
+    this(outDir, logDir, MiniClusterType.spark, null, "0.20", initScript, cleanupScript);
   }
 
   public String getOutputDirectory() {
@@ -280,6 +280,7 @@ public class QTestUtil {
   public enum MiniClusterType {
     mr,
     tez,
+    spark,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -287,6 +288,8 @@ public class QTestUtil {
         return mr;
       } else if (type.equals("tez")) {
         return tez;
+      } else if (type.equals("spark")) {
+        return spark;
       } else {
         return none;
       }
@@ -322,7 +325,7 @@ public class QTestUtil {
     HadoopShims shims = ShimLoader.getHadoopShims();
     int numberOfDataNodes = 4;
 
-    if (clusterType != MiniClusterType.none) {
+    if (clusterType != MiniClusterType.none && clusterType != MiniClusterType.spark) {
       dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
       FileSystem fs = dfs.getFileSystem();
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
@@ -766,7 +769,7 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && clusterType == MiniClusterType.tez) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark)) {
       oldSs.close();
     }
 
@@ -800,7 +803,7 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && clusterType == MiniClusterType.tez) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark)) {
       oldSs.close();
     }
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
@@ -1500,7 +1503,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20", "", "");
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.spark, null, "0.20", "", "");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

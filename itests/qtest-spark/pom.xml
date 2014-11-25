@@ -37,7 +37,7 @@
     <qfile></qfile>
     <qfile_regex></qfile_regex>
     <run_disabled>false</run_disabled>
-    <clustermode></clustermode>
+    <clustermode>spark</clustermode>
     <execute.beeline.tests>false</execute.beeline.tests>
     <active.hadoop.version>${hadoop-23.version}</active.hadoop.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
@@ -356,6 +356,7 @@
                   queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
                   queryFile="${qfile}"
                   queryFileRegex="${qfile_regex}"
+                  clusterMode="${clustermode}"
                   includeQueryFile="${spark.query.files}"
                   runDisabled="${run_disabled}"
                   hiveConfDir="${basedir}/${hive.path.to.root}/data/conf/spark"
