@@ -18,6 +18,7 @@
 package org.apache.hive.spark.client;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -41,6 +42,11 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
    * on the remote end.
    */
   MetricsCollection getMetrics();
+
+  /**
+   * Get corresponding spark job IDs for this job
+   */
+  List<Integer> getSparkJobIds();
 
   // TODO: expose job status?
 

@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -216,7 +217,7 @@ public class RemoteDriver {
 
         T result = req.job.call(jc);
         synchronized (completed) {
-          while (completed.get() != jobs.size()) {
+          while (completed.get() < jobs.size()) {
             LOG.debug("Client job {} finished, {} of {} Spark jobs finished.",
                 req.id, completed.get(), jobs.size());
             completed.wait();
@@ -249,6 +250,11 @@ public class RemoteDriver {
 
     private void monitorJob(JavaFutureAction<?> job) {
       jobs.add(job);
+      if (!jc.getMonitoredJobs().containsKey(req.id)) {
+        jc.getMonitoredJobs().put(req.id, new CopyOnWriteArrayList<JavaFutureAction<?>>());
+      }
+      jc.getMonitoredJobs().get(req.id).add(job);
+      client.tell(new Protocol.JobSubmitted(req.id, job.jobIds().get(0)), actor);
     }
 
   }
