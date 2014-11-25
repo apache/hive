@@ -125,6 +125,11 @@ class SparkClientImpl implements SparkClient {
     return submit(new AddFileJob(url.toString()));
   }
 
+  @Override
+  public Future<Integer> getExecutorCount() {
+    return submit(new GetExecutorCountJob());
+  }
+
   void cancel(String jobId) {
     remoteRef.tell(new Protocol.CancelJob(jobId), clientRef);
   }
@@ -366,6 +371,7 @@ class SparkClientImpl implements SparkClient {
   }
 
   private static class AddJarJob implements Job<Serializable> {
+    private static final long serialVersionUID = 1L;
 
     private final String path;
 
@@ -382,6 +388,7 @@ class SparkClientImpl implements SparkClient {
   }
 
   private static class AddFileJob implements Job<Serializable> {
+    private static final long serialVersionUID = 1L;
 
     private final String path;
 
@@ -394,6 +401,17 @@ class SparkClientImpl implements SparkClient {
       jc.sc().addFile(path);
       return null;
     }
+
+  }
+  
+  private static class GetExecutorCountJob implements Job<Integer> {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public Integer call(JobContext jc) throws Exception {
+        int count = jc.sc().sc().getExecutorMemoryStatus().size();
+        return Integer.valueOf(count);
+      }
 
   }
 

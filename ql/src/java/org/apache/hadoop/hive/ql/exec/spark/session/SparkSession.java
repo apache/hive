@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
+import scala.Tuple2;
+
 public interface SparkSession {
   /**
    * Initializes a Spark session for DAG execution.
@@ -35,6 +37,15 @@ public interface SparkSession {
    * @param sparkWork
    */
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception;
+
+  /**
+   * Get Spark shuffle memory per task, and total number of cores. This
+   * information can be used to estimate how many reducers a task can have.
+   *
+   * @return a tuple, the first element is the shuffle memory per task in bytes,
+   *  the second element is the number of total cores usable by the client
+   */
+  public Tuple2<Long, Integer> getMemoryAndCores() throws Exception;
 
   /**
    * Is the session open and ready to submit jobs?

@@ -68,4 +68,8 @@ public interface SparkClient extends Serializable {
    */
   Future<?> addFile(URL url);
 
+  /**
+   * Get the count of executors
+   */
+  Future<Integer> getExecutorCount();
 }

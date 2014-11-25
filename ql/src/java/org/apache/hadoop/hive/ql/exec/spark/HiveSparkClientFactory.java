@@ -18,20 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 
 public class HiveSparkClientFactory {
   protected static transient final Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
@@ -112,7 +111,7 @@ public class HiveSparkClientFactory {
     return sparkConf;
   }
 
-  private static SparkConf generateSparkConf(Map<String, String> conf) {
+  static SparkConf generateSparkConf(Map<String, String> conf) {
     SparkConf sparkConf = new SparkConf(false);
     for (Map.Entry<String, String> entry : conf.entrySet()) {
       sparkConf.set(entry.getKey(), entry.getValue());
