@@ -1,9 +1,13 @@
-PREHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_nontemp
-POSTHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

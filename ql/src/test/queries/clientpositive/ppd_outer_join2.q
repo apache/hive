@@ -1,6 +1,8 @@
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=false;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
  FROM 
   src a

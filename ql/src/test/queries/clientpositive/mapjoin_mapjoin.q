@@ -4,6 +4,8 @@ set hive.auto.convert.join.noconditionaltask.size=10000;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
+-- SORT_QUERY_RESULTS
+
 explain extended select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key);
 
 explain
