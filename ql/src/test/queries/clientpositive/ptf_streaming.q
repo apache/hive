@@ -1,5 +1,7 @@
 create temporary function noopstreaming as 'org.apache.hadoop.hive.ql.udf.ptf.NoopStreaming$NoopStreamingResolver';
 
+-- SORT_QUERY_RESULTS
+
 --1. test1
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
