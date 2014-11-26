@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestHBaseKeyFactory2 extends AbstractHBaseKeyFactory {
+public class SampleHBaseKeyFactory2 extends AbstractHBaseKeyFactory {
 
   private static final int FIXED_LENGTH = 10;
 

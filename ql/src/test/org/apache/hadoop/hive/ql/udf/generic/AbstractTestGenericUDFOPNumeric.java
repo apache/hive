@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 
-public abstract class TestGenericUDFOPNumeric {
-  public TestGenericUDFOPNumeric() {
+public abstract class AbstractTestGenericUDFOPNumeric {
+  public AbstractTestGenericUDFOPNumeric() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
     SessionState ss = new SessionState(new HiveConf());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");

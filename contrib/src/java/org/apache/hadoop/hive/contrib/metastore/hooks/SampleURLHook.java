@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
  * First returns a url for a blank DB, then returns a URL for the original DB.
  * For testing the feature in url_hook.q
  */
-public class TestURLHook implements JDOConnectionURLHook {
+public class SampleURLHook implements JDOConnectionURLHook {
 
   private String originalUrl;
 

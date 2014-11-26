@@ -37,26 +37,26 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
- * Simple extension of {@link TestHBaseKeyFactory2} with exception of using filters instead of start
+ * Simple extension of {@link SampleHBaseKeyFactory2} with exception of using filters instead of start
  * and stop keys
  * */
-public class TestHBaseKeyFactory3 extends TestHBaseKeyFactory2 {
+public class SampleHBaseKeyFactory3 extends SampleHBaseKeyFactory2 {
 
   @Override
   public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer,
       ExprNodeDesc predicate) {
-    TestHBasePredicateDecomposer decomposedPredicate = new TestHBasePredicateDecomposer(keyMapping);
+    SampleHBasePredicateDecomposer decomposedPredicate = new SampleHBasePredicateDecomposer(keyMapping);
     return decomposedPredicate.decomposePredicate(keyMapping.columnName, predicate);
   }
 }
 
-class TestHBasePredicateDecomposer extends AbstractHBaseKeyPredicateDecomposer {
+class SampleHBasePredicateDecomposer extends AbstractHBaseKeyPredicateDecomposer {
 
   private static final int FIXED_LENGTH = 10;
 
   private ColumnMapping keyMapping;
 
-  TestHBasePredicateDecomposer(ColumnMapping keyMapping) {
+  SampleHBasePredicateDecomposer(ColumnMapping keyMapping) {
     this.keyMapping = keyMapping;
   }
 

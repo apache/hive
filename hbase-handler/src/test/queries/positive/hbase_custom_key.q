@@ -3,7 +3,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
     "hbase.table.name" = "hbase_custom",
     "hbase.columns.mapping" = ":key,cf:string",
-    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.TestHBaseKeyFactory");
+    "hbase.composite.key.factory"="org.apache.hadoop.hive.hbase.SampleHBaseKeyFactory");
 
 CREATE EXTERNAL TABLE hbase_ck_2(key string, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

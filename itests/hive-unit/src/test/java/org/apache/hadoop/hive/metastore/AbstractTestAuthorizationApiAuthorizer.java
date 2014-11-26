@@ -43,7 +43,7 @@ import org.junit.Test;
  * subclasses that set the mode and the tests here get run as part of their
  * testing.
  */
-public abstract class TestAuthorizationApiAuthorizer {
+public abstract class AbstractTestAuthorizationApiAuthorizer {
   protected static boolean isRemoteMetastoreMode;
   private static HiveConf hiveConf;
   private static HiveMetaStoreClient msc;

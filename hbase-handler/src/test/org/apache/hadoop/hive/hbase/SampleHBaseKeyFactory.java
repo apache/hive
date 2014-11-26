@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestHBaseKeyFactory extends DefaultHBaseKeyFactory {
+public class SampleHBaseKeyFactory extends DefaultHBaseKeyFactory {
 
   private static final String DELIMITER_PATTERN = "\\$\\$";
   private static final byte[] DELIMITER_BINARY = "$$".getBytes();

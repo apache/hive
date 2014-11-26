@@ -34,7 +34,7 @@ import org.apache.tez.dag.api.TezException;
  * use case from hive server 2, we need a session simulation.
  *
  */
-public class TestTezSessionState extends TezSessionState {
+public class SampleTezSessionState extends TezSessionState {
 
   private boolean open;
   private final String sessionId;
@@ -42,7 +42,7 @@ public class TestTezSessionState extends TezSessionState {
   private String user;
   private boolean doAsEnabled;
 
-  public TestTezSessionState(String sessionId) {
+  public SampleTezSessionState(String sessionId) {
     super(sessionId);
     this.sessionId = sessionId;
   }
