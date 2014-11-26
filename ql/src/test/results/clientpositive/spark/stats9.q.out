@@ -22,7 +22,7 @@ POSTHOOK: query: explain analyze table analyze_srcbucket compute statistics
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -35,7 +35,7 @@ STAGE PLANS:
                   alias: analyze_srcbucket
                   Statistics: Num rows: -1 Data size: 11603 Basic stats: PARTIAL Column stats: COMPLETE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcbucket compute statistics

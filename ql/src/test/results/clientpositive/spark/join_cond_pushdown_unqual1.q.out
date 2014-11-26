@@ -61,12 +61,12 @@ POSTHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name and p2_name = p3_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -165,12 +165,12 @@ POSTHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -269,12 +269,12 @@ POSTHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -378,12 +378,12 @@ POSTHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p2_partkey = 1 and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

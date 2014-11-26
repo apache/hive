@@ -53,13 +53,13 @@ EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3, Stage-4
-  Stage-4 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2, Stage-3
+  Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -152,7 +152,7 @@ STAGE PLANS:
         Union 2 
             Vertex: Union 2
 
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -265,13 +265,13 @@ EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3, Stage-4
-  Stage-4 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2, Stage-3
+  Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -364,7 +364,7 @@ STAGE PLANS:
         Union 2 
             Vertex: Union 2
 
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:

@@ -119,12 +119,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -233,12 +233,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -349,12 +349,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -457,12 +457,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -576,12 +576,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -687,12 +687,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join (select key from t3 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -798,12 +798,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join (select key , value from t2 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -906,12 +906,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1019,12 +1019,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1146,12 +1146,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1258,12 +1258,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a join t2 b on a.key = b.key left semi join t3 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1408,12 +1408,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1530,12 +1530,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1688,12 +1688,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1840,12 +1840,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2131,12 +2131,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2286,12 +2286,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2592,12 +2592,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2764,12 +2764,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

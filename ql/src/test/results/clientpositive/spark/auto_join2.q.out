@@ -15,15 +15,14 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key 
 INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-4 depends on stages: Stage-5
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-4
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -45,7 +44,7 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -123,9 +122,6 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -136,7 +132,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j2
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)

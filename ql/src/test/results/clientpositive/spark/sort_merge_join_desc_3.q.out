@@ -63,12 +63,12 @@ select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

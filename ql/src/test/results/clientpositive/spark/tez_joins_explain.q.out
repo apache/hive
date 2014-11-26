@@ -9,13 +9,13 @@ explain
 select * from (select b.key, b.value from src1 a left outer join src b on (a.key = b.key) order by b.key) x right outer join src c on (x.value = c.value) order by x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-3 depends on stages: Stage-4
-  Stage-1 depends on stages: Stage-3
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -34,7 +34,7 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 5 <- Map 4 (SORT, 1)

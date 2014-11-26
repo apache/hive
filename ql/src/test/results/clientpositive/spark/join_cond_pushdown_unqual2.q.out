@@ -61,12 +61,12 @@ POSTHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name join part p4 on p2_name = p3_name and p1.p_name = p4.p_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -196,13 +196,13 @@ from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 on 
             and p1.p_partkey = p2_partkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-3 depends on stages: Stage-4
-  Stage-1 depends on stages: Stage-3
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -241,7 +241,7 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

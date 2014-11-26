@@ -46,10 +46,10 @@ POSTHOOK: query: explain
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics noscan
@@ -335,10 +335,10 @@ POSTHOOK: query: explain
 analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart_partial PARTITION(ds='2008-04-08') compute statistics noscan

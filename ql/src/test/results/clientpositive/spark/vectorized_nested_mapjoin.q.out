@@ -3,13 +3,13 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble as td from alltypesorc v1, alltypesorc v2 where v1.ctinyint=v2.ctinyint) t1 join alltypesorc v3 on t1.tsi=v3.csmallint
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-3 depends on stages: Stage-4
-  Stage-1 depends on stages: Stage-3
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -31,7 +31,7 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

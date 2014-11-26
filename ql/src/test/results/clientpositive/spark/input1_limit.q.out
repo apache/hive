@@ -30,11 +30,10 @@ INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -125,9 +124,6 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest2
 
-  Stage: Stage-3
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -138,7 +134,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 
   Stage: Stage-1
@@ -151,7 +147,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest2
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src

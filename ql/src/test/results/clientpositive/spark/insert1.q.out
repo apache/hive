@@ -34,9 +34,8 @@ POSTHOOK: query: explain insert into table insert1 select a.key, a.value from in
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -64,9 +63,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.insert1
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -77,7 +73,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.insert1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: explain insert into table INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
@@ -86,9 +82,8 @@ POSTHOOK: query: explain insert into table INSERT1 select a.key, a.value from in
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -116,9 +111,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.insert1
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -129,7 +121,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.insert1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: -- HIVE-3465
@@ -154,9 +146,8 @@ POSTHOOK: query: explain insert into table x.INSERT1 select a.key, a.value from 
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -184,9 +175,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: x.insert1
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -197,7 +185,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: x.insert1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: explain insert into table default.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
@@ -206,9 +194,8 @@ POSTHOOK: query: explain insert into table default.INSERT1 select a.key, a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -236,9 +223,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.insert1
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -249,7 +233,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.insert1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: explain
@@ -264,11 +248,10 @@ insert overwrite table x.insert1 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -311,9 +294,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: x.insert1
 
-  Stage: Stage-3
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -324,7 +304,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.insert1
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 
   Stage: Stage-1
@@ -337,7 +317,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: x.insert1
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: -- HIVE-3676

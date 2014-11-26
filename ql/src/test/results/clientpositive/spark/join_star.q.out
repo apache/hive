@@ -131,12 +131,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -228,12 +228,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -357,12 +357,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -486,12 +486,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -622,12 +622,12 @@ POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer Join dim7 on  dim6.f12 = dim7.f13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

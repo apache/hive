@@ -163,8 +163,10 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.mapJoinParentMap = new LinkedHashMap<MapJoinOperator, List<Operator<?>>>();
     this.currentMapJoinOperators = new LinkedHashSet<MapJoinOperator>();
     this.linkChildOpWithDummyOp = new LinkedHashMap<Operator<?>, List<Operator<?>>>();
-    this.dependencyTask = (DependencyCollectionTask)
-        TaskFactory.get(new DependencyCollectionWork(), conf);
+    this.dependencyTask = conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES) ?
+        (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf) :
+        null;
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();
     this.workWithUnionOperators = new LinkedHashSet<BaseWork>();

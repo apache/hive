@@ -9,12 +9,12 @@ EXPLAIN SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -665,12 +665,12 @@ POSTHOOK: query: EXPLAIN select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1784,12 +1784,12 @@ SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) 
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2469,12 +2469,12 @@ SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 A
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -3154,12 +3154,12 @@ SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -3810,12 +3810,12 @@ POSTHOOK: query: EXPLAIN
 SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:

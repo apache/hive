@@ -4,10 +4,9 @@ POSTHOOK: query: EXPLAIN CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE k
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -35,10 +34,13 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.foo
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: key string, value string
@@ -49,14 +51,8 @@ STAGE PLANS:
           name: default.foo
           isTemporary: true
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -74,10 +70,9 @@ POSTHOOK: query: EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE k
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -105,10 +100,13 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.bar
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: key string, value string
@@ -119,14 +117,8 @@ STAGE PLANS:
           name: default.bar
           isTemporary: true
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT

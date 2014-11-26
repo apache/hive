@@ -506,12 +506,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -1938,12 +1938,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -2255,12 +2255,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
@@ -4140,12 +4140,12 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -5213,11 +5213,10 @@ TOK_QUERY
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-2
@@ -5417,9 +5416,6 @@ STAGE PLANS:
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
                       auto parallelism: false
 
-  Stage: Stage-3
-    Dependency Collection
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -5442,7 +5438,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.part_5
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
@@ -5468,7 +5464,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.part_4
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 #### A masked pattern was here ####
 

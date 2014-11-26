@@ -104,14 +104,14 @@ explain
 analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-0, Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-0, Stage-2
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Partial Scan Statistics
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan

@@ -64,9 +64,8 @@ insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-2
@@ -181,9 +180,6 @@ STAGE PLANS:
                           name: default.outputtbl2
         Union 3 
             Vertex: Union 3
-
-  Stage: Stage-3
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator

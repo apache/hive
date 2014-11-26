@@ -20,14 +20,13 @@ select key, count(1) from src group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -78,17 +77,14 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.test1
 
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -100,10 +96,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
-  Stage: Stage-4
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Spark Merge File Work 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test1
+
+  Stage: Stage-5
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -119,21 +130,6 @@ STAGE PLANS:
                         name: default.test1
 
   Stage: Stage-6
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Spark Merge File Work 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -520,14 +516,13 @@ insert overwrite table test1 select key from test_src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -552,17 +547,14 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.test1
 
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -574,10 +566,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
-  Stage: Stage-4
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Spark Merge File Work 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test1
+
+  Stage: Stage-5
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -593,21 +600,6 @@ STAGE PLANS:
                         name: default.test1
 
   Stage: Stage-6
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Spark Merge File Work 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -634,14 +626,13 @@ insert overwrite table test1 select key from test_src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -666,17 +657,14 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.test1
 
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -688,10 +676,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
-  Stage: Stage-4
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Spark Merge File Work 
+            Map Operator Tree:
+                TableScan
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test1
+
+  Stage: Stage-5
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -707,21 +710,6 @@ STAGE PLANS:
                         name: default.test1
 
   Stage: Stage-6
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Spark Merge File Work 
-            Map Operator Tree:
-                TableScan
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
