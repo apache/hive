@@ -1,3 +1,5 @@
 bash /tmp/hive-ptest-units/TestPrepPhase/source-prep.sh
 mkdir -p /some/working/dir/scratch
+pkill -9 -f java
+pkill -f java
 rm -rf /some/working/dir/scratch

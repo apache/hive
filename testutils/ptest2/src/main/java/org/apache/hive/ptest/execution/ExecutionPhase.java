@@ -107,6 +107,10 @@ public class ExecutionPhase extends Phase {
         JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
         executedTests.addAll(parser.getExecutedTests());
         failedTests.addAll(parser.getFailedTests());
+        // if the TEST*.xml was not generated or was corrupt, let someone know
+        if (parser.getNumAttemptedTests() == 0) {
+          failedTests.add(batch.getName() + " - did not produce a TEST-*.xml file");
+        }
       }
     } finally {
       long elapsed = System.currentTimeMillis() - start;
