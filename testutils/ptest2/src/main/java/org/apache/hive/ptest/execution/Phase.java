@@ -88,6 +88,14 @@ public abstract class Phase {
     }
     return toListOfResults(futures);
   }
+  protected List<SSHResult> execHostsIgnoreErrors(String command)
+      throws Exception {
+    List<ListenableFuture<SSHResult>> futures = Lists.newArrayList();
+    for(HostExecutor hostExecutor : hostExecutors) {
+      futures.add(hostExecutor.execIgnoreAllErrors(command));
+    }
+    return toListOfResults(futures);
+  }
   // clean prep
   protected List<RemoteCommandResult> execInstances(String command)
       throws Exception {

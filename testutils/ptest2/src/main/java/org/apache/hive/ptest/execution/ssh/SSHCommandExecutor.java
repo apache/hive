@@ -63,7 +63,7 @@ public class SSHCommandExecutor {
           command.setExitCode(Constants.EXIT_CODE_UNKNOWN);
           return;
         }
-        if(attempts++ <= 3 && cmd.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
+        if(command.isReportErrors() && attempts++ <= 3 && cmd.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
           mLogger.warn("Command exited with " + cmd.getExitCode() + ", will retry: " + command);
           retry = true;
           TimeUnit.SECONDS.sleep(5);

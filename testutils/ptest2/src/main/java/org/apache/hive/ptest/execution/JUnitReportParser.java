@@ -76,6 +76,9 @@ public class JUnitReportParser {
     }
     return failedTests;
   }
+  public int getNumAttemptedTests() {
+    return getExecutedTests().size() + getFailedTests().size();
+  }
   private void parse() {
     for(File file : getFiles(directory)) {
       FileInputStream stream = null;
