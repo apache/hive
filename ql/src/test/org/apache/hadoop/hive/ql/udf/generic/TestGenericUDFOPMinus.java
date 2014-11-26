@@ -39,7 +39,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFOPMinus extends TestGenericUDFOPNumeric {
+public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
   @Test
   public void testByteMinusShort() throws HiveException {

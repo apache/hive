@@ -40,7 +40,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFOPDivide extends TestGenericUDFOPNumeric {
+public class TestGenericUDFOPDivide extends AbstractTestGenericUDFOPNumeric {
 
   @Test
   public void testByteDivideShort() throws HiveException {
