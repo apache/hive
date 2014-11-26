@@ -15,12 +15,12 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 5 <- Map 4 (SORT, 1)
@@ -177,12 +177,12 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 5 <- Map 4 (SORT, 1)
@@ -333,12 +333,12 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 2 <- Map 1 (SORT, 1)
@@ -495,12 +495,12 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 2 <- Map 1 (SORT, 1)
@@ -710,12 +710,12 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 2 <- Map 1 (SORT, 1)
@@ -916,12 +916,12 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 2 <- Map 1 (SORT, 1)
@@ -1122,12 +1122,12 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 5 <- Map 4 (SORT, 1)
@@ -1328,12 +1328,12 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
       Edges:
         Reducer 5 <- Map 4 (SORT, 1)

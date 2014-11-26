@@ -38,13 +38,12 @@ INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-5 depends on stages: Stage-4
-  Stage-0 depends on stages: Stage-5
-  Stage-6 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-5
-  Stage-7 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
@@ -117,9 +116,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-5
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -130,7 +126,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
 
-  Stage: Stage-6
+  Stage: Stage-5
     Stats-Aggr Operator
 
   Stage: Stage-1
@@ -143,7 +139,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest2
 
-  Stage: Stage-7
+  Stage: Stage-6
     Stats-Aggr Operator
 
   Stage: Stage-2
@@ -159,7 +155,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest3
 
-  Stage: Stage-8
+  Stage: Stage-7
     Stats-Aggr Operator
 
   Stage: Stage-3

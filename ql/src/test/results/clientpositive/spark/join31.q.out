@@ -29,14 +29,13 @@ FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN
 group by subq1.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Spark
       Edges:
         Reducer 5 <- Map 4 (GROUP, 1)
@@ -183,9 +182,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest_j1
 
-  Stage: Stage-2
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -196,7 +192,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 

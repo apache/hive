@@ -61,16 +61,15 @@ INSERT OVERWRITE TABLE src_5
   order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-2 depends on stages: Stage-6
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-0
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-5
     Spark
       Edges:
         Reducer 6 <- Map 5 (GROUP, 1)
@@ -262,9 +261,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_5
 
-  Stage: Stage-3
-    Dependency Collection
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -275,7 +271,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_5
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 
   Stage: Stage-0
@@ -288,7 +284,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_4
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: from src b 
@@ -327,13 +323,12 @@ POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-RUN: Stage-6:MAPRED
+RUN: Stage-5:MAPRED
 RUN: Stage-2:MAPRED
-RUN: Stage-3:DEPENDENCY_COLLECTION
 RUN: Stage-1:MOVE
 RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
 RUN: Stage-4:STATS
-RUN: Stage-5:STATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4
@@ -509,16 +504,15 @@ INSERT OVERWRITE TABLE src_5
   order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-2 depends on stages: Stage-6
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-0
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-5
     Spark
       Edges:
         Reducer 6 <- Map 5 (GROUP, 1)
@@ -710,9 +704,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.src_5
 
-  Stage: Stage-3
-    Dependency Collection
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -723,7 +714,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_5
 
-  Stage: Stage-4
+  Stage: Stage-3
     Stats-Aggr Operator
 
   Stage: Stage-0
@@ -736,7 +727,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_4
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: from src b 
@@ -775,13 +766,12 @@ POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-RUN: Stage-6:MAPRED
+RUN: Stage-5:MAPRED
 RUN: Stage-2:MAPRED
-RUN: Stage-3:DEPENDENCY_COLLECTION
 RUN: Stage-1:MOVE
 RUN: Stage-0:MOVE
+RUN: Stage-3:STATS
 RUN: Stage-4:STATS
-RUN: Stage-5:STATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4

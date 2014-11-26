@@ -376,7 +376,6 @@ FROM (
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-2
   Stage-1 depends on stages: Stage-2
 
@@ -429,9 +428,6 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-3
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator

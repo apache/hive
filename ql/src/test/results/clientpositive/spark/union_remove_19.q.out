@@ -66,8 +66,7 @@ FROM (
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -162,9 +161,6 @@ STAGE PLANS:
                           name: default.outputtbl1
         Union 3 
             Vertex: Union 3
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -274,8 +270,7 @@ FROM (
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -376,9 +371,6 @@ STAGE PLANS:
                           name: default.outputtbl1
         Union 3 
             Vertex: Union 3
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -450,8 +442,7 @@ FROM (
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -556,9 +547,6 @@ STAGE PLANS:
                               name: default.outputtbl1
         Union 3 
             Vertex: Union 3
-
-  Stage: Stage-2
-    Dependency Collection
 
   Stage: Stage-0
     Move Operator

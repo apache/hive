@@ -34,9 +34,8 @@ POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-1:MAPRED
-RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-2:STATS
 PREHOOK: query: SELECT sum(hash(dest1.key,dest1.value)) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -69,9 +68,8 @@ POSTHOOK: Output: default@dest_j2
 POSTHOOK: Lineage: dest_j2.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-1:MAPRED
-RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-2:STATS
 PREHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
@@ -104,9 +102,8 @@ POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-1:MAPRED
-RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-2:STATS
 PREHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1

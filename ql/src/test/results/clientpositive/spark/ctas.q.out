@@ -24,10 +24,9 @@ POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from s
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -81,10 +80,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_CTAS1
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: k string, value string
@@ -93,14 +95,8 @@ STAGE PLANS:
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: default.nzhang_CTAS1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -172,10 +168,9 @@ POSTHOOK: query: explain create table nzhang_ctas2 as select * from src sort by 
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -229,10 +224,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_ctas2
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: key string, value string
@@ -241,14 +239,8 @@ STAGE PLANS:
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: default.nzhang_ctas2
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_ctas2 as select * from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -320,10 +312,9 @@ POSTHOOK: query: explain create table nzhang_ctas3 row format serde "org.apache.
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -377,10 +368,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                         name: default.nzhang_ctas3
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: half_key double, conb string
@@ -389,14 +383,8 @@ STAGE PLANS:
           serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           name: default.nzhang_ctas3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -533,10 +521,9 @@ POSTHOOK: query: explain create table nzhang_ctas4 row format delimited fields t
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -590,10 +577,13 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_ctas4
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: key string, value string
@@ -603,14 +593,8 @@ STAGE PLANS:
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: default.nzhang_ctas4
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -724,10 +708,9 @@ TOK_CREATETABLE
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -853,10 +836,13 @@ STAGE PLANS:
                     GatherStats: true
                     MultiFileSpray: false
 
-  Stage: Stage-2
-    Dependency Collection
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
       Create Table Operator:
         Create Table
           columns: key string, value string
@@ -868,14 +854,8 @@ STAGE PLANS:
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           name: default.nzhang_ctas5
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
-#### A masked pattern was here ####
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
 #### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10

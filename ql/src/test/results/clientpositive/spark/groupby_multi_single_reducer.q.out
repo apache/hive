@@ -56,13 +56,12 @@ INSERT OVERWRITE TABLE dest_g4 SELECT substr(src.key,1,1), count(DISTINCT substr
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-4
-  Stage-6 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-4
-  Stage-7 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-3
+  Stage-6 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-3
@@ -151,9 +150,6 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest_g4
 
-  Stage: Stage-4
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -164,7 +160,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g2
 
-  Stage: Stage-5
+  Stage: Stage-4
     Stats-Aggr Operator
 
   Stage: Stage-1
@@ -177,7 +173,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g3
 
-  Stage: Stage-6
+  Stage: Stage-5
     Stats-Aggr Operator
 
   Stage: Stage-2
@@ -190,7 +186,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g4
 
-  Stage: Stage-7
+  Stage: Stage-6
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src
@@ -288,17 +284,16 @@ INSERT OVERWRITE TABLE dest_h3 SELECT substr(src.key,1,1), count(DISTINCT substr
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
-  Stage-6 depends on stages: Stage-5
-  Stage-0 depends on stages: Stage-6
-  Stage-7 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-6
-  Stage-8 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-6
-  Stage-9 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-6
-  Stage-10 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-6
-  Stage-11 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-5
+  Stage-9 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-5
+  Stage-10 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-5
@@ -467,9 +462,6 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest_h2
 
-  Stage: Stage-6
-    Dependency Collection
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -480,7 +472,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g2
 
-  Stage: Stage-7
+  Stage: Stage-6
     Stats-Aggr Operator
 
   Stage: Stage-1
@@ -493,7 +485,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g3
 
-  Stage: Stage-8
+  Stage: Stage-7
     Stats-Aggr Operator
 
   Stage: Stage-2
@@ -506,7 +498,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_g4
 
-  Stage: Stage-9
+  Stage: Stage-8
     Stats-Aggr Operator
 
   Stage: Stage-3
@@ -519,7 +511,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_h2
 
-  Stage: Stage-10
+  Stage: Stage-9
     Stats-Aggr Operator
 
   Stage: Stage-4
@@ -532,7 +524,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_h3
 
-  Stage: Stage-11
+  Stage: Stage-10
     Stats-Aggr Operator
 
 PREHOOK: query: FROM src

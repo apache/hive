@@ -39,7 +39,7 @@ POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -52,7 +52,7 @@ STAGE PLANS:
                   alias: analyze_srcpart
                   Statistics: Num rows: 0 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
@@ -152,7 +152,7 @@ POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -165,7 +165,7 @@ STAGE PLANS:
                   alias: analyze_srcpart
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
@@ -228,7 +228,7 @@ POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -241,7 +241,7 @@ STAGE PLANS:
                   alias: analyze_srcpart
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics
@@ -304,7 +304,7 @@ POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -317,7 +317,7 @@ STAGE PLANS:
                   alias: analyze_srcpart
                   Statistics: Num rows: 1500 Data size: 15936 Basic stats: PARTIAL Column stats: NONE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics
@@ -380,7 +380,7 @@ POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds, hr) compute
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-0
@@ -393,7 +393,7 @@ STAGE PLANS:
                   alias: analyze_srcpart
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
 
-  Stage: Stage-2
+  Stage: Stage-1
     Stats-Aggr Operator
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds, hr) compute statistics
