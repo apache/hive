@@ -8289,7 +8289,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if ( targetCondn == null ) {
+    if ( targetCondn == null || (nodeCondn.size() != targetCondn.size())) {
       return new ObjectPair(-1, null);
     }
 
