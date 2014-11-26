@@ -1,6 +1,8 @@
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=false;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE;

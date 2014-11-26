@@ -1,5 +1,7 @@
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE src_4(
   key STRING, 
   value STRING
