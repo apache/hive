@@ -17,8 +17,10 @@ set hive.optimize.bucketmapjoin=true;
 EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ a.key, b.value
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
-ON a.key = b.key AND a.ds = '2008-04-08' AND b.ds = '2008-04-08' LIMIT 1;
+ON a.key = b.key AND a.ds = '2008-04-08' AND b.ds = '2008-04-08'
+ORDER BY a.key, b.value LIMIT 1;
 
 SELECT /*+ MAPJOIN(b) */ a.key, b.value
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
-ON a.key = b.key AND a.ds = '2008-04-08' AND b.ds = '2008-04-08' LIMIT 1;
+ON a.key = b.key AND a.ds = '2008-04-08' AND b.ds = '2008-04-08'
+ORDER BY a.key, b.value LIMIT 1;
