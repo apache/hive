@@ -1,23 +1,24 @@
 PREHOOK: query: explain
-select a.* from src a join src b on a.key=b.key limit 40
+select a.* from src a join src b on a.key=b.key order by key, value limit 40
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.* from src a join src b on a.key=b.key limit 40
+select a.* from src a join src b on a.key=b.key order by key, value limit 40
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage , consists of Stage-6, Stage-7, Stage-1
-  Stage-6 has a backup stage: Stage-1
-  Stage-3 depends on stages: Stage-6
+  Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
+  Stage-2 depends on stages: Stage-1, Stage-4, Stage-5
+  Stage-8 has a backup stage: Stage-1
+  Stage-5 depends on stages: Stage-8
   Stage-1
-  Stage-0 depends on stages: Stage-3, Stage-4, Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         b 
@@ -37,7 +38,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -54,21 +55,40 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Limit
-                    Number of rows: 40
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-7
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string)
+              sort order: ++
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 40
+            Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a 
@@ -88,7 +108,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -105,17 +125,12 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Limit
-                    Number of rows: 40
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -154,20 +169,12 @@ STAGE PLANS:
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 40
-              Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -175,82 +182,84 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a.* from src a join src b on a.key=b.key limit 40
+PREHOOK: query: select a.* from src a join src b on a.key=b.key order by key, value limit 40
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select a.* from src a join src b on a.key=b.key limit 40
+POSTHOOK: query: select a.* from src a join src b on a.key=b.key order by key, value limit 40
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-RUN: Stage-5:CONDITIONAL
+RUN: Stage-6:CONDITIONAL
 RUN: Stage-7:MAPREDLOCAL
 RUN: Stage-4:MAPRED
-238	val_238
-238	val_238
-86	val_86
-311	val_311
-311	val_311
-311	val_311
-27	val_27
-165	val_165
-165	val_165
-409	val_409
-409	val_409
-409	val_409
-255	val_255
-255	val_255
-278	val_278
-278	val_278
-98	val_98
-98	val_98
-484	val_484
-265	val_265
-265	val_265
-193	val_193
-193	val_193
-193	val_193
-401	val_401
-401	val_401
-401	val_401
-401	val_401
-401	val_401
-150	val_150
-273	val_273
-273	val_273
-273	val_273
-224	val_224
-224	val_224
-369	val_369
-369	val_369
-369	val_369
-66	val_66
-128	val_128
+RUN: Stage-2:MAPRED
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+119	val_119
+119	val_119
 PREHOOK: query: explain
-select a.* from src a join src b on a.key=b.key join src c on a.value=c.value limit 40
+select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.* from src a join src b on a.key=b.key join src c on a.value=c.value limit 40
+select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-10 is a root stage , consists of Stage-13, Stage-14, Stage-1
-  Stage-13 has a backup stage: Stage-1
-  Stage-8 depends on stages: Stage-13
-  Stage-7 depends on stages: Stage-1, Stage-8, Stage-9 , consists of Stage-11, Stage-6, Stage-2
-  Stage-11 has a backup stage: Stage-2
-  Stage-5 depends on stages: Stage-11
-  Stage-6 has a backup stage: Stage-2
-  Stage-2
+  Stage-11 is a root stage , consists of Stage-14, Stage-15, Stage-1
   Stage-14 has a backup stage: Stage-1
   Stage-9 depends on stages: Stage-14
+  Stage-8 depends on stages: Stage-1, Stage-9, Stage-10 , consists of Stage-12, Stage-7, Stage-2
+  Stage-12 has a backup stage: Stage-2
+  Stage-6 depends on stages: Stage-12
+  Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
+  Stage-7 has a backup stage: Stage-2
+  Stage-2
+  Stage-15 has a backup stage: Stage-1
+  Stage-10 depends on stages: Stage-15
   Stage-1
-  Stage-0 depends on stages: Stage-5, Stage-6, Stage-2
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-10
+  Stage: Stage-11
     Conditional Operator
 
-  Stage: Stage-13
+  Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
         b 
@@ -270,7 +279,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-8
+  Stage: Stage-9
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -296,10 +305,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-7
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-11
+  Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
         c 
@@ -319,7 +328,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -333,21 +342,40 @@ STAGE PLANS:
                 0 _col1 (type: string)
                 1 value (type: string)
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                Limit
-                  Number of rows: 40
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-6
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string)
+              sort order: ++
+              Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 40
+            Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -364,17 +392,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Limit
-                    Number of rows: 40
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -415,22 +438,14 @@ STAGE PLANS:
             1 
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 40
-              Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-14
+  Stage: Stage-15
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a 
@@ -450,7 +465,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
 
-  Stage: Stage-9
+  Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -524,60 +539,61 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a.value=c.value limit 40
+PREHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a.value=c.value limit 40
+POSTHOOK: query: select a.* from src a join src b on a.key=b.key join src c on a.value=c.value order by a.key, a.value limit 40
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-RUN: Stage-10:CONDITIONAL
+RUN: Stage-11:CONDITIONAL
 RUN: Stage-14:MAPREDLOCAL
 RUN: Stage-9:MAPRED
-RUN: Stage-7:CONDITIONAL
-RUN: Stage-11:MAPREDLOCAL
-RUN: Stage-5:MAPRED
-238	val_238
-238	val_238
-238	val_238
-238	val_238
-86	val_86
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-311	val_311
-27	val_27
-165	val_165
-165	val_165
-165	val_165
-165	val_165
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_409
-255	val_255
-255	val_255
-255	val_255
-255	val_255
-278	val_278
-278	val_278
-278	val_278
-278	val_278
-98	val_98
-98	val_98
-98	val_98
-98	val_98
+RUN: Stage-8:CONDITIONAL
+RUN: Stage-12:MAPREDLOCAL
+RUN: Stage-6:MAPRED
+RUN: Stage-3:MAPRED
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+103	val_103
+103	val_103
 PREHOOK: query: explain
 select a.* from src a join src b on a.key=b.key join src c on a.value=c.value where a.key>100 limit 40
 PREHOOK: type: QUERY

@@ -173,10 +173,10 @@ POSTHOOK: Input: default@src
 98	val_98
 98	val_98
 PREHOOK: query: explain
-select value, sum(key + 1) as sum from src group by value limit 20
+select value, sum(key + 1) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select value, sum(key + 1) as sum from src group by value limit 20
+select value, sum(key + 1) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -240,11 +240,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
+PREHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
+POSTHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -462,10 +462,10 @@ POSTHOOK: Input: default@alltypesorc
 -16379.0
 NULL
 PREHOOK: query: explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -528,11 +528,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -558,11 +558,11 @@ POSTHOOK: Input: default@alltypesorc
 NULL	2932
 PREHOOK: query: -- multi distinct
 explain
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: -- multi distinct
 explain
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -625,11 +625,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -946,11 +946,11 @@ STAGE PLANS:
 
 PREHOOK: query: -- map aggregation disabled
 explain
-select value, sum(key) as sum from src group by value limit 20
+select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: -- map aggregation disabled
 explain
-select value, sum(key) as sum from src group by value limit 20
+select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1008,11 +1008,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value, sum(key) as sum from src group by value limit 20
+PREHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select value, sum(key) as sum from src group by value limit 20
+POSTHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
