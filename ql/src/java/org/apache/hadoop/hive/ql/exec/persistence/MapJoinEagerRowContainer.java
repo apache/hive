@@ -115,7 +115,6 @@ public class MapJoinEagerRowContainer
 
   public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container)
   throws IOException, SerDeException {
-    clearRows();
     long numRows = in.readLong();
     for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
       container.readFields(in);
