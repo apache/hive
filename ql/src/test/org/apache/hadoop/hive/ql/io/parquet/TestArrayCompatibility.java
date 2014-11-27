@@ -19,7 +19,7 @@ import static parquet.schema.PrimitiveType.PrimitiveTypeName.FLOAT;
 import static parquet.schema.PrimitiveType.PrimitiveTypeName.INT32;
 import static parquet.schema.PrimitiveType.PrimitiveTypeName.INT64;
 
-public class TestArrayCompatibility extends TestParquetDirect {
+public class TestArrayCompatibility extends AbstractTestParquetDirect {
 
   @Test
   public void testUnannotatedListOfPrimitives() throws Exception {
