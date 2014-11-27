@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- 1. testNoPTFNoWindowing
 select p_mfgr, p_name, p_size
 from part
