@@ -28,7 +28,7 @@ import parquet.hadoop.api.WriteSupport;
 import parquet.io.api.RecordConsumer;
 import parquet.schema.MessageType;
 
-public class TestParquetDirect {
+public abstract class AbstractTestParquetDirect {
 
   public static FileSystem localFS = null;
 

@@ -16,7 +16,7 @@ import parquet.schema.Types;
 import static parquet.schema.OriginalType.*;
 import static parquet.schema.PrimitiveType.PrimitiveTypeName.*;
 
-public class TestMapStructures extends TestParquetDirect {
+public class TestMapStructures extends AbstractTestParquetDirect {
 
   @Test
   public void testStringMapRequiredPrimitive() throws Exception {
