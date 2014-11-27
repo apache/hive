@@ -135,7 +135,10 @@ public class MapJoinTableContainerSerDe {
           for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
             MapJoinKeyObject key = new MapJoinKeyObject();
             key.read(keyContext, in, keyContainer);
-            MapJoinEagerRowContainer values = new MapJoinEagerRowContainer();
+            if (tableContainer.get(key) == null) {
+              tableContainer.put(key, new MapJoinEagerRowContainer());
+            }
+            MapJoinEagerRowContainer values = (MapJoinEagerRowContainer) tableContainer.get(key);
             values.read(valueContext, in, valueContainer);
             tableContainer.put(key, values);
           }
