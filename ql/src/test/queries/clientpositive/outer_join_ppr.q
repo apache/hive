@@ -1,5 +1,7 @@
 set hive.optimize.ppd=true;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN EXTENDED
  FROM 
   src a
