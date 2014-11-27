@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.mr.Throttle;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -79,7 +80,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
         BucketizedHiveInputFormat.class.getName());
     success = true;
-    ShimLoader.getHadoopShims().prepareJobOutput(job);
+    HiveFileFormatUtils.prepareJobOutput(job);
     job.setOutputFormat(HiveOutputFormatImpl.class);
     job.setMapperClass(work.getMapperClass());
 
@@ -117,10 +118,6 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     }
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
-    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
-
     LOG.info("Using " + inpFormat);
 
     try {

@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
@@ -330,7 +331,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       UserGroupInformation ugi;
       try {
-        ugi = ShimLoader.getHadoopShims().getUGIForConf(getConf());
+        ugi = Utils.getUGIForConf(getConf());
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }

@@ -42,16 +42,20 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -505,5 +509,43 @@ public final class HiveFileFormatUtils {
 
   private HiveFileFormatUtils() {
     // prevent instantiation
+  }
+
+  public static class NullOutputCommitter extends OutputCommitter {
+    @Override
+    public void setupJob(JobContext jobContext) { }
+    @Override
+    public void cleanupJob(JobContext jobContext) { }
+
+    @Override
+    public void setupTask(TaskAttemptContext taskContext) { }
+    @Override
+    public boolean needsTaskCommit(TaskAttemptContext taskContext) {
+      return false;
+    }
+    @Override
+    public void commitTask(TaskAttemptContext taskContext) { }
+    @Override
+    public void abortTask(TaskAttemptContext taskContext) { }
+  }
+
+  /**
+   * Hive uses side effect files exclusively for it's output. It also manages
+   * the setup/cleanup/commit of output from the hive client. As a result it does
+   * not need support for the same inside the MR framework
+   *
+   * This routine sets the appropriate options related to bypass setup/cleanup/commit
+   * support in the MR framework, but does not set the OutputFormat class.
+   */
+  public static void prepareJobOutput(JobConf conf) {
+    conf.setOutputCommitter(NullOutputCommitter.class);
+
+    // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false);
+
+    // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false);
   }
 }

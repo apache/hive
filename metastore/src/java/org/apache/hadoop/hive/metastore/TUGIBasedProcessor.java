@@ -25,11 +25,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_result;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.ProcessFunction;
@@ -56,7 +57,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
   private final I iface;
   private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase>>
     functions;
-  private final HadoopShims shim;
+  static final Log LOG = LogFactory.getLog(TUGIBasedProcessor.class);
 
   public TUGIBasedProcessor(I iface) throws SecurityException, NoSuchFieldException,
     IllegalArgumentException, IllegalAccessException, NoSuchMethodException,
@@ -64,7 +65,6 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     super(iface);
     this.iface = iface;
     this.functions = getProcessMapView();
-    shim = ShimLoader.getHadoopShims();
   }
 
   @SuppressWarnings("unchecked")
@@ -115,7 +115,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
         }
       };
       try {
-        shim.doAs(clientUgi, pvea);
+        clientUgi.doAs(pvea);
         return true;
       } catch (RuntimeException rte) {
         if (rte.getCause() instanceof TException) {
@@ -127,7 +127,11 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
       } catch (IOException ioe) {
         throw new RuntimeException(ioe); // unexpected!
       } finally {
-          shim.closeAllForUGI(clientUgi);
+          try {
+            FileSystem.closeAllForUGI(clientUgi);
+          } catch (IOException e) {
+            LOG.error("Could not clean up file-system handles for UGI: " + clientUgi, e);
+          }
       }
     }
   }
@@ -160,8 +164,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     set_ugi_result result = fn.getResult(iface, args);
     List<String> principals = result.getSuccess();
     // Store the ugi in transport and then continue as usual.
-    ugiTrans.setClientUGI(shim.createRemoteUser(principals.remove(principals.size()-1),
-        principals));
+    ugiTrans.setClientUGI(UserGroupInformation.createRemoteUser(principals.remove(principals.size()-1)));
     oprot.writeMessageBegin(new TMessage(msg.name, TMessageType.REPLY, msg.seqid));
     result.write(oprot);
     oprot.writeMessageEnd();

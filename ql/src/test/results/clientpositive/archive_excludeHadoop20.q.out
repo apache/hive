@@ -1,10 +1,6 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
-
-drop table tstsrc
+PREHOOK: query: drop table tstsrc
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
-
-drop table tstsrc
+POSTHOOK: query: drop table tstsrc
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table tstsrcpart
 PREHOOK: type: DROPTABLE

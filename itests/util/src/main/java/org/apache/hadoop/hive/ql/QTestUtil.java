@@ -125,12 +125,10 @@ public class QTestUtil {
   protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
-  private FileSystem fs;
   protected final boolean overWrite;
   private CliDriver cliDriver;
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
-  private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private boolean isSessionStateStarted = false;
@@ -309,7 +307,6 @@ public class QTestUtil {
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);
-    this.miniMr = (clusterType == MiniClusterType.mr);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
@@ -651,17 +648,6 @@ public class QTestUtil {
     FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
 
-  private void runLoadCmd(String loadCmd) throws Exception {
-    int ecode = 0;
-    ecode = drv.run(loadCmd).getResponseCode();
-    drv.close();
-    if (ecode != 0) {
-      throw new Exception("load command: " + loadCmd
-          + " failed with exit code= " + ecode);
-    }
-    return;
-  }
-
   protected void runCreateTableCmd(String createTableCmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(createTableCmd).getResponseCode();
@@ -712,7 +698,6 @@ public class QTestUtil {
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
-    fs = FileSystem.get(conf);
     drv = new Driver(conf);
     drv.init();
     pd = new ParseDriver();
