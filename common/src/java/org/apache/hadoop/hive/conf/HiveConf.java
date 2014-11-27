@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.Validator.RatioValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
@@ -2760,8 +2761,7 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      UserGroupInformation ugi = ShimLoader.getHadoopShims()
-        .getUGIForConf(this);
+      UserGroupInformation ugi = Utils.getUGIForConf(this);
       return ugi.getUserName();
     } catch (LoginException le) {
       throw new IOException(le);

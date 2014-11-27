@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
@@ -83,10 +84,10 @@ public class CLIService extends CompositeService implements ICLIService {
     sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
-    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
-        this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+        this.serviceUGI = Utils.getUGIForConf(hiveConf);
       } catch (IOException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       } catch (LoginException e) {

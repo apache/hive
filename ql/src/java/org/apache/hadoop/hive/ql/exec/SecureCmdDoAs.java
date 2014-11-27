@@ -17,13 +17,18 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 
 /**
  * SecureCmdDoAs - Helper class for setting parameters and env necessary for
@@ -35,11 +40,23 @@ public class SecureCmdDoAs {
   private final Path tokenPath;
 
   public SecureCmdDoAs(HiveConf conf) throws HiveException, IOException{
-    tokenPath = ShimLoader.getHadoopShims().createDelegationTokenFile(conf);
+    // Get delegation token for user from filesystem and write the token along with
+    // metastore tokens into a file
+    String uname = UserGroupInformation.getLoginUser().getShortUserName();
+    FileSystem fs = FileSystem.get(conf);
+    Token<?> fsToken = fs.getDelegationToken(uname);
+
+    File t = File.createTempFile("hive_hadoop_delegation_token", null);
+    tokenPath = new Path(t.toURI());
+
+    //write credential with token to file
+    Credentials cred = new Credentials();
+    cred.addToken(fsToken.getService(), fsToken);
+    cred.writeTokenStorageFile(tokenPath, conf);
   }
 
   public void addEnv(Map<String, String> env){
-    env.put(ShimLoader.getHadoopShims().getTokenFileLocEnvName(),
+    env.put(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION,
         tokenPath.toUri().getPath());
   }
 

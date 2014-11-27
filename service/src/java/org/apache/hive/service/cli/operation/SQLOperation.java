@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -205,7 +206,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           };
 
           try {
-            ShimLoader.getHadoopShims().doAs(currentUGI, doAsAction);
+            currentUGI.doAs(doAsAction);
           } catch (Exception e) {
             setOperationException(new HiveSQLException(e));
             LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
@@ -245,7 +246,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private UserGroupInformation getCurrentUGI(HiveConf opConfig) throws HiveSQLException {
     try {
-      return ShimLoader.getHadoopShims().getUGIForConf(opConfig);
+      return Utils.getUGIForConf(opConfig);
     } catch (Exception e) {
       throw new HiveSQLException("Unable to get current user", e);
     }

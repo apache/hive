@@ -31,7 +31,7 @@ import org.apache.hadoop.security.SaslRpcServer;
  *
  * This is a 0.23/2.x specific implementation
  */
-public class HadoopThriftAuthBridge23 extends HadoopThriftAuthBridge20S {
+public class HadoopThriftAuthBridge23 extends HadoopThriftAuthBridge {
 
   private static Field SASL_PROPS_FIELD;
   private static Class<?> SASL_PROPERTIES_RESOLVER_CLASS;

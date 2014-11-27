@@ -1,4 +1,4 @@
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 create table nzhang_Tmp(a int, b string);
 select * from nzhang_Tmp;

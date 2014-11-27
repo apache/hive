@@ -11,7 +11,7 @@ set hive.merge.smallfiles.avgsize=0;
 -- INCLUDE_OS_WINDOWS
 -- included only on  windows because of difference in file name encoding logic
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 
 create table combine2(key string) partitioned by (value string);
 

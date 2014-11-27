@@ -30,7 +30,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.cli.HiveSQLException;
 
@@ -57,7 +56,7 @@ public class HiveSessionProxy implements InvocationHandler {
       if (method.getDeclaringClass() == HiveSessionBase.class) {
         return invoke(method, args);
       }
-      return ShimLoader.getHadoopShims().doAs(ugi,
+      return ugi.doAs(
         new PrivilegedExceptionAction<Object> () {
           @Override
           public Object run() throws HiveSQLException {

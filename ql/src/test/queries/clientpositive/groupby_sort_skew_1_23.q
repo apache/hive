@@ -4,7 +4,7 @@ set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
 set hive.groupby.skewindata=true;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE T1(key STRING, val STRING)

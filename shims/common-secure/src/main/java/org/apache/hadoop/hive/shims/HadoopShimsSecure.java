@@ -19,24 +19,16 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.AccessControlException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -50,34 +42,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
-import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
-import org.apache.hadoop.http.HtmlQuoting;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.security.SecurityUtil;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.authentication.util.KerberosUtil;
-import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hadoop.security.token.TokenSelector;
-import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.ToolRunner;
-import org.apache.zookeeper.client.ZooKeeperSaslClient;
 
 import com.google.common.primitives.Longs;
 
@@ -87,11 +61,6 @@ import com.google.common.primitives.Longs;
 public abstract class HadoopShimsSecure implements HadoopShims {
 
   static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
-
-  @Override
-  public String unquoteHtmlChars(String item) {
-    return HtmlQuoting.unquoteHtmlChars(item);
-  }
 
   @Override
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
@@ -104,7 +73,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     };
   }
 
-  public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {
+  public static class InputSplitShim extends CombineFileSplit {
     long shrinkedLength;
     boolean _isShrinked;
     public InputSplitShim() {
@@ -118,7 +87,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       _isShrinked = false;
     }
 
-    @Override
     public void shrinkSplit(long length) {
       _isShrinked = true;
       shrinkedLength = length;
@@ -336,7 +304,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     }
 
     @Override
-    public InputSplitShim[] getSplits(JobConf job, int numSplits) throws IOException {
+    public CombineFileSplit[] getSplits(JobConf job, int numSplits) throws IOException {
       long minSize = job.getLong(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDMINSPLITSIZE"), 0);
 
       // For backward compatibility, let the above parameter be used
@@ -378,258 +346,14 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     }
 
     @Override
-    public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split,
+    public RecordReader getRecordReader(JobConf job, CombineFileSplit split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)
         throws IOException {
-      CombineFileSplit cfSplit = (CombineFileSplit) split;
+      CombineFileSplit cfSplit = split;
       return new CombineFileRecordReader(job, cfSplit, reporter, rrClass);
     }
 
-  }
-
-  @Override
-  public String getInputFormatClassName() {
-    return "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat";
-  }
-
-  String[] ret = new String[2];
-
-  @Override
-  public int createHadoopArchive(Configuration conf, Path sourceDir, Path destDir,
-      String archiveName) throws Exception {
-
-    HadoopArchives har = new HadoopArchives(conf);
-    List<String> args = new ArrayList<String>();
-
-    args.add("-archiveName");
-    args.add(archiveName);
-    args.add("-p");
-    args.add(sourceDir.toString());
-    args.add(destDir.toString());
-
-    return ToolRunner.run(har, args.toArray(new String[0]));
-  }
-
-  /*
-   * This particular instance is for Hadoop 1.0 which creates an archive
-   * with only the relative path of the archived directory stored within
-   * the archive as compared to the full path in case of earlier versions.
-   * See this api in Hadoop20Shims for comparison.
-   */
-  @Override
-  public URI getHarUri(URI original, URI base, URI originalBase)
-    throws URISyntaxException {
-    URI relative = originalBase.relativize(original);
-    if (relative.isAbsolute()) {
-      throw new URISyntaxException("Couldn't create URI for location.",
-                                   "Relative: " + relative + " Base: "
-                                   + base + " OriginalBase: " + originalBase);
-    }
-
-    return base.resolve(relative);
-  }
-
-  public static class NullOutputCommitter extends OutputCommitter {
-    @Override
-    public void setupJob(JobContext jobContext) { }
-    @Override
-    public void cleanupJob(JobContext jobContext) { }
-
-    @Override
-    public void setupTask(TaskAttemptContext taskContext) { }
-    @Override
-    public boolean needsTaskCommit(TaskAttemptContext taskContext) {
-      return false;
-    }
-    @Override
-    public void commitTask(TaskAttemptContext taskContext) { }
-    @Override
-    public void abortTask(TaskAttemptContext taskContext) { }
-  }
-
-  @Override
-  public void prepareJobOutput(JobConf conf) {
-    conf.setOutputCommitter(NullOutputCommitter.class);
-
-    // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
-    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
-    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDSETUPCLEANUPNEEDED"), false);
-
-    // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
-    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
-    conf.setBoolean(ShimLoader.getHadoopShims().getHadoopConfNames().get("MAPREDTASKCLEANUPNEEDED"), false);
-  }
-
-  @Override
-  public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
-    String doAs = System.getenv("HADOOP_USER_NAME");
-    if(doAs != null && doAs.length() > 0) {
-     /*
-      * this allows doAs (proxy user) to be passed along across process boundary where
-      * delegation tokens are not supported.  For example, a DDL stmt via WebHCat with
-      * a doAs parameter, forks to 'hcat' which needs to start a Session that
-      * proxies the end user
-      */
-      return UserGroupInformation.createProxyUser(doAs, UserGroupInformation.getLoginUser());
-    }
-    return UserGroupInformation.getCurrentUser();
-  }
-
-  @Override
-  public boolean isSecureShimImpl() {
-    return true;
-  }
-
-  @Override
-  public String getShortUserName(UserGroupInformation ugi) {
-    return ugi.getShortUserName();
-  }
-
-  @Override
-  public String getTokenStrForm(String tokenSignature) throws IOException {
-    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-    TokenSelector<? extends TokenIdentifier> tokenSelector = new DelegationTokenSelector();
-
-    Token<? extends TokenIdentifier> token = tokenSelector.selectToken(
-        tokenSignature == null ? new Text() : new Text(tokenSignature), ugi.getTokens());
-    return token != null ? token.encodeToUrlString() : null;
-  }
-
-  /**
-   * Create a delegation token object for the given token string and service.
-   * Add the token to given UGI
-   */
-  @Override
-  public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService) throws IOException {
-    Token<DelegationTokenIdentifier> delegationToken = createToken(tokenStr, tokenService);
-    ugi.addToken(delegationToken);
-  }
-
-  /**
-   * Add a given service to delegation token string.
-   */
-  @Override
-  public String addServiceToToken(String tokenStr, String tokenService)
-  throws IOException {
-    Token<DelegationTokenIdentifier> delegationToken = createToken(tokenStr, tokenService);
-    return delegationToken.encodeToUrlString();
-  }
-
-  /**
-   * Create a new token using the given string and service
-   * @param tokenStr
-   * @param tokenService
-   * @return
-   * @throws IOException
-   */
-  private Token<DelegationTokenIdentifier> createToken(String tokenStr, String tokenService)
-      throws IOException {
-    Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
-    delegationToken.decodeFromUrlString(tokenStr);
-    delegationToken.setService(new Text(tokenService));
-    return delegationToken;
-  }
-
-  @Override
-  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws IOException, InterruptedException {
-    return ugi.doAs(pvea);
-  }
-
-  @Override
-  public Path createDelegationTokenFile(Configuration conf) throws IOException {
-
-    //get delegation token for user
-    String uname = UserGroupInformation.getLoginUser().getShortUserName();
-    FileSystem fs = FileSystem.get(conf);
-    Token<?> fsToken = fs.getDelegationToken(uname);
-
-    File t = File.createTempFile("hive_hadoop_delegation_token", null);
-    Path tokenPath = new Path(t.toURI());
-
-    //write credential with token to file
-    Credentials cred = new Credentials();
-    cred.addToken(fsToken.getService(), fsToken);
-    cred.writeTokenStorageFile(tokenPath, conf);
-
-    return tokenPath;
-  }
-
-  @Override
-  public UserGroupInformation createProxyUser(String userName) throws IOException {
-    return UserGroupInformation.createProxyUser(
-        userName, UserGroupInformation.getLoginUser());
-  }
-
-  @Override
-  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
-      String ipAddress,  Configuration conf) throws IOException {
-    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
-    ProxyUsers.authorize(UserGroupInformation.createProxyUser(proxyUser, realUserUgi),
-        ipAddress, conf);
-  }
-
-  @Override
-  public boolean isSecurityEnabled() {
-    return UserGroupInformation.isSecurityEnabled();
-  }
-
-  @Override
-  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
-    return UserGroupInformation.createRemoteUser(userName);
-  }
-
-  @Override
-  public void closeAllForUGI(UserGroupInformation ugi) {
-    try {
-      FileSystem.closeAllForUGI(ugi);
-    } catch (IOException e) {
-      LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
-    }
-  }
-
-  @Override
-  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
-    String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    UserGroupInformation.loginUserFromKeytab(hostPrincipal, keytabFile);
-  }
-
-  @Override
-  public UserGroupInformation loginUserFromKeytabAndReturnUGI(
-      String principal, String keytabFile) throws IOException {
-    String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    return UserGroupInformation.loginUserFromKeytabAndReturnUGI(hostPrincipal, keytabFile);
-  }
-
-  /**
-   * Convert Kerberos principal name pattern to valid Kerberos principal names.
-   * @param principal (principal name pattern)
-   * @return
-   * @throws IOException
-   */
-  @Override
-  public String getResolvedPrincipal(String principal) throws IOException {
-    return SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-  }
-
-  @Override
-  public String getTokenFileLocEnvName() {
-    return UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION;
-  }
-
-  @Override
-  public void reLoginUserFromKeytab() throws IOException{
-    UserGroupInformation ugi = UserGroupInformation.getLoginUser();
-    //checkTGT calls ugi.relogin only after checking if it is close to tgt expiry
-    //hadoop relogin is actually done only every x minutes (x=10 in hadoop 1.x)
-    if(ugi.isFromKeytab()){
-      ugi.checkTGTAndReloginFromKeytab();
-    }
-  }
-
-  @Override
-  public boolean isLoginKeytabBased() throws IOException {
-    return UserGroupInformation.isLoginKeytabBased();
   }
 
   @Override
@@ -714,58 +438,4 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       throws IOException, AccessControlException, Exception {
     DefaultFileAccess.checkFileAccess(fs, stat, action);
   }
-
-  @Override
-  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) throws IOException {
-    // ZooKeeper property name to pick the correct JAAS conf section
-    final String SASL_LOGIN_CONTEXT_NAME = "HiveZooKeeperClient";
-    System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
-
-    principal = getResolvedPrincipal(principal);
-    JaasConfiguration jaasConf = new JaasConfiguration(SASL_LOGIN_CONTEXT_NAME, principal, keyTabFile);
-
-    // Install the Configuration in the runtime.
-    javax.security.auth.login.Configuration.setConfiguration(jaasConf);
-  }
-
-  /**
-   * A JAAS configuration for ZooKeeper clients intended to use for SASL
-   * Kerberos.
-   */
-  private static class JaasConfiguration extends javax.security.auth.login.Configuration {
-    // Current installed Configuration
-    private final javax.security.auth.login.Configuration baseConfig = javax.security.auth.login.Configuration
-        .getConfiguration();
-    private final String loginContextName;
-    private final String principal;
-    private final String keyTabFile;
-
-    public JaasConfiguration(String hiveLoginContextName, String principal, String keyTabFile) {
-      this.loginContextName = hiveLoginContextName;
-      this.principal = principal;
-      this.keyTabFile = keyTabFile;
-    }
-
-    @Override
-    public AppConfigurationEntry[] getAppConfigurationEntry(String appName) {
-      if (loginContextName.equals(appName)) {
-        Map<String, String> krbOptions = new HashMap<String, String>();
-        krbOptions.put("doNotPrompt", "true");
-        krbOptions.put("storeKey", "true");
-        krbOptions.put("useKeyTab", "true");
-        krbOptions.put("principal", principal);
-        krbOptions.put("keyTab", keyTabFile);
-        krbOptions.put("refreshKrb5Config", "true");
-        AppConfigurationEntry hiveZooKeeperClientEntry = new AppConfigurationEntry(
-            KerberosUtil.getKrb5LoginModuleName(), LoginModuleControlFlag.REQUIRED, krbOptions);
-        return new AppConfigurationEntry[] { hiveZooKeeperClientEntry };
-      }
-      // Try the base config
-      if (baseConfig != null) {
-        return baseConfig.getAppConfigurationEntry(appName);
-      }
-      return null;
-    }
-  }
-
 }

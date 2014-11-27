@@ -1,7 +1,7 @@
 set mapred.job.tracker=localhost:58;
 set hive.exec.mode.local.auto=true;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE;
