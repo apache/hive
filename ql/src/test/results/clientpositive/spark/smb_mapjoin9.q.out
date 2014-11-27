@@ -106,18 +106,26 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Spark
-      Edges:
-        Map 2 <- Map 1 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
         Map 2 
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator
@@ -231,18 +239,26 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Spark
-      Edges:
-        Map 2 <- Map 1 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
         Map 2 
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator

@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -63,7 +66,24 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   // Check whether the specified BaseWork's operator tree contains a operator
   // of the specified operator class
   private boolean containsOp(BaseWork work, Class<?> clazz) {
-    for (Operator<? extends OperatorDesc> op : work.getAllOperators()) {
+    Set<Operator<? extends OperatorDesc>> ops = new HashSet<Operator<? extends OperatorDesc>>();
+    if (work instanceof MapWork) {
+      Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
+      Stack<Operator<?>> opStack = new Stack<Operator<?>>();
+      opStack.addAll(opSet);
+
+      while (!opStack.empty()) {
+        Operator<?> op = opStack.pop();
+        ops.add(op);
+        if (op.getChildOperators() != null) {
+          opStack.addAll(op.getChildOperators());
+        }
+      }
+    } else {
+      ops.addAll(work.getAllOperators());
+    }
+
+    for (Operator<? extends OperatorDesc> op : ops) {
       if (clazz.isInstance(op)) {
         return true;
       }
