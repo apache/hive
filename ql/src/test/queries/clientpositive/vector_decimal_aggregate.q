@@ -6,6 +6,8 @@ CREATE TABLE decimal_vgby STORED AS ORC AS
 
 SET hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 -- First only do simple aggregations that output primitives only
 EXPLAIN SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
