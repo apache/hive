@@ -10,6 +10,8 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
 LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key;
 
