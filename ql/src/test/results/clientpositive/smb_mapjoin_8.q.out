@@ -1,8 +1,12 @@
-PREHOOK: query: create table smb_bucket_input (key int, value string) stored as rcfile
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table smb_bucket_input (key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_bucket_input
-POSTHOOK: query: create table smb_bucket_input (key int, value string) stored as rcfile
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table smb_bucket_input (key int, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_input
@@ -68,11 +72,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 #### A masked pattern was here ####
-4	val_356	NULL	NULL
-NULL	NULL	484	val_169
 2000	val_169	NULL	NULL
-NULL	NULL	3000	val_169
+4	val_356	NULL	NULL
 4000	val_125	NULL	NULL
+NULL	NULL	3000	val_169
+NULL	NULL	484	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -84,11 +88,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 #### A masked pattern was here ####
-4	val_356	NULL	NULL
-NULL	NULL	484	val_169
 2000	val_169	NULL	NULL
-NULL	NULL	3000	val_169
+4	val_356	NULL	NULL
 4000	val_125	NULL	NULL
+NULL	NULL	3000	val_169
+NULL	NULL	484	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=2000 or key=4000
 PREHOOK: type: QUERY
@@ -121,8 +125,8 @@ POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 #### A masked pattern was here ####
 2000	val_169	NULL	NULL
-NULL	NULL	3000	val_169
 4000	val_125	NULL	NULL
+NULL	NULL	3000	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -135,8 +139,8 @@ POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 #### A masked pattern was here ####
 2000	val_169	NULL	NULL
-NULL	NULL	3000	val_169
 4000	val_125	NULL	NULL
+NULL	NULL	3000	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: insert overwrite table smb_bucket4_1 select * from smb_bucket_input where key=4000
 PREHOOK: type: QUERY

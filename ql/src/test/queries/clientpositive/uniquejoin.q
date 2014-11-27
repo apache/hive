@@ -6,6 +6,8 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
 LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
 
+-- SORT_QUERY_RESULTS
+
 FROM UNIQUEJOIN PRESERVE T1 a (a.key), PRESERVE T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key;
 
