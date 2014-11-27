@@ -95,11 +95,11 @@ POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string,
 POSTHOOK: Lineage: dest1.one SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.ten SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM (SELECT dest1.* FROM dest1 DISTRIBUTE BY key SORT BY key, ten, one, value) T
+PREHOOK: query: SELECT * FROM (SELECT dest1.* FROM dest1 DISTRIBUTE BY key SORT BY key, ten, one, value) T ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM (SELECT dest1.* FROM dest1 DISTRIBUTE BY key SORT BY key, ten, one, value) T
+POSTHOOK: query: SELECT * FROM (SELECT dest1.* FROM dest1 DISTRIBUTE BY key SORT BY key, ten, one, value) T ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####

@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 
 -- 1. aggregate functions with decimal type
 

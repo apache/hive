@@ -1,5 +1,6 @@
-
 set hive.auto.convert.join=true;
+
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE src11 as SELECT * FROM src;
 CREATE TABLE src12 as SELECT * FROM src;

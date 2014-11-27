@@ -1,4 +1,6 @@
-PREHOOK: query: -- 1. testNoPTFNoWindowing
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- 1. testNoPTFNoWindowing
 select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
@@ -6,7 +8,9 @@ sort by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. testNoPTFNoWindowing
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- 1. testNoPTFNoWindowing
 select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
@@ -14,31 +18,31 @@ sort by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#1	almond antique burnished rose metallic	2
 Manufacturer#1	almond antique burnished rose metallic	2
-Manufacturer#3	almond antique chartreuse khaki white	17
 Manufacturer#1	almond antique chartreuse lavender yellow	34
+Manufacturer#1	almond antique salmon chartreuse burlywood	6
+Manufacturer#1	almond aquamarine burnished black steel	28
+Manufacturer#1	almond aquamarine pink moccasin thistle	42
+Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#2	almond antique violet turquoise frosted	40
+Manufacturer#2	almond aquamarine midnight light salmon	2
+Manufacturer#2	almond aquamarine rose maroon antique	25
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
+Manufacturer#3	almond antique chartreuse khaki white	17
 Manufacturer#3	almond antique forest lavender goldenrod	14
-Manufacturer#4	almond antique gainsboro frosted violet	10
-Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#3	almond antique metallic orange dim	19
 Manufacturer#3	almond antique misty red olive	1
 Manufacturer#3	almond antique olive coral navajo	45
-Manufacturer#1	almond antique salmon chartreuse burlywood	6
-Manufacturer#5	almond antique sky peru orange	2
-Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#4	almond antique gainsboro frosted violet	10
 Manufacturer#4	almond antique violet mint lemon	39
-Manufacturer#2	almond antique violet turquoise frosted	40
-Manufacturer#1	almond aquamarine burnished black steel	28
-Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#4	almond aquamarine floral ivory bisque	27
-Manufacturer#2	almond aquamarine midnight light salmon	2
-Manufacturer#1	almond aquamarine pink moccasin thistle	42
-Manufacturer#2	almond aquamarine rose maroon antique	25
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
 Manufacturer#4	almond aquamarine yellow dodger mint	7
 Manufacturer#4	almond azure aquamarine papaya violet	12
+Manufacturer#5	almond antique blue firebrick mint	31
+Manufacturer#5	almond antique medium spring khaki	6
+Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
 PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
