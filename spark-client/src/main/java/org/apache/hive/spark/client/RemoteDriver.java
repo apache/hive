@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hive.spark.counter.SparkCounters;
 import scala.Tuple2;
 
 import akka.actor.ActorRef;
@@ -196,6 +197,7 @@ public class RemoteDriver {
     private final Protocol.JobRequest<T> req;
     private final List<JavaFutureAction<?>> jobs;
     private final AtomicInteger completed;
+    private SparkCounters sparkCounters;
 
     private Future<?> future;
 
@@ -203,6 +205,7 @@ public class RemoteDriver {
       this.req = req;
       this.jobs = Lists.newArrayList();
       this.completed = new AtomicInteger();
+      this.sparkCounters = null;
     }
 
     @Override
@@ -210,8 +213,8 @@ public class RemoteDriver {
       try {
         jc.setMonitorCb(new MonitorCallback() {
           @Override
-          public void call(JavaFutureAction<?> future) {
-            monitorJob(future);
+          public void call(JavaFutureAction<?> future, SparkCounters sparkCounters) {
+            monitorJob(future, sparkCounters);
           }
         });
 
@@ -223,13 +226,16 @@ public class RemoteDriver {
             completed.wait();
           }
         }
-        client.tell(new Protocol.JobResult(req.id, result, null), actor);
+        if (sparkCounters != null) {
+          sparkCounters.dumpAllCounters();
+        }
+        client.tell(new Protocol.JobResult(req.id, result, null, sparkCounters), actor);
       } catch (Throwable t) {
-          // Catch throwables in a best-effort to report job status back to the client. It's
-          // re-thrown so that the executor can destroy the affected thread (or the JVM can
-          // die or whatever would happen if the throwable bubbled up).
-          client.tell(new Protocol.JobResult(req.id, null, t), actor);
-          throw new ExecutionException(t);
+        // Catch throwables in a best-effort to report job status back to the client. It's
+        // re-thrown so that the executor can destroy the affected thread (or the JVM can
+        // die or whatever would happen if the throwable bubbled up).
+        client.tell(new Protocol.JobResult(req.id, null, t, null), actor);
+        throw new ExecutionException(t);
       } finally {
         jc.setMonitorCb(null);
         activeJobs.remove(req.id);
@@ -248,12 +254,13 @@ public class RemoteDriver {
       }
     }
 
-    private void monitorJob(JavaFutureAction<?> job) {
+    private void monitorJob(JavaFutureAction<?> job, SparkCounters sparkCounters) {
       jobs.add(job);
       if (!jc.getMonitoredJobs().containsKey(req.id)) {
         jc.getMonitoredJobs().put(req.id, new CopyOnWriteArrayList<JavaFutureAction<?>>());
       }
       jc.getMonitoredJobs().get(req.id).add(job);
+      this.sparkCounters = sparkCounters;
       client.tell(new Protocol.JobSubmitted(req.id, job.jobIds().get(0)), actor);
     }
 

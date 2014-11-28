@@ -21,7 +21,11 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
+import org.apache.hive.spark.client.MetricsCollection;
+import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.hive.spark.client.Job;
@@ -37,6 +41,7 @@ import org.apache.spark.api.java.JavaFutureAction;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,12 +102,27 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   @Override
   public SparkCounters getCounter() {
-    return null;
+    return jobHandle.getSparkCounters();
   }
 
   @Override
   public SparkStatistics getSparkStatistics() {
-    return null;
+    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
+    // add Hive operator level statistics.
+    sparkStatisticsBuilder.add(getCounter());
+    // add spark job metrics.
+    String jobIdentifier = "Spark Job[" + jobHandle.getClientJobId() + "] Metrics";
+    MetricsCollection metricsCollection = jobHandle.getMetrics();
+    if (metricsCollection == null) {
+      return null;
+    }
+
+    Map<String, Long> flatJobMetric = extractMetrics(metricsCollection);
+    for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
+      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+    }
+
+    return sparkStatisticsBuilder.build();
   }
 
   @Override
@@ -194,7 +214,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
           }
         }
       }
-      if(jobInfo == null) {
+      if (jobInfo == null) {
         jobInfo = new SparkJobInfo() {
           @Override
           public int jobId() {
@@ -216,11 +236,11 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
   }
 
-  private static class GetStageInfoJob implements Job<HiveSparkStageInfo>{
+  private static class GetStageInfoJob implements Job<HiveSparkStageInfo> {
     private final int stageId;
 
-    GetStageInfoJob(int stageId){
-      this.stageId=stageId;
+    GetStageInfoJob(int stageId) {
+      this.stageId = stageId;
     }
 
     @Override
@@ -228,5 +248,37 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
       SparkStageInfo stageInfo = jc.sc().statusTracker().getStageInfo(stageId);
       return stageInfo != null ? new HiveSparkStageInfo(stageInfo) : new HiveSparkStageInfo();
     }
+  }
+
+  private Map<String, Long> extractMetrics(MetricsCollection metricsCollection) {
+    Map<String, Long> results = new LinkedHashMap<String, Long>();
+    Metrics allMetrics = metricsCollection.getAllMetrics();
+
+    results.put("EexcutorDeserializeTime", allMetrics.executorDeserializeTime);
+    results.put("ExecutorRunTime", allMetrics.executorRunTime);
+    results.put("ResultSize", allMetrics.resultSize);
+    results.put("JvmGCTime", allMetrics.jvmGCTime);
+    results.put("ResultSerializationTime", allMetrics.resultSerializationTime);
+    results.put("MemoryBytesSpilled", allMetrics.memoryBytesSpilled);
+    results.put("DiskBytesSpilled", allMetrics.diskBytesSpilled);
+    if (allMetrics.inputMetrics != null) {
+      results.put("BytesRead", allMetrics.inputMetrics.bytesRead);
+    }
+    if (allMetrics.shuffleReadMetrics != null) {
+      ShuffleReadMetrics shuffleReadMetrics = allMetrics.shuffleReadMetrics;
+      long rbf = shuffleReadMetrics.remoteBlocksFetched;
+      long lbf = shuffleReadMetrics.localBlocksFetched;
+      results.put("RemoteBlocksFetched", rbf);
+      results.put("LocalBlocksFetched", lbf);
+      results.put("TotalBlocksFetched", lbf + rbf);
+      results.put("FetchWaitTime", shuffleReadMetrics.fetchWaitTime);
+      results.put("RemoteBytesRead", shuffleReadMetrics.remoteBytesRead);
+    }
+    if (allMetrics.shuffleWriteMetrics != null) {
+      results.put("ShuffleBytesWritten", allMetrics.shuffleWriteMetrics.shuffleBytesWritten);
+      results.put("ShuffleWriteTime", allMetrics.shuffleWriteMetrics.shuffleWriteTime);
+    }
+
+    return results;
   }
 }

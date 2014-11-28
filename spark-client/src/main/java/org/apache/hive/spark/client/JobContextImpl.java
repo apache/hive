@@ -17,6 +17,7 @@
 
 package org.apache.hive.spark.client;
 
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -43,8 +44,8 @@ class JobContextImpl implements JobContext {
   }
 
   @Override
-  public <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job) {
-    monitorCb.get().call(job);
+  public <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job, SparkCounters sparkCounters) {
+    monitorCb.get().call(job, sparkCounters);
     return job;
   }
 

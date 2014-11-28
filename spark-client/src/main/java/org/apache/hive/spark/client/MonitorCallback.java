@@ -17,10 +17,11 @@
 
 package org.apache.hive.spark.client;
 
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.api.java.JavaFutureAction;
 
 interface MonitorCallback {
 
-  void call(JavaFutureAction<?> future);
+  void call(JavaFutureAction<?> future, SparkCounters sparkCounters);
 
 }

@@ -254,7 +254,7 @@ public class TestSparkClient {
         public void call(Integer l) throws Exception {
 
         }
-      }));
+      }), null);
 
       future.get(TIMEOUT, TimeUnit.SECONDS);
 

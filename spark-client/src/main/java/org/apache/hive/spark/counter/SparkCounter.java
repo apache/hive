@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.spark.counter;
+package org.apache.hive.spark.counter;
 
 import java.io.Serializable;
 
@@ -28,6 +28,9 @@ public class SparkCounter implements Serializable {
   private String name;
   private String displayName;
   private Accumulator<Long> accumulator;
+  // Values of accumulators can only be read on the SparkContext side
+  // In case of RSC, we have to keep the data here
+  private long accumValue = -1;
 
   public SparkCounter(
     String name,
@@ -44,7 +47,11 @@ public class SparkCounter implements Serializable {
   }
 
   public long getValue() {
-    return accumulator.value();
+    try {
+      return accumulator.value();
+    } catch (UnsupportedOperationException e) {
+      return accumValue;
+    }
   }
 
   public void increment(long incr) {
@@ -61,6 +68,10 @@ public class SparkCounter implements Serializable {
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public void dumpValue() {
+    accumValue = accumulator.value();
   }
 
   class LongAccumulatorParam implements AccumulatorParam<Long> {

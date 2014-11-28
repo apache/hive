@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hive.spark.counter.SparkCounters;
 
 public class CounterStatsAggregatorSpark
   implements StatsAggregator, StatsCollectionTaskIndependent {

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -136,7 +136,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
         JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
         // We use Spark RDD async action to submit job as it's the only way to get jobId now.
         JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-        jc.monitor(future);
+        jc.monitor(future, sparkCounters);
         return null;
       }
     });

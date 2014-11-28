@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.Statistic;
 
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounter;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounterGroup;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hive.spark.counter.SparkCounter;
+import org.apache.hive.spark.counter.SparkCounterGroup;
+import org.apache.hive.spark.counter.SparkCounters;
 
 import java.util.HashMap;
 import java.util.LinkedList;

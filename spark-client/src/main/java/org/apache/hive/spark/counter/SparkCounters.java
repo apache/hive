@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.spark.counter;
+package org.apache.hive.spark.counter;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -24,13 +24,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -149,5 +142,17 @@ public class SparkCounters implements Serializable {
     }
 
     return sb.toString();
+  }
+
+  /**
+   * Dump all SparkCounter values.
+   * RSC should call this method before sending back the counters to client
+   */
+  public void dumpAllCounters() {
+    for (SparkCounterGroup counterGroup : sparkCounterGroups.values()) {
+      for (SparkCounter counter : counterGroup.getSparkCounters().values()) {
+        counter.dumpValue();
+      }
+    }
   }
 }
