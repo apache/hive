@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.security.token.delegation;
+package org.apache.hadoop.hive.thrift;
 
-import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSelector;
 
 /**
