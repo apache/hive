@@ -197,7 +197,17 @@
 
 <property>
   <name>spark.master</name>
-  <value>local[4]</value>
+  <value>local-cluster[2,2,1024]</value>
+</property>
+
+<property>
+  <name>spark.akka.logLifecycleEvents</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>spark.root.dir</name>
+  <value>${spark.home}</value>
 </property>
 
 </configuration>

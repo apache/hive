@@ -173,10 +173,10 @@ POSTHOOK: Input: default@src
 98	val_98
 98	val_98
 PREHOOK: query: explain
-select value, sum(key + 1) as sum from src group by value limit 20
+select value, sum(key + 1) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select value, sum(key + 1) as sum from src group by value limit 20
+select value, sum(key + 1) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -186,7 +186,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -240,11 +240,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
+PREHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select value, sum(key + 1) as sum from src group by value limit 20
+POSTHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -382,7 +382,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -462,10 +462,10 @@ POSTHOOK: Input: default@alltypesorc
 -16379.0
 NULL
 PREHOOK: query: explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -528,11 +528,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -558,11 +558,11 @@ POSTHOOK: Input: default@alltypesorc
 NULL	2932
 PREHOOK: query: -- multi distinct
 explain
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: -- multi distinct
 explain
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -625,11 +625,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20
+POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -695,7 +695,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 3)
         Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -870,7 +870,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 4 <- Map 3 (GROUP, 3)
         Reducer 5 <- Reducer 4 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -966,11 +966,11 @@ STAGE PLANS:
 
 PREHOOK: query: -- map aggregation disabled
 explain
-select value, sum(key) as sum from src group by value limit 20
+select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: -- map aggregation disabled
 explain
-select value, sum(key) as sum from src group by value limit 20
+select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -980,7 +980,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1028,20 +1028,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value, sum(key) as sum from src group by value limit 20
+PREHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select value, sum(key) as sum from src group by value limit 20
+POSTHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+val_0	0.0
 val_10	10.0
 val_100	200.0
 val_103	206.0
+val_104	208.0
 val_105	105.0
 val_11	11.0
 val_111	111.0
+val_113	226.0
 val_114	114.0
 val_116	116.0
 val_118	236.0
@@ -1049,13 +1052,10 @@ val_119	357.0
 val_12	24.0
 val_120	240.0
 val_125	250.0
+val_126	126.0
 val_128	384.0
+val_129	258.0
 val_131	131.0
-val_137	137.0
-val_138	414.0
-val_15	15.0
-val_174	174.0
-val_193	193.0
 PREHOOK: query: -- flush for order-by
 explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
@@ -1237,7 +1237,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1293,103 +1293,103 @@ POSTHOOK: query: select sum(key) as sum from src group by concat(key,value,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0
 10.0
 105.0
-11.0
-111.0
+1107.0
 114.0
+1227.0
+1251.0
 126.0
-131.0
+1314.0
 133.0
 136.0
 143.0
 145.0
-150.0
+1494.0
+15.0
 153.0
 155.0
-156.0
-157.0
-158.0
-160.0
-162.0
 163.0
 166.0
 17.0
-170.0
-177.0
-178.0
-180.0
-181.0
 183.0
-186.0
-189.0
-19.0
-192.0
+1872.0
 194.0
-196.0
-20.0
-200.0
+194.0
+1956.0
 201.0
 202.0
-206.0
+208.0
+210.0
 214.0
 222.0
 226.0
-226.0
-228.0
-24.0
-24.0
-240.0
-242.0
+2345.0
+241.0
 250.0
-258.0
+252.0
+262.0
+263.0
 268.0
-272.0
-273.0
-274.0
-280.0
-282.0
-298.0
-304.0
-309.0
-316.0
-327.0
+283.0
+291.0
+292.0
+30.0
+310.0
 328.0
+33.0
 330.0
-348.0
+339.0
+341.0
 348.0
 350.0
-352.0
-357.0
-358.0
-36.0
-382.0
-384.0
+351.0
+360.0
+379.0
+389.0
 390.0
-394.0
-399.0
-400.0
+4.0
 406.0
-417.0
+41.0
 418.0
+419.0
 426.0
-430.0
-432.0
+437.0
 442.0
 446.0
 448.0
-458.0
-459.0
+448.0
+449.0
+457.0
 466.0
-469.0
-474.0
-478.0
-489.0
-552.0
-561.0
+467.0
+477.0
+479.0
+484.0
+487.0
+496.0
+497.0
+53.0
+544.0
+562.0
+564.0
+57.0
 579.0
-597.0
-622.0
-624.0
-636.0
+618.0
+642.0
+65.0
+662.0
+69.0
+74.0
+77.0
+798.0
+819.0
+82.0
+84.0
+85.0
+858.0
+878.0
+916.0
+918.0
+933.0
+956.0

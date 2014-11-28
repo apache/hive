@@ -17,10 +17,12 @@
 
 package org.apache.hive.spark.client;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
@@ -192,8 +194,12 @@ class SparkClientImpl implements SparkClient {
       // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
       // SparkSubmit class directly, which has some caveats (like having to provide a proper
       // version of Guava on the classpath depending on the deploy mode).
-      if (conf.get("spark.home") != null) {
-        argv.add(new File(conf.get("spark.home"), "bin/spark-submit").getAbsolutePath());
+      String sparkHome = conf.get("spark.home");
+      if (sparkHome == null) {
+        sparkHome = System.getProperty("spark.home");
+      }
+      if (sparkHome != null) {
+        argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
       } else {
         LOG.info("No spark.home provided, calling SparkSubmit directly.");
         argv.add(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath());
@@ -248,12 +254,11 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
-      pb.environment().clear();
       final Process child = pb.start();
 
       int childId = childIdGenerator.incrementAndGet();
-      redirect("stdout-redir-" + childId, child.getInputStream(), System.out);
-      redirect("stderr-redir-" + childId, child.getErrorStream(), System.err);
+      redirect("stdout-redir-" + childId, child.getInputStream());
+      redirect("stderr-redir-" + childId, child.getErrorStream());
 
       runnable = new Runnable() {
         @Override
@@ -277,8 +282,8 @@ class SparkClientImpl implements SparkClient {
     return thread;
   }
 
-  private void redirect(String name, InputStream in, OutputStream out) {
-    Thread thread = new Thread(new Redirector(in, out));
+  private void redirect(String name, InputStream in) {
+    Thread thread = new Thread(new Redirector(in));
     thread.setName(name);
     thread.setDaemon(true);
     thread.start();
@@ -346,23 +351,18 @@ class SparkClientImpl implements SparkClient {
 
   private class Redirector implements Runnable {
 
-    private final InputStream in;
-    private final OutputStream out;
+    private final BufferedReader in;
 
-    Redirector(InputStream in, OutputStream out) {
-      this.in = in;
-      this.out = out;
+    Redirector(InputStream in) {
+      this.in = new BufferedReader(new InputStreamReader(in));
     }
 
     @Override
     public void run() {
       try {
-        byte[] buf = new byte[1024];
-        int len = in.read(buf);
-        while (len != -1) {
-          out.write(buf, 0, len);
-          out.flush();
-          len = in.read(buf);
+        String line = null;
+        while ((line = in.readLine()) != null) {
+          LOG.info(line);
         }
       } catch (Exception e) {
         LOG.warn("Error in redirector thread.", e);

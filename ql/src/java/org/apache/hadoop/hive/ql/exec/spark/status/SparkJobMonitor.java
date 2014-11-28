@@ -67,6 +67,9 @@ public class SparkJobMonitor {
     while (true) {
       try {
         JobExecutionStatus state = sparkJobStatus.getState();
+        if (LOG.isDebugEnabled()) {
+          console.printInfo("state = " + state);
+        }
         if (state != null && state != JobExecutionStatus.UNKNOWN &&
             (state != lastState || state == JobExecutionStatus.RUNNING)) {
           lastState = state;

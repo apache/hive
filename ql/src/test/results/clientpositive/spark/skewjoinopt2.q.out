@@ -399,7 +399,7 @@ STAGE PLANS:
     Spark
       Edges:
         Union 2 <- Map 1 (NONE, 0), Map 6 (NONE, 0)
-        Reducer 3 <- Union 2 (GROUP, 1)
+        Reducer 3 <- Union 2 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -573,7 +573,7 @@ STAGE PLANS:
     Spark
       Edges:
         Union 2 <- Map 1 (NONE, 0), Map 6 (NONE, 0)
-        Reducer 3 <- Union 2 (GROUP, 1)
+        Reducer 3 <- Union 2 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
