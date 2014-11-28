@@ -64,7 +64,7 @@ final class ClientUtils {
     int akkaHeartBeatPauses = toInt(conf.get("spark.akka.heartbeat.pauses"), 600);
     double akkaFailureDetector =
       toDouble(conf.get("spark.akka.failure-detector.threshold"), 300.0);
-    int akkaHeartBeatInterval = toInt(conf.get("spark.akka.heartbeat.interval"), 1000);
+    int akkaHeartBeatInterval = toInt(conf.get("spark.akka.heartbeat.interval"), 100);
 
      // Disabled due to chill-akka depending on kryo 2.21, which is incompatible with 2.22
      // due to packaging changes (relocated org.objenesis classes).

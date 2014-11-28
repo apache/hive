@@ -1,8 +1,16 @@
-PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+
+
+create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+
+
+create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_1
@@ -214,12 +222,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-NULL	NULL	4	val_4
+20	val_20	20	val_20
+23	val_23	23	val_23
 NULL	NULL	10	val_10
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
-20	val_20	20	val_20
-23	val_23	23	val_23
+NULL	NULL	4	val_4
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -273,14 +281,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-NULL	NULL	4	val_4
-NULL	NULL	10	val_10
-NULL	NULL	17	val_17
-NULL	NULL	19	val_19
 20	val_20	20	val_20
 23	val_23	23	val_23
 25	val_25	NULL	NULL
 30	val_30	NULL	NULL
+NULL	NULL	10	val_10
+NULL	NULL	17	val_17
+NULL	NULL	19	val_19
+NULL	NULL	4	val_4
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_2 a join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -449,12 +457,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-NULL	NULL	4	val_4
+20	val_20	20	val_20
+23	val_23	23	val_23
 NULL	NULL	10	val_10
 NULL	NULL	17	val_17
 NULL	NULL	19	val_19
-20	val_20	20	val_20
-23	val_23	23	val_23
+NULL	NULL	4	val_4
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_2 a full outer join smb_bucket_3 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -508,11 +516,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
-NULL	NULL	4	val_4
-NULL	NULL	10	val_10
-NULL	NULL	17	val_17
-NULL	NULL	19	val_19
 20	val_20	20	val_20
 23	val_23	23	val_23
 25	val_25	NULL	NULL
 30	val_30	NULL	NULL
+NULL	NULL	10	val_10
+NULL	NULL	17	val_17
+NULL	NULL	19	val_19
+NULL	NULL	4	val_4

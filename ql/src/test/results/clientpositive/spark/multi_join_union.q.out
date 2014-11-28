@@ -1,9 +1,13 @@
-PREHOOK: query: CREATE TABLE src11 as SELECT * FROM src
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src11 as SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src11
-POSTHOOK: query: CREATE TABLE src11 as SELECT * FROM src
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src11 as SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -79,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 5 (PARTITION-LEVEL SORT, 1), Union 3 (PARTITION-LEVEL SORT, 1)
+        Reducer 4 <- Map 5 (PARTITION-LEVEL SORT, 3), Union 3 (PARTITION-LEVEL SORT, 3)
         Union 3 <- Map 2 (NONE, 0), Map 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:

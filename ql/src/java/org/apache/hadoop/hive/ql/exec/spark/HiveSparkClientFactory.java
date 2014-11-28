@@ -100,7 +100,7 @@ public class HiveSparkClientFactory {
     for (Map.Entry<String, String> entry : hiveConf) {
       String propertyName = entry.getKey();
       if (propertyName.startsWith("spark")) {
-        String value = entry.getValue();
+        String value = hiveConf.get(propertyName);
         sparkConf.put(propertyName, value);
         LOG.info(String.format(
           "load spark configuration from hive configuration (%s -> %s).",

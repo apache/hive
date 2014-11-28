@@ -238,8 +238,8 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -438,7 +438,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 3)
         Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -569,7 +569,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 5 <- Map 4 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 4 
@@ -618,7 +618,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
         Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
