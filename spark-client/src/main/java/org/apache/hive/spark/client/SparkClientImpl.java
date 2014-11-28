@@ -323,6 +323,7 @@ class SparkClientImpl implements SparkClient {
         JobHandleImpl<?> handle = jobs.remove(jr.id);
         if (handle != null) {
           LOG.info("Received result for {}", jr.id);
+          handle.setSparkCounters(jr.sparkCounters);
           handle.complete(jr.result, jr.error);
         } else {
           LOG.warn("Received result for unknown job {}", jr.id);

@@ -20,6 +20,7 @@ package org.apache.hive.spark.client;
 import java.io.Serializable;
 
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.counter.SparkCounters;
 
 final class Protocol {
 
@@ -112,15 +113,17 @@ final class Protocol {
     final String id;
     final T result;
     final Throwable error;
+    final SparkCounters sparkCounters;
 
-    JobResult(String id, T result, Throwable error) {
+    JobResult(String id, T result, Throwable error, SparkCounters sparkCounters) {
       this.id = id;
       this.result = result;
       this.error = error;
+      this.sparkCounters = sparkCounters;
     }
 
     JobResult() {
-      this(null, null, null);
+      this(null, null, null, null);
     }
 
   }

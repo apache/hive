@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hive.spark.counter.SparkCounters;
 
 /**
  * A handle to a submitted job. Allows for monitoring and controlling of the running remote job.
@@ -47,6 +48,11 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
    * Get corresponding spark job IDs for this job
    */
   List<Integer> getSparkJobIds();
+
+  /**
+   * Get the SparkCounters for this job
+   */
+  SparkCounters getSparkCounters();
 
   // TODO: expose job status?
 

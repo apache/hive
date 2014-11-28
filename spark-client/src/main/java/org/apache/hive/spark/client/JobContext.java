@@ -17,6 +17,7 @@
 
 package org.apache.hive.spark.client;
 
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -43,7 +44,7 @@ public interface JobContext {
    *
    * @return The job (unmodified).
    */
-  <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job);
+  <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job, SparkCounters sparkCounters);
 
   /**
    * Return a map from client job Id to corresponding JavaFutureActions

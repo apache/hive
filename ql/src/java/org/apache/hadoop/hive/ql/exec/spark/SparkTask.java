@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticGroup;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
@@ -103,9 +103,10 @@ public class SparkTask extends Task<SparkWork> {
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (sparkJobStatus != null) {
-        sparkCounters = sparkJobStatus.getCounter();
         SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
         monitor.startMonitor();
+        // for RSC, we should get the counters after job has finished
+        sparkCounters = sparkJobStatus.getCounter();
         SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
           LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));

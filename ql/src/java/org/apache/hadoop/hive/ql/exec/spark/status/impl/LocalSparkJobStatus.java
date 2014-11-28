@@ -24,7 +24,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
-import org.apache.hadoop.hive.ql.exec.spark.counter.SparkCounters;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.spark.JobExecutionStatus;
