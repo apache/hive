@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -520,8 +521,8 @@ public class Driver implements CommandProcessor {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     try {
-      task.getJSONPlan(ps, astStringTree, sem.getRootTasks(), sem.getFetchTask(),
-          false, true, true);
+      List<Task<?>> rootTasks = sem.getRootTasks();
+      task.getJSONPlan(ps, astStringTree, rootTasks, sem.getFetchTask(), false, true, true);
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);
@@ -1348,7 +1349,7 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
           ((PreExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
-              ShimLoader.getHadoopShims().getUGIForConf(conf));
+              Utils.getUGIForConf(conf));
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
         }
@@ -1518,7 +1519,7 @@ public class Driver implements CommandProcessor {
 
           ((PostExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
               (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
-                  : null), ShimLoader.getHadoopShims().getUGIForConf(conf));
+                  : null), Utils.getUGIForConf(conf));
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
         }

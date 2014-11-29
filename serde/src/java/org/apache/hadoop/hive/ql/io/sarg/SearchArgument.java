@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
+import parquet.filter2.predicate.FilterPredicate;
+
 import java.util.List;
 
 /**
@@ -173,6 +175,12 @@ public interface SearchArgument {
    * @return the serialized SARG
    */
   public String toKryo();
+
+  /**
+   * Translate the search argument to the filter predicate parquet used
+   * @return
+   */
+  public FilterPredicate toFilterPredicate();
 
   /**
    * A builder object for contexts outside of Hive where it isn't easy to

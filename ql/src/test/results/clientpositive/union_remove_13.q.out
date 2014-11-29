@@ -69,8 +69,8 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-6 depends on stages: Stage-8, Stage-9 , consists of Stage-3, Stage-2, Stage-4
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1, Stage-9 , consists of Stage-3, Stage-2, Stage-4
   Stage-3
   Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
   Stage-2
@@ -80,7 +80,7 @@ STAGE DEPENDENCIES:
   Stage-9 depends on stages: Stage-10
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -240,8 +240,8 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)a.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)b.FieldSchema(name:val, type:string, comment:null), (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)b.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1

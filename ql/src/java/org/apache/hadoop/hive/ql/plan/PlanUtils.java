@@ -42,9 +42,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -827,13 +825,6 @@ public final class PlanUtils {
                     "using configureTableJobProperties",e);
                 storageHandler.configureTableJobProperties(tableDesc, jobProperties);
             }
-            if (tableDesc.getOutputFileFormatClass().getName()
-                     == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
-             // get the real output format when we register this for the table
-             jobProperties.put(
-                 HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,
-                 HiveFileFormatUtils.getRealOutputFormatClassName());
-           }
         }
         // Job properties are only relevant for non-native tables, so
         // for native tables, leave it null to avoid cluttering up

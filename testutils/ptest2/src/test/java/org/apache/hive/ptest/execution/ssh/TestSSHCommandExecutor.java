@@ -54,7 +54,7 @@ public class TestSSHCommandExecutor {
       "-o StrictHostKeyChecking=no");
     Assert.assertFalse(executor.isShutdown());
     executor.shutdownNow();
-    SSHCommand command = new SSHCommand(executor, "privateKey", "user", "host", 1, "whoami");
+    SSHCommand command = new SSHCommand(executor, "privateKey", "user", "host", 1, "whoami", true);
     executor.execute(command);
     Assert.assertTrue(executor.isShutdown());
     Assert.assertEquals(Constants.EXIT_CODE_UNKNOWN, command.getExitCode());
@@ -77,7 +77,7 @@ public class TestSSHCommandExecutor {
         return Constants.EXIT_CODE_UNKNOWN;
       }
     });
-    SSHCommand command = new SSHCommand(executor, "privateKey", "user", "host", 1, "whoami");
+    SSHCommand command = new SSHCommand(executor, "privateKey", "user", "host", 1, "whoami", true);
     executor.execute(command);
     Assert.assertTrue(executor.isShutdown());
     Assert.assertEquals(Constants.EXIT_CODE_UNKNOWN, command.getExitCode());

@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.Validator.RatioValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
@@ -384,9 +385,9 @@ public class HiveConf extends Configuration {
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
-    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
+    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 10,
         "The number of times to retry a HMSHandler call if there were a connection error."),
-    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "1000ms",
+    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "2000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "The time between HMSHandler retry attempts on failure."),
     HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false,
         "Whether to force reloading of the HMSHandler configuration (including\n" +
@@ -1082,6 +1083,7 @@ public class HiveConf extends Configuration {
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
+    HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
     HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
@@ -1670,6 +1672,13 @@ public class HiveConf extends Configuration {
         "Minimum number of Thrift worker threads"),
     HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500,
         "Maximum number of Thrift worker threads"),
+    HIVE_SERVER2_THRIFT_LOGIN_BEBACKOFF_SLOT_LENGTH(
+        "hive.server2.thrift.exponential.backoff.slot.length", "100ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Binary exponential backoff slot time for Thrift clients during login to HiveServer2,\n" +
+        "for retries until hitting Thrift client timeout"),
+    HIVE_SERVER2_THRIFT_LOGIN_TIMEOUT("hive.server2.thrift.login.timeout", "20s",
+        new TimeValidator(TimeUnit.SECONDS), "Timeout for Thrift clients during login to HiveServer2"),
     HIVE_SERVER2_THRIFT_WORKER_KEEPALIVE_TIME("hive.server2.thrift.worker.keepalive.time", "60s",
         new TimeValidator(TimeUnit.SECONDS),
         "Keepalive time (in seconds) for an idle worker thread. When the number of workers exceeds min workers, " +
@@ -1761,6 +1770,13 @@ public class HiveConf extends Configuration {
         "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
         "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
         "If set to false, all Hive jobs go to the 'hive' user's queue."),
+    HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
+        "Comma separated list of builtin udf names allowed in queries.\n" +
+        "An empty whitelist allows all builtin udfs to be executed. " +
+        " The udf black list takes precedence over udf white list"),
+    HIVE_SERVER2_BUILTIN_UDF_BLACKLIST("hive.server2.builtin.udf.blacklist", "",
+         "Comma separated list of udfs names. These udfs will not be allowed in queries." +
+         " The udf black list takes precedence over udf white list"),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
@@ -2756,8 +2772,7 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      UserGroupInformation ugi = ShimLoader.getHadoopShims()
-        .getUGIForConf(this);
+      UserGroupInformation ugi = Utils.getUGIForConf(this);
       return ugi.getUserName();
     } catch (LoginException le) {
       throw new IOException(le);

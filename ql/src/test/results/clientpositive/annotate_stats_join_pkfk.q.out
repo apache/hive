@@ -578,7 +578,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s1
+            alias: s
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -589,7 +589,7 @@ STAGE PLANS:
                 Map-reduce partition columns: s_store_sk (type: int)
                 Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
-            alias: s
+            alias: s1
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -652,7 +652,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s1
+            alias: s
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (s_store_sk > 1000) (type: boolean)
@@ -663,7 +663,7 @@ STAGE PLANS:
                 Map-reduce partition columns: s_store_sk (type: int)
                 Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
-            alias: s
+            alias: s1
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (s_store_sk > 1000) (type: boolean)
@@ -726,17 +726,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s1
-            Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: s_store_sk is not null (type: boolean)
-              Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-              Reduce Output Operator
-                key expressions: s_store_sk (type: int)
-                sort order: +
-                Map-reduce partition columns: s_store_sk (type: int)
-                Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-          TableScan
             alias: s
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -747,6 +736,17 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: s_store_sk (type: int)
                 Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: s1
+            Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: s_store_sk is not null (type: boolean)
+              Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: s_store_sk (type: int)
+                sort order: +
+                Map-reduce partition columns: s_store_sk (type: int)
+                Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
             Statistics: Num rows: 1000 Data size: 130523 Basic stats: COMPLETE Column stats: COMPLETE
@@ -800,7 +800,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s1
+            alias: s
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -811,7 +811,7 @@ STAGE PLANS:
                 Map-reduce partition columns: s_store_sk (type: int)
                 Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
-            alias: s
+            alias: s1
             Statistics: Num rows: 12 Data size: 3143 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -866,12 +866,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -913,9 +913,16 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col38 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col38 (type: int)
+              Statistics: Num rows: 916 Data size: 7328 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: int)
           TableScan
             alias: ca
             Statistics: Num rows: 20 Data size: 2114 Basic stats: COMPLETE Column stats: COMPLETE
@@ -927,13 +934,6 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: ca_address_sk (type: int)
                 Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col38 (type: int)
-              sort order: +
-              Map-reduce partition columns: _col38 (type: int)
-              Statistics: Num rows: 916 Data size: 7328 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:

@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.sql.Timestamp;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -30,10 +32,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 
-import parquet.io.ParquetEncodingException;
 import parquet.io.api.Binary;
 import parquet.io.api.RecordConsumer;
 import parquet.schema.GroupType;
+import parquet.schema.OriginalType;
 import parquet.schema.Type;
 
 /**
@@ -41,10 +43,10 @@ import parquet.schema.Type;
  * DataWritableWriter is a writer,
  * that will read an ArrayWritable and give the data to parquet
  * with the expected schema
- *
+ * This is a helper class used by DataWritableWriteSupport class.
  */
 public class DataWritableWriter {
-
+  private static final Log LOG = LogFactory.getLog(DataWritableWriter.class);
   private final RecordConsumer recordConsumer;
   private final GroupType schema;
 
@@ -53,85 +55,156 @@ public class DataWritableWriter {
     this.schema = schema;
   }
 
-  public void write(final ArrayWritable arr) {
-    if (arr == null) {
-      return;
+  /**
+   * It writes all record values to the Parquet RecordConsumer.
+   * @param record Contains the record of values that are going to be written
+   */
+  public void write(final ArrayWritable record) {
+    if (record != null) {
+      recordConsumer.startMessage();
+      try {
+        writeGroupFields(record, schema);
+      } catch (RuntimeException e) {
+        String errorMessage = "Parquet record is malformed: " + e.getMessage();
+        LOG.error(errorMessage);
+        throw new RuntimeException(errorMessage);
+      }
+      recordConsumer.endMessage();
     }
-    recordConsumer.startMessage();
-    writeData(arr, schema);
-    recordConsumer.endMessage();
   }
 
-  private void writeData(final ArrayWritable arr, final GroupType type) {
-    if (arr == null) {
-      return;
-    }
-    final int fieldCount = type.getFieldCount();
-    Writable[] values = arr.get();
-    for (int field = 0; field < fieldCount; ++field) {
-      final Type fieldType = type.getType(field);
-      final String fieldName = fieldType.getName();
-      final Writable value = values[field];
-      if (value == null) {
-        continue;
+  /**
+   * It writes all the fields contained inside a group to the RecordConsumer.
+   * @param value The list of values contained in the group.
+   * @param type Type that contains information about the group schema.
+   */
+  public void writeGroupFields(final ArrayWritable value, final GroupType type) {
+    if (value != null) {
+      for (int i = 0; i < type.getFieldCount(); i++) {
+        Type fieldType = type.getType(i);
+        String fieldName = fieldType.getName();
+        Writable fieldValue = value.get()[i];
+
+        // Parquet does not write null elements
+        if (fieldValue != null) {
+          recordConsumer.startField(fieldName, i);
+          writeValue(fieldValue, fieldType);
+          recordConsumer.endField(fieldName, i);
+        }
       }
+    }
+  }
 
-      recordConsumer.startField(fieldName, field);
+  /**
+   * It writes the field value to the Parquet RecordConsumer. It detects the field type, and writes
+   * the correct write function.
+   * @param value The writable object that contains the value.
+   * @param type Type that contains information about the type schema.
+   */
+  private void writeValue(final Writable value, final Type type) {
+    if (type.isPrimitive()) {
+      writePrimitive(value);
+    } else if (value instanceof ArrayWritable) {
+      GroupType groupType = type.asGroupType();
+      OriginalType originalType = type.getOriginalType();
 
-      if (fieldType.isPrimitive()) {
-        writePrimitive(value);
+      if (originalType != null && originalType.equals(OriginalType.LIST)) {
+        writeArray((ArrayWritable)value, groupType);
+      } else if (originalType != null && originalType.equals(OriginalType.MAP)) {
+        writeMap((ArrayWritable)value, groupType);
       } else {
-        recordConsumer.startGroup();
-        if (value instanceof ArrayWritable) {
-          if (fieldType.asGroupType().getRepetition().equals(Type.Repetition.REPEATED)) {
-            writeArray((ArrayWritable) value, fieldType.asGroupType());
-          } else {
-            writeData((ArrayWritable) value, fieldType.asGroupType());
-          }
-        } else if (value != null) {
-          throw new ParquetEncodingException("This should be an ArrayWritable or MapWritable: " + value);
-        }
-
-        recordConsumer.endGroup();
+        writeGroup((ArrayWritable) value, groupType);
       }
-
-      recordConsumer.endField(fieldName, field);
+    } else {
+      throw new RuntimeException("Field value is not an ArrayWritable object: " + type);
     }
   }
 
+  /**
+   * It writes a group type and all its values to the Parquet RecordConsumer.
+   * This is used only for optional and required groups.
+   * @param value ArrayWritable object that contains the group values
+   * @param type Type that contains information about the group schema
+   */
+  private void writeGroup(final ArrayWritable value, final GroupType type) {
+    recordConsumer.startGroup();
+    writeGroupFields(value, type);
+    recordConsumer.endGroup();
+  }
+
+  /**
+   * It writes a map type and its key-pair values to the Parquet RecordConsumer.
+   * This is called when the original type (MAP) is detected by writeValue()
+   * @param value The list of map values that contains the repeated KEY_PAIR_VALUE group type
+   * @param type Type that contains information about the group schema
+   */
+  private void writeMap(final ArrayWritable value, final GroupType type) {
+    GroupType repeatedType = type.getType(0).asGroupType();
+    ArrayWritable repeatedValue = (ArrayWritable)value.get()[0];
+
+    recordConsumer.startGroup();
+    recordConsumer.startField(repeatedType.getName(), 0);
+
+    Writable[] map_values = repeatedValue.get();
+    for (int record = 0; record < map_values.length; record++) {
+      Writable key_value_pair = map_values[record];
+      if (key_value_pair != null) {
+        // Hive wraps a map key-pair into an ArrayWritable
+        if (key_value_pair instanceof ArrayWritable) {
+          writeGroup((ArrayWritable)key_value_pair, repeatedType);
+        } else {
+          throw new RuntimeException("Map key-value pair is not an ArrayWritable object on record " + record);
+        }
+      } else {
+        throw new RuntimeException("Map key-value pair is null on record " + record);
+      }
+    }
+
+    recordConsumer.endField(repeatedType.getName(), 0);
+    recordConsumer.endGroup();
+  }
+
+  /**
+   * It writes a list type and its array elements to the Parquet RecordConsumer.
+   * This is called when the original type (LIST) is detected by writeValue()
+   * @param array The list of array values that contains the repeated array group type
+   * @param type Type that contains information about the group schema
+   */
   private void writeArray(final ArrayWritable array, final GroupType type) {
-    if (array == null) {
-      return;
-    }
-    final Writable[] subValues = array.get();
-    final int fieldCount = type.getFieldCount();
-    for (int field = 0; field < fieldCount; ++field) {
-      final Type subType = type.getType(field);
-      recordConsumer.startField(subType.getName(), field);
-      for (int i = 0; i < subValues.length; ++i) {
-        final Writable subValue = subValues[i];
-        if (subValue != null) {
-          if (subType.isPrimitive()) {
-            if (subValue instanceof ArrayWritable) {
-              writePrimitive(((ArrayWritable) subValue).get()[field]);// 0 ?
-            } else {
-              writePrimitive(subValue);
-            }
-          } else {
-            if (!(subValue instanceof ArrayWritable)) {
-              throw new RuntimeException("This should be a ArrayWritable: " + subValue);
-            } else {
-              recordConsumer.startGroup();
-              writeData((ArrayWritable) subValue, subType.asGroupType());
-              recordConsumer.endGroup();
-            }
-          }
+    GroupType repeatedType = type.getType(0).asGroupType();
+    ArrayWritable repeatedValue = (ArrayWritable)array.get()[0];
+
+    recordConsumer.startGroup();
+    recordConsumer.startField(repeatedType.getName(), 0);
+
+    Writable[] array_values = repeatedValue.get();
+    for (int record = 0; record < array_values.length; record++) {
+      recordConsumer.startGroup();
+
+      // Null values must be wrapped into startGroup/endGroup
+      Writable element = array_values[record];
+      if (element != null) {
+        for (int i = 0; i < type.getFieldCount(); i++) {
+          Type fieldType = repeatedType.getType(i);
+          String fieldName = fieldType.getName();
+
+          recordConsumer.startField(fieldName, i);
+          writeValue(element, fieldType);
+          recordConsumer.endField(fieldName, i);
         }
       }
-      recordConsumer.endField(subType.getName(), field);
+
+      recordConsumer.endGroup();
     }
+
+    recordConsumer.endField(repeatedType.getName(), 0);
+    recordConsumer.endGroup();
   }
 
+  /**
+   * It writes the primitive value to the Parquet RecordConsumer.
+   * @param value The writable object that contains the primitive value.
+   */
   private void writePrimitive(final Writable value) {
     if (value == null) {
       return;

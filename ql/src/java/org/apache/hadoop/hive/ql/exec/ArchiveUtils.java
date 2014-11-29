@@ -164,15 +164,17 @@ public final class ArchiveUtils {
       }
     }
 
-    public URI getHarUri(URI original, HadoopShims shim) throws HiveException {
-      URI harUri = null;
-      try {
-        harUri = shim.getHarUri(original, base, originalBase);
-      } catch (URISyntaxException e) {
-        throw new HiveException("Couldn't create har URI for location", e);
+    public URI getHarUri(URI original) throws URISyntaxException {
+      URI relative = originalBase.relativize(original);
+      if (relative.isAbsolute()) {
+        throw new URISyntaxException("Couldn't create URI for location.",
+                                     "Relative: " + relative + " Base: "
+                                     + base + " OriginalBase: " + originalBase);
       }
 
-      return harUri;
+      return base.resolve(relative);
+
+
     }
   }
 

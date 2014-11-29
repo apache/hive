@@ -3,8 +3,6 @@ set hive.enforce.bucketing = true;
 set hive.exec.submitviachild=true;
 set hive.exec.submit.local.task.via.child=true;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
-
 drop table tstsrc;
 drop table tstsrcpart;
 

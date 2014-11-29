@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -215,8 +216,7 @@ public class TaskLogProcessor {
             break;
           }
           
-          inputLine =
-              ShimLoader.getHadoopShims().unquoteHtmlChars(inputLine);
+          inputLine = HtmlQuoting.unquoteHtmlChars(inputLine);
           
           if (stackTracePattern.matcher(inputLine).matches() ||
               endStackTracePattern.matcher(inputLine).matches()) {

@@ -980,7 +980,7 @@ class MetaStoreDirectSql {
         // TODO: Filter.g cannot parse a quoted date; try to parse date here too.
         try {
           nodeValue = new java.sql.Date(
-              HiveMetaStore.PARTITION_DATE_FORMAT.parse((String)nodeValue).getTime());
+              HiveMetaStore.PARTITION_DATE_FORMAT.get().parse((String)nodeValue).getTime());
           valType = FilterType.Date;
         } catch (ParseException pe) { // do nothing, handled below - types will mismatch
         }

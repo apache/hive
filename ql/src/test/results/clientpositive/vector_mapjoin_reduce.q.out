@@ -23,13 +23,13 @@ where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-7 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-5
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1
+  Stage-6 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -38,38 +38,30 @@ STAGE PLANS:
             Filter Operator
               predicate: l_partkey is not null (type: boolean)
               Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: l_partkey (type: int)
-                outputColumnNames: l_partkey
+              Group By Operator
+                keys: l_partkey (type: int)
+                mode: hash
+                outputColumnNames: _col0
                 Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: l_partkey (type: int)
-                  mode: hash
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int)
-            outputColumnNames: _col0
-            Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         li 
@@ -117,7 +109,7 @@ STAGE PLANS:
                       0 _col1 (type: int)
                       1 _col0 (type: int)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -131,7 +123,7 @@ STAGE PLANS:
                 0 _col0 (type: int)
                 1 l_partkey (type: int)
               outputColumnNames: _col0, _col1, _col3
-              Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Left Semi Join 0 to 1
@@ -142,14 +134,14 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col3
-                Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col3 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -202,13 +194,13 @@ where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-7 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-5
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1
+  Stage-6 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -217,38 +209,30 @@ STAGE PLANS:
             Filter Operator
               predicate: l_partkey is not null (type: boolean)
               Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: l_partkey (type: int)
-                outputColumnNames: l_partkey
+              Group By Operator
+                keys: l_partkey (type: int)
+                mode: hash
+                outputColumnNames: _col0
                 Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: l_partkey (type: int)
-                  mode: hash
-                  outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int)
-            outputColumnNames: _col0
-            Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         li 
@@ -296,7 +280,7 @@ STAGE PLANS:
                       0 _col1 (type: int), 1 (type: int)
                       1 _col0 (type: int), _col1 (type: int)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -310,7 +294,7 @@ STAGE PLANS:
                 0 _col0 (type: int)
                 1 l_partkey (type: int)
               outputColumnNames: _col0, _col1, _col3
-              Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Left Semi Join 0 to 1
@@ -321,14 +305,14 @@ STAGE PLANS:
                   0 _col1 (type: int), 1 (type: int)
                   1 _col0 (type: int), _col1 (type: int)
                 outputColumnNames: _col0, _col3
-                Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col3 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

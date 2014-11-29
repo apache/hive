@@ -46,12 +46,12 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 10 <- Map 9 (SIMPLE_EDGE)
-        Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 11 <- Map 10 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -67,7 +67,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 4 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -80,7 +80,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -93,7 +93,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Map 9 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -106,23 +106,37 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Reducer 10 
-            Reduce Operator Tree:
-              Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    expressions: 2 (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 11 
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Select Operator
+                  expressions: 4 (type: int)
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
@@ -136,59 +150,23 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 2 
+        Reducer 6 
             Reduce Operator Tree:
-              Select Operator
-                Limit
-                  Number of rows: 1
-                  Select Operator
-                    expressions: 4 (type: int)
-                    outputColumnNames: _col0
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: _col0
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Reduce Operator Tree:
-              Select Operator
-                Limit
-                  Number of rows: 1
-                  Select Operator
-                    expressions: 3 (type: int)
-                    outputColumnNames: _col0
-                    Select Operator
-                      expressions: _col0 (type: int)
-                      outputColumnNames: _col0
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Select Operator
+                  expressions: 2 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 7 
             Reduce Operator Tree:
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    expressions: 1 (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-        Reducer 8 
-            Reduce Operator Tree:
-              Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
                 Select Operator
@@ -200,8 +178,24 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 3 
-            Vertex: Union 3
+        Reducer 9 
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Select Operator
+                  expressions: 3 (type: int)
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
     Fetch Operator

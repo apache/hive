@@ -54,7 +54,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -66,7 +66,7 @@ STAGE PLANS:
                 Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: int)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

@@ -181,12 +181,12 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-2
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         firstjoin:smalltbl1 
@@ -225,7 +225,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -245,31 +245,25 @@ STAGE PLANS:
                   1 key (type: string)
                 outputColumnNames: _col1
                 Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: string)
-                  outputColumnNames: _col1
-                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
-                    keys:
-                      0 _col1 (type: string)
-                      1 value (type: string)
-                    Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 
+                  keys:
+                    0 _col1 (type: string)
+                    1 value (type: string)
+                  Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -320,8 +314,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-RUN: Stage-7:MAPREDLOCAL
-RUN: Stage-2:MAPRED
+RUN: Stage-8:MAPREDLOCAL
+RUN: Stage-3:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should be converted into a
 -- map-join followed by groupby - two MR jobs overall 
@@ -346,12 +340,12 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-2
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         firstjoin:smalltbl1 
@@ -390,7 +384,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -410,31 +404,25 @@ STAGE PLANS:
                   1 key (type: string)
                 outputColumnNames: _col1
                 Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: string)
-                  outputColumnNames: _col1
-                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
-                    keys:
-                      0 _col1 (type: string)
-                      1 value (type: string)
-                    Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 
+                  keys:
+                    0 _col1 (type: string)
+                    1 value (type: string)
+                  Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -485,8 +473,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-RUN: Stage-7:MAPREDLOCAL
-RUN: Stage-2:MAPRED
+RUN: Stage-8:MAPREDLOCAL
+RUN: Stage-3:MAPRED
 580
 PREHOOK: query: -- Now run a query with two-way join, which should first be converted into a
 -- map-join followed by groupby and then finally into a single MR job.
@@ -515,12 +503,12 @@ smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-0 depends on stages: Stage-2
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         firstjoin:smalltbl1 
@@ -559,7 +547,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -579,37 +567,29 @@ STAGE PLANS:
                   1 key (type: string)
                 outputColumnNames: _col1
                 Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: string)
-                  outputColumnNames: _col1
-                  Statistics: Num rows: 1375 Data size: 14608 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 {key}
-                    keys:
-                      0 _col1 (type: string)
-                      1 value (type: string)
-                    outputColumnNames: _col3
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 {key}
+                  keys:
+                    0 _col1 (type: string)
+                    1 value (type: string)
+                  outputColumnNames: _col3
+                  Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    keys: _col3 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col3 (type: string)
-                      outputColumnNames: _col3
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        keys: _col3 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 1512 Data size: 16068 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint)
+                      value expressions: _col1 (type: bigint)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -663,8 +643,8 @@ POSTHOOK: Input: default@bigtbl
 POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
-RUN: Stage-7:MAPREDLOCAL
-RUN: Stage-2:MAPRED
+RUN: Stage-8:MAPREDLOCAL
+RUN: Stage-3:MAPRED
 270
 10
 10
@@ -818,38 +798,38 @@ FROM (SELECT join2.key1 as key1,
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-20 is a root stage , consists of Stage-27, Stage-28, Stage-5
-  Stage-27 has a backup stage: Stage-5
-  Stage-18 depends on stages: Stage-27
-  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-25, Stage-26, Stage-1
-  Stage-25 has a backup stage: Stage-1
-  Stage-15 depends on stages: Stage-25
-  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-23, Stage-24, Stage-2
-  Stage-23 has a backup stage: Stage-2
-  Stage-12 depends on stages: Stage-23
-  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-21, Stage-22, Stage-3
-  Stage-21 has a backup stage: Stage-3
-  Stage-9 depends on stages: Stage-21
-  Stage-4 depends on stages: Stage-3, Stage-9, Stage-10
-  Stage-22 has a backup stage: Stage-3
-  Stage-10 depends on stages: Stage-22
-  Stage-3
-  Stage-24 has a backup stage: Stage-2
-  Stage-13 depends on stages: Stage-24
-  Stage-2
-  Stage-26 has a backup stage: Stage-1
-  Stage-16 depends on stages: Stage-26
-  Stage-1
-  Stage-28 has a backup stage: Stage-5
+  Stage-21 is a root stage , consists of Stage-28, Stage-29, Stage-1
+  Stage-28 has a backup stage: Stage-1
   Stage-19 depends on stages: Stage-28
-  Stage-5
-  Stage-0 depends on stages: Stage-4
+  Stage-18 depends on stages: Stage-1, Stage-19, Stage-20 , consists of Stage-26, Stage-27, Stage-2
+  Stage-26 has a backup stage: Stage-2
+  Stage-16 depends on stages: Stage-26
+  Stage-15 depends on stages: Stage-2, Stage-16, Stage-17 , consists of Stage-24, Stage-25, Stage-3
+  Stage-24 has a backup stage: Stage-3
+  Stage-13 depends on stages: Stage-24
+  Stage-12 depends on stages: Stage-3, Stage-13, Stage-14 , consists of Stage-22, Stage-23, Stage-4
+  Stage-22 has a backup stage: Stage-4
+  Stage-10 depends on stages: Stage-22
+  Stage-5 depends on stages: Stage-4, Stage-10, Stage-11
+  Stage-23 has a backup stage: Stage-4
+  Stage-11 depends on stages: Stage-23
+  Stage-4
+  Stage-25 has a backup stage: Stage-3
+  Stage-14 depends on stages: Stage-25
+  Stage-3
+  Stage-27 has a backup stage: Stage-2
+  Stage-17 depends on stages: Stage-27
+  Stage-2
+  Stage-29 has a backup stage: Stage-1
+  Stage-20 depends on stages: Stage-29
+  Stage-1
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-20
+  Stage: Stage-21
     Conditional Operator
 
-  Stage: Stage-27
+  Stage: Stage-28
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:smalltbl1 
@@ -869,7 +849,7 @@ STAGE PLANS:
                   0 key1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-18
+  Stage: Stage-19
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -898,10 +878,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-17
+  Stage: Stage-18
     Conditional Operator
 
-  Stage: Stage-25
+  Stage: Stage-26
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:smalltbl2 
@@ -921,7 +901,7 @@ STAGE PLANS:
                   0 _col3 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-15
+  Stage: Stage-16
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -947,10 +927,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-14
+  Stage: Stage-15
     Conditional Operator
 
-  Stage: Stage-23
+  Stage: Stage-24
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:smalltbl3 
@@ -970,7 +950,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-12
+  Stage: Stage-13
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -996,10 +976,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-11
+  Stage: Stage-12
     Conditional Operator
 
-  Stage: Stage-21
+  Stage: Stage-22
     Map Reduce Local Work
       Alias -> Map Local Tables:
         smalltbl4 
@@ -1019,7 +999,7 @@ STAGE PLANS:
                   0 _col2 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-9
+  Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1049,7 +1029,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1075,7 +1055,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-22
+  Stage: Stage-23
     Map Reduce Local Work
       Alias -> Map Local Tables:
         $INTNAME 
@@ -1092,7 +1072,7 @@ STAGE PLANS:
                 0 _col2 (type: string)
                 1 key (type: string)
 
-  Stage: Stage-10
+  Stage: Stage-11
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1125,7 +1105,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1171,7 +1151,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-24
+  Stage: Stage-25
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:$INTNAME 
@@ -1188,7 +1168,7 @@ STAGE PLANS:
                 0 _col1 (type: string)
                 1 key (type: string)
 
-  Stage: Stage-13
+  Stage: Stage-14
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1217,7 +1197,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1258,7 +1238,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-26
+  Stage: Stage-27
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:$INTNAME 
@@ -1275,7 +1255,7 @@ STAGE PLANS:
                 0 _col3 (type: string)
                 1 value (type: string)
 
-  Stage: Stage-16
+  Stage: Stage-17
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1304,9 +1284,16 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
           TableScan
             alias: smalltbl2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -1319,13 +1306,6 @@ STAGE PLANS:
                 Map-reduce partition columns: value (type: string)
                 Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                 value expressions: key (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col3 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1346,7 +1326,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-28
+  Stage: Stage-29
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:bigtbl 
@@ -1366,7 +1346,7 @@ STAGE PLANS:
                   0 key1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-19
+  Stage: Stage-20
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1395,7 +1375,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-5
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1523,19 +1503,19 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-RUN: Stage-20:CONDITIONAL
-RUN: Stage-27:MAPREDLOCAL
-RUN: Stage-18:MAPRED
-RUN: Stage-17:CONDITIONAL
-RUN: Stage-25:MAPREDLOCAL
-RUN: Stage-15:MAPRED
-RUN: Stage-14:CONDITIONAL
-RUN: Stage-23:MAPREDLOCAL
-RUN: Stage-12:MAPRED
-RUN: Stage-11:CONDITIONAL
-RUN: Stage-21:MAPREDLOCAL
-RUN: Stage-9:MAPRED
-RUN: Stage-4:MAPRED
+RUN: Stage-21:CONDITIONAL
+RUN: Stage-28:MAPREDLOCAL
+RUN: Stage-19:MAPRED
+RUN: Stage-18:CONDITIONAL
+RUN: Stage-26:MAPREDLOCAL
+RUN: Stage-16:MAPRED
+RUN: Stage-15:CONDITIONAL
+RUN: Stage-24:MAPREDLOCAL
+RUN: Stage-13:MAPRED
+RUN: Stage-12:CONDITIONAL
+RUN: Stage-22:MAPREDLOCAL
+RUN: Stage-10:MAPRED
+RUN: Stage-5:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
@@ -1610,12 +1590,12 @@ FROM (SELECT join2.key1 as key1,
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-13 is a root stage
-  Stage-4 depends on stages: Stage-13
-  Stage-0 depends on stages: Stage-4
+  Stage-14 is a root stage
+  Stage-5 depends on stages: Stage-14
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-13
+  Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:smalltbl1 
@@ -1688,7 +1668,7 @@ STAGE PLANS:
                   0 _col2 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1868,8 +1848,8 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-RUN: Stage-13:MAPREDLOCAL
-RUN: Stage-4:MAPRED
+RUN: Stage-14:MAPREDLOCAL
+RUN: Stage-5:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
@@ -1946,14 +1926,14 @@ FROM (SELECT join2.key1 as key1,
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-14 is a root stage
-  Stage-11 depends on stages: Stage-14
-  Stage-13 depends on stages: Stage-11
-  Stage-4 depends on stages: Stage-13
-  Stage-0 depends on stages: Stage-4
+  Stage-15 is a root stage
+  Stage-12 depends on stages: Stage-15
+  Stage-14 depends on stages: Stage-12
+  Stage-5 depends on stages: Stage-14
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-14
+  Stage: Stage-15
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:smalltbl1 
@@ -1992,7 +1972,7 @@ STAGE PLANS:
                   0 _col3 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-11
+  Stage: Stage-12
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2040,7 +2020,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-13
+  Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:smalltbl3 
@@ -2079,7 +2059,7 @@ STAGE PLANS:
                   0 _col2 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2224,10 +2204,10 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
+RUN: Stage-15:MAPREDLOCAL
+RUN: Stage-12:MAPRED
 RUN: Stage-14:MAPREDLOCAL
-RUN: Stage-11:MAPRED
-RUN: Stage-13:MAPREDLOCAL
-RUN: Stage-4:MAPRED
+RUN: Stage-5:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
 PREHOOK: query: -- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
 -- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
@@ -2300,38 +2280,38 @@ FROM (SELECT join2.key1 as key1,
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-20 is a root stage , consists of Stage-27, Stage-28, Stage-5
-  Stage-27 has a backup stage: Stage-5
-  Stage-18 depends on stages: Stage-27
-  Stage-17 depends on stages: Stage-5, Stage-18, Stage-19 , consists of Stage-25, Stage-26, Stage-1
-  Stage-25 has a backup stage: Stage-1
-  Stage-15 depends on stages: Stage-25
-  Stage-14 depends on stages: Stage-1, Stage-15, Stage-16 , consists of Stage-23, Stage-24, Stage-2
-  Stage-23 has a backup stage: Stage-2
-  Stage-12 depends on stages: Stage-23
-  Stage-11 depends on stages: Stage-2, Stage-12, Stage-13 , consists of Stage-21, Stage-22, Stage-3
-  Stage-21 has a backup stage: Stage-3
-  Stage-9 depends on stages: Stage-21
-  Stage-4 depends on stages: Stage-3, Stage-9, Stage-10
-  Stage-22 has a backup stage: Stage-3
-  Stage-10 depends on stages: Stage-22
-  Stage-3
-  Stage-24 has a backup stage: Stage-2
-  Stage-13 depends on stages: Stage-24
-  Stage-2
-  Stage-26 has a backup stage: Stage-1
-  Stage-16 depends on stages: Stage-26
-  Stage-1
-  Stage-28 has a backup stage: Stage-5
+  Stage-21 is a root stage , consists of Stage-28, Stage-29, Stage-1
+  Stage-28 has a backup stage: Stage-1
   Stage-19 depends on stages: Stage-28
-  Stage-5
-  Stage-0 depends on stages: Stage-4
+  Stage-18 depends on stages: Stage-1, Stage-19, Stage-20 , consists of Stage-26, Stage-27, Stage-2
+  Stage-26 has a backup stage: Stage-2
+  Stage-16 depends on stages: Stage-26
+  Stage-15 depends on stages: Stage-2, Stage-16, Stage-17 , consists of Stage-24, Stage-25, Stage-3
+  Stage-24 has a backup stage: Stage-3
+  Stage-13 depends on stages: Stage-24
+  Stage-12 depends on stages: Stage-3, Stage-13, Stage-14 , consists of Stage-22, Stage-23, Stage-4
+  Stage-22 has a backup stage: Stage-4
+  Stage-10 depends on stages: Stage-22
+  Stage-5 depends on stages: Stage-4, Stage-10, Stage-11
+  Stage-23 has a backup stage: Stage-4
+  Stage-11 depends on stages: Stage-23
+  Stage-4
+  Stage-25 has a backup stage: Stage-3
+  Stage-14 depends on stages: Stage-25
+  Stage-3
+  Stage-27 has a backup stage: Stage-2
+  Stage-17 depends on stages: Stage-27
+  Stage-2
+  Stage-29 has a backup stage: Stage-1
+  Stage-20 depends on stages: Stage-29
+  Stage-1
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-20
+  Stage: Stage-21
     Conditional Operator
 
-  Stage: Stage-27
+  Stage: Stage-28
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:smalltbl1 
@@ -2351,7 +2331,7 @@ STAGE PLANS:
                   0 key1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-18
+  Stage: Stage-19
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2380,10 +2360,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-17
+  Stage: Stage-18
     Conditional Operator
 
-  Stage: Stage-25
+  Stage: Stage-26
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:smalltbl2 
@@ -2403,7 +2383,7 @@ STAGE PLANS:
                   0 _col3 (type: string)
                   1 value (type: string)
 
-  Stage: Stage-15
+  Stage: Stage-16
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2429,10 +2409,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-14
+  Stage: Stage-15
     Conditional Operator
 
-  Stage: Stage-23
+  Stage: Stage-24
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:smalltbl3 
@@ -2452,7 +2432,7 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-12
+  Stage: Stage-13
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2478,10 +2458,10 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-11
+  Stage: Stage-12
     Conditional Operator
 
-  Stage: Stage-21
+  Stage: Stage-22
     Map Reduce Local Work
       Alias -> Map Local Tables:
         smalltbl4 
@@ -2501,7 +2481,7 @@ STAGE PLANS:
                   0 _col2 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-9
+  Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2531,7 +2511,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2557,7 +2537,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-22
+  Stage: Stage-23
     Map Reduce Local Work
       Alias -> Map Local Tables:
         $INTNAME 
@@ -2574,7 +2554,7 @@ STAGE PLANS:
                 0 _col2 (type: string)
                 1 key (type: string)
 
-  Stage: Stage-10
+  Stage: Stage-11
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2607,7 +2587,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2653,7 +2633,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-24
+  Stage: Stage-25
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:$INTNAME 
@@ -2670,7 +2650,7 @@ STAGE PLANS:
                 0 _col1 (type: string)
                 1 key (type: string)
 
-  Stage: Stage-13
+  Stage: Stage-14
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2699,7 +2679,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2740,7 +2720,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-26
+  Stage: Stage-27
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:$INTNAME 
@@ -2757,7 +2737,7 @@ STAGE PLANS:
                 0 _col3 (type: string)
                 1 value (type: string)
 
-  Stage: Stage-16
+  Stage: Stage-17
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2786,9 +2766,16 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
           TableScan
             alias: smalltbl2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -2801,13 +2788,6 @@ STAGE PLANS:
                 Map-reduce partition columns: value (type: string)
                 Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                 value expressions: key (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col3 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col3 (type: string)
-              Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2828,7 +2808,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-28
+  Stage: Stage-29
     Map Reduce Local Work
       Alias -> Map Local Tables:
         join3:join2:join1:bigtbl 
@@ -2848,7 +2828,7 @@ STAGE PLANS:
                   0 key1 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-19
+  Stage: Stage-20
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2877,7 +2857,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-5
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -3005,17 +2985,17 @@ POSTHOOK: Input: default@smalltbl2
 POSTHOOK: Input: default@smalltbl3
 POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
-RUN: Stage-20:CONDITIONAL
-RUN: Stage-27:MAPREDLOCAL
-RUN: Stage-18:MAPRED
-RUN: Stage-17:CONDITIONAL
-RUN: Stage-25:MAPREDLOCAL
-RUN: Stage-15:MAPRED
-RUN: Stage-14:CONDITIONAL
-RUN: Stage-23:MAPREDLOCAL
-RUN: Stage-12:MAPRED
-RUN: Stage-11:CONDITIONAL
-RUN: Stage-21:MAPREDLOCAL
-RUN: Stage-9:MAPRED
-RUN: Stage-4:MAPRED
+RUN: Stage-21:CONDITIONAL
+RUN: Stage-28:MAPREDLOCAL
+RUN: Stage-19:MAPRED
+RUN: Stage-18:CONDITIONAL
+RUN: Stage-26:MAPREDLOCAL
+RUN: Stage-16:MAPRED
+RUN: Stage-15:CONDITIONAL
+RUN: Stage-24:MAPREDLOCAL
+RUN: Stage-13:MAPRED
+RUN: Stage-12:CONDITIONAL
+RUN: Stage-22:MAPREDLOCAL
+RUN: Stage-10:MAPRED
+RUN: Stage-5:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780

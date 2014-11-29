@@ -22,12 +22,14 @@ public class SSHCommand extends AbstractSSHCommand<SSHResult> {
 
   private final SSHCommandExecutor executor;
   private final String command;
+  private final boolean reportErrors;
 
   public SSHCommand(SSHCommandExecutor executor, String privateKey,
-      String user, String host, int instance, String command) {
+      String user, String host, int instance, String command, boolean reportErrors) {
     super(privateKey, user, host, instance);
     this.executor = executor;
     this.command = command;
+    this.reportErrors = reportErrors;
   }
 
   @Override
@@ -35,6 +37,10 @@ public class SSHCommand extends AbstractSSHCommand<SSHResult> {
     executor.execute(this);
     return new SSHResult(getUser(), getHost(), getInstance(), getCommand(),
         getExitCode(), getException(), getOutput());
+  }
+
+  public boolean isReportErrors() {
+    return reportErrors;
   }
 
   public String getCommand() {

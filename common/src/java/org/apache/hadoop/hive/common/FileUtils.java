@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 
@@ -373,8 +375,8 @@ public final class FileUtils {
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
       final FileStatus stat, final FsAction action, final String user)
           throws IOException, AccessControlException, InterruptedException, Exception {
-    UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(fs.getConf());
-    String currentUser = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    UserGroupInformation ugi = Utils.getUGIForConf(fs.getConf());
+    String currentUser = ugi.getShortUserName();
 
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
@@ -383,8 +385,9 @@ public final class FileUtils {
     }
 
     // Otherwise, try user impersonation. Current user must be configured to do user impersonation.
-    UserGroupInformation proxyUser = ShimLoader.getHadoopShims().createProxyUser(user);
-    ShimLoader.getHadoopShims().doAs(proxyUser, new PrivilegedExceptionAction<Object>() {
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+        user, UserGroupInformation.getLoginUser());
+    proxyUser.doAs(new PrivilegedExceptionAction<Object>() {
       @Override
       public Object run() throws Exception {
         FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());

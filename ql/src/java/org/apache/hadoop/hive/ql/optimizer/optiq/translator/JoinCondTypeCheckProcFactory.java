@@ -103,7 +103,8 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       } else if (hasTableAlias(ctx, tableOrCol, expr)) {
         return null;
       } else {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(expr));
+        // Qualified column access for which table was not found
+        throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr));
       }
     }
 
@@ -143,7 +144,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
 
   /**
    * Factory method to get ColumnExprProcessor.
-   * 
+   *
    * @return ColumnExprProcessor.
    */
   @Override
@@ -305,7 +306,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
 
   /**
    * Factory method to get DefaultExprProcessor.
-   * 
+   *
    * @return DefaultExprProcessor.
    */
   @Override

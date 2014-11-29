@@ -33,8 +33,6 @@
 
   <modules>
     <module>common</module>
-    <module>0.20</module>
-    <module>common-secure</module>
     <module>0.20S</module>
     <module>0.23</module>
     <module>scheduler</module>

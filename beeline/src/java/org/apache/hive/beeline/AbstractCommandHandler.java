@@ -26,8 +26,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import jline.Completor;
-import jline.NullCompletor;
+import jline.console.completer.Completer;
+import jline.console.completer.NullCompleter;
 
 /**
  * An abstract implementation of CommandHandler.
@@ -38,22 +38,22 @@ public abstract class AbstractCommandHandler implements CommandHandler {
   private final String name;
   private final String[] names;
   private final String helpText;
-  private Completor[] parameterCompletors = new Completor[0];
+  private Completer[] parameterCompleters = new Completer[0];
 
   protected transient Throwable lastException;
 
   public AbstractCommandHandler(BeeLine beeLine, String[] names, String helpText,
-      Completor[] completors) {
+                                Completer[] completors) {
     this.beeLine = beeLine;
     name = names[0];
     this.names = names;
     this.helpText = helpText;
     if (completors == null || completors.length == 0) {
-      parameterCompletors = new Completor[] { new NullCompletor() };
+      parameterCompleters = new Completer[] { new NullCompleter() };
     } else {
-      List<Completor> c = new LinkedList<Completor>(Arrays.asList(completors));
-      c.add(new NullCompletor());
-      parameterCompletors = c.toArray(new Completor[0]);
+      List<Completer> c = new LinkedList<Completer>(Arrays.asList(completors));
+      c.add(new NullCompleter());
+      parameterCompleters = c.toArray(new Completer[0]);
     }
   }
 
@@ -94,13 +94,13 @@ public abstract class AbstractCommandHandler implements CommandHandler {
     return null;
   }
 
-  public void setParameterCompletors(Completor[] parameterCompletors) {
-    this.parameterCompletors = parameterCompletors;
+  public void setParameterCompleters(Completer[] parameterCompleters) {
+    this.parameterCompleters = parameterCompleters;
   }
 
   @Override
-  public Completor[] getParameterCompletors() {
-    return parameterCompletors;
+  public Completer[] getParameterCompleters() {
+    return parameterCompleters;
   }
 
   @Override

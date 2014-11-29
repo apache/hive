@@ -286,7 +286,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
             @Override
             public void run() {
               String ip = publicIpOrHostname(node);
-              SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, ip, 0, "pkill -f java");
+              SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, ip, 0, "pkill -f java", true);
               mSSHCommandExecutor.execute(command);
               if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN ||
                   command.getException() != null) {
