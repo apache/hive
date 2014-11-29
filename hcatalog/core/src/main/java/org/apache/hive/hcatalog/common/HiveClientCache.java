@@ -255,7 +255,7 @@ class HiveClientCache {
 
     private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException, LoginException {
       this.metaStoreURIs = hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS);
-      ugi = Utils.getUGIForConf(hiveConf);
+      ugi = Utils.getUGI();
       this.hiveConf = hiveConf;
       this.threadId = threadId;
     }

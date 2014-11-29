@@ -50,7 +50,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
     this.conf = conf;
     UserGroupInformation ugi = null;
     try {
-      ugi = Utils.getUGIForConf(conf);
+      ugi = Utils.getUGI();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

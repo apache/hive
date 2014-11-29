@@ -62,7 +62,7 @@ public class HookContext {
     completeTaskList = new ArrayList<TaskRunner>();
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
-    ugi = Utils.getUGIForConf(conf);
+    ugi = Utils.getUGI();
     linfo= null;
     if(SessionState.get() != null){
       linfo = SessionState.get().getLineageState().getLineageInfo();

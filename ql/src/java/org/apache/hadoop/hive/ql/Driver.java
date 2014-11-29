@@ -1349,7 +1349,7 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
           ((PreExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
-              Utils.getUGIForConf(conf));
+              Utils.getUGI());
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
         }
@@ -1518,7 +1518,7 @@ public class Driver implements CommandProcessor {
 
           ((PostExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
               (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
-                  : null), Utils.getUGIForConf(conf));
+                  : null), Utils.getUGI());
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
         }
