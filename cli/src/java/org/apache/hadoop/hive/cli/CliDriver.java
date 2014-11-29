@@ -29,17 +29,16 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import jline.ArgumentCompletor;
-import jline.ArgumentCompletor.AbstractArgumentDelimiter;
-import jline.ArgumentCompletor.ArgumentDelimiter;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
-import jline.SimpleCompletor;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.history.FileHistory;
+import jline.console.completer.StringsCompleter;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
+import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -474,59 +472,61 @@ public class CliDriver {
     }
   }
 
-  public static Completor[] getCommandCompletor () {
-    // SimpleCompletor matches against a pre-defined wordlist
+  public static Completer[] getCommandCompleter() {
+    // StringsCompleter matches against a pre-defined wordlist
     // We start with an empty wordlist and build it up
-    SimpleCompletor sc = new SimpleCompletor(new String[0]);
+    List<String> candidateStrings = new ArrayList<String>();
 
     // We add Hive function names
     // For functions that aren't infix operators, we add an open
     // parenthesis at the end.
     for (String s : FunctionRegistry.getFunctionNames()) {
       if (s.matches("[a-z_]+")) {
-        sc.addCandidateString(s + "(");
+        candidateStrings.add(s + "(");
       } else {
-        sc.addCandidateString(s);
+        candidateStrings.add(s);
       }
     }
 
     // We add Hive keywords, including lower-cased versions
     for (String s : HiveParser.getKeywords()) {
-      sc.addCandidateString(s);
-      sc.addCandidateString(s.toLowerCase());
+      candidateStrings.add(s);
+      candidateStrings.add(s.toLowerCase());
     }
+
+    StringsCompleter strCompleter = new StringsCompleter(candidateStrings);
 
     // Because we use parentheses in addition to whitespace
     // as a keyword delimiter, we need to define a new ArgumentDelimiter
     // that recognizes parenthesis as a delimiter.
-    ArgumentDelimiter delim = new AbstractArgumentDelimiter () {
+    ArgumentDelimiter delim = new AbstractArgumentDelimiter() {
       @Override
-      public boolean isDelimiterChar (String buffer, int pos) {
+      public boolean isDelimiterChar(CharSequence buffer, int pos) {
         char c = buffer.charAt(pos);
         return (Character.isWhitespace(c) || c == '(' || c == ')' ||
-          c == '[' || c == ']');
+            c == '[' || c == ']');
       }
     };
 
     // The ArgumentCompletor allows us to match multiple tokens
     // in the same line.
-    final ArgumentCompletor ac = new ArgumentCompletor(sc, delim);
+    final ArgumentCompleter argCompleter = new ArgumentCompleter(delim, strCompleter);
     // By default ArgumentCompletor is in "strict" mode meaning
     // a token is only auto-completed if all prior tokens
     // match. We don't want that since there are valid tokens
     // that are not in our wordlist (eg. table and column names)
-    ac.setStrict(false);
+    argCompleter.setStrict(false);
 
     // ArgumentCompletor always adds a space after a matched token.
     // This is undesirable for function names because a space after
     // the opening parenthesis is unnecessary (and uncommon) in Hive.
     // We stack a custom Completor on top of our ArgumentCompletor
     // to reverse this.
-    Completor completor = new Completor () {
+    Completer customCompletor = new Completer () {
       @Override
       public int complete (String buffer, int offset, List completions) {
         List<String> comp = completions;
-        int ret = ac.complete(buffer, offset, completions);
+        int ret = argCompleter.complete(buffer, offset, completions);
         // ConsoleReader will do the substitution if and only if there
         // is exactly one valid completion, so we ignore other cases.
         if (completions.size() == 1) {
@@ -543,16 +543,24 @@ public class CliDriver {
     for (int i = 0; i < vars.length; i++) {
       vars[i] = confs[i].varname;
     }
-    SimpleCompletor conf = new SimpleCompletor(vars);
-    conf.setDelimiter(".");
+    ArgumentCompleter.ArgumentDelimiter delimiter = new ArgumentCompleter.AbstractArgumentDelimiter() {
+      @Override
+      public boolean isDelimiterChar(CharSequence buffer, int pos) {
+        char c = buffer.charAt(pos);
+        return  c == '.';
+      }
+    };
 
-    SimpleCompletor set = new SimpleCompletor("set") {
+    StringsCompleter setCompleter = new StringsCompleter("set") {
       @Override
       public int complete(String buffer, int cursor, List clist) {
         return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
       }
     };
-    ArgumentCompletor propCompletor = new ArgumentCompletor(new Completor[]{set, conf}) {
+
+    ArgumentCompleter confCompleter = new ArgumentCompleter(delimiter, setCompleter);
+
+    ArgumentCompleter propCompleter = new ArgumentCompleter(new Completer[]{setCompleter, confCompleter}) {
       @Override
       @SuppressWarnings("unchecked")
       public int complete(String buffer, int offset, List completions) {
@@ -563,7 +571,7 @@ public class CliDriver {
         return ret;
       }
     };
-    return new Completor[] {propCompletor, completor};
+    return new Completer[] {propCompleter, customCompletor};
   }
 
   public static void main(String[] args) throws Exception {
@@ -675,8 +683,8 @@ public class CliDriver {
     ConsoleReader reader =  getConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-    for (Completor completor : getCommandCompletor()) {
-      reader.addCompletor(completor);
+    for (Completer completer : getCommandCompleter()) {
+      reader.addCompleter(completer);
     }
 
     String line;
@@ -685,7 +693,7 @@ public class CliDriver {
     try {
       if ((new File(historyDirectory)).exists()) {
         String historyFile = historyDirectory + File.separator + HISTORYFILE;
-        reader.setHistory(new History(new File(historyFile)));
+        reader.setHistory(new FileHistory(new File(historyFile)));
       } else {
         System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
                            " does not exist.   History will not be available during this session.");

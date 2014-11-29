@@ -172,6 +172,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -1297,7 +1298,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // ARCHIVE_INTERMEDIATE_DIR_SUFFIX that's the same level as the partition,
     // if it does not already exist. If it does exist, we assume the dir is good
     // to use as the move operation that created it is atomic.
-    HadoopShims shim = ShimLoader.getHadoopShims();
     if (!pathExists(intermediateArchivedDir) &&
         !pathExists(intermediateOriginalDir)) {
 
@@ -1319,7 +1319,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             tbl.getTableName(), partSpecInfo.getName());
         jobname = Utilities.abbreviate(jobname, maxJobNameLen - 6);
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname);
-        ret = shim.createHadoopArchive(conf, originalDir, tmpPath, archiveName);
+        HadoopArchives har = new HadoopArchives(conf);
+        List<String> args = new ArrayList<String>();
+
+        args.add("-archiveName");
+        args.add(archiveName);
+        args.add("-p");
+        args.add(originalDir.toString());
+        args.add(tmpPath.toString());
+
+        ret = ToolRunner.run(har, args.toArray(new String[0]));;
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -1380,8 +1389,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       for(Partition p: partitions) {
         URI originalPartitionUri = ArchiveUtils.addSlash(p.getDataLocation().toUri());
-        URI test = p.getDataLocation().toUri();
-        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
+        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri);
         StringBuilder authority = new StringBuilder();
         if(harPartitionDir.getUserInfo() != null) {
           authority.append(harPartitionDir.getUserInfo()).append("@");
@@ -1414,7 +1422,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int unarchive(Hive db, AlterTableSimpleDesc simpleDesc)
-      throws HiveException {
+      throws HiveException, URISyntaxException {
 
     Table tbl = db.getTable(simpleDesc.getTableName());
 
@@ -1489,8 +1497,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     URI archiveUri = archivePath.toUri();
     ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(conf,
         archiveUri, originalUri);
-    HadoopShims shim = ShimLoader.getHadoopShims();
-    URI sourceUri = harHelper.getHarUri(originalUri, shim);
+    URI sourceUri = harHelper.getHarUri(originalUri);
     Path sourceDir = new Path(sourceUri.getScheme(), sourceUri.getAuthority(), sourceUri.getPath());
 
     if(!pathExists(intermediateArchivedDir) && !pathExists(archivePath)) {
@@ -3281,7 +3288,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     List<Partition> allPartitions = null;
     if (alterTbl.getPartSpec() != null) {
-      Map<String, String> partSpec = alterTbl.getPartSpec(); 
+      Map<String, String> partSpec = alterTbl.getPartSpec();
       if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
         allPartitions = new ArrayList<Partition>();
         Partition part = db.getPartition(tbl, partSpec, false);
@@ -3321,7 +3328,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl);
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade());
       } else {
         db.alterPartitions(tbl.getTableName(), allPartitions);
       }

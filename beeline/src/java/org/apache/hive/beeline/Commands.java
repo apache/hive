@@ -128,11 +128,11 @@ public class Commands {
 
 
   public boolean history(String line) {
-    List hist = beeLine.getConsoleReader().getHistory().getHistoryList();
+    Iterator hist = beeLine.getConsoleReader().getHistory().entries();
     int index = 1;
-    for (Iterator i = hist.iterator(); i.hasNext(); index++) {
+    while(hist.hasNext()){
       beeLine.output(beeLine.getColorBuffer().pad(index + ".", 6)
-          .append(i.next().toString()));
+          .append(hist.next().toString()));
     }
     return true;
   }

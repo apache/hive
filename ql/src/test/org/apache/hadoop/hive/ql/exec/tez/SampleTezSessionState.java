@@ -24,7 +24,7 @@ import java.net.URISyntaxException;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezException;
 
@@ -60,9 +60,8 @@ public class SampleTezSessionState extends TezSessionState {
   public void open(HiveConf conf) throws IOException, LoginException, URISyntaxException,
       TezException {
     this.hiveConf = conf;
-    UserGroupInformation ugi;
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-    user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    UserGroupInformation ugi = Utils.getUGIForConf(conf);
+    user = ugi.getShortUserName();
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
   }
 

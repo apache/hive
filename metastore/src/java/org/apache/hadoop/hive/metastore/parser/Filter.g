@@ -46,11 +46,15 @@ import java.util.regex.Pattern;
   public String errorMsg;
 
   private static final Pattern datePattern = Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d).*");
-  private static final SimpleDateFormat dateFormat;
-  static { 
-    dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    dateFormat.setLenient(false);
-  }
+  private static final ThreadLocal<SimpleDateFormat> dateFormat =
+       new ThreadLocal<SimpleDateFormat>() {
+    @Override
+    protected SimpleDateFormat initialValue() {
+      SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      return val;
+    };
+  };
 
   public static java.sql.Date ExtractDate (String input) {
     Matcher m = datePattern.matcher(input);
@@ -58,7 +62,7 @@ import java.util.regex.Pattern;
       return null;
     }
     try {
-      return new java.sql.Date(dateFormat.parse(m.group(1)).getTime());
+      return new java.sql.Date(dateFormat.get().parse(m.group(1)).getTime());
     } catch (ParseException pe) {
       return null;
     }

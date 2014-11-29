@@ -35,8 +35,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jline.ArgumentCompletor;
-import jline.Completor;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.Completer;
 
 class DatabaseConnection {
   private static final String HIVE_AUTH_USER = "user";
@@ -51,7 +51,7 @@ class DatabaseConnection {
   private final String url;
   private final Properties info;
   private Schema schema = null;
-  private Completor sqlCompletor = null;
+  private Completer sqlCompleter = null;
 
   public boolean isClosed() {
     return (null == connection);
@@ -76,17 +76,16 @@ class DatabaseConnection {
         getDatabaseMetaData() == null || getDatabaseMetaData().getExtraNameCharacters() == null ? ""
             : getDatabaseMetaData().getExtraNameCharacters();
 
-    // setup the completor for the database
-    sqlCompletor = new ArgumentCompletor(
-        new SQLCompletor(beeLine, skipmeta),
-        new ArgumentCompletor.AbstractArgumentDelimiter() {
+    // setup the completer for the database
+    sqlCompleter = new ArgumentCompleter(
+        new ArgumentCompleter.AbstractArgumentDelimiter() {
           // delimiters for SQL statements are any
           // non-letter-or-number characters, except
           // underscore and characters that are specified
           // by the database to be valid name identifiers.
           @Override
-          public boolean isDelimiterChar(String buf, int pos) {
-            char c = buf.charAt(pos);
+          public boolean isDelimiterChar(CharSequence buffer, int pos) {
+            char c = buffer.charAt(pos);
             if (Character.isWhitespace(c)) {
               return true;
             }
@@ -94,10 +93,10 @@ class DatabaseConnection {
                 && c != '_'
                 && extraNameCharacters.indexOf(c) == -1;
           }
-        });
-
+        },
+        new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
     // not all argument elements need to hold true
-    ((ArgumentCompletor) sqlCompletor).setStrict(false);
+    ((ArgumentCompleter) sqlCompleter).setStrict(false);
   }
 
 
@@ -236,8 +235,8 @@ class DatabaseConnection {
     return url;
   }
 
-  Completor getSQLCompletor() {
-    return sqlCompletor;
+  Completer getSQLCompleter() {
+    return sqlCompleter;
   }
 
   class Schema {

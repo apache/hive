@@ -60,15 +60,15 @@ order by src1.key, src1.cnt1, src2.cnt1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage [MAPRED]
-  Stage-9 depends on stages: Stage-1, Stage-5 , consists of Stage-10, Stage-11, Stage-3 [CONDITIONAL]
-  Stage-10 has a backup stage: Stage-3 [MAPREDLOCAL]
+  Stage-9 depends on stages: Stage-1, Stage-5 , consists of Stage-10, Stage-11, Stage-2 [CONDITIONAL]
+  Stage-10 has a backup stage: Stage-2 [MAPREDLOCAL]
   Stage-7 depends on stages: Stage-10 [MAPRED]
-  Stage-4 depends on stages: Stage-3, Stage-7, Stage-8 [MAPRED]
-  Stage-11 has a backup stage: Stage-3 [MAPREDLOCAL]
+  Stage-3 depends on stages: Stage-2, Stage-7, Stage-8 [MAPRED]
+  Stage-11 has a backup stage: Stage-2 [MAPREDLOCAL]
   Stage-8 depends on stages: Stage-11 [MAPRED]
-  Stage-3 [MAPRED]
+  Stage-2 [MAPRED]
   Stage-5 is a root stage [MAPRED]
-  Stage-0 depends on stages: Stage-4 [FETCH]
+  Stage-0 depends on stages: Stage-3 [FETCH]
 
 STAGE PLANS:
   Stage: Stage-1
@@ -90,34 +90,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-9
     Conditional Operator
@@ -165,7 +159,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -226,7 +220,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -278,34 +272,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -385,34 +373,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Conditional Operator
@@ -573,34 +555,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-10
     Fetch Operator
@@ -680,34 +656,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -728,34 +698,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
     Conditional Operator
@@ -975,34 +939,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -1023,34 +981,28 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col0 (type: int)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col1 (type: bigint)
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
     Conditional Operator

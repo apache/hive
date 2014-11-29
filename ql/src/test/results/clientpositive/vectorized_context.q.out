@@ -97,12 +97,12 @@ JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.
 limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-4 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         household_demographics 
@@ -141,7 +141,7 @@ STAGE PLANS:
                   0 ss_store_sk (type: int)
                   1 s_store_sk (type: int)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan

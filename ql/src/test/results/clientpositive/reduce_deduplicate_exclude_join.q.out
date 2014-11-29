@@ -3,13 +3,13 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from (select * from src cluster by key) a join src b on a.key = b.key limit 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-4 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-4
-  Stage-0 depends on stages: Stage-3
+  Stage-1 is a root stage
+  Stage-5 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -40,7 +40,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
         b 
@@ -62,7 +62,7 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 key (type: string)
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan

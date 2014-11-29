@@ -37,7 +37,9 @@ import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
@@ -100,8 +102,7 @@ public class HiveAuthFactory {
       if (authTypeStr == null) {
         authTypeStr = AuthTypes.NONE.getAuthName();
       }
-      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
-          && ShimLoader.getHadoopShims().isSecureShimImpl()) {
+      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
         saslServer = ShimLoader.getHadoopThriftAuthBridge()
           .createServer(conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
@@ -180,7 +181,7 @@ public class HiveAuthFactory {
     if (principal.isEmpty() || keyTabFile.isEmpty()) {
       throw new IOException("HiveServer2 Kerberos principal or keytab is not correctly configured");
     } else {
-      ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
+      UserGroupInformation.loginUserFromKeytab(SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keyTabFile);
     }
   }
 
@@ -192,7 +193,7 @@ public class HiveAuthFactory {
     if (principal.isEmpty() || keyTabFile.isEmpty()) {
       throw new IOException("HiveServer2 SPNEGO principal or keytab is not correctly configured");
     } else {
-      return ShimLoader.getHadoopShims().loginUserFromKeytabAndReturnUGI(principal, keyTabFile);
+      return UserGroupInformation.loginUserFromKeytabAndReturnUGI(SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keyTabFile);
     }
   }
 
@@ -328,16 +329,17 @@ public class HiveAuthFactory {
     HiveConf hiveConf) throws HiveSQLException {
     try {
       UserGroupInformation sessionUgi;
-      if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+      if (UserGroupInformation.isSecurityEnabled()) {
         KerberosNameShim kerbName = ShimLoader.getHadoopShims().getKerberosNameShim(realUser);
-        String shortPrincipalName = kerbName.getServiceName();
-        sessionUgi = ShimLoader.getHadoopShims().createProxyUser(shortPrincipalName);
+        sessionUgi = UserGroupInformation.createProxyUser(
+            kerbName.getServiceName(), UserGroupInformation.getLoginUser());
       } else {
-        sessionUgi = ShimLoader.getHadoopShims().createRemoteUser(realUser, null);
+        sessionUgi = UserGroupInformation.createRemoteUser(realUser);
       }
       if (!proxyUser.equalsIgnoreCase(realUser)) {
-        ShimLoader.getHadoopShims().
-          authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
+        ProxyUsers.refreshSuperUserGroupsConfiguration(hiveConf);
+        ProxyUsers.authorize(UserGroupInformation.createProxyUser(proxyUser, sessionUgi),
+            ipAddress, hiveConf);
       }
     } catch (IOException e) {
       throw new HiveSQLException(

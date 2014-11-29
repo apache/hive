@@ -15,7 +15,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p3
+            alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -39,7 +39,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
           TableScan
-            alias: p1
+            alias: p3
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -99,7 +99,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p3
+            alias: p1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -123,7 +123,7 @@ STAGE PLANS:
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
           TableScan
-            alias: p1
+            alias: p3
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_name is not null (type: boolean)
@@ -166,7 +166,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
@@ -176,14 +176,21 @@ from part p1 join part p2 join part p3
 where p2.p_partkey + p1.p_partkey = p1.p_partkey and p3.p_name = p2.p_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
           TableScan
             alias: p2
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -194,13 +201,6 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-          TableScan
-            alias: p1
-            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-              value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -220,9 +220,16 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col13 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col13 (type: string)
+              Statistics: Num rows: 7 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col12 (type: int), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
           TableScan
             alias: p3
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -235,13 +242,6 @@ STAGE PLANS:
                 Map-reduce partition columns: p_name (type: string)
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col13 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col13 (type: string)
-              Statistics: Num rows: 7 Data size: 865 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col12 (type: int), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -272,7 +272,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[5][tables = [p1, p2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey = 1 and p3.p_name = p2.p_name
@@ -282,14 +282,21 @@ from part p1 join part p2 join part p3
 where p2.p_partkey = 1 and p3.p_name = p2.p_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
           TableScan
             alias: p2
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -300,13 +307,6 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 6 Data size: 726 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-          TableScan
-            alias: p1
-            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-              value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -323,9 +323,16 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col13 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col13 (type: string)
+              Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
           TableScan
             alias: p3
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -338,13 +345,6 @@ STAGE PLANS:
                 Map-reduce partition columns: p_name (type: string)
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                 value expressions: p_partkey (type: int), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-          TableScan
-            Reduce Output Operator
-              key expressions: _col13 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col13 (type: string)
-              Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:

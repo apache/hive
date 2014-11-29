@@ -60,7 +60,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -72,7 +72,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -106,29 +106,23 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce
@@ -137,7 +131,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -149,7 +143,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -225,7 +219,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: ((key = '2') or (key = '3')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -237,7 +231,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: ((key = '2') or (key = '3')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -271,29 +265,23 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce
@@ -302,7 +290,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = '2') or (key = '3')) (type: boolean)
+              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -314,7 +302,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = '2') or (key = '3')) (type: boolean)
+              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -392,7 +380,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -403,7 +391,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
+              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -418,14 +406,12 @@ STAGE PLANS:
             0 
             1 
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -433,33 +419,27 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -485,7 +465,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -496,7 +476,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (key is not null and ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -511,14 +491,12 @@ STAGE PLANS:
             0 
             1 
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -557,7 +535,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: ((key = '2') or (key = '3')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -568,7 +546,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
+              predicate: ((key = '2') or (key = '3')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -583,14 +561,12 @@ STAGE PLANS:
             0 
             1 
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -598,33 +574,27 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  mode: hash
-                  outputColumnNames: _col0
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint)
+                  value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -650,7 +620,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = '2') or (key = '3')) (type: boolean)
+              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -661,7 +631,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = '2') or (key = '3')) (type: boolean)
+              predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: key (type: string)
@@ -676,14 +646,12 @@ STAGE PLANS:
             0 
             1 
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          Select Operator
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator

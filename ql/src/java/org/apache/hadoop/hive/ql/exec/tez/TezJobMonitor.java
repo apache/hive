@@ -62,7 +62,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import jline.Terminal;
+import jline.TerminalFactory;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -232,7 +232,7 @@ public class TezJobMonitor {
    * @return - width of terminal
    */
   public int getTerminalWidth() {
-    return Terminal.getTerminal().getTerminalWidth();
+    return TerminalFactory.get().getWidth();
   }
 
   /**

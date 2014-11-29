@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -244,7 +245,9 @@ public class SimpleFetchOptimizer implements Transform {
   }
 
   private boolean checkExpression(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeColumnDesc) {
+    if (expr instanceof ExprNodeConstantDesc ||
+        expr instanceof ExprNodeNullDesc||
+        expr instanceof ExprNodeColumnDesc) {
       return true;
     }
 

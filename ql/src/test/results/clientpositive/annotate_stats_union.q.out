@@ -394,8 +394,8 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            alias: loc_staging
+            Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string)
               outputColumnNames: _col0
@@ -414,8 +414,8 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: loc_staging
-            Statistics: Num rows: 8 Data size: 109 Basic stats: COMPLETE Column stats: COMPLETE
+            alias: loc_orc
+            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string)
               outputColumnNames: _col0

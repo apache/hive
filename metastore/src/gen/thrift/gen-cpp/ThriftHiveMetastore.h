@@ -41,6 +41,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) = 0;
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
   virtual void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context) = 0;
+  virtual void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void add_partition_with_environment_context(Partition& _return, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual int32_t add_partitions(const std::vector<Partition> & new_parts) = 0;
@@ -236,6 +237,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_table_with_environment_context(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */, const EnvironmentContext& /* environment_context */) {
+    return;
+  }
+  void alter_table_with_cascade(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */, const bool /* cascade */) {
     return;
   }
   void add_partition(Partition& /* _return */, const Partition& /* new_part */) {
@@ -3853,6 +3857,151 @@ class ThriftHiveMetastore_alter_table_with_environment_context_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_alter_table_with_environment_context_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_args__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_args__isset() : dbname(false), tbl_name(false), new_tbl(false), cascade(false) {}
+  bool dbname;
+  bool tbl_name;
+  bool new_tbl;
+  bool cascade;
+} _ThriftHiveMetastore_alter_table_with_cascade_args__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_args {
+ public:
+
+  ThriftHiveMetastore_alter_table_with_cascade_args() : dbname(), tbl_name(), cascade(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_args() throw() {}
+
+  std::string dbname;
+  std::string tbl_name;
+  Table new_tbl;
+  bool cascade;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_args__isset __isset;
+
+  void __set_dbname(const std::string& val) {
+    dbname = val;
+  }
+
+  void __set_tbl_name(const std::string& val) {
+    tbl_name = val;
+  }
+
+  void __set_new_tbl(const Table& val) {
+    new_tbl = val;
+  }
+
+  void __set_cascade(const bool val) {
+    cascade = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_table_with_cascade_args & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(new_tbl == rhs.new_tbl))
+      return false;
+    if (!(cascade == rhs.cascade))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_with_cascade_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_with_cascade_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_table_with_cascade_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_pargs() throw() {}
+
+  const std::string* dbname;
+  const std::string* tbl_name;
+  const Table* new_tbl;
+  const bool* cascade;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_result__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_table_with_cascade_result__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_result {
+ public:
+
+  ThriftHiveMetastore_alter_table_with_cascade_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_result() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_result__isset __isset;
+
+  void __set_o1(const InvalidOperationException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const MetaException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_alter_table_with_cascade_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_table_with_cascade_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_table_with_cascade_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_table_with_cascade_presult__isset {
+  _ThriftHiveMetastore_alter_table_with_cascade_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_table_with_cascade_presult__isset;
+
+class ThriftHiveMetastore_alter_table_with_cascade_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_table_with_cascade_presult() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_alter_table_with_cascade_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -16505,6 +16654,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context);
   void send_alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context);
   void recv_alter_table_with_environment_context();
+  void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
+  void send_alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade);
+  void recv_alter_table_with_cascade();
   void add_partition(Partition& _return, const Partition& new_part);
   void send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return);
@@ -16813,6 +16965,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_table_names_by_filter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_table_with_cascade(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -16933,6 +17086,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_table_names_by_filter"] = &ThriftHiveMetastoreProcessor::process_get_table_names_by_filter;
     processMap_["alter_table"] = &ThriftHiveMetastoreProcessor::process_alter_table;
     processMap_["alter_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_environment_context;
+    processMap_["alter_table_with_cascade"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_cascade;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["add_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_add_partition_with_environment_context;
     processMap_["add_partitions"] = &ThriftHiveMetastoreProcessor::process_add_partitions;
@@ -17293,6 +17447,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context);
     }
     ifaces_[i]->alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context);
+  }
+
+  void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
+    }
+    ifaces_[i]->alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
   }
 
   void add_partition(Partition& _return, const Partition& new_part) {

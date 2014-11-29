@@ -223,12 +223,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-4 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         dim1 
@@ -267,7 +267,7 @@ STAGE PLANS:
                   0 _col3 (type: int)
                   1 f3 (type: int)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -345,12 +345,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-4 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         dim1 
@@ -389,7 +389,7 @@ STAGE PLANS:
                   0 _col8 (type: int)
                   1 f3 (type: int)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -467,12 +467,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-4 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         dim1 
@@ -505,7 +505,7 @@ STAGE PLANS:
                 0 _col8 (type: int)
                 1 f3 (type: int)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -596,12 +596,12 @@ POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
  Left outer Join dim7 on  dim6.f12 = dim7.f13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-18 is a root stage
-  Stage-12 depends on stages: Stage-18
-  Stage-0 depends on stages: Stage-12
+  Stage-20 is a root stage
+  Stage-14 depends on stages: Stage-20
+  Stage-0 depends on stages: Stage-14
 
 STAGE PLANS:
-  Stage: Stage-18
+  Stage: Stage-20
     Map Reduce Local Work
       Alias -> Map Local Tables:
         dim1 
@@ -708,7 +708,7 @@ STAGE PLANS:
                 0 _col28 (type: int)
                 1 f13 (type: int)
 
-  Stage: Stage-12
+  Stage: Stage-14
     Map Reduce
       Map Operator Tree:
           TableScan

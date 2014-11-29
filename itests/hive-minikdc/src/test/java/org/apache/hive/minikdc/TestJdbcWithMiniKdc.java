@@ -32,7 +32,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -231,7 +231,7 @@ public class TestJdbcWithMiniKdc {
   // Store the given token in the UGI
   private void storeToken(String tokenStr, UserGroupInformation ugi)
       throws Exception {
-    ShimLoader.getHadoopShims().setTokenStr(ugi,
+    Utils.setTokenStr(ugi,
         tokenStr, HiveAuthFactory.HS2_CLIENT_TOKEN);
   }
 

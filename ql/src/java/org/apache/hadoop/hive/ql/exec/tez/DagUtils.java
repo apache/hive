@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+
 import javax.security.auth.login.LoginException;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.tez.tools.TezMergedLogicalInput;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils.NullOutputCommitter;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
@@ -72,8 +75,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.shims.HadoopShimsSecure.NullOutputCommitter;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -203,9 +205,6 @@ public class DagUtils {
     Utilities.setInputAttributes(conf, mapWork);
 
     String inpFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZINPUTFORMAT);
-    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
 
     if (mapWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
@@ -761,8 +760,8 @@ public class DagUtils {
    */
   @SuppressWarnings("deprecation")
   public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
-    UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-    String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    UserGroupInformation ugi = Utils.getUGIForConf(conf);
+    String userName = ugi.getShortUserName();
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
     Path userPath = new Path(userPathStr);
     FileSystem fs = userPath.getFileSystem(conf);
@@ -1125,8 +1124,8 @@ public class DagUtils {
     UserGroupInformation ugi;
     String userName = System.getProperty("user.name");
     try {
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-      userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+      ugi = Utils.getUGIForConf(conf);
+      userName = ugi.getShortUserName();
     } catch (LoginException e) {
       throw new IOException(e);
     }

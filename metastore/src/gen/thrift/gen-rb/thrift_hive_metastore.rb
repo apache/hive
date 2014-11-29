@@ -431,6 +431,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      send_alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      recv_alter_table_with_cascade()
+    end
+
+    def send_alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade)
+      send_message('alter_table_with_cascade', Alter_table_with_cascade_args, :dbname => dbname, :tbl_name => tbl_name, :new_tbl => new_tbl, :cascade => cascade)
+    end
+
+    def recv_alter_table_with_cascade()
+      result = receive_message(Alter_table_with_cascade_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def add_partition(new_part)
       send_add_partition(new_part)
       return recv_add_partition()
@@ -2297,6 +2313,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_table_with_environment_context', seqid)
+    end
+
+    def process_alter_table_with_cascade(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_table_with_cascade_args)
+      result = Alter_table_with_cascade_result.new()
+      begin
+        @handler.alter_table_with_cascade(args.dbname, args.tbl_name, args.new_tbl, args.cascade)
+      rescue ::InvalidOperationException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_table_with_cascade', seqid)
     end
 
     def process_add_partition(seqid, iprot, oprot)
@@ -4382,6 +4411,46 @@ module ThriftHiveMetastore
   end
 
   class Alter_table_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_table_with_cascade_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TBL_NAME = 2
+    NEW_TBL = 3
+    CASCADE = 4
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_TBL => {:type => ::Thrift::Types::STRUCT, :name => 'new_tbl', :class => ::Table},
+      CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_table_with_cascade_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2

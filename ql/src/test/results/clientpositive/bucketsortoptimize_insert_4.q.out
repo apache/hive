@@ -73,7 +73,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -118,7 +118,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -225,7 +225,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
-  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
@@ -271,14 +271,11 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions: _col1 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col1 (type: string)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  value expressions: _col0 (type: int), _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -303,7 +300,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
   Stage: Stage-8
@@ -343,14 +340,11 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions: _col1 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col1 (type: string)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  value expressions: _col0 (type: int), _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -382,14 +376,11 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions: _col1 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col1 (type: string)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Extract
           File Output Operator

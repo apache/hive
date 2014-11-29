@@ -35,7 +35,7 @@ STAGE PLANS:
               predicate: (null = null) (type: boolean)
               Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: null (type: string), UDFToInteger(key) (type: int)
+                expressions: null (type: void), UDFToInteger(key) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

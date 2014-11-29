@@ -1369,20 +1369,38 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec)
       throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, null);
+    addInputsOutputsAlterTable(tableName, partSpec, null, false);
   }
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-      AlterTableDesc desc) throws SemanticException {
+      AlterTableDesc desc)throws SemanticException {
+    addInputsOutputsAlterTable(tableName, partSpec, desc, false);
+  }
+
+  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
+      AlterTableDesc desc, boolean isCascade) throws SemanticException {
+    boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
+    //cascade only occurs at table level then cascade to partition level
+    if (isCascade && alterPartitions) {
+      throw new SemanticException(
+          ErrorMsg.ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED, desc.getOp().name());
+    }
+
     Table tab = getTable(tableName, true);
     // Determine the lock type to acquire
     WriteEntity.WriteType writeType = desc == null ? WriteEntity.WriteType.DDL_EXCLUSIVE :
         WriteEntity.determineAlterTableWriteType(desc.getOp());
-    if (partSpec == null || partSpec.isEmpty()) {
+
+    if (!alterPartitions) {
       inputs.add(new ReadEntity(tab));
       outputs.add(new WriteEntity(tab, writeType));
-    }
-    else {
+      //do not need the lock for partitions since they are covered by the table lock
+      if (isCascade) {
+        for (Partition part : getPartitions(tab, partSpec, false)) {
+          outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
+        }
+      }
+    } else {
       ReadEntity re = new ReadEntity(tab);
       // In the case of altering a table for its partitions we don't need to lock the table
       // itself, just the partitions.  But the table will have a ReadEntity.  So mark that
@@ -2495,32 +2513,36 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableRenameCol(String[] qualified, ASTNode ast,
       HashMap<String, String> partSpec) throws SemanticException {
     String newComment = null;
-    String newType = null;
-    newType = getTypeStringFromAST((ASTNode) ast.getChild(2));
     boolean first = false;
     String flagCol = null;
-    ASTNode positionNode = null;
-    if (ast.getChildCount() == 5) {
-      newComment = unescapeSQLString(ast.getChild(3).getText());
-      positionNode = (ASTNode) ast.getChild(4);
-    } else if (ast.getChildCount() == 4) {
-      if (ast.getChild(3).getType() == HiveParser.StringLiteral) {
-        newComment = unescapeSQLString(ast.getChild(3).getText());
-      } else {
-        positionNode = (ASTNode) ast.getChild(3);
-      }
-    }
-
-    if (positionNode != null) {
-      if (positionNode.getChildCount() == 0) {
-        first = true;
-      } else {
-        flagCol = unescapeIdentifier(positionNode.getChild(0).getText());
-      }
-    }
-
+    boolean isCascade = false;
+    //col_old_name col_new_name column_type [COMMENT col_comment] [FIRST|AFTER column_name] [CASCADE|RESTRICT]
     String oldColName = ast.getChild(0).getText();
     String newColName = ast.getChild(1).getText();
+    String newType = getTypeStringFromAST((ASTNode) ast.getChild(2));
+    int childCount = ast.getChildCount();
+    for (int i = 3; i < childCount; i++) {
+      ASTNode child = (ASTNode)ast.getChild(i);
+      switch (child.getToken().getType()) {
+        case HiveParser.StringLiteral:
+          newComment = unescapeSQLString(child.getText());
+          break;
+        case HiveParser.TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION:
+          flagCol = unescapeIdentifier(child.getChild(0).getText());
+          break;
+        case HiveParser.KW_FIRST:
+          first = true;
+          break;
+        case HiveParser.TOK_CASCADE:
+          isCascade = true;
+          break;
+        case HiveParser.TOK_RESTRICT:
+          break;
+        default:
+          throw new SemanticException("Unsupported token: " + child.getToken()
+              + " for alter table");
+      }
+    }
 
     /* Validate the operation of renaming a column name. */
     Table tab = getTable(qualified);
@@ -2536,8 +2558,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tblName = getDotName(qualified);
     AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec,
         unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-        newType, newComment, first, flagCol);
-    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
+        newType, newComment, first, flagCol, isCascade);
+    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc, isCascade);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
@@ -2585,10 +2607,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String tblName = getDotName(qualified);
     List<FieldSchema> newCols = getColumns((ASTNode) ast.getChild(0));
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec, newCols,
-        alterType);
+    boolean isCascade = false;
+    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
+      isCascade = true;
+    }
 
-    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec, newCols,
+        alterType, isCascade);
+
+    addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc, isCascade);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
@@ -2993,9 +3020,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static ExprNodeGenericFuncDesc makeBinaryPredicate(
-      String fn, ExprNodeDesc left, ExprNodeDesc right) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
+      String fn, ExprNodeDesc left, ExprNodeDesc right) throws SemanticException {
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          FunctionRegistry.getFunctionInfo(fn).getGenericUDF(), Lists.newArrayList(left, right));
   }
 
   /**

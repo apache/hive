@@ -29,7 +29,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: key (type: string)
@@ -38,7 +38,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: value (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: key (type: string)
@@ -249,7 +249,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: key (type: string)
@@ -258,7 +258,7 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: value (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: key (type: string)

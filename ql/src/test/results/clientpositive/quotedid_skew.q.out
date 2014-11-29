@@ -60,7 +60,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (!@#$%^&*()_q is not null and (not (!@#$%^&*()_q = '2'))) (type: boolean)
+              predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: !@#$%^&*()_q (type: string)
@@ -72,7 +72,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (!@#$%^&*()_q is not null and (not (!@#$%^&*()_q = '2'))) (type: boolean)
+              predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: !@#$%^&*()_q (type: string)
@@ -106,29 +106,23 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                SELECT * : (no compute)
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce
@@ -137,7 +131,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)
+              predicate: (!@#$%^&*()_q is not null and (not (!@#$%^&*()_q = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: !@#$%^&*()_q (type: string)
@@ -149,7 +143,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)
+              predicate: (!@#$%^&*()_q is not null and (not (!@#$%^&*()_q = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
                 key expressions: !@#$%^&*()_q (type: string)

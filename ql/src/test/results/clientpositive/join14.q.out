@@ -1,12 +1,12 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
--- SORT_QUERY_RESULTS
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 
 CREATE TABLE dest1(c1 INT, c2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
--- SORT_QUERY_RESULTS
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 
 CREATE TABLE dest1(c1 INT, c2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -30,6 +30,17 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 100) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+          TableScan
             alias: srcpart
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -41,17 +52,6 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 167 Data size: 1774 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (key > 100) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:

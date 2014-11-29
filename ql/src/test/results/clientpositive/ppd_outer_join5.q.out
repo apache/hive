@@ -43,14 +43,15 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t3
+            alias: t1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: 20 (type: int)
+                key expressions: id (type: int)
                 sort order: +
+                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -66,15 +67,14 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
-            alias: t1
+            alias: t3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: id (type: int)
+                key expressions: 20 (type: int)
                 sort order: +
-                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
@@ -119,15 +119,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t3
+            alias: t1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: id (type: int)
+                key expressions: 20 (type: int)
                 sort order: +
-                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -142,14 +141,15 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
-            alias: t1
+            alias: t3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: 20 (type: int)
+                key expressions: id (type: int)
                 sort order: +
+                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
@@ -194,15 +194,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t3
+            alias: t1
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: id (type: int)
+                key expressions: 20 (type: int)
                 sort order: +
-                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -217,14 +216,15 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
-            alias: t1
+            alias: t3
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Reduce Output Operator
-                key expressions: 20 (type: int)
+                key expressions: id (type: int)
                 sort order: +
+                Map-reduce partition columns: id (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
