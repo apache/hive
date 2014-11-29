@@ -81,28 +81,11 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
-        Union 2 <- Map 1 (NONE, 0), Map 5 (NONE, 0), Reducer 4 (NONE, 0)
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Union 3 <- Map 4 (NONE, 0), Map 5 (NONE, 0), Reducer 2 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: inputtbl1
-                  Select Operator
-                    expressions: key (type: string), UDFToLong(2) (type: bigint)
-                    outputColumnNames: _col0, _col1
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: bigint)
-                      outputColumnNames: _col0, _col1
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.outputtbl1
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1
@@ -123,35 +106,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1
                   Select Operator
                     expressions: key (type: string), UDFToLong(1) (type: bigint)
-                    outputColumnNames: _col0, _col1
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: bigint)
-                      outputColumnNames: _col0, _col1
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.outputtbl1
-        Reducer 4 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint)
                     outputColumnNames: _col0, _col1
                     File Output Operator
                       compressed: false
@@ -160,8 +120,36 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.outputtbl1
-        Union 2 
-            Vertex: Union 2
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1
+                  Select Operator
+                    expressions: key (type: string), UDFToLong(2) (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.outputtbl1
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1
+        Union 3 
+            Vertex: Union 3
 
   Stage: Stage-6
     Conditional Operator

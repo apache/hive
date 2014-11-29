@@ -40,7 +40,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: s2
@@ -62,7 +62,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -81,7 +81,7 @@ STAGE PLANS:
                         1 aint (type: int)
                       outputColumnNames: _col0, _col17
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 6 Data size: 1841 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col17 (type: array<struct<myint:int,mystring:string,underscore_int:int>>)

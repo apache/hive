@@ -156,9 +156,6 @@ public class SparkPlanGenerator {
     }
     String inpFormat = HiveConf.getVar(jobConf,
         HiveConf.ConfVars.HIVEINPUTFORMAT);
-    if ((inpFormat == null) || (StringUtils.isBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
 
     if (mWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();

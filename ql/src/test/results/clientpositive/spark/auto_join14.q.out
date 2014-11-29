@@ -1,10 +1,10 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1(c1 INT, c2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1(c1 INT, c2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -29,7 +29,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -51,7 +51,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -70,7 +70,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0, _col6
                       input vertices:
-                        0 Map 2
+                        0 Map 1
                       Statistics: Num rows: 183 Data size: 1951 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: UDFToInteger(_col0) (type: int), _col6 (type: string)

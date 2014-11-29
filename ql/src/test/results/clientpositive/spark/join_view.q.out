@@ -52,7 +52,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Local Work:
               Map Reduce Local Work
 
@@ -60,7 +60,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Local Work:
               Map Reduce Local Work
 

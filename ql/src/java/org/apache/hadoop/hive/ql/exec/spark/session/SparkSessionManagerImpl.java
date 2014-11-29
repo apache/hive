@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.util.Collections;
@@ -133,12 +134,11 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
    */
   private boolean canReuseSession(SparkSession existingSession, HiveConf conf) throws HiveException {
     try {
-      UserGroupInformation newUgi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-      String newUserName = ShimLoader.getHadoopShims().getShortUserName(newUgi);
+      UserGroupInformation newUgi = Utils.getUGIForConf(conf);
+      String newUserName = newUgi.getShortUserName();
 
-      UserGroupInformation ugiInSession =
-          ShimLoader.getHadoopShims().getUGIForConf(existingSession.getConf());
-      String userNameInSession = ShimLoader.getHadoopShims().getShortUserName(ugiInSession);
+      UserGroupInformation ugiInSession = Utils.getUGIForConf(existingSession.getConf());
+      String userNameInSession = ugiInSession.getShortUserName();
 
       return newUserName.equals(userNameInSession);
     } catch(Exception ex) {

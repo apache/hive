@@ -39,25 +39,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (sqrt(key) <> 13) (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                        2 {key}
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                        2 key (type: string)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
-            Map Operator Tree:
-                TableScan
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -74,12 +55,31 @@ STAGE PLANS:
                         2 key (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (sqrt(key) <> 13) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                        2 {key}
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+                        2 key (type: string)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -101,8 +101,8 @@ STAGE PLANS:
                         2 key (type: string)
                       outputColumnNames: _col0, _col1, _col5, _col6, _col10
                       input vertices:
-                        0 Map 3
-                        1 Map 1
+                        0 Map 1
+                        1 Map 2
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (((((_col0 > '10') and (_col0 < '20')) and (_col5 > '15')) and (_col5 < '25')) and (sqrt(_col10) <> 13)) (type: boolean)
@@ -420,25 +420,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (sqrt(key) <> 13) (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                        2 {key}
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                        2 key (type: string)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
-            Map Operator Tree:
-                TableScan
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -455,12 +436,31 @@ STAGE PLANS:
                         2 key (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (sqrt(key) <> 13) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {key} {value}
+                        1 {value}
+                        2 {key}
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+                        2 key (type: string)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -482,8 +482,8 @@ STAGE PLANS:
                         2 key (type: string)
                       outputColumnNames: _col0, _col1, _col5, _col6, _col10
                       input vertices:
-                        0 Map 3
-                        1 Map 1
+                        0 Map 1
+                        1 Map 2
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: ((((_col5 > '15') and (_col5 < '25')) and (_col0 > '10')) and (_col0 < '20')) (type: boolean)

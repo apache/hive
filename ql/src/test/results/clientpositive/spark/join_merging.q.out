@@ -18,23 +18,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: p2
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {p_size}
-                      1 {p_size}
-                      2 
-                    keys:
-                      0 p_partkey (type: int)
-                      1 p_partkey (type: int)
-                      2 p_partkey (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -53,12 +37,28 @@ STAGE PLANS:
                         2 p_partkey (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {p_size}
+                      1 {p_size}
+                      2 
+                    keys:
+                      0 p_partkey (type: int)
+                      1 p_partkey (type: int)
+                      2 p_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -77,7 +77,7 @@ STAGE PLANS:
                       2 p_partkey (type: int)
                     outputColumnNames: _col5, _col17
                     input vertices:
-                      0 Map 3
+                      0 Map 1
                       1 Map 2
                     Statistics: Num rows: 57 Data size: 6923 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -120,23 +120,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: p2
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {p_size}
-                      1 {p_size}
-                      2 
-                    keys:
-                      0 p_partkey (type: int)
-                      1 p_partkey (type: int)
-                      2 p_partkey (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -155,12 +139,28 @@ STAGE PLANS:
                         2 p_partkey (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {p_size}
+                      1 {p_size}
+                      2 
+                    keys:
+                      0 p_partkey (type: int)
+                      1 p_partkey (type: int)
+                      2 p_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -179,7 +179,7 @@ STAGE PLANS:
                       2 p_partkey (type: int)
                     outputColumnNames: _col5, _col17
                     input vertices:
-                      0 Map 3
+                      0 Map 1
                       1 Map 2
                     Statistics: Num rows: 57 Data size: 6923 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
