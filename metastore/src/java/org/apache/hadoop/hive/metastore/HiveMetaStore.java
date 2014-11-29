@@ -331,7 +331,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       UserGroupInformation ugi;
       try {
-        ugi = Utils.getUGIForConf(getConf());
+        ugi = Utils.getUGI();
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }

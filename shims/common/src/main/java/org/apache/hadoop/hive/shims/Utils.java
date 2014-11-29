@@ -40,7 +40,7 @@ import org.apache.zookeeper.client.ZooKeeperSaslClient;
 
 public class Utils {
 
-  public static UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException {
+  public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if(doAs != null && doAs.length() > 0) {
      /*

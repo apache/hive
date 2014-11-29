@@ -2761,7 +2761,7 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      UserGroupInformation ugi = Utils.getUGIForConf(this);
+      UserGroupInformation ugi = Utils.getUGI();
       return ugi.getUserName();
     } catch (LoginException le) {
       throw new IOException(le);

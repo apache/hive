@@ -213,7 +213,7 @@ public class TezSessionPoolManager {
     }
 
     try {
-      UserGroupInformation ugi = Utils.getUGIForConf(conf);
+      UserGroupInformation ugi = Utils.getUGI();
       String userName = ugi.getShortUserName();
       LOG.info("The current user: " + userName + ", session user: " + session.getUser());
       if (userName.equals(session.getUser()) == false) {

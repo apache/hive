@@ -91,7 +91,7 @@ public class StorageBasedMetastoreTestBase {
     clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
 
-    ugi = Utils.getUGIForConf(clientHiveConf);
+    ugi = Utils.getUGI();
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);

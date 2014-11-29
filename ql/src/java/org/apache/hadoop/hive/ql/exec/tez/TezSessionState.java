@@ -137,7 +137,7 @@ public class TezSessionState {
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    UserGroupInformation ugi = Utils.getUGIForConf(conf);
+    UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     LOG.info("User of session id " + sessionId + " is " + user);
 

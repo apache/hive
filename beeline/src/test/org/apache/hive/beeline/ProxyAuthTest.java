@@ -202,7 +202,7 @@ public class ProxyAuthTest {
   }
 
   private static void storeTokenInJobConf(String tokenStr) throws Exception {
-    Utils.setTokenStr(Utils.getUGIForConf(new Configuration()),
+    Utils.setTokenStr(Utils.getUGI(),
           tokenStr, HiveAuthFactory.HS2_CLIENT_TOKEN);
     System.out.println("Stored token " + tokenStr);
   }

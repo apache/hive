@@ -246,7 +246,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private UserGroupInformation getCurrentUGI(HiveConf opConfig) throws HiveSQLException {
     try {
-      return Utils.getUGIForConf(opConfig);
+      return Utils.getUGI();
     } catch (Exception e) {
       throw new HiveSQLException("Unable to get current user", e);
     }

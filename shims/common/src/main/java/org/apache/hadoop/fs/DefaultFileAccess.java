@@ -52,7 +52,7 @@ public class DefaultFileAccess {
   public static void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
       throws IOException, AccessControlException, LoginException {
     // Get the user/groups for checking permissions based on the current UGI.
-    UserGroupInformation currentUgi = Utils.getUGIForConf(fs.getConf());
+    UserGroupInformation currentUgi = Utils.getUGI();
     DefaultFileAccess.checkFileAccess(fs, stat, action,
         currentUgi.getShortUserName(),
         Arrays.asList(currentUgi.getGroupNames()));

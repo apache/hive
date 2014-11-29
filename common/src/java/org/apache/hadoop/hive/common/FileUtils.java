@@ -375,7 +375,7 @@ public final class FileUtils {
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
       final FileStatus stat, final FsAction action, final String user)
           throws IOException, AccessControlException, InterruptedException, Exception {
-    UserGroupInformation ugi = Utils.getUGIForConf(fs.getConf());
+    UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
 
     if (user == null || currentUser.equals(user)) {
