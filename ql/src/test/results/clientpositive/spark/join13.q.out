@@ -34,7 +34,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -81,7 +81,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -104,7 +104,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0, _col2, _col3
                         input vertices:
-                          1 Map 1
+                          1 Map 2
                         Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
                           predicate: (_col0 + _col2) is not null (type: boolean)

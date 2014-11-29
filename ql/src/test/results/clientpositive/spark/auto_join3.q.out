@@ -25,7 +25,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src2
@@ -44,7 +44,7 @@ STAGE PLANS:
                         2 key (type: string)
             Local Work:
               Map Reduce Local Work
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src3
@@ -68,7 +68,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src1
@@ -90,8 +90,8 @@ STAGE PLANS:
                         2 key (type: string)
                       outputColumnNames: _col0, _col11
                       input vertices:
-                        1 Map 1
-                        2 Map 2
+                        1 Map 2
+                        2 Map 3
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: UDFToInteger(_col0) (type: int), _col11 (type: string)

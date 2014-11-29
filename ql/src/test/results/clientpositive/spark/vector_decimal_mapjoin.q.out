@@ -40,7 +40,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: r
@@ -62,7 +62,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: l
@@ -81,7 +81,7 @@ STAGE PLANS:
                         1 6981 (type: int)
                       outputColumnNames: _col1, _col9
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col9 (type: decimal(23,14))

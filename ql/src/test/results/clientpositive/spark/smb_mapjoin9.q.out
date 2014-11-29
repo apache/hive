@@ -115,7 +115,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Local Work:
               Map Reduce Local Work
 
@@ -123,7 +123,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Local Work:
               Map Reduce Local Work
 
@@ -248,7 +248,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Local Work:
               Map Reduce Local Work
 
@@ -256,7 +256,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Local Work:
               Map Reduce Local Work
 
@@ -328,7 +328,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -350,7 +350,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -369,7 +369,7 @@ STAGE PLANS:
                         1 key (type: int)
                       outputColumnNames: _col0, _col6, _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col6 (type: int), _col7 (type: string), '2010-10-15' (type: string), _col0 (type: int)

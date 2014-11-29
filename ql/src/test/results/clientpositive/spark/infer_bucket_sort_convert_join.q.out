@@ -77,6 +77,8 @@ SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
+Status: Failed
+Status: Failed
 POSTHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
 -- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 

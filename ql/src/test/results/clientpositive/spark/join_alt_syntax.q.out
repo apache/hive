@@ -14,7 +14,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: p2
@@ -33,7 +33,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -49,7 +49,7 @@ STAGE PLANS:
                       1 
                     outputColumnNames: _col1, _col13
                     input vertices:
-                      1 Map 1
+                      1 Map 2
                     Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col1 (type: string), _col13 (type: string)
@@ -89,25 +89,6 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: p3
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_name is not null (type: boolean)
-                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {p_name}
-                        1 {p_name}
-                        2 
-                      keys:
-                        0 p_name (type: string)
-                        1 p_name (type: string)
-                        2 p_name (type: string)
-            Local Work:
-              Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -127,12 +108,31 @@ STAGE PLANS:
                         2 p_name (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: p3
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {p_name}
+                        1 {p_name}
+                        2 
+                      keys:
+                        0 p_name (type: string)
+                        1 p_name (type: string)
+                        2 p_name (type: string)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -155,7 +155,7 @@ STAGE PLANS:
                       outputColumnNames: _col1, _col13, _col25
                       input vertices:
                         1 Map 2
-                        2 Map 1
+                        2 Map 3
                       Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: ((_col1 = _col13) and (_col13 = _col25)) (type: boolean)
@@ -221,7 +221,7 @@ STAGE PLANS:
                           2 p_name (type: string)
             Local Work:
               Map Reduce Local Work
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -245,7 +245,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -268,7 +268,7 @@ STAGE PLANS:
                       outputColumnNames: _col1, _col12, _col14
                       input vertices:
                         1 Map 1
-                        2 Map 2
+                        2 Map 3
                       Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: ((_col1 = _col12) and (_col12 = _col14)) (type: boolean)
@@ -334,7 +334,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
@@ -369,7 +369,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -388,7 +388,7 @@ STAGE PLANS:
                         1 p_name (type: string)
                       outputColumnNames: _col0, _col1, _col12, _col13, _col25
                       input vertices:
-                        0 Map 3
+                        0 Map 1
                       Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (((_col12 + _col0) = _col0) and (_col25 = _col13)) (type: boolean)
@@ -434,7 +434,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: p2
@@ -459,23 +459,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: p4
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col1} {_col12} {_col13} {_col25}
-                        1 {p_name}
-                      keys:
-                        0 _col0 (type: int)
-                        1 p_partkey (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 4 
-            Map Operator Tree:
-                TableScan
                   alias: p1
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -492,7 +475,7 @@ STAGE PLANS:
                         1 p_name (type: string), p_partkey (type: int)
                       outputColumnNames: _col0, _col1, _col12, _col13
                       input vertices:
-                        1 Map 3
+                        1 Map 2
                       Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         condition expressions:
@@ -503,12 +486,29 @@ STAGE PLANS:
                           1 p_name (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: p4
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_partkey is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {_col0} {_col1} {_col12} {_col13} {_col25}
+                        1 {p_name}
+                      keys:
+                        0 _col0 (type: int)
+                        1 p_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -527,7 +527,7 @@ STAGE PLANS:
                         1 p_name (type: string)
                       outputColumnNames: _col0, _col1, _col12, _col13, _col25
                       input vertices:
-                        0 Map 4
+                        0 Map 1
                       Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -540,7 +540,7 @@ STAGE PLANS:
                           1 p_partkey (type: int)
                         outputColumnNames: _col0, _col1, _col12, _col13, _col25, _col36, _col37
                         input vertices:
-                          1 Map 1
+                          1 Map 4
                         Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
                           predicate: (((_col13 = _col25) and (_col0 = _col36)) and (_col0 = _col12)) (type: boolean)
@@ -586,7 +586,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: p2
@@ -611,23 +611,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: p4
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col1} {_col12} {_col13} {_col25}
-                        1 {p_name}
-                      keys:
-                        0 _col0 (type: int)
-                        1 p_partkey (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 4 
-            Map Operator Tree:
-                TableScan
                   alias: p1
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -644,7 +627,7 @@ STAGE PLANS:
                         1 p_name (type: string), p_partkey (type: int)
                       outputColumnNames: _col0, _col1, _col12, _col13
                       input vertices:
-                        1 Map 3
+                        1 Map 2
                       Statistics: Num rows: 7 Data size: 931 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         condition expressions:
@@ -655,12 +638,29 @@ STAGE PLANS:
                           1 p_name (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: p4
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: p_partkey is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {_col0} {_col1} {_col12} {_col13} {_col25}
+                        1 {p_name}
+                      keys:
+                        0 _col0 (type: int)
+                        1 p_partkey (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: p3
@@ -679,7 +679,7 @@ STAGE PLANS:
                         1 p_name (type: string)
                       outputColumnNames: _col0, _col1, _col12, _col13, _col25
                       input vertices:
-                        0 Map 4
+                        0 Map 1
                       Statistics: Num rows: 14 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -692,7 +692,7 @@ STAGE PLANS:
                           1 p_partkey (type: int)
                         outputColumnNames: _col0, _col1, _col12, _col13, _col25, _col36, _col37
                         input vertices:
-                          1 Map 1
+                          1 Map 4
                         Statistics: Num rows: 15 Data size: 1903 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
                           predicate: (((_col13 = _col25) and (_col0 = _col36)) and (_col0 = _col12)) (type: boolean)

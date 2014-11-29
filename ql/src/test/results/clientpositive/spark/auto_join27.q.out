@@ -30,35 +30,13 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 4 <- Map 7 (PARTITION-LEVEL SORT, 1), Union 3 (PARTITION-LEVEL SORT, 1)
-        Union 3 <- Map 6 (NONE, 0), Reducer 2 (NONE, 0)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Union 2 (PARTITION-LEVEL SORT, 1)
+        Reducer 6 <- Map 5 (GROUP, 1)
+        Reducer 4 <- Reducer 3 (GROUP, 1)
+        Union 2 <- Map 1 (NONE, 0), Reducer 6 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 200) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: key, value
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: key (type: string), value (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: string)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -71,6 +49,24 @@ STAGE PLANS:
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 200) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: key (type: string), value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -88,20 +84,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string), KEY._col1 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -110,18 +93,16 @@ STAGE PLANS:
                   0 
                   1 
                 Statistics: Num rows: 273 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 273 Data size: 2908 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(1)
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  aggregations: count(1)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
-        Reducer 5 
+                    value expressions: _col0 (type: bigint)
+        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -139,8 +120,21 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 3 
-            Vertex: Union 3
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+        Union 2 
+            Vertex: Union 2
 
   Stage: Stage-0
     Fetch Operator

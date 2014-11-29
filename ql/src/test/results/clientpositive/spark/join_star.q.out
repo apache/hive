@@ -140,7 +140,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: dim1
@@ -162,7 +162,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: fact
@@ -181,7 +181,7 @@ STAGE PLANS:
                         1 f1 (type: int)
                       outputColumnNames: _col0, _col1, _col8
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int)
@@ -237,23 +237,6 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: dim2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: f3 is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col1} {_col8}
-                        1 {f4}
-                      keys:
-                        0 _col3 (type: int)
-                        1 f3 (type: int)
-            Local Work:
-              Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -271,12 +254,29 @@ STAGE PLANS:
                         1 f1 (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f3 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {_col0} {_col1} {_col8}
+                        1 {f4}
+                      keys:
+                        0 _col3 (type: int)
+                        1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: fact
@@ -308,7 +308,7 @@ STAGE PLANS:
                           1 f3 (type: int)
                         outputColumnNames: _col0, _col1, _col8, _col13
                         input vertices:
-                          1 Map 1
+                          1 Map 3
                         Statistics: Num rows: 2 Data size: 38 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
@@ -366,23 +366,6 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: dim2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: f3 is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col1} {_col8}
-                        1 {f4}
-                      keys:
-                        0 _col8 (type: int)
-                        1 f3 (type: int)
-            Local Work:
-              Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -400,12 +383,29 @@ STAGE PLANS:
                         1 f1 (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f3 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {_col0} {_col1} {_col8}
+                        1 {f4}
+                      keys:
+                        0 _col8 (type: int)
+                        1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: fact
@@ -437,7 +437,7 @@ STAGE PLANS:
                           1 f3 (type: int)
                         outputColumnNames: _col0, _col1, _col8, _col13
                         input vertices:
-                          1 Map 1
+                          1 Map 3
                         Statistics: Num rows: 4 Data size: 58 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
@@ -495,20 +495,6 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: dim2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8}
-                      1 {f4}
-                    keys:
-                      0 _col8 (type: int)
-                      1 f3 (type: int)
-            Local Work:
-              Map Reduce Local Work
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -523,12 +509,26 @@ STAGE PLANS:
                       1 f1 (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col8}
+                      1 {f4}
+                    keys:
+                      0 _col8 (type: int)
+                      1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: fact
@@ -557,7 +557,7 @@ STAGE PLANS:
                         1 f3 (type: int)
                       outputColumnNames: _col0, _col1, _col8, _col13
                       input vertices:
-                        1 Map 1
+                        1 Map 3
                       Statistics: Num rows: 8 Data size: 117 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
@@ -631,35 +631,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: dim3
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8} {_col13}
-                      1 {f6}
-                    keys:
-                      0 _col3 (type: int)
-                      1 f5 (type: int)
-            Local Work:
-              Map Reduce Local Work
         Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: dim2
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col3} {_col8}
-                      1 {f4}
-                    keys:
-                      0 _col8 (type: int)
-                      1 f3 (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: dim1
@@ -673,51 +645,35 @@ STAGE PLANS:
                       1 f1 (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col3} {_col8}
+                      1 {f4}
+                    keys:
+                      0 _col8 (type: int)
+                      1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: dim3
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col8} {_col13}
+                      1 {f6}
+                    keys:
+                      0 _col3 (type: int)
+                      1 f5 (type: int)
+            Local Work:
+              Map Reduce Local Work
         Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: dim7
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28} {_col33}
-                      1 {f14}
-                    keys:
-                      0 _col28 (type: int)
-                      1 f13 (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: dim6
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8} {_col13} {_col18}
-                      1 {f8}
-                      2 {f12}
-                    keys:
-                      0 _col18 (type: int)
-                      1 f7 (type: int)
-                      2 f11 (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: dim5
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28}
-                      1 {f10}
-                    keys:
-                      0 _col23 (type: int)
-                      1 f9 (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: dim4
@@ -733,12 +689,56 @@ STAGE PLANS:
                       2 f11 (type: int)
             Local Work:
               Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: dim5
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28}
+                      1 {f10}
+                    keys:
+                      0 _col23 (type: int)
+                      1 f9 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: dim6
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col8} {_col13} {_col18}
+                      1 {f8}
+                      2 {f12}
+                    keys:
+                      0 _col18 (type: int)
+                      1 f7 (type: int)
+                      2 f11 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: dim7
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    condition expressions:
+                      0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28} {_col33}
+                      1 {f14}
+                    keys:
+                      0 _col28 (type: int)
+                      1 f13 (type: int)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 4 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: fact
@@ -754,7 +754,7 @@ STAGE PLANS:
                       1 f1 (type: int)
                     outputColumnNames: _col0, _col1, _col3, _col8
                     input vertices:
-                      1 Map 3
+                      1 Map 2
                     Statistics: Num rows: 6 Data size: 107 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -767,7 +767,7 @@ STAGE PLANS:
                         1 f3 (type: int)
                       outputColumnNames: _col0, _col1, _col3, _col8, _col13
                       input vertices:
-                        1 Map 2
+                        1 Map 3
                       Statistics: Num rows: 6 Data size: 117 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -780,7 +780,7 @@ STAGE PLANS:
                           1 f5 (type: int)
                         outputColumnNames: _col0, _col1, _col8, _col13, _col18
                         input vertices:
-                          1 Map 1
+                          1 Map 4
                         Statistics: Num rows: 6 Data size: 128 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
@@ -796,8 +796,8 @@ STAGE PLANS:
                             2 f11 (type: int)
                           outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28
                           input vertices:
-                            1 Map 8
-                            2 Map 6
+                            1 Map 5
+                            2 Map 7
                           Statistics: Num rows: 13 Data size: 281 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
@@ -810,7 +810,7 @@ STAGE PLANS:
                               1 f9 (type: int)
                             outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28, _col33
                             input vertices:
-                              1 Map 7
+                              1 Map 6
                             Statistics: Num rows: 14 Data size: 309 Basic stats: COMPLETE Column stats: NONE
                             Map Join Operator
                               condition map:
@@ -823,7 +823,7 @@ STAGE PLANS:
                                 1 f13 (type: int)
                               outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28, _col33, _col38
                               input vertices:
-                                1 Map 5
+                                1 Map 8
                               Statistics: Num rows: 15 Data size: 339 Basic stats: COMPLETE Column stats: NONE
                               Select Operator
                                 expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int), _col18 (type: int), _col23 (type: int), _col33 (type: int), _col28 (type: int), _col38 (type: int)

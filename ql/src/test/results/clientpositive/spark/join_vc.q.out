@@ -20,24 +20,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: t3
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 {key} {BLOCK__OFFSET__INSIDE__FILE}
-                      keys:
-                        0 _col6 (type: string)
-                        1 value (type: string)
-            Local Work:
-              Map Reduce Local Work
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -54,14 +37,31 @@ STAGE PLANS:
                         1 key (type: string)
             Local Work:
               Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 
+                        1 {key} {BLOCK__OFFSET__INSIDE__FILE}
+                      keys:
+                        0 _col6 (type: string)
+                        1 value (type: string)
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (SORT, 1)
+        Reducer 2 <- Map 1 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: t1
@@ -80,7 +80,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col6
                       input vertices:
-                        1 Map 2
+                        1 Map 3
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -93,7 +93,7 @@ STAGE PLANS:
                           1 value (type: string)
                         outputColumnNames: _col10, _col11, _col12
                         input vertices:
-                          1 Map 1
+                          1 Map 4
                         Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col12 (type: bigint), _col10 (type: string), _col11 (type: string)
@@ -105,7 +105,7 @@ STAGE PLANS:
                             Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
-        Reducer 4 
+        Reducer 2 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
@@ -157,7 +157,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -179,7 +179,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: t1
@@ -198,7 +198,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col7 (type: bigint)

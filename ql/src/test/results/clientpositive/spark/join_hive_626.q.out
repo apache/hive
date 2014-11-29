@@ -77,23 +77,6 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: hive_count
-                  Statistics: Num rows: 0 Data size: 5 Basic stats: PARTIAL Column stats: NONE
-                  Filter Operator
-                    predicate: bar_id is not null (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col1} {_col13}
-                        1 {n}
-                      keys:
-                        0 _col9 (type: int)
-                        1 bar_id (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
-            Map Operator Tree:
-                TableScan
                   alias: hive_bar
                   Statistics: Num rows: 0 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -106,6 +89,23 @@ STAGE PLANS:
                       keys:
                         0 foo_id (type: int)
                         1 foo_id (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_count
+                  Statistics: Num rows: 0 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: bar_id is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {_col1} {_col13}
+                        1 {n}
+                      keys:
+                        0 _col9 (type: int)
+                        1 bar_id (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -132,7 +132,7 @@ STAGE PLANS:
                         1 foo_id (type: int)
                       outputColumnNames: _col1, _col9, _col13
                       input vertices:
-                        1 Map 3
+                        1 Map 2
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -145,7 +145,7 @@ STAGE PLANS:
                           1 bar_id (type: int)
                         outputColumnNames: _col1, _col13, _col22
                         input vertices:
-                          1 Map 2
+                          1 Map 3
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                         Select Operator
                           expressions: _col1 (type: string), _col13 (type: string), _col22 (type: int)

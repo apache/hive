@@ -164,7 +164,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -186,7 +186,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: e
@@ -205,7 +205,7 @@ STAGE PLANS:
                         1 deptid (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
@@ -245,7 +245,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: dept
@@ -267,7 +267,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: emp
@@ -286,7 +286,7 @@ STAGE PLANS:
                         1 deptid (type: int), deptname (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
                         predicate: ((_col1 = _col6) and (_col0 = _col7)) (type: boolean)
@@ -325,7 +325,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -347,7 +347,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: e
@@ -366,7 +366,7 @@ STAGE PLANS:
                         1 deptid (type: int), deptname (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string)
@@ -406,7 +406,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: dept
@@ -428,7 +428,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: emp
@@ -447,7 +447,7 @@ STAGE PLANS:
                         1 deptid (type: int), deptname (type: string), deptname (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 11 Data size: 2134 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
                         predicate: (((_col1 = _col6) and (_col0 = _col7)) and (_col7 = _col0)) (type: boolean)
@@ -490,7 +490,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -509,7 +509,7 @@ STAGE PLANS:
                         2 deptid (type: int)
             Local Work:
               Map Reduce Local Work
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: e1
@@ -533,7 +533,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: e
@@ -555,8 +555,8 @@ STAGE PLANS:
                         2 deptid (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13
                       input vertices:
-                        1 Map 1
-                        2 Map 2
+                        1 Map 2
+                        2 Map 3
                       Statistics: Num rows: 658 Data size: 192794 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col6 (type: int), _col7 (type: string), _col11 (type: string), _col12 (type: int), _col13 (type: int)
@@ -594,7 +594,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -637,7 +637,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: e
@@ -659,7 +659,7 @@ STAGE PLANS:
                         2 locid (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13, _col14
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                         2 Map 3
                       Statistics: Num rows: 47 Data size: 13912 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
@@ -700,7 +700,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -743,7 +743,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: e
@@ -765,7 +765,7 @@ STAGE PLANS:
                         2 locid (type: int), state (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col6, _col7, _col11, _col12, _col13, _col14
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                         2 Map 3
                       Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator

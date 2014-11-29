@@ -30,7 +30,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -52,7 +52,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -71,7 +71,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        0 Map 2
+                        0 Map 1
                       Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: ((((_col0 > '10') and (_col0 < '20')) and (_col5 > '15')) and (_col5 < '25')) (type: boolean)
@@ -270,7 +270,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -292,7 +292,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -311,7 +311,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0, _col1, _col5, _col6
                       input vertices:
-                        0 Map 2
+                        0 Map 1
                       Statistics: Num rows: 60 Data size: 642 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: ((_col0 > '10') and (_col0 < '20')) (type: boolean)

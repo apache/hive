@@ -30,7 +30,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src2
@@ -52,7 +52,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src1
@@ -71,7 +71,7 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col0, _col5
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (_col0 + _col5) is not null (type: boolean)
@@ -90,7 +90,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src3
@@ -109,7 +109,7 @@ STAGE PLANS:
                         1 UDFToDouble(key) (type: double)
                       outputColumnNames: _col0, _col11
                       input vertices:
-                        0 Map 3
+                        0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: UDFToInteger(_col0) (type: int), _col11 (type: string)

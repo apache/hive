@@ -18,7 +18,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -40,7 +40,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -59,7 +59,7 @@ STAGE PLANS:
                         1 value (type: string)
                       outputColumnNames: _col0, _col5
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 29 Data size: 314 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string), _col5 (type: string)
@@ -134,7 +134,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -157,7 +157,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -177,7 +177,7 @@ STAGE PLANS:
                         1 value (type: string)
                       outputColumnNames: _col0, _col5
                       input vertices:
-                        1 Map 1
+                        1 Map 2
                       Statistics: Num rows: 29 Data size: 314 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string), _col5 (type: string)

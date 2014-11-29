@@ -20,7 +20,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -41,11 +41,11 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Reducer 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -64,25 +64,21 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        1 Map 1
+                        1 Map 4
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col1 (type: string)
-                        outputColumnNames: _col1
+                      Group By Operator
+                        keys: _col1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col1 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: rand() (type: double)
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: rand() (type: double)
-                            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -94,7 +90,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -169,7 +165,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -190,10 +186,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -212,25 +208,21 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        1 Map 1
+                        1 Map 3
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col1 (type: string)
-                        outputColumnNames: _col1
+                      Group By Operator
+                        keys: _col1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col1 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -305,7 +297,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -326,11 +318,11 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 4 <- Reducer 3 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Reducer 2 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -349,20 +341,16 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        1 Map 1
+                        1 Map 4
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col1 (type: string)
-                        outputColumnNames: _col1
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: rand() (type: double)
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col1 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: rand() (type: double)
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -374,7 +362,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -449,7 +437,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: d
@@ -470,10 +458,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -492,20 +480,16 @@ STAGE PLANS:
                         1 key (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        1 Map 1
+                        1 Map 3
                       Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col1 (type: string)
-                        outputColumnNames: _col1
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col1 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col1 (type: string)
-                          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
