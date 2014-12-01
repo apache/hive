@@ -152,7 +152,7 @@ class SparkClientImpl implements SparkClient {
 
           for (Map.Entry<String, String> e : conf.entrySet()) {
             args.add("--conf");
-            args.add(String.format("%s=%s", e.getKey(), e.getValue()));
+            args.add(String.format("%s=%s", e.getKey(), conf.get(e.getKey())));
           }
           try {
             RemoteDriver.main(args.toArray(new String[args.size()]));
@@ -172,7 +172,7 @@ class SparkClientImpl implements SparkClient {
 
       Properties allProps = new Properties();
       for (Map.Entry<String, String> e : conf.entrySet()) {
-        allProps.put(e.getKey(), e.getValue());
+        allProps.put(e.getKey(), conf.get(e.getKey()));
       }
       allProps.put(ClientUtils.CONF_KEY_SECRET, SparkClientFactory.secret);
 
@@ -197,6 +197,14 @@ class SparkClientImpl implements SparkClient {
       String sparkHome = conf.get("spark.home");
       if (sparkHome == null) {
         sparkHome = System.getProperty("spark.home");
+      }
+      String sparkLogDir = conf.get("spark.log.dir");
+      if (sparkLogDir == null) {
+        if (sparkHome == null) {
+          sparkLogDir = "./target/";
+        } else {
+          sparkLogDir = sparkHome + "/logs/";
+        }
       }
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
@@ -254,6 +262,10 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
+      Map<String, String> env = pb.environment();
+      String javaOpts = Joiner.on(" ").skipNulls().join("-Dspark.log.dir=" + sparkLogDir,
+        env.get("SPARK_JAVA_OPTS"));
+      env.put("SPARK_JAVA_OPTS", javaOpts);
       final Process child = pb.start();
 
       int childId = childIdGenerator.incrementAndGet();

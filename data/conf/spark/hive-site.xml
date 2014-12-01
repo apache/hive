@@ -206,8 +206,8 @@
 </property>
 
 <property>
-  <name>spark.root.dir</name>
-  <value>${spark.home}</value>
+  <name>spark.log.dir</name>
+  <value>${spark.home}/logs/</value>
 </property>
 
 </configuration>
