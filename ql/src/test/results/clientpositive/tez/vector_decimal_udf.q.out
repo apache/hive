@@ -1546,7 +1546,7 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: abs(key) (type: decimal(38,18))
+                    expressions: abs(key) (type: decimal(20,10))
                     outputColumnNames: _col0
                     Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator

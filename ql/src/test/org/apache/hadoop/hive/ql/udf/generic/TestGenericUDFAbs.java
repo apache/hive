@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -135,10 +137,17 @@ public class TestGenericUDFAbs extends TestCase {
 
   public void testHiveDecimal() throws HiveException {
     GenericUDFAbs udf = new GenericUDFAbs();
-    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
+    int prec = 12;
+    int scale = 9;
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+        TypeInfoFactory.getDecimalTypeInfo(prec, scale));
     ObjectInspector[] arguments = {valueOI};
 
-    udf.initialize(arguments);
+    PrimitiveObjectInspector outputOI = (PrimitiveObjectInspector) udf.initialize(arguments);
+    // Make sure result precision/scale matches the input prec/scale
+    assertEquals("result precision for abs()", prec, outputOI.precision());
+    assertEquals("result scale for abs()", scale, outputOI.scale());
+
     DeferredObject valueObj = new DeferredJavaObject(new HiveDecimalWritable(HiveDecimal.create(
         "107.123456789")));
     DeferredObject[] args = {valueObj};
@@ -153,5 +162,15 @@ public class TestGenericUDFAbs extends TestCase {
 
     assertEquals("abs() test for HiveDecimal failed ", 107.123456789, output.getHiveDecimal()
         .doubleValue());
+
+    // null input
+    args[0] = new DeferredJavaObject(null);
+    output = (HiveDecimalWritable) udf.evaluate(args);
+    assertEquals("abs(null)", null, output);
+
+    // if value too large, should also be null
+    args[0] = new DeferredJavaObject(new HiveDecimalWritable(HiveDecimal.create("-1000.123456")));
+    output = (HiveDecimalWritable) udf.evaluate(args);
+    assertEquals("abs() of too large decimal value", null, output);
   }
 }
