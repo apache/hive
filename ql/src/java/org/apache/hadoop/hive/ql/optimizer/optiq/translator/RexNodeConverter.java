@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -383,8 +384,14 @@ public class RexNodeConverter {
       optiqLiteral = rexBuilder.makeDateLiteral(cal);
       break;
     case TIMESTAMP:
-      optiqLiteral = rexBuilder.makeTimestampLiteral((Calendar) value,
-          RelDataType.PRECISION_NOT_SPECIFIED);
+      Calendar c = null;
+      if (value instanceof Calendar) {
+        c = (Calendar)value;
+      } else {
+        c = Calendar.getInstance();
+        c.setTimeInMillis(((Timestamp)value).getTime());
+      }
+      optiqLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
       break;
     case BINARY:
     case VOID:

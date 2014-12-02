@@ -119,13 +119,14 @@ public class SqlFunctionConverter {
       LOG.warn("Failed to load udf " + name, e);
       hFn = null;
     }
-    if (hFn == null)
+    if (hFn == null) {
       try {
         hFn = handleExplicitCast(op, dt);
       } catch (SemanticException e) {
         LOG.warn("Failed to load udf " + name, e);
         hFn = null;
       }
+    }
     return hFn == null ? null : hFn.getGenericUDF();
   }
 
@@ -158,8 +159,8 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
-      } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("datetime");
+      }  else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
             FunctionRegistry.getFunctionInfo("decimal"));
