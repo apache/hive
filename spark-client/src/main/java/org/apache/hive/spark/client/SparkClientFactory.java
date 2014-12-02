@@ -44,15 +44,17 @@ public final class SparkClientFactory {
    * @param conf Map containing configuration parameters for the client.
    */
   public static synchronized void initialize(Map<String, String> conf) throws IOException {
-    secret = akka.util.Crypt.generateSecureCookie();
+    if (!initialized) {
+      secret = akka.util.Crypt.generateSecureCookie();
 
-    Map<String, String> akkaConf = Maps.newHashMap(conf);
-    akkaConf.put(ClientUtils.CONF_KEY_SECRET, secret);
+      Map<String, String> akkaConf = Maps.newHashMap(conf);
+      akkaConf.put(ClientUtils.CONF_KEY_SECRET, secret);
 
-    ClientUtils.ActorSystemInfo info = ClientUtils.createActorSystem(akkaConf);
-    actorSystem = info.system;
-    akkaUrl = info.url;
-    initialized = true;
+      ClientUtils.ActorSystemInfo info = ClientUtils.createActorSystem(akkaConf);
+      actorSystem = info.system;
+      akkaUrl = info.url;
+      initialized = true;
+    }
   }
 
   /** Stops the SparkClient library. */

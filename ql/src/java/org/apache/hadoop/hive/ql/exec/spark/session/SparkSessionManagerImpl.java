@@ -21,15 +21,19 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.spark.client.SparkClientFactory;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Simple implementation of <i>SparkSessionManager</i>
@@ -41,7 +45,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
   private static final Log LOG = LogFactory.getLog(SparkSessionManagerImpl.class);
 
   private Set<SparkSession> createdSessions;
-  private boolean inited;
+  private AtomicBoolean inited = new AtomicBoolean(false);
 
   private static SparkSessionManagerImpl instance;
 
@@ -74,13 +78,16 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
 
   @Override
   public void setup(HiveConf hiveConf) throws HiveException {
-    LOG.info("Setting up the session manager.");
-    init();
-  }
-
-  private void init() {
-    createdSessions = Collections.synchronizedSet(new HashSet<SparkSession>());
-    inited = true;
+    if (inited.compareAndSet(false, true)) {
+      LOG.info("Setting up the session manager.");
+      createdSessions = Collections.synchronizedSet(new HashSet<SparkSession>());
+      Map<String, String> conf = HiveSparkClientFactory.initiateSparkConf(hiveConf);
+      try {
+        SparkClientFactory.initialize(conf);
+      } catch (IOException e) {
+        throw new HiveException("Error initializing SparkClientFactory", e);
+      }
+    }
   }
 
   /**
@@ -92,9 +99,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
   @Override
   public SparkSession getSession(SparkSession existingSession, HiveConf conf,
       boolean doOpen) throws HiveException {
-    if (!inited) {
-      init();
-    }
+    setup(conf);
 
     if (existingSession != null) {
       if (canReuseSession(existingSession, conf)) {
@@ -178,6 +183,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
         createdSessions.clear();
       }
     }
-    inited = false;
+    inited.set(false);
+    SparkClientFactory.stop();
   }
 }

@@ -76,7 +76,6 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient List<String> localFiles = new ArrayList<String>();
 
   RemoteHiveSparkClient(Map<String, String> conf) throws IOException, SparkException {
-    SparkClientFactory.initialize(conf);
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
     remoteClient = SparkClientFactory.createClient(conf);
   }
