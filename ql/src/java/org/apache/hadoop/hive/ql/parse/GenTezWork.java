@@ -111,9 +111,16 @@ public class GenTezWork implements NodeProcessor {
       // will result into a vertex with multiple FS or RS operators.
       if (context.childToWorkMap.containsKey(operator)) {
         // if we've seen both root and child, we can bail.
+        
+        // clear out the mapjoin set. we don't need it anymore.
+        context.currentMapJoinOperators.clear();
+
+        // clear out the union set. we don't need it anymore.
+        context.currentUnionOperators.clear();
+
         return null;
       } else {
-        // At this point we don't have to do anything special in this case. Just
+        // At this point we don't have to do anything special. Just
         // run through the regular paces w/o creating a new task.
         work = context.rootToWorkMap.get(root);
       }
