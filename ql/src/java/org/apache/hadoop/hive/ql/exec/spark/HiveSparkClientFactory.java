@@ -54,7 +54,7 @@ public class HiveSparkClientFactory {
     }
   }
 
-  private static Map<String, String> initiateSparkConf(Configuration hiveConf) {
+  public static Map<String, String> initiateSparkConf(Configuration hiveConf) {
     Map<String, String> sparkConf = new HashMap<String, String>();
 
     // set default spark configurations.
