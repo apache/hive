@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.optiq.translator;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -98,8 +100,13 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), 2), tmpExprArgs);
       }
     } else {
-      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),
-          SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(), args.size()), args);
+      GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(
+          call.getOperator(), call.getType(), args.size());
+      if (hiveUdf == null) {
+        throw new RuntimeException("Cannot find UDF for " + call.getType() + " " + call.getOperator()
+            + "[" + call.getOperator().getKind() + "]/" + args.size());
+      }
+      gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()), hiveUdf, args);
     }
 
     return gfDesc;
@@ -134,8 +141,13 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     case DATE:
       return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
         new Date(((Calendar)literal.getValue()).getTimeInMillis()));
-    case TIMESTAMP:
-      return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, literal.getValue3());
+    case TIMESTAMP: {
+      Object value = literal.getValue3();
+      if (value instanceof Long) {
+        value = new Timestamp((Long)value);
+      }
+      return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
+    }
     case BINARY:
       return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
     case DECIMAL:
