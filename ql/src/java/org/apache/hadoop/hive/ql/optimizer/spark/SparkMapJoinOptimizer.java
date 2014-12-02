@@ -73,15 +73,15 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     ParseContext parseContext = context.getParseContext();
     JoinOperator joinOp = (JoinOperator) nd;
 
-    /*
-    if (!conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)
-        && !(conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN))) {
+
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
+      // && !(conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN))) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      int pos = 0; // it doesn't matter which position we use in this case.
-      convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
+      // int pos = 0; // it doesn't matter which position we use in this case.
+      // convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
       return null;
-    }*/
+    }
 
     // if we have traits, and table info is present in the traits, we know the
     // exact number of buckets. Else choose the largest number of estimated

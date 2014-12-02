@@ -21,14 +21,15 @@ SELECT /*+ MAPJOIN(x) */ x.key, x.value, y.value
 FROM src1 x JOIN src y ON (x.value = y.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-1 depends on stages: Stage-3
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-1
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -39,21 +40,13 @@ STAGE PLANS:
                   Filter Operator
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 13 Data size: 99 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key}
-                        1 {value}
-                      keys:
-                        0 value (type: string)
-                        1 value (type: string)
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 13 Data size: 99 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: key (type: string)
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -61,33 +54,33 @@ STAGE PLANS:
                   Filter Operator
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                      keys:
-                        0 value (type: string)
-                        1 value (type: string)
-                      outputColumnNames: _col0, _col1, _col6
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col6 (type: string)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.dest_j1
-            Local Work:
-              Map Reduce Local Work
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {VALUE._col0} {KEY.reducesinkkey0}
+                  1 {KEY.reducesinkkey0}
+                outputColumnNames: _col0, _col1, _col6
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: UDFToInteger(_col0) (type: int), _col1 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest_j1
 
   Stage: Stage-0
     Move Operator

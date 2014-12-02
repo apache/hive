@@ -19,41 +19,15 @@ SELECT src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 10) (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        condition expressions:
-                          0 {_col0} {_col1}
-                          1 {_col0} {_col1}
-                        keys:
-                          0 
-                          1 
-            Local Work:
-              Map Reduce Local Work
-
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 2 (SORT, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -68,26 +42,41 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0} {_col1}
-                          1 {_col0} {_col1}
-                        keys:
-                          0 
-                          1 
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                          sort order: ++++
-                          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-            Local Work:
-              Map Reduce Local Work
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 10) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {VALUE._col0} {VALUE._col1}
+                  1 {VALUE._col0} {VALUE._col1}
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                  sort order: ++++
+                  Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)

@@ -121,56 +121,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: t2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 20) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {id} {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: t3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 20) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-            Local Work:
-              Map Reduce Local Work
-
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -181,36 +139,61 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                           Left Outer Join1 to 2
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {id} {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-                      outputColumnNames: _col1, _col2, _col7, _col8, _col12, _col13, _col14
-                      input vertices:
-                        1 Map 2
-                        2 Map 3
+                    Reduce Output Operator
+                      key expressions: 20 (type: int)
+                      sort order: +
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      Select Operator
-                        expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col7 (type: string), _col8 (type: string), _col12 (type: int), _col13 (type: string), _col14 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Local Work:
-              Map Reduce Local Work
+                      value expressions: key (type: string), value (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 20) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: 20 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: key (type: string), value (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 20) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: int)
+                      sort order: +
+                      Map-reduce partition columns: id (type: int)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: key (type: string), value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Left Outer Join1 to 2
+                condition expressions:
+                  0 {VALUE._col0} {VALUE._col1}
+                  1 {VALUE._col0} {VALUE._col1}
+                  2 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
+                outputColumnNames: _col1, _col2, _col7, _col8, _col12, _col13, _col14
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col7 (type: string), _col8 (type: string), _col12 (type: int), _col13 (type: string), _col14 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -223,56 +206,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: t2
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 20) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {id} {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-            Local Work:
-              Map Reduce Local Work
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: t3
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Filter Operator
-                    predicate: (id = 20) (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-            Local Work:
-              Map Reduce Local Work
-
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -283,36 +224,61 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (id = 20) (type: boolean)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                           Left Outer Join0 to 2
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {id} {key} {value}
-                      keys:
-                        0 20 (type: int)
-                        1 20 (type: int)
-                        2 id (type: int)
-                      outputColumnNames: _col1, _col2, _col7, _col8, _col12, _col13, _col14
-                      input vertices:
-                        1 Map 2
-                        2 Map 3
+                    Reduce Output Operator
+                      key expressions: 20 (type: int)
+                      sort order: +
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      Select Operator
-                        expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col7 (type: string), _col8 (type: string), _col12 (type: int), _col13 (type: string), _col14 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Local Work:
-              Map Reduce Local Work
+                      value expressions: key (type: string), value (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 20) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: 20 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: key (type: string), value (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 20) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: int)
+                      sort order: +
+                      Map-reduce partition columns: id (type: int)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: key (type: string), value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Left Outer Join0 to 2
+                condition expressions:
+                  0 {VALUE._col0} {VALUE._col1}
+                  1 {VALUE._col0} {VALUE._col1}
+                  2 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
+                outputColumnNames: _col1, _col2, _col7, _col8, _col12, _col13, _col14
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col7 (type: string), _col8 (type: string), _col12 (type: int), _col13 (type: string), _col14 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
