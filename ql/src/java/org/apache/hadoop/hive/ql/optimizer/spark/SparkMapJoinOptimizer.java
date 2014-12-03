@@ -24,6 +24,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -90,7 +91,6 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     int numBuckets = 1;
 
     LOG.info("Estimated number of buckets " + numBuckets);
-    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets);
 
     /* TODO: handle this later
     if (mapJoinConversionPos < 0) {
@@ -153,8 +153,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
     LOG.info("Convert to non-bucketed map join");
     // check if we can convert to map join no bucket scaling.
-    mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1);
-
+    ObjectPair<Integer, Long> mapJoinInfo = getMapJoinConversionInfo(joinOp, context, 1);
+    int mapJoinConversionPos = mapJoinInfo.getFirst();
 
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
@@ -174,6 +174,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
       setAllChildrenTraitsToNull(childOp);
     }
+
+    context.getMjOpSizes().put(mapJoinOp, mapJoinInfo.getSecond());
 
     return null;
   }
@@ -311,10 +313,10 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
    * @param joinOp
    * @param context
    * @param buckets
-   * @return
+   * @return pair, first value is the position, second value is the in-memory size of this mapjoin.
    */
-  private int getMapJoinConversionPos(JoinOperator joinOp, OptimizeSparkProcContext context,
-      int buckets) {
+  private ObjectPair<Integer, Long> getMapJoinConversionInfo(JoinOperator joinOp, OptimizeSparkProcContext context,
+                                                                int buckets) {
     Set<Integer> bigTableCandidateSet =
         MapJoinProcessor.getBigTableCandidates(joinOp.getConf().getConds());
 
@@ -336,7 +338,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
         LOG.warn("Couldn't get statistics from: "+parentOp);
-        return -1;
+        return new ObjectPair(-1, 0);
       }
 
       // Union is hard to handle. For instance, the following case:
@@ -359,7 +361,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       // But, this is tricky to implement, and we'll leave it as a future work for now.
       // TODO: handle this as a MJ case
       if (containUnionWithoutRS(parentOp.getParentOperators().get(0))) {
-        return -1;
+        return new ObjectPair(-1, 0);
       }
 
       long inputSize = currInputStat.getDataSize();
@@ -370,14 +372,14 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         if (bigTableFound) {
           // cannot convert to map join; we've already chosen a big table
           // on size and there's another one that's bigger.
-          return -1;
+          return new ObjectPair(-1, 0);
         }
 
         if (inputSize/buckets > maxSize) {
           if (!bigTableCandidateSet.contains(pos)) {
             // can't use the current table as the big table, but it's too
             // big for the map side.
-            return -1;
+            return new ObjectPair(-1, 0);
           }
 
           bigTableFound = true;
@@ -392,7 +394,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         if (totalSize/buckets > maxSize) {
           // sum of small tables size in this join exceeds configured limit
           // hence cannot convert.
-          return -1;
+          return new ObjectPair(-1, 0);
         }
 
         if (bigTableCandidateSet.contains(pos)) {
@@ -403,13 +405,93 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         totalSize += currInputStat.getDataSize();
         if (totalSize/buckets > maxSize) {
           // cannot hold all map tables in memory. Cannot convert.
-          return -1;
+          return new ObjectPair(-1, 0);
         }
       }
       pos++;
     }
 
-    return bigTablePosition;
+    if (bigTablePosition == -1) {
+      //No big table candidates.
+      return new ObjectPair(-1, 0);
+    }
+
+    //Final check, find size of already-calculated Mapjoin Operators in same work (spark-stage).  We need to factor
+    //this in to prevent overwhelming Spark executor-memory.
+    long connectedMapJoinSize = getConnectedMapJoinSize(joinOp.getParentOperators().get(bigTablePosition), joinOp, context);
+    if ((connectedMapJoinSize + (totalSize / buckets)) > maxSize) {
+      return new ObjectPair(-1, 0);
+    }
+
+    return new ObjectPair(bigTablePosition, connectedMapJoinSize + (totalSize / buckets));
+  }
+
+  /**
+   * Examines this operator and all the connected operators, for mapjoins that will be in the same work.
+   * @param parentOp potential big-table parent operator, explore up from this.
+   * @param joinOp potential mapjoin operator, explore down from this.
+   * @param ctx context to pass information.
+   * @return total size of parent mapjoins in same work as this operator.
+   */
+  private long getConnectedMapJoinSize(Operator<? extends OperatorDesc> parentOp, Operator joinOp, OptimizeSparkProcContext ctx) {
+    long result = 0;
+    for (Operator<? extends OperatorDesc> grandParentOp : parentOp.getParentOperators()) {
+      result += getConnectedParentMapJoinSize(grandParentOp, ctx);
+    }
+    result += getConnectedChildMapJoinSize(joinOp, ctx);
+    return result;
+  }
+
+  /**
+   * Examines this operator and all the parents, for mapjoins that will be in the same work.
+   * @param op given operator
+   * @param ctx context to pass information.
+   * @return total size of parent mapjoins in same work as this operator.
+   */
+  private long getConnectedParentMapJoinSize(Operator<? extends OperatorDesc> op, OptimizeSparkProcContext ctx) {
+    if ((op instanceof UnionOperator) || (op instanceof ReduceSinkOperator)) {
+      //Work Boundary, stop exploring.
+      return 0;
+    }
+
+    if (op instanceof MapJoinOperator) {
+      //found parent mapjoin operator.  Its size should already reflect any other mapjoins connected to it.
+      long mjSize = ctx.getMjOpSizes().get(op);
+      return mjSize;
+    }
+
+    long result = 0;
+    for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
+      //Else, recurse up the parents.
+      result += getConnectedParentMapJoinSize(parentOp, ctx);
+    }
+    return result;
+  }
+
+  /**
+   * Examines this operator and all the children, for mapjoins that will be in the same work.
+   * @param op given operator
+   * @param ctx context to pass information.
+   * @return total size of child mapjoins in same work as this operator.
+   */
+  private long getConnectedChildMapJoinSize(Operator<? extends OperatorDesc> op, OptimizeSparkProcContext ctx) {
+    if ((op instanceof UnionOperator) || (op instanceof ReduceSinkOperator)) {
+      //Work Boundary, stop exploring.
+      return 0;
+    }
+
+    if (op instanceof MapJoinOperator) {
+      //found child mapjoin operator.  Its size should already reflect any mapjoins connected to it, so stop processing.
+      long mjSize = ctx.getMjOpSizes().get(op);
+      return mjSize;
+    }
+
+    long result = 0;
+    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+      //Else, recurse to the children.
+      result += getConnectedChildMapJoinSize(childOp, ctx);
+    }
+    return result;
   }
 
   /*
