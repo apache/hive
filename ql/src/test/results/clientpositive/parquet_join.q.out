@@ -56,11 +56,15 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2
-PREHOOK: query: -- MR join
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- MR join
 
 explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- MR join
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- MR join
 
 explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 POSTHOOK: type: QUERY
