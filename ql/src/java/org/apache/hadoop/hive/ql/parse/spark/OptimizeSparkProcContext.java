@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.spark;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -28,7 +29,9 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,6 +47,7 @@ public class OptimizeSparkProcContext implements NodeProcessorCtx {
   private final Set<ReadEntity> inputs;
   private final Set<WriteEntity> outputs;
   private final Set<ReduceSinkOperator> visitedReduceSinks = new HashSet<ReduceSinkOperator>();
+  private final Map<MapJoinOperator, Long> mjOpSizes = new HashMap<MapJoinOperator, Long>();
 
   // rootOperators are all the table scan operators in sequence
   // of traversal
@@ -82,5 +86,9 @@ public class OptimizeSparkProcContext implements NodeProcessorCtx {
 
   public Deque<Operator<? extends OperatorDesc>> getRootOperators() {
     return rootOperators;
+  }
+
+  public Map<MapJoinOperator, Long> getMjOpSizes() {
+    return mjOpSizes;
   }
 }
