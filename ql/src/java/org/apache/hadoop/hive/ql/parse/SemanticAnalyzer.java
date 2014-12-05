@@ -14143,7 +14143,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      *
      * @throws SemanticException
      */
-    private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
+    private RelNode genSelectLogicalPlan(
+        QB qb, RelNode srcRel, RelNode starSrcRel) throws SemanticException {
       // 0. Generate a Select Node for Windowing
       //    Exclude the newly-generated select columns from */etc. resolution.
       HashSet<ColumnInfo> excludedColumns = new HashSet<ColumnInfo>();
@@ -14163,7 +14164,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver out_rwsch = new RowResolver();
       ASTNode trfm = null;
       Integer pos = Integer.valueOf(0);
-      RowResolver inputRR = this.relToHiveRR.get(srcRel);
+      // TODO: will this also fix windowing? try
+      RowResolver inputRR = this.relToHiveRR.get(srcRel), starRR = inputRR;
+      if (starSrcRel != null) {
+        starRR = this.relToHiveRR.get(starSrcRel);
+      }
 
       // 3. Query Hints
       // TODO: Handle Query Hints; currently we ignore them
@@ -14208,7 +14213,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode exprList = selExprList;
       int startPosn = posn;
       int wndProjPos = 0;
-      List<String> tabAliasesForAllProjs = getTabAliases(inputRR);
+      List<String> tabAliasesForAllProjs = getTabAliases(starRR);
       for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
         // 6.1 child can be EXPR AS ALIAS, or EXPR.
@@ -14238,7 +14243,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
           pos = genColListRegex(".*",
               expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0))
-                  .toLowerCase(), expr, col_list, excludedColumns, inputRR, null, pos,
+                  .toLowerCase(), expr, col_list, excludedColumns, inputRR, starRR, pos,
                   out_rwsch, tabAliasesForAllProjs, true);
           selectStar = true;
         } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
@@ -14248,7 +14253,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // This can only happen without AS clause
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()), null, expr,
-              col_list, excludedColumns, inputRR, null, pos, out_rwsch, tabAliasesForAllProjs,
+              col_list, excludedColumns, inputRR, starRR, pos, out_rwsch, tabAliasesForAllProjs,
               true);
         } else if (expr.getType() == HiveParser.DOT
             && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
@@ -14260,9 +14265,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
               unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()), expr,
-              col_list, excludedColumns, inputRR, null, pos, out_rwsch, tabAliasesForAllProjs,
+              col_list, excludedColumns, inputRR, starRR, pos, out_rwsch, tabAliasesForAllProjs,
               true);
-        } else if (expr.toStringTree().contains("TOK_FUNCTIONDI") && !(srcRel instanceof HiveAggregateRel)) {
+        } else if (expr.toStringTree().contains("TOK_FUNCTIONDI")
+            && !(srcRel instanceof HiveAggregateRel)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
           throw new OptiqSemanticException("Distinct without an aggreggation.");
         } else {
@@ -14392,6 +14398,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 2. Build Rel for where Clause
       filterRel = genFilterLogicalPlan(qb, srcRel, aliasToRel, false);
       srcRel = (filterRel == null) ? srcRel : filterRel;
+      RelNode starSrcRel = srcRel;
 
       // 3. Build Rel for GB Clause
       gbRel = genGBLogicalPlan(qb, srcRel);
@@ -14402,7 +14409,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcRel = (gbHavingRel == null) ? srcRel : gbHavingRel;
 
       // 5. Build Rel for Select Clause
-      selectRel = genSelectLogicalPlan(qb, srcRel);
+      selectRel = genSelectLogicalPlan(qb, srcRel, starSrcRel);
       srcRel = (selectRel == null) ? srcRel : selectRel;
 
       // 6. Build Rel for OB Clause
