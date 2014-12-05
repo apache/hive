@@ -234,6 +234,7 @@ public class RemoteDriver {
         // Catch throwables in a best-effort to report job status back to the client. It's
         // re-thrown so that the executor can destroy the affected thread (or the JVM can
         // die or whatever would happen if the throwable bubbled up).
+        LOG.info("Failed to run job " + req.id, t);
         client.tell(new Protocol.JobResult(req.id, null, t, null), actor);
         throw new ExecutionException(t);
       } finally {

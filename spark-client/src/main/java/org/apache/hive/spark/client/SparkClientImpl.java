@@ -55,6 +55,7 @@ class SparkClientImpl implements SparkClient {
   private static final Logger LOG = LoggerFactory.getLogger(SparkClientImpl.class);
   
   private static final String DEFAULT_CONNECTION_TIMEOUT = "60"; // In seconds
+  private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
 
   private final Map<String, String> conf;
   private final AtomicInteger childIdGenerator;
@@ -110,10 +111,15 @@ class SparkClientImpl implements SparkClient {
       remoteRef.tell(new Protocol.EndSession(), clientRef);
     }
     unbind(clientRef);
+    long endTime = System.currentTimeMillis() + DEFAULT_SHUTDOWN_TIMEOUT;
     try {
-      driverThread.join(); // TODO: timeout?
+      driverThread.join(DEFAULT_SHUTDOWN_TIMEOUT); // TODO: timeout?
     } catch (InterruptedException ie) {
       LOG.debug("Interrupted before driver thread was finished.");
+    }
+    if (endTime - System.currentTimeMillis() <= 0) {
+      LOG.debug("Shut down time out.");
+      driverThread.interrupt();
     }
   }
 
@@ -280,6 +286,8 @@ class SparkClientImpl implements SparkClient {
             if (exitCode != 0) {
               LOG.warn("Child process exited with code {}.", exitCode);
             }
+          } catch (InterruptedException ie) {
+            child.destroy();
           } catch (Exception e) {
             LOG.warn("Exception while waiting for child process.", e);
           }
