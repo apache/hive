@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -42,7 +40,6 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
@@ -473,14 +470,6 @@ public interface HadoopShims {
   public void getMergedCredentials(JobConf jobConf) throws IOException;
 
   public void mergeCredentials(JobConf dest, JobConf src) throws IOException;
-
-  /**
-   * Get the counter group display name
-   * @param group the group name to lookup
-   * @param defaultValue of the group
-   * @return the group display name
-   */
-  public String getCounterGroupName(String group, String defaultValue);
 
   /**
    * Check if the configured UGI has access to the path for the given file system action.

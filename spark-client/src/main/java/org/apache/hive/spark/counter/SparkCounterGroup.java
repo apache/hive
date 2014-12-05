@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
@@ -47,8 +46,7 @@ public class SparkCounterGroup implements Serializable {
   }
 
   public void createCounter(String name, long initValue) {
-    String displayName = ShimLoader.getHadoopShims().getCounterGroupName(groupName, groupName);
-    SparkCounter counter = new SparkCounter(name, displayName, groupName, initValue, javaSparkContext);
+    SparkCounter counter = new SparkCounter(name, name, groupName, initValue, javaSparkContext);
     sparkCounters.put(name, counter);
   }
 
