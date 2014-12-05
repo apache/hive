@@ -12,6 +12,8 @@ create table parquet_jointable1 stored as parquet as select * from staging;
 
 create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging;
 
+-- SORT_QUERY_RESULTS
+
 -- MR join
 
 explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key;
