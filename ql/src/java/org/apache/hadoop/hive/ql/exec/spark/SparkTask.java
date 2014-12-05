@@ -262,14 +262,14 @@ public class SparkTask extends Task<SparkWork> {
     List<String> prefixs = new LinkedList<String>();
     StatsWork statsWork = statsTask.getWork();
     String tablePrefix = getTablePrefix(statsWork);
-    List<Partition> partitions = getPartitionsList(statsWork);
+    List<Map<String, String>> partitionSpecs = getPartitionSpecs(statsWork);
     int maxPrefixLength = StatsFactory.getMaxPrefixLength(conf);
 
-    if (partitions == null) {
+    if (partitionSpecs == null) {
       prefixs.add(Utilities.getHashedStatsPrefix(tablePrefix, maxPrefixLength));
     } else {
-      for (Partition partition : partitions) {
-        String prefixWithPartition = Utilities.join(tablePrefix, Warehouse.makePartPath(partition.getSpec()));
+      for (Map<String, String> partitionSpec : partitionSpecs) {
+        String prefixWithPartition = Utilities.join(tablePrefix, Warehouse.makePartPath(partitionSpec));
         prefixs.add(Utilities.getHashedStatsPrefix(prefixWithPartition, maxPrefixLength));
       }
     }
@@ -319,12 +319,12 @@ public class SparkTask extends Task<SparkWork> {
     return null;
   }
 
-  private List<Partition> getPartitionsList(StatsWork work) throws HiveException {
+  private List<Map<String, String>> getPartitionSpecs(StatsWork work) throws HiveException {
     if (work.getLoadFileDesc() != null) {
       return null; //we are in CTAS, so we know there are no partitions
     }
     Table table;
-    List<Partition> list = new ArrayList<Partition>();
+    List<Map<String, String>> partitionSpecs = new ArrayList<Map<String, String>>();
 
     if (work.getTableSpecs() != null) {
 
@@ -337,8 +337,8 @@ public class SparkTask extends Task<SparkWork> {
       // get all partitions that matches with the partition spec
       List<Partition> partitions = tblSpec.partitions;
       if (partitions != null) {
-        for (Partition partn : partitions) {
-          list.add(partn);
+        for (Partition partition : partitions) {
+          partitionSpecs.add(partition.getSpec());
         }
       }
     } else if (work.getLoadTableDesc() != null) {
@@ -353,11 +353,10 @@ public class SparkTask extends Task<SparkWork> {
       if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
         // we could not get dynamic partition information before SparkTask execution.
       } else { // static partition
-        Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-        list.add(partn);
+        partitionSpecs.add(tbd.getPartitionSpec());
       }
     }
-    return list;
+    return partitionSpecs;
   }
 
   private Map<String, List<String>> getOperatorCounters() {
