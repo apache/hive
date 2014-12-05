@@ -60,6 +60,13 @@ tableOrColumn
     identifier -> ^(TOK_TABLE_OR_COL identifier)
     ;
 
+tableOrColumnList
+@init { gParent.pushMsg("table or column identifier List", state); }
+@after { gParent.popMsg(state); }
+    :
+    LPAREN identifier (COMMA identifier)* RPAREN -> ^(TOK_TABLE_OR_COLLIST identifier+)
+    ;
+
 expressionList
 @init { gParent.pushMsg("expression list", state); }
 @after { gParent.popMsg(state); }

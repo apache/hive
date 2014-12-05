@@ -275,6 +275,7 @@ atomExpression
     | whenExpression
     | (functionName LPAREN) => function
     | tableOrColumn
+    | tableOrColumnList
     | LPAREN! expression RPAREN!
     ;
 
@@ -392,8 +393,8 @@ precedenceEqualExpression
        -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions))
     | (KW_IN LPAREN KW_SELECT)=>  (KW_IN subQueryExpression) 
        -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpression)
-    | (KW_IN expressions)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions)
+    | (KW_IN expressionsList)
+      -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressionsList)
     | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
        -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $left $min $max)
     | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
@@ -406,6 +407,15 @@ expressions
     :
     LPAREN expression (COMMA expression)* RPAREN -> expression*
     ;
+
+expressionsList 
+@init { gParent.pushMsg("expressions list", state); } 
+@after { gParent.popMsg(state); } 
+     : 
+     LPAREN a+=expressions ( COMMA  a+=expressions )* RPAREN -> ^(TOK_EXPLIST_LIST ^(TOK_EXPLIST $a)+)
+     |
+     expressions ( COMMA  expressions )* -> expressions*
+     ;
 
 precedenceNotOperator
     :
