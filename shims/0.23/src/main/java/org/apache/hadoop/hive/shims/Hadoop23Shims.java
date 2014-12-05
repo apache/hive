@@ -793,11 +793,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     dest.getCredentials().mergeAll(src.getCredentials());
   }
 
-  @Override
-  public String getCounterGroupName(String group, String defaultValue) {
-    return ResourceBundles.getCounterGroupName(group, defaultValue);
-  }
-
   protected static final Method accessMethod;
   protected static final Method getPasswordMethod;
 

@@ -107,9 +107,7 @@ public class SparkCounters implements Serializable {
   private SparkCounterGroup getGroup(String groupName) {
     SparkCounterGroup group = sparkCounterGroups.get(groupName);
     if (group == null) {
-      String groupDisplayName =
-        ShimLoader.getHadoopShims().getCounterGroupName(groupName, groupName);
-      group = new SparkCounterGroup(groupName, groupDisplayName, javaSparkContext);
+      group = new SparkCounterGroup(groupName, groupName, javaSparkContext);
       sparkCounterGroups.put(groupName, group);
     }
     return group;
