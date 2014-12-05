@@ -23,6 +23,8 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -35,6 +37,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.spark.GenSparkUtils;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -78,6 +81,18 @@ public class SetSparkReducerParallelism implements NodeProcessor {
         LOG.info("Parallelism for reduce sink " + sink + " set by user to " + constantReducers);
         desc.setNumReducers(constantReducers);
       } else {
+        //If it's a FileSink to bucketed files, use the bucket count as the reducer number
+        FileSinkOperator fso = GenSparkUtils.getChildOperator(sink, FileSinkOperator.class);
+        if (fso != null) {
+          String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(
+            hive_metastoreConstants.BUCKET_COUNT);
+          int numBuckets = bucketCount == null ? 0 : Integer.parseInt(bucketCount);
+          if (numBuckets > 0) {
+            LOG.info("Set parallelism for reduce sink " + sink + " to: " + numBuckets);
+            desc.setNumReducers(numBuckets);
+            return false;
+          }
+        }
         try {
           long numberOfBytes = 0;
 
