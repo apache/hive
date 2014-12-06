@@ -315,10 +315,14 @@ public class AppConfig extends Configuration {
     String[] props= StringUtils.split(get(HIVE_PROPS_NAME));
     //since raw data was (possibly) escaped to make split work,
     //now need to remove escape chars so they don't interfere with downstream processing
-    for(int i = 0; i < props.length; i++) {
-      props[i] = TempletonUtils.unEscapeString(props[i]);
+    if (props == null) {
+      return Collections.emptyList();
+    } else {
+      for(int i = 0; i < props.length; i++) {
+        props[i] = TempletonUtils.unEscapeString(props[i]);
+      }
+      return Arrays.asList(props);
     }
-    return Arrays.asList(props);
   }
 
   public String[] overrideJars() {
