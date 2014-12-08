@@ -388,6 +388,8 @@ public enum ErrorMsg {
   TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction could be found, " +
       "may have timed out"),
   TXN_ABORTED(10263, "Transaction manager has aborted the transaction."),
+  DBTXNMGR_REQUIRES_CONCURRENCY(10264,
+      "To use DbTxnManager you must set hive.support.concurrency=true"),
 
   LOCK_NO_SUCH_LOCK(10270, "No record of lock could be found, " +
       "may have timed out"),
