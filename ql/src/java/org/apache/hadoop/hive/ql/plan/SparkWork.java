@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -390,6 +392,17 @@ public class SparkWork extends AbstractOperatorDesc {
           result.put(new ComparableName(allDependencies,
             baseWork.getName()), dependencies);
         }
+      }
+    }
+    return result;
+  }
+
+  // get all reduce works in this spark work
+  public List<ReduceWork> getAllReduceWork() {
+    List<ReduceWork> result = new ArrayList<ReduceWork>();
+    for (BaseWork work : getAllWork()) {
+      if (work instanceof ReduceWork) {
+        result.add((ReduceWork) work);
       }
     }
     return result;
