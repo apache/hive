@@ -679,7 +679,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -694,14 +694,14 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col1 (type: double)
               sort order: +
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.3
               value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 20
             Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE

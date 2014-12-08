@@ -25,7 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -605,8 +604,8 @@ public class StatsRulesProcFactory {
           colExprMap, rs);
       long cardinality;
       long parallelism = 1L;
-      boolean mapSide = false;
-      boolean mapSideHashAgg = false;
+      boolean interReduction = false;
+      boolean hashAgg = false;
       long inputSize = 1L;
       boolean containsGroupingSet = gop.getConf().isGroupingSetsPresent();
       long sizeOfGroupingSet =
@@ -617,7 +616,7 @@ public class StatsRulesProcFactory {
       // aggregation is disabled. Following are the possible cases and rule for cardinality
       // estimation
 
-      // MAP SIDE:
+      // INTERMEDIATE REDUCTION:
       // Case 1: NO column stats, NO hash aggregation, NO grouping sets — numRows
       // Case 2: NO column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
       // Case 3: column stats, hash aggregation, NO grouping sets — Min(numRows / 2, ndvProduct * parallelism)
@@ -625,15 +624,16 @@ public class StatsRulesProcFactory {
       // Case 5: column stats, NO hash aggregation, NO grouping sets — numRows
       // Case 6: column stats, NO hash aggregation, grouping sets — numRows * sizeOfGroupingSet
 
-      // REDUCE SIDE:
+      // FINAL REDUCTION:
       // Case 7: NO column stats — numRows / 2
       // Case 8: column stats, grouping sets — Min(numRows, ndvProduct * sizeOfGroupingSet)
       // Case 9: column stats, NO grouping sets - Min(numRows, ndvProduct)
 
-      if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator ||
-          gop.getChildOperators().get(0) instanceof AppMasterEventOperator) {
+      if (!gop.getConf().getMode().equals(GroupByDesc.Mode.MERGEPARTIAL) &&
+          !gop.getConf().getMode().equals(GroupByDesc.Mode.COMPLETE) &&
+          !gop.getConf().getMode().equals(GroupByDesc.Mode.FINAL)) {
 
-        mapSide = true;
+        interReduction = true;
 
         // consider approximate map side parallelism to be table data size
         // divided by max split size
@@ -662,10 +662,10 @@ public class StatsRulesProcFactory {
         if (satisfyPrecondition(parentStats)) {
 
           // check if map side aggregation is possible or not based on column stats
-          mapSideHashAgg = checkMapSideAggregation(gop, colStats, conf);
+          hashAgg = checkMapSideAggregation(gop, colStats, conf);
 
           if (isDebugEnabled) {
-            LOG.debug("STATS-" + gop.toString() + " mapSideHashAgg: " + mapSideHashAgg);
+            LOG.debug("STATS-" + gop.toString() + " hashAgg: " + hashAgg);
           }
 
           stats = parentStats.clone();
@@ -709,10 +709,9 @@ public class StatsRulesProcFactory {
             }
           }
 
-          if (mapSide) {
-            // MAP SIDE
+          if (interReduction) {
 
-            if (mapSideHashAgg) {
+            if (hashAgg) {
               if (containsGroupingSet) {
                 // Case 4: column stats, hash aggregation, grouping sets
                 cardinality = Math.min(
@@ -748,7 +747,6 @@ public class StatsRulesProcFactory {
               }
             }
           } else {
-            // REDUCE SIDE
 
             // in reduce side GBY, we don't know if the grouping set was present or not. so get it
             // from map side GBY
@@ -786,8 +784,7 @@ public class StatsRulesProcFactory {
             final long parentNumRows = stats.getNumRows();
 
             // if we don't have column stats, we just assume hash aggregation is disabled
-            if (mapSide) {
-              // MAP SIDE
+            if (interReduction) {
 
               if (containsGroupingSet) {
                 // Case 2: NO column stats, NO hash aggregation, grouping sets
@@ -805,7 +802,6 @@ public class StatsRulesProcFactory {
                 }
               }
             } else {
-              // REDUCE SIDE
 
               // Case 7: NO column stats
               cardinality = parentNumRows / 2;
