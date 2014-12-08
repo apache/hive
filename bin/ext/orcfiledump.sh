@@ -23,5 +23,5 @@ orcfiledump () {
 }
 
 orcfiledump_help () {
-  echo "usage ./hive orcfiledump <path_to_file>"
+  echo "usage ./hive orcfiledump [-d] [--rowindex <col_ids>] <path_to_file>"
 } 
