@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkMapJoinOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkSkewJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.spark.SplitSparkWorkResolver;
 import org.apache.hadoop.hive.ql.parse.GlobalLimitCtx;
@@ -301,6 +302,13 @@ public class SparkCompiler extends TaskCompiler {
       (new StageIDsRearranger()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping stage id rearranger");
+    }
+
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
+      // TODO: enable after HIVE-8913 is done
+      //(new SparkSkewJoinResolver()).resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping runtime skew join optimization");
     }
     return;
   }
