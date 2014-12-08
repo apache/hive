@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
@@ -56,6 +55,9 @@ class SparkClientImpl implements SparkClient {
   
   private static final String DEFAULT_CONNECTION_TIMEOUT = "60"; // In seconds
   private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
+
+  private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
+  private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
 
   private final Map<String, String> conf;
   private final AtomicInteger childIdGenerator;
@@ -168,6 +170,26 @@ class SparkClientImpl implements SparkClient {
         }
       };
     } else {
+      // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
+      // SparkSubmit class directly, which has some caveats (like having to provide a proper
+      // version of Guava on the classpath depending on the deploy mode).
+      String sparkHome = conf.get("spark.home");
+      if (sparkHome == null) {
+        sparkHome = System.getProperty("spark.home");
+      }
+      String sparkLogDir = conf.get("hive.spark.log.dir");
+      if (sparkLogDir == null) {
+        if (sparkHome == null) {
+          sparkLogDir = "./target/";
+        } else {
+          sparkLogDir = sparkHome + "/logs/";
+        }
+      }
+      String driverJavaOpts = Joiner.on(" ").skipNulls().join(
+          "-Dhive.spark.log.dir=" + sparkLogDir,conf.get(DRIVER_OPTS_KEY));
+      String executorJavaOpts = Joiner.on(" ").skipNulls().join(
+          "-Dhive.spark.log.dir=" + sparkLogDir, conf.get(EXECUTOR_OPTS_KEY));
+
       // Create a file with all the job properties to be read by spark-submit. Change the
       // file's permissions so that only the owner can read it. This avoid having the
       // connection secret show up in the child process's command line.
@@ -181,6 +203,8 @@ class SparkClientImpl implements SparkClient {
         allProps.put(e.getKey(), conf.get(e.getKey()));
       }
       allProps.put(ClientUtils.CONF_KEY_SECRET, SparkClientFactory.secret);
+      allProps.put(DRIVER_OPTS_KEY, driverJavaOpts);
+      allProps.put(EXECUTOR_OPTS_KEY, executorJavaOpts);
 
       Writer writer = new OutputStreamWriter(new FileOutputStream(properties), Charsets.UTF_8);
       try {
@@ -197,21 +221,6 @@ class SparkClientImpl implements SparkClient {
 
       List<String> argv = Lists.newArrayList();
 
-      // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
-      // SparkSubmit class directly, which has some caveats (like having to provide a proper
-      // version of Guava on the classpath depending on the deploy mode).
-      String sparkHome = conf.get("spark.home");
-      if (sparkHome == null) {
-        sparkHome = System.getProperty("spark.home");
-      }
-      String sparkLogDir = conf.get("spark.log.dir");
-      if (sparkLogDir == null) {
-        if (sparkHome == null) {
-          sparkLogDir = "./target/";
-        } else {
-          sparkLogDir = sparkHome + "/logs/";
-        }
-      }
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
       } else {
@@ -236,7 +245,7 @@ class SparkClientImpl implements SparkClient {
             argv.add("-Djava.library.path=" + libPath);
           }
 
-          String extra = conf.get("spark.driver.extraJavaOptions");
+          String extra = conf.get(DRIVER_OPTS_KEY);
           if (extra != null) {
             for (String opt : extra.split("[ ]")) {
               if (!opt.trim().isEmpty()) {
@@ -268,10 +277,6 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
       ProcessBuilder pb = new ProcessBuilder(argv.toArray(new String[argv.size()]));
-      Map<String, String> env = pb.environment();
-      String javaOpts = Joiner.on(" ").skipNulls().join("-Dspark.log.dir=" + sparkLogDir,
-        env.get("SPARK_JAVA_OPTS"));
-      env.put("SPARK_JAVA_OPTS", javaOpts);
       final Process child = pb.start();
 
       int childId = childIdGenerator.incrementAndGet();
