@@ -974,7 +974,7 @@ STAGE PLANS:
                   keys: key (type: int)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     condition expressions:
                       0 {key}
@@ -1438,7 +1438,7 @@ STAGE PLANS:
                   keys: key (type: int)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     condition expressions:
                       0 {key}
@@ -1463,7 +1463,7 @@ STAGE PLANS:
                   keys: key (type: int)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 3 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     condition expressions:
                       0 {key}
