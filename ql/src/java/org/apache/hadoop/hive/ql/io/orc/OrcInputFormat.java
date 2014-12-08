@@ -559,8 +559,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (!deltas.isEmpty()) {
           for (int b = 0; b < context.numBuckets; ++b) {
             if (!covered[b]) {
-              context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
-                  false, false, deltas));
+              synchronized (context.splits) {
+                context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
+                    false, false, deltas));
+              }
             }
           }
         }
