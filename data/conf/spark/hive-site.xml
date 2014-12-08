@@ -206,7 +206,7 @@
 </property>
 
 <property>
-  <name>spark.log.dir</name>
+  <name>hive.spark.log.dir</name>
   <value>${spark.home}/logs/</value>
 </property>
 
