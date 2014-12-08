@@ -1189,14 +1189,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.default__tbl_tbl_key_idx__
+            alias: tbl
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
-              expressions: key (type: int), _count_of_key (type: bigint)
-              outputColumnNames: key, _count_of_key
+              expressions: key (type: int)
+              outputColumnNames: key
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
-                aggregations: sum(_count_of_key)
+                aggregations: count(key)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1206,7 +1206,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0)
+          aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
