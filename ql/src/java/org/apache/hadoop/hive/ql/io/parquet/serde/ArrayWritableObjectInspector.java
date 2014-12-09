@@ -102,7 +102,9 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return ParquetPrimitiveInspectorFactory.parquetShortInspector;
     } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
       return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-    } else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
+    } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)){
+      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
+    }else if (typeInfo.equals(TypeInfoFactory.dateTypeInfo)) {
       throw new UnsupportedOperationException("Parquet does not support date. See HIVE-6384");
     } else if (typeInfo.getTypeName().toLowerCase().startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((CharTypeInfo) typeInfo);
