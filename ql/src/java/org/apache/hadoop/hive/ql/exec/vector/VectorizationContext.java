@@ -1750,7 +1750,8 @@ public class VectorizationContext {
   }
 
   public static boolean isStringFamily(String resultType) {
-    return resultType.equalsIgnoreCase("string") || charVarcharTypePattern.matcher(resultType).matches();
+    return resultType.equalsIgnoreCase("string") || charVarcharTypePattern.matcher(resultType).matches() ||
+           resultType.equalsIgnoreCase("string_family");
   }
 
   public static boolean isDatetimeFamily(String resultType) {
