@@ -1,0 +1,82 @@
+PREHOOK: query: EXPLAIN
+SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cboolean1 is not null and cboolean1) (type: boolean)
+                    Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cboolean1 (type: boolean), if(cboolean1, 'first', 'second') (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        sort order: +
+                        Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1 LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND cboolean1 ORDER BY cboolean1 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+true	first
+true	first
+true	first
+true	first
+true	first
+PREHOOK: query: SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND NOT cboolean1 ORDER BY cboolean1 LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cboolean1, IF (cboolean1, 'first', 'second') FROM alltypesorc WHERE cboolean1 IS NOT NULL AND NOT cboolean1 ORDER BY cboolean1 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+false	second
+false	second
+false	second
+false	second
+false	second
