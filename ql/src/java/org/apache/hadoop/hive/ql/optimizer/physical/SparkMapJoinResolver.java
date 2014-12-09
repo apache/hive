@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,9 +43,11 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 public class SparkMapJoinResolver implements PhysicalPlanResolver {
@@ -66,6 +67,10 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   // Check whether the specified BaseWork's operator tree contains a operator
   // of the specified operator class
   private boolean containsOp(BaseWork work, Class<?> clazz) {
+    return getOp(work, clazz) != null;
+  }
+
+  private Operator<? extends OperatorDesc> getOp(BaseWork work, Class<?> clazz) {
     Set<Operator<? extends OperatorDesc>> ops = new HashSet<Operator<? extends OperatorDesc>>();
     if (work instanceof MapWork) {
       Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
@@ -85,12 +90,13 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
 
     for (Operator<? extends OperatorDesc> op : ops) {
       if (clazz.isInstance(op)) {
-        return true;
+        return op;
       }
     }
-    return false;
+    return null;
   }
 
+  @SuppressWarnings("unchecked")
   class SparkMapJoinTaskDispatcher implements Dispatcher {
 
     private final PhysicalContext physicalContext;
@@ -168,16 +174,43 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
       Context ctx = physicalContext.getContext();
 
       for (BaseWork work : allBaseWorks) {
-        if (containsOp(work, MapJoinOperator.class)) {
+        Operator<? extends OperatorDesc> op = getOp(work, MapJoinOperator.class);
+        if (op != null) {
+          MapJoinOperator mapJoinOp = (MapJoinOperator) op;
           Path tmpPath = Utilities.generateTmpPath(ctx.getMRTmpPath(), originalTask.getId());
           MapredLocalWork bigTableLocalWork = work.getMapRedLocalWork();
           List<Operator<? extends OperatorDesc>> dummyOps =
               new ArrayList<Operator<? extends OperatorDesc>>(work.getDummyOps());
           bigTableLocalWork.setDummyParentOp(dummyOps);
 
+          SparkBucketMapJoinContext bucketMJCxt = null;
+          MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
+          if (mapJoinDesc.isBucketMapJoin()) {
+            bucketMJCxt = new SparkBucketMapJoinContext();
+            bigTableLocalWork.setBucketMapjoinContext(bucketMJCxt);
+            bucketMJCxt.setAliasBucketFileNameMapping(
+              mapJoinDesc.getAliasBucketFileNameMapping());
+            bucketMJCxt.setBucketFileNameMapping(
+              mapJoinDesc.getBigTableBucketNumMapping());
+            bucketMJCxt.setMapJoinBigTableAlias(mapJoinDesc.getBigTableAlias());
+            bucketMJCxt.setBucketMatcherClass(
+              org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
+            bucketMJCxt.setBigTablePartSpecToFileMapping(
+              mapJoinDesc.getBigTablePartSpecToFileMapping());
+            bucketMJCxt.setPosToAliasMap(mapJoinOp.getPosToAliasMap());
+            ((MapWork) work).setUseBucketizedHiveInputFormat(true);
+            bigTableLocalWork.setInputFileChangeSensitive(true);
+          }
+
           for (BaseWork parentWork : originalWork.getParents(work)) {
             if (containsOp(parentWork,SparkHashTableSinkOperator.class)) {
-              parentWork.getMapRedLocalWork().setTmpHDFSPath(tmpPath);
+              MapredLocalWork parentLocalWork = parentWork.getMapRedLocalWork();
+              parentLocalWork.setTmpHDFSPath(tmpPath);
+              if (bucketMJCxt != null) {
+                ((MapWork) parentWork).setUseBucketizedHiveInputFormat(true);
+                parentLocalWork.setBucketMapjoinContext(bucketMJCxt);
+                parentLocalWork.setInputFileChangeSensitive(true);
+              }
             }
           }
 

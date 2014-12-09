@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,9 +37,11 @@ import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -87,11 +90,22 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         return;
       }
       FileSystem fs = FileSystem.get(baseDir.toUri(), hconf);
-      String fileName = localWork.getBucketFileName(currentInputPath);
+      BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
         if (pos == desc.getPosBigTable() || mapJoinTables[pos] != null) {
           continue;
         }
+        String bigInputPath = currentInputPath;
+        if (currentInputPath != null && mapJoinCtx != null) {
+          Set<String> aliases =
+            ((SparkBucketMapJoinContext)mapJoinCtx).getPosToAliasMap().get(pos);
+          String alias = aliases.iterator().next();
+          // Any one small table input path
+          String smallInputPath =
+            mapJoinCtx.getAliasBucketFileNameMapping().get(alias).get(bigInputPath).get(0);
+          bigInputPath = mapJoinCtx.getMappingBigFile(alias, smallInputPath);
+        }
+        String fileName = localWork.getBucketFileName(bigInputPath);
         Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
         LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
         mapJoinTables[pos] = mapJoinTableSerdes[pos].load(fs, path);

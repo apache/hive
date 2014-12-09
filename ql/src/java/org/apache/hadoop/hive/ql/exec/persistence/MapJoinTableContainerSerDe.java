@@ -116,9 +116,9 @@ public class MapJoinTableContainerSerDe {
 
       MapJoinPersistableTableContainer tableContainer = null;
 
-      for (FileStatus fileStatus: fs.listStatus(folder)) {
+      for (FileStatus fileStatus: fileStatuses) {
         Path filePath = fileStatus.getPath();
-        if (fileStatus.isDir()) {
+        if (fileStatus.isDirectory()) {
           throw new HiveException("Error, not a file: " + filePath);
         }
         InputStream is = null;
