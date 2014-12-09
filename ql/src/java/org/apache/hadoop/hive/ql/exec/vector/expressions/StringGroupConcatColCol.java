@@ -416,7 +416,7 @@ public class StringGroupConcatColCol extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "StringGroup";
+    return "String_Family";
   }
 
   public int getColNum1() {
