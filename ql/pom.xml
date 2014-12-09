@@ -441,6 +441,12 @@
           <version>${hadoop-20S.version}</version>
          <optional>true</optional>
         </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-tools</artifactId>
+          <version>${hadoop-20S.version}</version>
+          <optional>true</optional>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
