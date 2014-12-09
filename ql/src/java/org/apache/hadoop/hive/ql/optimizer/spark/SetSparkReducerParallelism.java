@@ -93,53 +93,51 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             return false;
           }
         }
-        try {
-          long numberOfBytes = 0;
+        long numberOfBytes = 0;
 
-          // we need to add up all the estimates from the siblings of this reduce sink
-          for (Operator<? extends OperatorDesc> sibling:
-            sink.getChildOperators().get(0).getParentOperators()) {
-            if (sibling.getStatistics() != null) {
-              numberOfBytes += sibling.getStatistics().getDataSize();
-            } else {
-              LOG.warn("No stats available from: " + sibling);
-            }
+        // we need to add up all the estimates from the siblings of this reduce sink
+        for (Operator<? extends OperatorDesc> sibling:
+          sink.getChildOperators().get(0).getParentOperators()) {
+          if (sibling.getStatistics() != null) {
+            numberOfBytes += sibling.getStatistics().getDataSize();
+          } else {
+            LOG.warn("No stats available from: " + sibling);
           }
+        }
 
-          if (sparkMemoryAndCores == null) {
-            SparkSessionManager sparkSessionManager = null;
-            SparkSession sparkSession = null;
-            try {
-              sparkSessionManager = SparkSessionManagerImpl.getInstance();
-              sparkSession = SparkUtilities.getSparkSession(
-                context.getConf(), sparkSessionManager);
-              sparkMemoryAndCores = sparkSession.getMemoryAndCores();
-            } finally {
-              if (sparkSession != null && sparkSessionManager != null) {
-                try {
-                  sparkSessionManager.returnSession(sparkSession);
-                } catch(HiveException ex) {
-                  LOG.error("Failed to return the session to SessionManager", ex);
-                }
+        if (sparkMemoryAndCores == null) {
+          SparkSessionManager sparkSessionManager = null;
+          SparkSession sparkSession = null;
+          try {
+            sparkSessionManager = SparkSessionManagerImpl.getInstance();
+            sparkSession = SparkUtilities.getSparkSession(
+              context.getConf(), sparkSessionManager);
+            sparkMemoryAndCores = sparkSession.getMemoryAndCores();
+          } catch (Exception e) {
+            throw new SemanticException("Failed to get spark memory/core info", e);
+          } finally {
+            if (sparkSession != null && sparkSessionManager != null) {
+              try {
+                sparkSessionManager.returnSession(sparkSession);
+              } catch(HiveException ex) {
+                LOG.error("Failed to return the session to SessionManager", ex);
               }
             }
           }
-
-          // Divide it by 2 so that we can have more reducers
-          long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
-          int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
-            maxReducers, false);
-
-          // If there are more cores, use the number of cores
-          int cores = sparkMemoryAndCores._2.intValue();
-          if (numReducers < cores) {
-            numReducers = cores;
-          }
-          LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
-          desc.setNumReducers(numReducers);
-        } catch (Exception e) {
-          LOG.warn("Failed to create spark client.", e);
         }
+
+        // Divide it by 2 so that we can have more reducers
+        long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
+        int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
+          maxReducers, false);
+
+        // If there are more cores, use the number of cores
+        int cores = sparkMemoryAndCores._2.intValue();
+        if (numReducers < cores) {
+          numReducers = cores;
+        }
+        LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers);
+        desc.setNumReducers(numReducers);
       }
     } else {
       LOG.info("Number of reducers determined to be: " + desc.getNumReducers());

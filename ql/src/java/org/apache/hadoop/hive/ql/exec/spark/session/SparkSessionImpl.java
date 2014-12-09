@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.spark.SparkConf;
+import org.apache.spark.util.Utils;
 
 import scala.Tuple2;
 
@@ -69,7 +70,8 @@ public class SparkSessionImpl implements SparkSession {
     SparkConf sparkConf = hiveSparkClient.getSparkConf();
     int cores = sparkConf.getInt("spark.executor.cores", 1);
     double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
-    int executorMemoryInMB = sparkConf.getInt("spark.executor.memory", 512);
+    int executorMemoryInMB = Utils.memoryStringToMb(
+      sparkConf.get("spark.executor.memory", "512m"));
     long memoryPerTaskInBytes =
       (long) (executorMemoryInMB * memoryFraction * 1024 * 1024 / cores);
     int executors = hiveSparkClient.getExecutorCount();
