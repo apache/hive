@@ -14,8 +14,10 @@
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
 import org.apache.hadoop.io.ArrayWritable;
@@ -62,14 +64,14 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
         return null;
       }
 
-      final Writable subObj = listContainer[0];
+      Writable[] underlyingArray = getUnderlyingArray(listContainer, ((ArrayWritable) data).getValueClass());
 
-      if (subObj == null) {
+      if (underlyingArray == null) {
         return null;
       }
 
-      if (index >= 0 && index < ((ArrayWritable) subObj).get().length) {
-        return ((ArrayWritable) subObj).get()[index];
+      if (index >= 0 && index < underlyingArray.length) {
+        return underlyingArray[index];
       } else {
         return null;
       }
@@ -85,19 +87,14 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     }
 
     if (data instanceof ArrayWritable) {
-      final Writable[] listContainer = ((ArrayWritable) data).get();
+      ArrayWritable arrayWritable = (ArrayWritable) data;
+      final Writable[] listContainer = arrayWritable.get();
 
       if (listContainer == null || listContainer.length == 0) {
         return -1;
       }
 
-      final Writable subObj = listContainer[0];
-
-      if (subObj == null) {
-        return 0;
-      }
-
-      return ((ArrayWritable) subObj).get().length;
+      return getUnderlyingArray(listContainer,arrayWritable.getValueClass()).length;
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -110,24 +107,15 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     }
 
     if (data instanceof ArrayWritable) {
-      final Writable[] listContainer = ((ArrayWritable) data).get();
+      ArrayWritable arrayWritable = (ArrayWritable) data;
+      final Writable[] listContainer = arrayWritable.get();
 
       if (listContainer == null || listContainer.length == 0) {
         return null;
       }
 
-      final Writable subObj = listContainer[0];
-
-      if (subObj == null) {
-        return null;
-      }
-
-      final Writable[] array = ((ArrayWritable) subObj).get();
-      final List<Writable> list = new ArrayList<Writable>();
-
-      for (final Writable obj : array) {
-        list.add(obj);
-      }
+      List<Writable> list = Lists.newArrayList();
+      Collections.addAll(list, getUnderlyingArray(listContainer, arrayWritable.getValueClass()));
 
       return list;
     }
@@ -143,7 +131,6 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     }
     return result;
   }
-
   @Override
   public Object set(final Object list, final int index, final Object element) {
     final ArrayList l = (ArrayList) list;
@@ -181,5 +168,17 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     int hash = 3;
     hash = 29 * hash + (this.arrayElementInspector != null ? this.arrayElementInspector.hashCode() : 0);
     return hash;
+  }
+
+  private Writable[] getUnderlyingArray(Writable[] listContainer, Class valueClass) {
+    if (listContainer.length == 1 && valueClass.equals(ArrayWritable.class)) {
+      final Writable subObj = listContainer[0];
+      if (subObj == null) {
+        return null;
+      }
+
+      return ((ArrayWritable) subObj).get();
+    }
+    return listContainer;
   }
 }
