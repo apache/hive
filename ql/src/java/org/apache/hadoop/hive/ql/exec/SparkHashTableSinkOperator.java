@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Set;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.logging.Log;
@@ -33,6 +34,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -86,12 +90,22 @@ public class SparkHashTableSinkOperator
 
   protected void flushToFile(MapJoinPersistableTableContainer tableContainer,
       byte tag) throws IOException, HiveException {
+    MapredLocalWork localWork = getExecContext().getLocalWork();
+    BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
+    Path inputPath = getExecContext().getCurrentInputPath();
+    String bigInputPath = null;
+    if (inputPath != null && mapJoinCtx != null) {
+      Set<String> aliases =
+        ((SparkBucketMapJoinContext)mapJoinCtx).getPosToAliasMap().get((int)tag);
+      bigInputPath = mapJoinCtx.getMappingBigFile(
+        aliases.iterator().next(), inputPath.toString());
+    }
+
     // get tmp file URI
-    Path tmpURI = getExecContext().getLocalWork().getTmpHDFSPath();
+    Path tmpURI = localWork.getTmpHDFSPath();
     LOG.info("Temp URI for side table: " + tmpURI);
-    // get current input file name
-    String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
-    String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
+    // get current bucket file name
+    String fileName = localWork.getBucketFileName(bigInputPath);
     // get the tmp URI path; it will be a hdfs path if not local mode
     String dumpFilePrefix = conf.getDumpFilePrefix();
     Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
