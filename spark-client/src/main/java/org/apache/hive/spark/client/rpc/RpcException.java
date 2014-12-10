@@ -15,37 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.hive.spark.client.metrics;
-
-import java.io.Serializable;
-
-import org.apache.spark.executor.TaskMetrics;
+package org.apache.hive.spark.client.rpc;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
-/**
- * Metrics pertaining to reading input data.
- */
 @InterfaceAudience.Private
-public class InputMetrics implements Serializable {
+public class RpcException extends RuntimeException {
 
-  public final DataReadMethod readMethod;
-  public final long bytesRead;
-
-  private InputMetrics() {
-    // For Serialization only.
-    this(null, 0L);
-  }
-  public InputMetrics(
-      DataReadMethod readMethod,
-      long bytesRead) {
-    this.readMethod = readMethod;
-    this.bytesRead = bytesRead;
-  }
-
-  public InputMetrics(TaskMetrics metrics) {
-    this(DataReadMethod.valueOf(metrics.inputMetrics().get().readMethod().toString()),
-      metrics.inputMetrics().get().bytesRead());
+  RpcException(String remoteStackTrace) {
+    super(remoteStackTrace);
   }
 
 }

@@ -104,41 +104,12 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
 
-    final byte[] jobConfBytes = KryoSerializer.serializeJobConf(jobConf);
-    final byte[] scratchDirBytes = KryoSerializer.serialize(emptyScratchDir);
-    final byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
+    byte[] jobConfBytes = KryoSerializer.serializeJobConf(jobConf);
+    byte[] scratchDirBytes = KryoSerializer.serialize(emptyScratchDir);
+    byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
 
-    JobHandle<Serializable> jobHandle = remoteClient.submit(new Job<Serializable>() {
-      @Override
-      public Serializable call(JobContext jc) throws Exception {
-        JobConf localJobConf = KryoSerializer.deserializeJobConf(jobConfBytes);
-        Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
-        SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
-
-        SparkCounters sparkCounters = new SparkCounters(jc.sc(), localJobConf);
-        Map<String, List<String>> prefixes = localSparkWork.getRequiredCounterPrefix();
-        if (prefixes != null) {
-          for (String group : prefixes.keySet()) {
-            for (String counterName : prefixes.get(group)) {
-              sparkCounters.createCounter(group, counterName);
-            }
-          }
-        }
-        SparkReporter sparkReporter = new SparkReporter(sparkCounters);
-
-        // Generate Spark plan
-        SparkPlanGenerator gen =
-          new SparkPlanGenerator(jc.sc(), null, localJobConf, localScratchDir, sparkReporter);
-        SparkPlan plan = gen.generate(localSparkWork);
-
-        // Execute generated plan.
-        JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
-        // We use Spark RDD async action to submit job as it's the only way to get jobId now.
-        JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-        jc.monitor(future, sparkCounters);
-        return null;
-      }
-    });
+    JobHandle<Serializable> jobHandle = remoteClient.submit(
+        new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes));
     return new SparkJobRef(jobHandle.getClientJobId(), new RemoteSparkJobStatus(remoteClient, jobHandle));
   }
 
@@ -204,4 +175,54 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   public void close() {
     remoteClient.stop();
   }
+
+  private static class JobStatusJob implements Job<Serializable> {
+
+    private final byte[] jobConfBytes;
+    private final byte[] scratchDirBytes;
+    private final byte[] sparkWorkBytes;
+
+    private JobStatusJob() {
+      // For deserialization.
+      this(null, null, null);
+    }
+
+    JobStatusJob(byte[] jobConfBytes, byte[] scratchDirBytes, byte[] sparkWorkBytes) {
+      this.jobConfBytes = jobConfBytes;
+      this.scratchDirBytes = scratchDirBytes;
+      this.sparkWorkBytes = sparkWorkBytes;
+    }
+
+    @Override
+    public Serializable call(JobContext jc) throws Exception {
+      JobConf localJobConf = KryoSerializer.deserializeJobConf(jobConfBytes);
+      Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
+      SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
+
+      SparkCounters sparkCounters = new SparkCounters(jc.sc());
+      Map<String, List<String>> prefixes = localSparkWork.getRequiredCounterPrefix();
+      if (prefixes != null) {
+        for (String group : prefixes.keySet()) {
+          for (String counterName : prefixes.get(group)) {
+            sparkCounters.createCounter(group, counterName);
+          }
+        }
+      }
+      SparkReporter sparkReporter = new SparkReporter(sparkCounters);
+
+      // Generate Spark plan
+      SparkPlanGenerator gen =
+        new SparkPlanGenerator(jc.sc(), null, localJobConf, localScratchDir, sparkReporter);
+      SparkPlan plan = gen.generate(localSparkWork);
+
+      // Execute generated plan.
+      JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
+      // We use Spark RDD async action to submit job as it's the only way to get jobId now.
+      JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
+      jc.monitor(future, sparkCounters);
+      return null;
+    }
+
+  }
+
 }

@@ -29,27 +29,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hive.spark.counter.SparkCounters;
-import scala.Tuple2;
-
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
-import akka.remote.DisassociatedEvent;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.spark.SparkConf;
 import org.apache.spark.scheduler.*;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.rpc.Rpc;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
+import org.apache.hive.spark.counter.SparkCounters;
 
 /**
  * Driver code for the Spark client library.
@@ -61,11 +60,14 @@ public class RemoteDriver {
 
   private final Map<String, JobWrapper<?>> activeJobs;
   private final Object shutdownLock;
-  private final ActorSystem system;
-  private final ActorRef actor;
-  private final ActorSelection client;
   private final ExecutorService executor;
   private final JobContextImpl jc;
+  private final NioEventLoopGroup egroup;
+  private final Rpc clientRpc;
+  private final DriverProtocol protocol;
+
+  // Used to queue up requests while the SparkContext is being created.
+  private final List<JobWrapper<?>> jobQueue = Lists.newLinkedList();
 
   private boolean running;
 
@@ -74,13 +76,16 @@ public class RemoteDriver {
     this.shutdownLock = new Object();
 
     SparkConf conf = new SparkConf();
-    String remote = null;
+    String serverAddress = null;
+    int serverPort = -1;
     for (int idx = 0; idx < args.length; idx += 2) {
       String key = args[idx];
-      if (key.equals("--remote")) {
-        remote = getArg(args, idx);
+      if (key.equals("--remote-host")) {
+        serverAddress = getArg(args, idx);
+      } else if (key.equals("--remote-port")) {
+        serverPort = Integer.parseInt(getArg(args, idx));
       } else if (key.equals("--secret")) {
-        conf.set(ClientUtils.CONF_KEY_SECRET, getArg(args, idx));
+        conf.set(SparkClientFactory.CONF_KEY_SECRET, getArg(args, idx));
       } else if (key.equals("--conf")) {
         String[] val = getArg(args, idx).split("[=]", 2);
         conf.set(val[0], val[1]);
@@ -92,17 +97,37 @@ public class RemoteDriver {
 
     executor = Executors.newCachedThreadPool();
 
-    LOG.info("Connecting to: {}", remote);
+    LOG.info("Connecting to: {}:{}", serverAddress, serverPort);
 
     Map<String, String> mapConf = Maps.newHashMap();
     for (Tuple2<String, String> e : conf.getAll()) {
       mapConf.put(e._1(), e._2());
     }
 
-    ClientUtils.ActorSystemInfo info = ClientUtils.createActorSystem(mapConf);
-    this.system = info.system;
-    this.actor = system.actorOf(Props.create(ServerActor.class, this), "RemoteDriver");
-    this.client = system.actorSelection(remote);
+    String secret = mapConf.get(SparkClientFactory.CONF_KEY_SECRET);
+    Preconditions.checkArgument(secret != null, "No secret provided.");
+
+    int threadCount = new RpcConfiguration(mapConf).getRpcThreadCount();
+    this.egroup = new NioEventLoopGroup(
+        threadCount,
+        new ThreadFactoryBuilder()
+            .setNameFormat("Driver-RPC-Handler-%d")
+            .setDaemon(true)
+            .build());
+    this.protocol = new DriverProtocol();
+
+    // The RPC library takes care of timing out this.
+    this.clientRpc = Rpc.createClient(mapConf, egroup, serverAddress, serverPort, secret, protocol)
+      .get();
+    this.running = true;
+
+    this.clientRpc.addListener(new Rpc.Listener() {
+      @Override
+      public void rpcClosed(Rpc rpc) {
+        LOG.warn("Shutting down driver because RPC channel was closed.");
+        shutdown(null);
+      }
+    });
 
     try {
       JavaSparkContext sc = new JavaSparkContext(conf);
@@ -110,12 +135,15 @@ public class RemoteDriver {
       jc = new JobContextImpl(sc);
     } catch (Exception e) {
       LOG.error("Failed to start SparkContext.", e);
-      shutdown(new Protocol.Error(e));
+      shutdown(e);
       throw e;
     }
 
-    client.tell(new Protocol.Hello(info.url + "/RemoteDriver"), actor);
-    running = true;
+    synchronized (jobQueue) {
+      for (Iterator<JobWrapper<?>> it = jobQueue.iterator(); it.hasNext(); ) {
+        it.next().submit();
+      }
+    }
   }
 
   private void run() throws InterruptedException {
@@ -127,21 +155,32 @@ public class RemoteDriver {
     executor.shutdownNow();
   }
 
-  private synchronized void shutdown(Object msg) {
+  private void submit(JobWrapper<?> job) {
+    synchronized (jobQueue) {
+      if (jc != null) {
+        job.submit();
+      } else {
+        LOG.info("SparkContext not yet up, queueing job request.");
+        jobQueue.add(job);
+      }
+    }
+  }
+
+  private synchronized void shutdown(Throwable error) {
     if (running) {
       LOG.info("Shutting down remote driver.");
       running = false;
       for (JobWrapper<?> job : activeJobs.values()) {
         cancelJob(job);
       }
-
-      if (msg != null) {
-        client.tell(msg, actor);
+      if (error != null) {
+        protocol.sendError(error);
       }
       if (jc != null) {
         jc.stop();
       }
-      system.shutdown();
+      clientRpc.close();
+      egroup.shutdownGracefully();
       synchronized (shutdownLock) {
         shutdownLock.notifyAll();
       }
@@ -153,7 +192,7 @@ public class RemoteDriver {
     for (JavaFutureAction<?> action : job.jobs) {
       cancelled |= action.cancel(true);
     }
-    return cancelled | job.future.cancel(true);
+    return cancelled | (job.future != null && job.future.cancel(true));
   }
 
   private String getArg(String[] args, int keyIdx) {
@@ -165,43 +204,56 @@ public class RemoteDriver {
     return args[valIdx];
   }
 
-  private class ServerActor extends UntypedActor {
+  private class DriverProtocol extends BaseProtocol {
 
-    @Override
-    public void onReceive(Object message) throws Exception {
-      if (message instanceof Protocol.CancelJob) {
-        Protocol.CancelJob cj = (Protocol.CancelJob) message;
-        JobWrapper<?> job = activeJobs.get(cj.id);
-        if (job == null || !cancelJob(job)) {
-          LOG.info("Requested to cancel an already finished job.");
-        }
-      } else if (message instanceof DisassociatedEvent) {
-        LOG.debug("Shutting down due to DisassociatedEvent.");
-        shutdown(null);
-      } else if (message instanceof Protocol.EndSession) {
-        LOG.debug("Shutting down due to EndSession request.");
-        shutdown(null);
-      } else if (message instanceof Protocol.JobRequest) {
-        Protocol.JobRequest req = (Protocol.JobRequest) message;
-        LOG.info("Received job request {}", req.id);
-        JobWrapper<?> wrapper = new JobWrapper<Serializable>(req);
-        activeJobs.put(req.id, wrapper);
-        wrapper.submit();
+    void sendError(Throwable error) {
+      clientRpc.call(new Error(error));
+    }
+
+    <T extends Serializable> void jobFinished(String jobId, T result,
+        Throwable error, SparkCounters counters) {
+      clientRpc.call(new JobResult(jobId, result, error, counters));
+    }
+
+    void jobSubmitted(String jobId, int sparkJobId) {
+      clientRpc.call(new JobSubmitted(jobId, sparkJobId));
+    }
+
+    void sendMetrics(String clientId, int jobId, int stageId, long taskId, Metrics metrics) {
+      clientRpc.call(new JobMetrics(clientId, jobId, stageId, taskId, metrics));
+    }
+
+    private void handle(ChannelHandlerContext ctx, CancelJob msg) {
+      JobWrapper<?> job = activeJobs.get(msg.id);
+      if (job == null || !cancelJob(job)) {
+        LOG.info("Requested to cancel an already finished job.");
       }
+    }
+
+    private void handle(ChannelHandlerContext ctx, EndSession msg) {
+      LOG.debug("Shutting down due to EndSession request.");
+      shutdown(null);
+    }
+
+    private void handle(ChannelHandlerContext ctx, JobRequest msg) {
+      LOG.info("Received job request {}", msg.id);
+      JobWrapper<?> wrapper = new JobWrapper<Serializable>(msg);
+      activeJobs.put(msg.id, wrapper);
+      submit(wrapper);
     }
 
   }
 
   private class JobWrapper<T extends Serializable> implements Callable<Void> {
 
-    private final Protocol.JobRequest<T> req;
+    private final BaseProtocol.JobRequest<T> req;
     private final List<JavaFutureAction<?>> jobs;
     private final AtomicInteger completed;
     private SparkCounters sparkCounters;
 
     private Future<?> future;
 
-    JobWrapper(Protocol.JobRequest<T> req) {
+    JobWrapper(BaseProtocol.JobRequest<T> req) {
       this.req = req;
       this.jobs = Lists.newArrayList();
       this.completed = new AtomicInteger();
@@ -226,16 +278,18 @@ public class RemoteDriver {
             completed.wait();
           }
         }
+
+        SparkCounters counters = null;
         if (sparkCounters != null) {
-          sparkCounters.dumpAllCounters();
+          counters = sparkCounters.snapshot();
         }
-        client.tell(new Protocol.JobResult(req.id, result, null, sparkCounters), actor);
+        protocol.jobFinished(req.id, result, null, counters);
       } catch (Throwable t) {
         // Catch throwables in a best-effort to report job status back to the client. It's
         // re-thrown so that the executor can destroy the affected thread (or the JVM can
         // die or whatever would happen if the throwable bubbled up).
         LOG.info("Failed to run job " + req.id, t);
-        client.tell(new Protocol.JobResult(req.id, null, t, null), actor);
+        protocol.jobFinished(req.id, null, t, null);
         throw new ExecutionException(t);
       } finally {
         jc.setMonitorCb(null);
@@ -262,7 +316,7 @@ public class RemoteDriver {
       }
       jc.getMonitoredJobs().get(req.id).add(job);
       this.sparkCounters = sparkCounters;
-      client.tell(new Protocol.JobSubmitted(req.id, job.jobIds().get(0)), actor);
+      protocol.jobSubmitted(req.id, job.jobIds().get(0));
     }
 
   }
@@ -314,8 +368,8 @@ public class RemoteDriver {
 
         String clientId = getClientId(jobId);
         if (clientId != null) {
-          client.tell(new Protocol.JobMetrics(clientId, jobId, taskEnd.stageId(),
-              taskEnd.taskInfo().taskId(), metrics), actor);
+          protocol.sendMetrics(clientId, jobId, taskEnd.stageId(),
+            taskEnd.taskInfo().taskId(), metrics);
         }
       }
     }

@@ -145,11 +145,7 @@
     <opencsv.version>2.3</opencsv.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
-    <!--netty is not a direct dependency but due to a change
-        in artifact name and given that zookeeper < 3.5
-        requires netty < 3.6.0 we force hadoops version
-      -->
-    <netty.version>3.7.0.Final</netty.version>
+    <netty.version>4.0.23.Final</netty.version>
     <parquet.version>1.6.0rc3</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -332,7 +328,7 @@
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty</artifactId>
+        <artifactId>netty-all</artifactId>
         <version>${netty.version}</version>
       </dependency>
       <dependency>

@@ -44,6 +44,8 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.apache.hive.spark.counter.SparkCounters;
+
 public class TestSparkClient {
 
   // Timeouts are bad... mmmkay.
@@ -52,7 +54,7 @@ public class TestSparkClient {
   private Map<String, String> createConf(boolean local) {
     Map<String, String> conf = new HashMap<String, String>();
     if (local) {
-      conf.put(ClientUtils.CONF_KEY_IN_PROCESS, "true");
+      conf.put(SparkClientFactory.CONF_KEY_IN_PROCESS, "true");
       conf.put("spark.master", "local");
       conf.put("spark.app.name", "SparkClientSuite Local App");
     } else {
@@ -194,20 +196,22 @@ public class TestSparkClient {
   }
 
   @Test
-  public void testKryoSerializer() throws Exception {
+  public void testCounters() throws Exception {
     runTest(true, new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
-        JobHandle<Long> handle = client.submit(new SparkJob());
-        assertEquals(Long.valueOf(5L), handle.get(TIMEOUT, TimeUnit.SECONDS));
-      }
+        JobHandle<?> job = client.submit(new CounterIncrementJob());
+        job.get(TIMEOUT, TimeUnit.SECONDS);
 
-      @Override void config(Map<String, String> conf) {
-        conf.put(ClientUtils.CONF_KEY_SERIALIZER, "kryo");
+        SparkCounters counters = job.getSparkCounters();
+        assertNotNull(counters);
+
+        long expected = 1 + 2 + 3 + 4 + 5;
+        assertEquals(expected, counters.getCounter("group1", "counter1").getValue());
+        assertEquals(expected, counters.getCounter("group2", "counter2").getValue());
       }
     });
   }
-
 
   private void runTest(boolean local, TestFunction test) throws Exception {
     Map<String, String> conf = createConf(local);
@@ -294,6 +298,10 @@ public class TestSparkClient {
 
     private final String fileName;
 
+    FileJob() {
+      this(null);
+    }
+
     FileJob(String fileName) {
       this.fileName = fileName;
     }
@@ -309,6 +317,30 @@ public class TestSparkClient {
       byte[] bytes = ByteStreams.toByteArray(in);
       in.close();
       return new String(bytes, 0, bytes.length, "UTF-8");
+    }
+
+  }
+
+  private static class CounterIncrementJob implements Job<String>, VoidFunction<Integer> {
+
+    private SparkCounters counters;
+
+    @Override
+    public String call(JobContext jc) {
+      counters = new SparkCounters(jc.sc());
+      counters.createCounter("group1", "counter1");
+      counters.createCounter("group2", "counter2");
+
+      jc.monitor(jc.sc().parallelize(Arrays.asList(1, 2, 3, 4, 5), 5).foreachAsync(this),
+          counters);
+
+      return null;
+    }
+
+    @Override
+    public void call(Integer l) throws Exception {
+      counters.getCounter("group1", "counter1").increment(l.longValue());
+      counters.getCounter("group2", "counter2").increment(l.longValue());
     }
 
   }

@@ -182,6 +182,11 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     private final String clientJobId;
     private final int sparkJobId;
 
+    private GetJobInfoJob() {
+      // For serialization.
+      this(null, -1);
+    }
+
     GetJobInfoJob(String clientJobId, int sparkJobId) {
       this.clientJobId = clientJobId;
       this.sparkJobId = sparkJobId;
@@ -238,6 +243,11 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   private static class GetStageInfoJob implements Job<HiveSparkStageInfo> {
     private final int stageId;
+
+    private GetStageInfoJob() {
+      // For serialization.
+      this(-1);
+    }
 
     GetStageInfoJob(int stageId) {
       this.stageId = stageId;

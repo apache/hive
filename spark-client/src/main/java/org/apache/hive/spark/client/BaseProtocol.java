@@ -19,12 +19,15 @@ package org.apache.hive.spark.client;
 
 import java.io.Serializable;
 
+import com.google.common.base.Throwables;
+
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.rpc.RpcDispatcher;
 import org.apache.hive.spark.counter.SparkCounters;
 
-final class Protocol {
+abstract class BaseProtocol extends RpcDispatcher {
 
-  static class CancelJob implements Serializable {
+  protected static class CancelJob implements Serializable {
 
     final String id;
 
@@ -38,16 +41,16 @@ final class Protocol {
 
   }
 
-  static class EndSession implements Serializable {
+  protected static class EndSession implements Serializable {
 
   }
 
-  static class Error implements Serializable {
+  protected static class Error implements Serializable {
 
-    final Exception cause;
+    final String cause;
 
-    Error(Exception cause) {
-      this.cause = cause;
+    Error(Throwable cause) {
+      this.cause = Throwables.getStackTraceAsString(cause);
     }
 
     Error() {
@@ -56,21 +59,7 @@ final class Protocol {
 
   }
 
-  static class Hello implements Serializable {
-
-    final String remoteUrl;
-
-    Hello(String remoteUrl) {
-      this.remoteUrl = remoteUrl;
-    }
-
-    Hello() {
-      this(null);
-    }
-
-  }
-
-  static class JobMetrics implements Serializable {
+  protected static class JobMetrics implements Serializable {
 
     final String jobId;
     final int sparkJobId;
@@ -92,7 +81,7 @@ final class Protocol {
 
   }
 
-  static class JobRequest<T extends Serializable> implements Serializable {
+  protected static class JobRequest<T extends Serializable> implements Serializable {
 
     final String id;
     final Job<T> job;
@@ -108,17 +97,17 @@ final class Protocol {
 
   }
 
-  static class JobResult<T extends Serializable> implements Serializable {
+  protected static class JobResult<T extends Serializable> implements Serializable {
 
     final String id;
     final T result;
-    final Throwable error;
+    final String error;
     final SparkCounters sparkCounters;
 
     JobResult(String id, T result, Throwable error, SparkCounters sparkCounters) {
       this.id = id;
       this.result = result;
-      this.error = error;
+      this.error = error != null ? Throwables.getStackTraceAsString(error) : null;
       this.sparkCounters = sparkCounters;
     }
 
@@ -131,7 +120,7 @@ final class Protocol {
   /**
    * Inform the client that a new spark job has been submitted for the client job
    */
-  static class JobSubmitted implements Serializable {
+  protected static class JobSubmitted implements Serializable {
     final String clientJobId;
     final int sparkJobId;
 

@@ -20,11 +20,13 @@ package org.apache.hive.spark.client;
 import java.io.IOException;
 import java.util.Map;
 
-import akka.actor.ActorSystem;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import org.apache.spark.SparkException;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hive.spark.client.rpc.RpcServer;
 
 /**
  * Factory for SparkClient instances.
@@ -32,39 +34,34 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 @InterfaceAudience.Private
 public final class SparkClientFactory {
 
-  static ActorSystem actorSystem = null;
-  static String akkaUrl = null;
-  static String secret = null;
+  /** Used to run the driver in-process, mostly for testing. */
+  static final String CONF_KEY_IN_PROCESS = "spark.client.do_not_use.run_driver_in_process";
 
-  private static boolean initialized = false;
+  /** Used by client and driver to share a secret for establishing an RPC session. */
+  static final String CONF_KEY_SECRET = "spark.client.authentication.secret";
+
+  private static RpcServer server = null;
 
   /**
    * Initializes the SparkClient library. Must be called before creating client instances.
    *
-   * @param conf Map containing configuration parameters for the client.
+   * @param conf Map containing configuration parameters for the client library.
    */
   public static synchronized void initialize(Map<String, String> conf) throws IOException {
-    if (!initialized) {
-      secret = akka.util.Crypt.generateSecureCookie();
-
-      Map<String, String> akkaConf = Maps.newHashMap(conf);
-      akkaConf.put(ClientUtils.CONF_KEY_SECRET, secret);
-
-      ClientUtils.ActorSystemInfo info = ClientUtils.createActorSystem(akkaConf);
-      actorSystem = info.system;
-      akkaUrl = info.url;
-      initialized = true;
+    if (server == null) {
+      try {
+        server = new RpcServer(conf);
+      } catch (InterruptedException ie) {
+        throw Throwables.propagate(ie);
+      }
     }
   }
 
   /** Stops the SparkClient library. */
   public static synchronized void stop() {
-    if (initialized) {
-      actorSystem.shutdown();
-      actorSystem = null;
-      akkaUrl = null;
-      secret = null;
-      initialized = false;
+    if (server != null) {
+      server.close();
+      server = null;
     }
   }
 
@@ -75,10 +72,8 @@ public final class SparkClientFactory {
    */
   public static synchronized SparkClient createClient(Map<String, String> conf)
       throws IOException, SparkException {
-    if (!initialized) {
-      throw new IllegalStateException("Library is not initialized. Call initialize() first.");
-    }
-    return new SparkClientImpl(conf);
+    Preconditions.checkState(server != null, "initialize() not called.");
+    return new SparkClientImpl(server, conf);
   }
 
 }
