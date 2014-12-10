@@ -34,6 +34,11 @@ public class ShuffleWriteMetrics implements Serializable {
   /** Time tasks spent blocking on writes to disk or buffer cache, in nanoseconds. */
   public final long shuffleWriteTime;
 
+  private ShuffleWriteMetrics() {
+    // For Serialization only.
+    this(0L, 0L);
+  }
+
   public ShuffleWriteMetrics(
       long shuffleBytesWritten,
       long shuffleWriteTime) {

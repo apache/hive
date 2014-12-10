@@ -28,9 +28,23 @@ public class SparkCounter implements Serializable {
   private String name;
   private String displayName;
   private Accumulator<Long> accumulator;
-  // Values of accumulators can only be read on the SparkContext side
-  // In case of RSC, we have to keep the data here
-  private long accumValue = -1;
+
+  // Values of accumulators can only be read on the SparkContext side. This field is used when
+  // creating a snapshot to be sent to the RSC client.
+  private long accumValue;
+
+  public SparkCounter() {
+    // For serialization.
+  }
+
+  private SparkCounter(
+      String name,
+      String displayName,
+      long value) {
+    this.name = name;
+    this.displayName = displayName;
+    this.accumValue = value;
+  }
 
   public SparkCounter(
     String name,
@@ -47,9 +61,9 @@ public class SparkCounter implements Serializable {
   }
 
   public long getValue() {
-    try {
+    if (accumulator != null) {
       return accumulator.value();
-    } catch (UnsupportedOperationException e) {
+    } else {
       return accumValue;
     }
   }
@@ -70,8 +84,8 @@ public class SparkCounter implements Serializable {
     this.displayName = displayName;
   }
 
-  public void dumpValue() {
-    accumValue = accumulator.value();
+  SparkCounter snapshot() {
+    return new SparkCounter(name, displayName, accumulator.value());
   }
 
   class LongAccumulatorParam implements AccumulatorParam<Long> {

@@ -34,15 +34,18 @@ public class SparkCounterGroup implements Serializable {
 
   private transient JavaSparkContext javaSparkContext;
 
-  public SparkCounterGroup(
-    String groupName,
-    String groupDisplayName,
-    JavaSparkContext javaSparkContext) {
+  private SparkCounterGroup() {
+    // For serialization.
+  }
 
+  public SparkCounterGroup(
+      String groupName,
+      String groupDisplayName,
+      JavaSparkContext javaSparkContext) {
     this.groupName = groupName;
     this.groupDisplayName = groupDisplayName;
     this.javaSparkContext = javaSparkContext;
-    sparkCounters = new HashMap<String, SparkCounter>();
+    this.sparkCounters = new HashMap<String, SparkCounter>();
   }
 
   public void createCounter(String name, long initValue) {
@@ -69,4 +72,14 @@ public class SparkCounterGroup implements Serializable {
   public Map<String, SparkCounter> getSparkCounters() {
     return sparkCounters;
   }
+
+  SparkCounterGroup snapshot() {
+    SparkCounterGroup snapshot = new SparkCounterGroup(getGroupName(), getGroupDisplayName(), null);
+    for (SparkCounter counter : sparkCounters.values()) {
+      SparkCounter counterSnapshot = counter.snapshot();
+      snapshot.sparkCounters.put(counterSnapshot.getName(), counterSnapshot);
+    }
+    return snapshot;
+  }
+
 }

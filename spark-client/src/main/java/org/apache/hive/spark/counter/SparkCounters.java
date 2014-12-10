@@ -46,13 +46,15 @@ public class SparkCounters implements Serializable {
 
   private Map<String, SparkCounterGroup> sparkCounterGroups;
 
-  private transient JavaSparkContext javaSparkContext;
-  private transient Configuration hiveConf;
+  private final transient JavaSparkContext javaSparkContext;
 
-  public SparkCounters(JavaSparkContext javaSparkContext, Configuration hiveConf) {
+  private SparkCounters() {
+    this(null);
+  }
+
+  public SparkCounters(JavaSparkContext javaSparkContext) {
     this.javaSparkContext = javaSparkContext;
-    this.hiveConf = hiveConf;
-    sparkCounterGroups = new HashMap<String, SparkCounterGroup>();
+    this.sparkCounterGroups = new HashMap<String, SparkCounterGroup>();
   }
 
   public void createCounter(Enum<?> key) {
@@ -143,14 +145,17 @@ public class SparkCounters implements Serializable {
   }
 
   /**
-   * Dump all SparkCounter values.
-   * RSC should call this method before sending back the counters to client
+   * Create a snapshot of the current counters to send back to the client. This copies the values
+   * of all current counters into a new SparkCounters instance that cannot be used to update the
+   * counters, but will serialize cleanly when sent back to the RSC client.
    */
-  public void dumpAllCounters() {
-    for (SparkCounterGroup counterGroup : sparkCounterGroups.values()) {
-      for (SparkCounter counter : counterGroup.getSparkCounters().values()) {
-        counter.dumpValue();
-      }
+  public SparkCounters snapshot() {
+    SparkCounters snapshot = new SparkCounters();
+    for (SparkCounterGroup group : sparkCounterGroups.values()) {
+      SparkCounterGroup groupSnapshot = group.snapshot();
+      snapshot.sparkCounterGroups.put(groupSnapshot.getGroupName(), groupSnapshot);
     }
+    return snapshot;
   }
+
 }

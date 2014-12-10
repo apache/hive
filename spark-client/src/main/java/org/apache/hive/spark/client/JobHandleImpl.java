@@ -17,8 +17,6 @@
 
 package org.apache.hive.spark.client;
 
-import org.apache.hive.spark.counter.SparkCounters;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -27,40 +25,39 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.netty.util.concurrent.Promise;
+
+import org.apache.hive.spark.counter.SparkCounters;
+
 /**
  * A handle to a submitted job. Allows for monitoring and controlling of the running remote job.
  */
 class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
 
+  private final AtomicBoolean cancelled;
   private final SparkClientImpl client;
   private final String jobId;
   private final MetricsCollection metrics;
-  private final Object monitor;
-
-  private AtomicBoolean cancelled;
-  private boolean completed;
-  private T result;
-  private Throwable error;
-
+  private final Promise<T> promise;
   private final List<Integer> sparkJobIds;
   private SparkCounters sparkCounters;
 
-  JobHandleImpl(SparkClientImpl client, String jobId) {
+  JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId) {
+    this.cancelled = new AtomicBoolean();
     this.client = client;
     this.jobId = jobId;
-    this.monitor = new Object();
+    this.promise = promise;
     this.metrics = new MetricsCollection();
-    this.cancelled = new AtomicBoolean();
-    this.completed = false;
     this.sparkJobIds = new CopyOnWriteArrayList<Integer>();
-    sparkCounters = null;
+    this.sparkCounters = null;
   }
 
   /** Requests a running job to be cancelled. */
   @Override
-  public boolean cancel(boolean unused) {
+  public boolean cancel(boolean mayInterrupt) {
     if (cancelled.compareAndSet(false, true)) {
       client.cancel(jobId);
+      promise.cancel(mayInterrupt);
       return true;
     }
     return false;
@@ -68,28 +65,23 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
 
   @Override
   public T get() throws ExecutionException, InterruptedException {
-    try {
-      return get(-1);
-    } catch (TimeoutException te) {
-      // Shouldn't really happen.
-      throw new ExecutionException(te);
-    }
+    return promise.get();
   }
 
   @Override
   public T get(long timeout, TimeUnit unit)
       throws ExecutionException, InterruptedException, TimeoutException {
-    return get(unit.toMillis(timeout));
+    return promise.get(timeout, unit);
   }
 
   @Override
   public boolean isCancelled() {
-    return cancelled.get();
+    return promise.isCancelled();
   }
 
   @Override
   public boolean isDone() {
-    return completed;
+    return promise.isDone();
   }
 
   /**
@@ -122,44 +114,27 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     return sparkCounters;
   }
 
-  private T get(long timeout) throws ExecutionException, InterruptedException, TimeoutException {
-    long deadline = System.currentTimeMillis() + timeout;
-    synchronized (monitor) {
-      while (!completed && !cancelled.get()) {
-        if (timeout >= 0) {
-          monitor.wait(timeout);
-        } else {
-          monitor.wait();
-        }
-        if (timeout >= 0 && System.currentTimeMillis() >= deadline) {
-          throw new TimeoutException();
-        }
-      }
-    }
-
-    if (error != null) {
-      throw new ExecutionException(error);
-    }
-
-    return result;
+  public void setSparkCounters(SparkCounters sparkCounters) {
+    this.sparkCounters = sparkCounters;
   }
 
   // TODO: expose job status?
 
   @SuppressWarnings("unchecked")
-  void complete(Object result, Throwable error) {
-    if (result != null && error != null) {
-      throw new IllegalArgumentException("Either result or error should be set.");
-    }
-    synchronized (monitor) {
-      this.result = (T) result;
-      this.error = error;
-      this.completed = true;
-      monitor.notifyAll();
+  void setSuccess(Object result) {
+    promise.setSuccess((T) result);
+  }
+
+  void setFailure(Throwable error) {
+    promise.setFailure(error);
+  }
+
+  /** Last attempt resort at preventing stray jobs from accumulating in SparkClientImpl. */
+  @Override
+  protected void finalize() {
+    if (!isDone()) {
+      cancel(true);
     }
   }
 
-  public void setSparkCounters(SparkCounters sparkCounters) {
-    this.sparkCounters = sparkCounters;
-  }
 }

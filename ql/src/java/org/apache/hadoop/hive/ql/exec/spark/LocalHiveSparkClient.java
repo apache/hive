@@ -107,7 +107,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
 
-    SparkCounters sparkCounters = new SparkCounters(sc, hiveConf);
+    SparkCounters sparkCounters = new SparkCounters(sc);
     Map<String, List<String>> prefixes = sparkWork.getRequiredCounterPrefix();
     if (prefixes != null) {
       for (String group : prefixes.keySet()) {

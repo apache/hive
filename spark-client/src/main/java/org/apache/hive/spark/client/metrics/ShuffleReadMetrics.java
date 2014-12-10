@@ -43,6 +43,11 @@ public class ShuffleReadMetrics implements Serializable {
   /** Total number of remote bytes read from the shuffle by tasks. */
   public final long remoteBytesRead;
 
+  private ShuffleReadMetrics() {
+    // For Serialization only.
+    this(0, 0, 0L, 0L);
+  }
+
   public ShuffleReadMetrics(
       int remoteBlocksFetched,
       int localBlocksFetched,

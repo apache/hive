@@ -56,6 +56,11 @@ public class Metrics implements Serializable {
   /** If tasks wrote to shuffle output, metrics on the written shuffle data. */
   public final ShuffleWriteMetrics shuffleWriteMetrics;
 
+  private Metrics() {
+    // For Serialization only.
+    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
+  }
+
   public Metrics(
       long executorDeserializeTime,
       long executorRunTime,
