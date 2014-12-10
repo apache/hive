@@ -25,6 +25,10 @@ public class SparkBucketMapJoinContext extends BucketMapJoinContext {
 
   private Map<Integer, Set<String>> posToAliasMap;
 
+  public SparkBucketMapJoinContext(MapJoinDesc clone) {
+    super(clone);
+  }
+
   public void setPosToAliasMap(Map<Integer, Set<String>> posToAliasMap) {
     this.posToAliasMap = posToAliasMap;
   }
