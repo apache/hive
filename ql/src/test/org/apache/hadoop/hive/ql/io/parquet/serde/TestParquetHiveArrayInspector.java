@@ -24,6 +24,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 public class TestParquetHiveArrayInspector extends TestCase {
 
   private ParquetHiveArrayInspector inspector;
@@ -76,5 +80,33 @@ public class TestParquetHiveArrayInspector extends TestCase {
     }
 
     assertNull("Should be null", inspector.getListElement(list, 3));
+  }
+
+  @Test
+  public void testGetCorrectLengthWithOutNestedContainer() throws Exception {
+    ArrayWritable array = new ArrayWritable(Writable.class, new Writable[]{new IntWritable(3), new IntWritable(5), new IntWritable(1)});
+    int length = inspector.getListLength(array);
+    assertThat(length, is(3));
+  }
+
+  @Test
+  public void testGetsCorrectElementsWithoutNestedContainer() throws Exception {
+    ArrayWritable array = new ArrayWritable(Writable.class, new Writable[]{new IntWritable(3), new IntWritable(5), new IntWritable(1)});
+    final List<Writable> expected = new ArrayList<Writable>();
+    expected.add(new IntWritable(3));
+    expected.add(new IntWritable(5));
+    expected.add(new IntWritable(1));
+    List<Writable> list = (List<Writable>) inspector.getList(array);
+    assertThat(list, is(expected));
+  }
+
+  @Test
+  public void testShouldGetNonNestedListElement() throws Exception {
+    ArrayWritable array = new ArrayWritable(Writable.class, new Writable[]{new IntWritable(3), new IntWritable(5), new IntWritable(1)});
+    assertThat(((IntWritable) inspector.getListElement(array, 0)).get(), is(3));
+    assertThat(((IntWritable) inspector.getListElement(array, 1)).get(), is(5));
+    assertThat(((IntWritable) inspector.getListElement(array, 2)).get(), is(1));
+    assertThat(inspector.getListElement(array, 3), is(nullValue()));
+    assertThat(inspector.getListElement(array, -1), is(nullValue()));
   }
 }
