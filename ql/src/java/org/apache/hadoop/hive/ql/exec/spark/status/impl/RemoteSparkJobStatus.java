@@ -107,15 +107,15 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   @Override
   public SparkStatistics getSparkStatistics() {
+    MetricsCollection metricsCollection = jobHandle.getMetrics();
+    if (metricsCollection == null || getCounter() == null) {
+      return null;
+    }
     SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
     // add Hive operator level statistics.
     sparkStatisticsBuilder.add(getCounter());
     // add spark job metrics.
     String jobIdentifier = "Spark Job[" + jobHandle.getClientJobId() + "] Metrics";
-    MetricsCollection metricsCollection = jobHandle.getMetrics();
-    if (metricsCollection == null) {
-      return null;
-    }
 
     Map<String, Long> flatJobMetric = extractMetrics(metricsCollection);
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
