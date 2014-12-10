@@ -201,7 +201,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -5844,9 +5844,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TBinaryProtocol.Factory())
+          .protocolFactory(new TCompactProtocol.Factory())
           .inputProtocolFactory(
-              new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize))
+              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 

@@ -131,7 +131,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -387,7 +387,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
             transport = new TFramedTransport(transport);
           }
 
-          client = new ThriftHiveMetastore.Client(new TBinaryProtocol(transport));
+          client = new ThriftHiveMetastore.Client(new TCompactProtocol(transport));
           try {
             transport.open();
             isConnected = true;
