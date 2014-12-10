@@ -40,7 +40,7 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   private final MetricsCollection metrics;
   private final Promise<T> promise;
   private final List<Integer> sparkJobIds;
-  private SparkCounters sparkCounters;
+  private volatile SparkCounters sparkCounters;
 
   JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId) {
     this.cancelled = new AtomicBoolean();
