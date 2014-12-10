@@ -310,7 +310,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             } else {
               lastReport = printStatus(progressMap, lastReport, console);
             }
@@ -319,7 +319,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             } else {
               lastReport = printStatus(progressMap, lastReport, console);
             }
@@ -344,7 +344,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             }
             console.printInfo("Status: Killed");
             running = false;
@@ -356,7 +356,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             }
             console.printError("Status: Failed");
             running = false;
@@ -744,6 +744,15 @@ public class TezJobMonitor {
     String report = getReport(progressMap);
     if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + printInterval) {
       console.printInfo(report);
+      lastPrintTime = System.currentTimeMillis();
+    }
+    return report;
+  }
+
+  private String logStatus(Map<String, Progress> progressMap, String lastReport, LogHelper console) {
+    String report = getReport(progressMap);
+    if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + printInterval) {
+      console.logInfo(report);
       lastPrintTime = System.currentTimeMillis();
     }
     return report;
