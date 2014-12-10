@@ -43,11 +43,13 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkBucketMapJoinContext;
+import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 public class SparkMapJoinResolver implements PhysicalPlanResolver {
@@ -67,10 +69,11 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   // Check whether the specified BaseWork's operator tree contains a operator
   // of the specified operator class
   private boolean containsOp(BaseWork work, Class<?> clazz) {
-    return getOp(work, clazz) != null;
+    Set<Operator<? extends OperatorDesc>> matchingOps = getOp(work, clazz);
+    return matchingOps != null && !matchingOps.isEmpty();
   }
 
-  private Operator<? extends OperatorDesc> getOp(BaseWork work, Class<?> clazz) {
+  private Set<Operator<? extends OperatorDesc>> getOp(BaseWork work, Class<?> clazz) {
     Set<Operator<? extends OperatorDesc>> ops = new HashSet<Operator<? extends OperatorDesc>>();
     if (work instanceof MapWork) {
       Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
@@ -88,12 +91,14 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
       ops.addAll(work.getAllOperators());
     }
 
+    Set<Operator<? extends OperatorDesc>> matchingOps =
+      new HashSet<Operator<? extends OperatorDesc>>();
     for (Operator<? extends OperatorDesc> op : ops) {
       if (clazz.isInstance(op)) {
-        return op;
+        matchingOps.add(op);
       }
     }
-    return null;
+    return matchingOps;
   }
 
   @SuppressWarnings("unchecked")
@@ -174,50 +179,64 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
       Context ctx = physicalContext.getContext();
 
       for (BaseWork work : allBaseWorks) {
-        Operator<? extends OperatorDesc> op = getOp(work, MapJoinOperator.class);
-        if (op != null) {
-          MapJoinOperator mapJoinOp = (MapJoinOperator) op;
-          Path tmpPath = Utilities.generateTmpPath(ctx.getMRTmpPath(), originalTask.getId());
-          MapredLocalWork bigTableLocalWork = work.getMapRedLocalWork();
-          List<Operator<? extends OperatorDesc>> dummyOps =
-              new ArrayList<Operator<? extends OperatorDesc>>(work.getDummyOps());
-          bigTableLocalWork.setDummyParentOp(dummyOps);
+        Set<Operator<? extends OperatorDesc>> ops = getOp(work, MapJoinOperator.class);
+        if (ops == null || ops.isEmpty()) {
+          continue;
+        }
+        Path tmpPath = Utilities.generateTmpPath(ctx.getMRTmpPath(), originalTask.getId());
+        MapredLocalWork bigTableLocalWork = work.getMapRedLocalWork();
+        List<Operator<? extends OperatorDesc>> dummyOps =
+          new ArrayList<Operator<? extends OperatorDesc>>(work.getDummyOps());
+        bigTableLocalWork.setDummyParentOp(dummyOps);
+        bigTableLocalWork.setTmpPath(tmpPath);
 
-          SparkBucketMapJoinContext bucketMJCxt = null;
+        // In one work, only one map join operator can be bucketed
+        SparkBucketMapJoinContext bucketMJCxt = null;
+        for (Operator<? extends OperatorDesc> op: ops) {
+          MapJoinOperator mapJoinOp = (MapJoinOperator) op;
           MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
           if (mapJoinDesc.isBucketMapJoin()) {
-            bucketMJCxt = new SparkBucketMapJoinContext();
-            bigTableLocalWork.setBucketMapjoinContext(bucketMJCxt);
-            bucketMJCxt.setAliasBucketFileNameMapping(
-              mapJoinDesc.getAliasBucketFileNameMapping());
-            bucketMJCxt.setBucketFileNameMapping(
-              mapJoinDesc.getBigTableBucketNumMapping());
-            bucketMJCxt.setMapJoinBigTableAlias(mapJoinDesc.getBigTableAlias());
+            bucketMJCxt = new SparkBucketMapJoinContext(mapJoinDesc);
             bucketMJCxt.setBucketMatcherClass(
               org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
-            bucketMJCxt.setBigTablePartSpecToFileMapping(
-              mapJoinDesc.getBigTablePartSpecToFileMapping());
             bucketMJCxt.setPosToAliasMap(mapJoinOp.getPosToAliasMap());
             ((MapWork) work).setUseBucketizedHiveInputFormat(true);
+            bigTableLocalWork.setBucketMapjoinContext(bucketMJCxt);
             bigTableLocalWork.setInputFileChangeSensitive(true);
+            break;
           }
+        }
 
-          for (BaseWork parentWork : originalWork.getParents(work)) {
-            if (containsOp(parentWork,SparkHashTableSinkOperator.class)) {
-              MapredLocalWork parentLocalWork = parentWork.getMapRedLocalWork();
-              parentLocalWork.setTmpHDFSPath(tmpPath);
-              if (bucketMJCxt != null) {
+        for (BaseWork parentWork : originalWork.getParents(work)) {
+          Set<Operator<? extends OperatorDesc>> hashTableSinkOps =
+            getOp(parentWork, SparkHashTableSinkOperator.class);
+          if (hashTableSinkOps == null || hashTableSinkOps.isEmpty()) {
+            continue;
+          }
+          MapredLocalWork parentLocalWork = parentWork.getMapRedLocalWork();
+          parentLocalWork.setTmpHDFSPath(tmpPath);
+          if (bucketMJCxt != null) {
+            // We only need to update the work with the hashtable
+            // sink operator with the same mapjoin desc. We can tell
+            // that by comparing the bucket file name mapping map
+            // instance. They should be exactly the same one due to
+            // the way how the bucket mapjoin context is constructed.
+            for (Operator<? extends OperatorDesc> op: hashTableSinkOps) {
+              SparkHashTableSinkOperator hashTableSinkOp = (SparkHashTableSinkOperator) op;
+              SparkHashTableSinkDesc hashTableSinkDesc = hashTableSinkOp.getConf();
+              BucketMapJoinContext original = hashTableSinkDesc.getBucketMapjoinContext();
+              if (original != null && original.getBucketFileNameMapping()
+                  == bucketMJCxt.getBucketFileNameMapping()) {
                 ((MapWork) parentWork).setUseBucketizedHiveInputFormat(true);
                 parentLocalWork.setBucketMapjoinContext(bucketMJCxt);
                 parentLocalWork.setInputFileChangeSensitive(true);
+                break;
               }
             }
           }
-
-          bigTableLocalWork.setTmpPath(tmpPath);
-          // TODO: set inputFileChangeSensitive and BucketMapjoinContext,
-          // TODO: enable non-staged mapjoin
         }
+
+        // TODO: enable non-staged mapjoin
       }
     }
 

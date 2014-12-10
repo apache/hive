@@ -147,8 +147,11 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       numBuckets = convertJoinBucketMapJoin(joinOp, mapJoinOp,
         context, mapJoinConversionPos);
       if (numBuckets > 1) {
+        LOG.info("Converted to map join with " + numBuckets + " buckets");
         bucketColNames = joinOp.getOpTraits().getBucketColNames();
         mapJoinInfo[2] /= numBuckets;
+      } else {
+        LOG.info("Can not convert to bucketed map join");
       }
     }
 
