@@ -237,7 +237,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       JoinDesc joinDesc = joinOp.getConf();
       // retain the original join desc in the map join.
       mapJoinDesc =
-          new MapJoinDesc(null, null, joinDesc.getExprs(), null, null,
+          new MapJoinDesc(MapJoinProcessor.getKeys(parseContext.getJoinContext().get(joinOp), joinOp).getSecond(),
+              null, joinDesc.getExprs(), null, null,
               joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
               joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
