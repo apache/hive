@@ -98,6 +98,23 @@ public class UnionStructObjectInspector extends StructObjectInspector {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof UnionStructObjectInspector)) {
+      return false;
+    }
+    return unionObjectInspectors.equals(
+      ((UnionStructObjectInspector)o).unionObjectInspectors);
+  }
+
+  @Override
+  public int hashCode() {
+    return unionObjectInspectors.hashCode();
+  }
+
   public final Category getCategory() {
     return Category.STRUCT;
   }
