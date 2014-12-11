@@ -44,11 +44,11 @@ POSTHOOK: query: SELECT * FROM parquet_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_table
 #### A masked pattern was here ####
-{"key3":"val3","key4":null}
-{"key3":"val3","key4":null}
-{"key1":null,"key2":"val2"}
-{"key3":"val3","key4":null}
-{"key3":"val3","key4":null}
+{"key4":null,"key3":"val3"}
+{"key4":null,"key3":"val3"}
+{"key2":"val2","key1":null}
+{"key4":null,"key3":"val3"}
+{"key4":null,"key3":"val3"}
 PREHOOK: query: DROP TABLE avro_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_table
