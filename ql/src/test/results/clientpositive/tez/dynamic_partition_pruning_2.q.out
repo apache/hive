@@ -614,6 +614,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 1 (type: int)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0

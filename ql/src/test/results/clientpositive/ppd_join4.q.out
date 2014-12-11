@@ -69,6 +69,7 @@ STAGE PLANS:
         Reduce Output Operator
           key expressions: 'a' (type: string)
           sort order: +
+          Map-reduce partition columns: '' (type: string)
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
 
   Stage: Stage-2
@@ -78,6 +79,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: 'a' (type: string)
               sort order: +
+              Map-reduce partition columns: '' (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           TableScan
             alias: t3
@@ -88,6 +90,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 'a' (type: string)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
