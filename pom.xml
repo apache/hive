@@ -167,7 +167,6 @@
     <felix.version>2.4.0</felix.version>
     <curator.version>2.6.0</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
-    <spark.home>${basedir}/${hive.path.to.root}/itests/qtest-spark/target/spark</spark.home>
   </properties>
 
   <repositories>
