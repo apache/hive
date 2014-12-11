@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -95,7 +96,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       switch (input.getType()) {
         case TABLE:
           Table table = input.getTable();
-          Map<String, String> tableInfo = new HashMap<String, String>();
+          Map<String, String> tableInfo = new LinkedHashMap<String, String>();
           tableInfo.put("tablename", table.getCompleteName());
           tableInfo.put("tabletype", table.getTableType().toString());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {

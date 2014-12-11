@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -2132,9 +2133,9 @@ class RecordReaderImpl implements RecordReader {
       Map<Object, Object> result = null;
       if (valuePresent) {
         if (previous == null) {
-          result = new HashMap<Object, Object>();
+          result = new LinkedHashMap<Object, Object>();
         } else {
-          result = (HashMap<Object, Object>) previous;
+          result = (LinkedHashMap<Object, Object>) previous;
         }
         // for now just clear and create new objects
         result.clear();

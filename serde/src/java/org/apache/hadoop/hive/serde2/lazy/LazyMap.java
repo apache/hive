@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -154,7 +154,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     int keyValueSeparatorPosition = -1;
     int elementByteEnd = start;
     byte[] bytes = this.bytes.getData();
-    Set<Object> keySet = new HashSet<Object>();
+    Set<Object> keySet = new LinkedHashSet<Object>();
 
     // Go through all bytes in the byte[]
     while (elementByteEnd <= arrayByteEnd) {
