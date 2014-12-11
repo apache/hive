@@ -51,6 +51,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 20 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -139,6 +140,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 20 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -150,6 +152,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 20 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:
@@ -214,6 +217,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 20 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
           TableScan
@@ -225,6 +229,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 20 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: key (type: string), value (type: string)
       Reduce Operator Tree:

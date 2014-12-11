@@ -71,6 +71,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 5 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
@@ -81,6 +82,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 5 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
@@ -152,6 +154,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 5 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: c
@@ -162,6 +165,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 5 (type: int)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
