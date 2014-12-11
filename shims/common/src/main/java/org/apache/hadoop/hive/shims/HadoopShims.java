@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.TreeMap;
 
 import javax.security.auth.login.LoginException;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -400,7 +402,11 @@ public interface HadoopShims {
 
   /**
    * Verify proxy access to given UGI for given user
-   * @param ugi
+   * @param proxyUser
+   * @param realUserUgi
+   * @param ipAddress
+   * @param conf
+   * @throws IOException
    */
   public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
       String ipAddress, Configuration conf) throws IOException;
@@ -819,6 +825,19 @@ public interface HadoopShims {
      * @throws IOException If an error occurred attempting to get encryption/key metadata
      */
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException;
+
+    /**
+     * create encryption zone by path and keyname
+     * @param path HDFS path to create encryption zone
+     * @param keyName keyname
+     * @throws IOException
+     */
+    @VisibleForTesting
+    public void createEncryptionZone(Path path, String keyName) throws IOException;
+
+    @VisibleForTesting
+    public void createKey(String keyName, Configuration conf)
+      throws IOException, NoSuchAlgorithmException;
   }
 
   /**
@@ -841,6 +860,16 @@ public interface HadoopShims {
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
     /* not supported */
       return 0;
+    }
+
+    @Override
+    public void createEncryptionZone(Path path, String keyName) {
+    /* not supported */
+    }
+
+    @Override
+    public void createKey(String keyName, Configuration conf) {
+    /* not supported */
     }
   }
 

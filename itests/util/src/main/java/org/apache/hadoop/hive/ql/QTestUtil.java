@@ -39,6 +39,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,6 +77,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -102,6 +104,24 @@ import com.google.common.collect.ImmutableList;
 public class QTestUtil {
 
   public static final String UTF_8 = "UTF-8";
+
+  // database names used for testing the encrypted databases
+  private static final String ENCRYPTED_WITH_128_BITS_KEY_DB_NAME = "encryptedwith128bitskeydb";
+  private static final String ENCRYPTED_WITH_256_BITS_KEY_DB_NAME = "encryptedwith256bitskeydb";
+  private static final String UNENCRYPTED_DB_NAME = "unencrypteddb";
+
+  // security property names
+  private static final String SECURITY_KEY_BIT_LENGTH_PROP_NAME =
+    "hadoop.security.key.default.bitlength";
+  private static final String SECURITY_KEY_CIPHER_NAME = "hadoop.security.key.default.cipher";
+
+  // keyNames used for encrypting the hdfs path
+  private final String KEY_NAME_IN_128 = "k128";
+  private final String KEY_NAME_IN_256 = "k256";
+
+  // hadoop cipher
+  private final String HADOOP_CIPHER_NAME = "AES/CTR/NoPadding";
+
   private static final Log LOG = LogFactory.getLog("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
   private final String defaultInitScript = "q_test_init.sql";
@@ -130,6 +150,7 @@ public class QTestUtil {
   private CliDriver cliDriver;
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
+  private HadoopShims.HdfsEncryptionShim hes = null;
   private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
@@ -245,6 +266,13 @@ public class QTestUtil {
     return null;
   }
 
+  private void initEncryptionRelatedConf() {
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    // set up the java key provider for encrypted hdfs cluster
+    conf.set(shims.getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"), getKeyProviderURI());
+    conf.set(SECURITY_KEY_CIPHER_NAME, HADOOP_CIPHER_NAME);
+  }
+
   public void initConf() throws Exception {
 
     String vectorizationEnabled = System.getProperty("test.vectorization.enabled");
@@ -280,6 +308,7 @@ public class QTestUtil {
   public enum MiniClusterType {
     mr,
     tez,
+    encrypted,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -287,6 +316,8 @@ public class QTestUtil {
         return mr;
       } else if (type.equals("tez")) {
         return tez;
+      } else if (type.equals("encrypted")) {
+        return encrypted;
       } else {
         return none;
       }
@@ -297,6 +328,15 @@ public class QTestUtil {
                    String initScript, String cleanupScript)
     throws Exception {
     this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript);
+  }
+
+  private String getKeyProviderURI() {
+    // Use the target directory if it is not specified
+    String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
+    String keyDir = HIVE_ROOT + "ql/target/";
+
+    // put the jks file in the current test path only for test purpose
+    return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
@@ -323,8 +363,21 @@ public class QTestUtil {
     int numberOfDataNodes = 4;
 
     if (clusterType != MiniClusterType.none) {
-      dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
-      FileSystem fs = dfs.getFileSystem();
+      FileSystem fs;
+
+      if (clusterType == MiniClusterType.encrypted) {
+        initEncryptionRelatedConf();
+
+        dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
+        fs = dfs.getFileSystem();
+        // set up the java key provider for encrypted hdfs cluster
+        hes = shims.createHdfsEncryptionShim(fs, conf);
+        LOG.info("key provider is initialized");
+      } else {
+        dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
+        fs = dfs.getFileSystem();
+      }
+
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
         mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
@@ -340,7 +393,6 @@ public class QTestUtil {
     if (dataDir == null) {
       dataDir = new File(".").getAbsolutePath() + "/data/files";
     }
-
     testFiles = dataDir;
 
     // Use the current directory if it is not specified
@@ -368,7 +420,7 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) == null) {
       cleanUp();
     }
-    
+
     setup.tearDown();
     if (mr != null) {
       mr.shutdown();
@@ -538,6 +590,19 @@ public class QTestUtil {
   }
 
   /**
+   * For the security type, we should reserve the encrypted databases for the test purpose
+   */
+  private boolean checkDBIfNeedToBePreserved(String dbName) {
+    if (clusterType == MiniClusterType.encrypted) {
+      return (DEFAULT_DATABASE_NAME.equals(dbName) ||
+        ENCRYPTED_WITH_128_BITS_KEY_DB_NAME.equals(dbName) ||
+        ENCRYPTED_WITH_256_BITS_KEY_DB_NAME.equals(dbName) || UNENCRYPTED_DB_NAME.equals(dbName));
+    } else {
+      return DEFAULT_DATABASE_NAME.equals(dbName);
+    }
+  }
+
+  /**
    * Clear out any side effects of running tests
    */
   public void clearTestSideEffects() throws Exception {
@@ -545,11 +610,11 @@ public class QTestUtil {
       return;
     }
     // Delete any tables other than the source tables
-    // and any databases other than the default database.
+    // and any databases other than the default database or encrypted dbs in encryption mode.
     for (String dbName : db.getAllDatabases()) {
       SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
-        if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
+        if (!checkDBIfNeedToBePreserved(dbName) || !srcTables.contains(tblName)) {
           Table tblObj = db.getTable(tblName);
           // dropping index table can not be dropped directly. Dropping the base
           // table will automatically drop all its index table
@@ -567,7 +632,7 @@ public class QTestUtil {
           }
         }
       }
-      if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
+      if (!checkDBIfNeedToBePreserved(dbName)) {
         // Drop cascade, may need to drop functions
         db.dropDatabase(dbName, true, true, true);
       }
@@ -593,11 +658,15 @@ public class QTestUtil {
           db.dropRole(roleName);
         }
     }
-    // allocate and initialize a new conf since a test can
-    // modify conf by using 'set' commands
-    conf = new HiveConf (Driver.class);
-    initConf();
-    db = Hive.get(conf);  // propagate new conf to meta store
+
+    if (clusterType != MiniClusterType.encrypted) {
+      // allocate and initialize a new conf since a test can
+      // modify conf by using 'set' commands
+      conf = new HiveConf (Driver.class);
+      initConf();
+      // renew the metastore since the cluster type is unencrypted
+      db = Hive.get(conf);  // propagate new conf to meta store
+    }
     setup.preTest(conf);
   }
 
@@ -685,6 +754,10 @@ public class QTestUtil {
     cliDriver.processLine(initCommands);
 
     conf.setBoolean("hive.test.init.phase", false);
+
+    if (clusterType == MiniClusterType.encrypted) {
+      initEncryptionZone();
+    }
   }
 
   public void init() throws Exception {
@@ -703,6 +776,29 @@ public class QTestUtil {
     drv.init();
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(conf);
+  }
+
+  private void initEncryptionZone() throws IOException, NoSuchAlgorithmException, HiveException {
+    // current only aes/ctr/nopadding cipher is supported
+    conf.set(SECURITY_KEY_CIPHER_NAME, HADOOP_CIPHER_NAME);
+
+    // create encryption zone via a 128-bits key respectively for encrypted database 1
+    conf.set(SECURITY_KEY_BIT_LENGTH_PROP_NAME, "128");
+
+    hes.createKey(KEY_NAME_IN_128, conf);
+    hes.createEncryptionZone(
+      new Path(db.getDatabase(ENCRYPTED_WITH_128_BITS_KEY_DB_NAME).getLocationUri()),
+      KEY_NAME_IN_128);
+
+    // create encryption zone via a 256-bits key respectively for encrypted database 2
+    conf.set(SECURITY_KEY_BIT_LENGTH_PROP_NAME, "256");
+
+    // AES-256 can be used only if JCE is installed in your environment. Otherwise, any encryption
+    // with this key will fail. Keys can be created, but when you try to encrypt something, fails.
+    hes.createKey(KEY_NAME_IN_256, conf);
+    hes.createEncryptionZone(
+      new Path(db.getDatabase(ENCRYPTED_WITH_256_BITS_KEY_DB_NAME).getLocationUri()),
+      KEY_NAME_IN_256);
   }
 
   public void init(String tname) throws Exception {
@@ -819,7 +915,7 @@ public class QTestUtil {
     try {
       return drv.run(qMap.get(tname)).getResponseCode();
     } catch (CommandNeedRetryException e) {
-      // TODO Auto-generated catch block
+      LOG.error("driver failed to run the command: " + tname + " due to the exception: ", e);
       e.printStackTrace();
       return -1;
     }
@@ -865,7 +961,7 @@ public class QTestUtil {
 
     // Move all data from dest4_sequencefile to dest4
     drv
-        .run("FROM dest4_sequencefile INSERT OVERWRITE TABLE dest4 SELECT dest4_sequencefile.*");
+      .run("FROM dest4_sequencefile INSERT OVERWRITE TABLE dest4 SELECT dest4_sequencefile.*");
 
     // Drop dest4_sequencefile
     db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "dest4_sequencefile",
@@ -1578,8 +1674,10 @@ public class QTestUtil {
   }
 
   public static void outputTestFailureHelpMessage() {
-    System.err.println("See ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-        + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.");
+    System.err.println(
+      "See ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, or check " +
+        "./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific " +
+        "test cases logs.");
     System.err.flush();
   }
 

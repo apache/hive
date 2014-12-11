@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessControlException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
+import org.apache.hadoop.crypto.key.KeyProvider.Options;
 import org.apache.hadoop.crypto.key.KeyProviderFactory;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.DefaultFileAccess;
@@ -96,7 +98,8 @@ import com.google.common.collect.Iterables;
 public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
-
+  MiniDFSCluster miniDFSCluster = null;
+  KeyProvider keyProvider;
   final boolean zeroCopy;
 
   public Hadoop23Shims() {
@@ -380,7 +383,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
-    cluster = new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
+    miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
+    keyProvider = miniDFSCluster.getNameNode().getNamesystem().getProvider();
+    cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
   }
 
@@ -742,7 +747,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
     ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
     ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
-    ret.put("HADOOPSECURITYKEYPROVIDER", "hadoop.security.key.provider.path");
+    ret.put("HADOOPSECURITYKEYPROVIDER", "dfs.encryption.key.provider.uri");
     return ret;
  }
 
@@ -938,12 +943,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return (0 == rc);
   }
 
-  public static class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
-    /**
-     * Gets information about key encryption metadata
-     */
-    private KeyProvider keyProvider = null;
-
+  public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
     /**
      * Gets information about HDFS encryption zones
      */
@@ -951,16 +951,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
       hdfsAdmin = new HdfsAdmin(uri, conf);
-
-      try {
-        String keyProviderPath = conf.get(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"), null);
-        if (keyProviderPath != null) {
-          keyProvider = KeyProviderFactory.get(new URI(keyProviderPath), conf);
+      // We get the key provider via the MiniDFSCluster in the test and in the product
+      // environment we get the key provider via the key provider factory.
+      if (keyProvider == null) {
+        try {
+          String keyProviderPath = conf
+            .get(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"),
+              null);
+          if (keyProviderPath != null) {
+            keyProvider = KeyProviderFactory.get(new URI(keyProviderPath), conf);
+          }
+        } catch (URISyntaxException e) {
+          throw new IOException("Invalid HDFS security key provider path", e);
+        } catch (Exception e) {
+          throw new IOException("Cannot create HDFS security object: ", e);
         }
-      } catch (URISyntaxException e) {
-        throw new IOException("Invalid HDFS security key provider path", e);
-      } catch (Exception e) {
-        throw new IOException("Cannot create HDFS security object: ", e);
       }
     }
 
@@ -1001,6 +1006,24 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
 
       return compareKeyStrength(zone1.getKeyName(), zone2.getKeyName());
+    }
+
+    @Override
+    public void createEncryptionZone(Path path, String keyName) throws IOException {
+      hdfsAdmin.createEncryptionZone(path, keyName);
+    }
+
+    @Override
+    public void createKey(String keyName, Configuration conf)
+      throws IOException, NoSuchAlgorithmException {
+
+      if (keyProvider.getMetadata(keyName) != null) {
+        LOG.info("key " + keyName + " has already exists");
+        return;
+      }
+      Options options = new Options(conf);
+      keyProvider.createKey(keyName, options);
+      keyProvider.flush();
     }
 
     /**
