@@ -204,9 +204,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -218,9 +215,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
@@ -237,9 +231,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -248,9 +239,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
                   keys:
                     0 _col1 (type: string)
                     1 value (type: string)
@@ -363,9 +351,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -377,9 +362,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
@@ -396,9 +378,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -407,9 +386,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
                   keys:
                     0 _col1 (type: string)
                     1 value (type: string)
@@ -526,9 +502,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -540,9 +513,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {key}
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
@@ -559,9 +529,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -570,9 +537,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 {key}
                   keys:
                     0 _col1 (type: string)
                     1 value (type: string)
@@ -842,9 +806,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -859,9 +820,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -894,9 +852,6 @@ STAGE PLANS:
             Filter Operator
               predicate: value is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -908,9 +863,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                1 {key}
               keys:
                 0 _col3 (type: string)
                 1 value (type: string)
@@ -943,9 +895,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -957,9 +906,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
               keys:
                 0 _col1 (type: string)
                 1 key (type: string)
@@ -992,9 +938,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -1006,9 +949,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
               keys:
                 0 _col2 (type: string)
                 1 key (type: string)
@@ -1065,9 +1005,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
               keys:
                 0 _col2 (type: string)
                 1 key (type: string)
@@ -1082,9 +1019,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 {key}
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -1130,9 +1064,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {KEY.reducesinkkey0} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 _col2 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
           Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -1161,9 +1095,6 @@ STAGE PLANS:
         join3:$INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
               keys:
                 0 _col1 (type: string)
                 1 key (type: string)
@@ -1178,9 +1109,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 {key}
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -1222,9 +1150,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 _col1 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
           Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -1248,9 +1176,6 @@ STAGE PLANS:
         join3:join2:$INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col4}
-                1 {key}
               keys:
                 0 _col3 (type: string)
                 1 value (type: string)
@@ -1265,9 +1190,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -1310,9 +1232,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {KEY.reducesinkkey0} {VALUE._col3}
-            1 {VALUE._col0}
+          keys:
+            0 _col3 (type: string)
+            1 value (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -1339,9 +1261,6 @@ STAGE PLANS:
             Filter Operator
               predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1356,9 +1275,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1405,9 +1321,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 key1 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col6
           Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -1619,9 +1535,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1633,9 +1546,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -1647,9 +1557,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -1661,9 +1568,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -1680,9 +1584,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1695,9 +1596,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                      1 {key}
                     keys:
                       0 _col3 (type: string)
                       1 value (type: string)
@@ -1710,9 +1608,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                          1 {key}
                         keys:
                           0 _col1 (type: string)
                           1 key (type: string)
@@ -1725,9 +1620,6 @@ STAGE PLANS:
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
-                            condition expressions:
-                              0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                              1 {key}
                             keys:
                               0 _col2 (type: string)
                               1 key (type: string)
@@ -1951,9 +1843,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1965,9 +1854,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -1984,9 +1870,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -1999,9 +1882,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                      1 {key}
                     keys:
                       0 _col3 (type: string)
                       1 value (type: string)
@@ -2038,9 +1918,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -2052,9 +1929,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -2066,9 +1940,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
               keys:
                 0 _col1 (type: string)
                 1 key (type: string)
@@ -2081,9 +1952,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                    1 {key}
                   keys:
                     0 _col2 (type: string)
                     1 key (type: string)
@@ -2324,9 +2192,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -2341,9 +2206,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -2376,9 +2238,6 @@ STAGE PLANS:
             Filter Operator
               predicate: value is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -2390,9 +2249,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                1 {key}
               keys:
                 0 _col3 (type: string)
                 1 value (type: string)
@@ -2425,9 +2281,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -2439,9 +2292,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
               keys:
                 0 _col1 (type: string)
                 1 key (type: string)
@@ -2474,9 +2324,6 @@ STAGE PLANS:
             Filter Operator
               predicate: key is not null (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -2488,9 +2335,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
               keys:
                 0 _col2 (type: string)
                 1 key (type: string)
@@ -2547,9 +2391,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col3} {_col4} {_col5} {_col6}
-                1 {key}
               keys:
                 0 _col2 (type: string)
                 1 key (type: string)
@@ -2564,9 +2405,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5} {_col6}
-                  1 {key}
                 keys:
                   0 _col2 (type: string)
                   1 key (type: string)
@@ -2612,9 +2450,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {KEY.reducesinkkey0} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 _col2 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
           Statistics: Num rows: 913 Data size: 13207 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -2643,9 +2481,6 @@ STAGE PLANS:
         join3:$INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col2} {_col3} {_col4} {_col5}
-                1 {key}
               keys:
                 0 _col1 (type: string)
                 1 key (type: string)
@@ -2660,9 +2495,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4} {_col5}
-                  1 {key}
                 keys:
                   0 _col1 (type: string)
                   1 key (type: string)
@@ -2704,9 +2536,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 _col1 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
           Statistics: Num rows: 830 Data size: 12007 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -2730,9 +2562,6 @@ STAGE PLANS:
         join3:join2:$INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col2} {_col4}
-                1 {key}
               keys:
                 0 _col3 (type: string)
                 1 value (type: string)
@@ -2747,9 +2576,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col2} {_col3} {_col4}
-                  1 {key}
                 keys:
                   0 _col3 (type: string)
                   1 value (type: string)
@@ -2792,9 +2618,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {KEY.reducesinkkey0} {VALUE._col3}
-            1 {VALUE._col0}
+          keys:
+            0 _col3 (type: string)
+            1 value (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 755 Data size: 10916 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -2821,9 +2647,6 @@ STAGE PLANS:
             Filter Operator
               predicate: ((key1 is not null and value is not null) and key2 is not null) (type: boolean)
               HashTable Sink Operator
-                condition expressions:
-                  0 {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -2838,9 +2661,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key1} {key2} {value}
-                  1 {key}
                 keys:
                   0 key1 (type: string)
                   1 key (type: string)
@@ -2887,9 +2707,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col1}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 key1 (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col2, _col6
           Statistics: Num rows: 687 Data size: 9924 Basic stats: COMPLETE Column stats: NONE
           Select Operator

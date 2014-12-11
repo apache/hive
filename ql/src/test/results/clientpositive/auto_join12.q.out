@@ -48,10 +48,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -68,10 +64,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 28 Data size: 297 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -94,10 +86,6 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                        Inner Join 0 to 2
-                  condition expressions:
-                    0 {_col0}
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)

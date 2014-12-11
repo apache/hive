@@ -133,9 +133,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {ss_hdemo_sk} {ss_net_profit}
-                        1 {s_city}
                       keys:
                         0 ss_store_sk (type: int)
                         1 s_store_sk (type: int)
@@ -146,9 +143,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col2} {_col7}
-                          1 
                         keys:
                           0 _col1 (type: int)
                           1 hd_demo_sk (type: int)

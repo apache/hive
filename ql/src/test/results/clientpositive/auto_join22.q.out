@@ -28,9 +28,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -42,9 +39,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {_col3}
                 keys:
                   0 key (type: string)
                   1 _col2 (type: string)
@@ -61,9 +55,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -76,9 +67,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 {_col3}
                     keys:
                       0 key (type: string)
                       1 _col2 (type: string)

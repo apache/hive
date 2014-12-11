@@ -37,9 +37,6 @@ STAGE PLANS:
             alias: cd
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {ctinyint}
-                1 
               keys:
                 0 cint (type: int)
                 1 cint (type: int)
@@ -48,9 +45,6 @@ STAGE PLANS:
             alias: hd
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
               keys:
                 0 _col0 (type: tinyint)
                 1 ctinyint (type: tinyint)
@@ -64,9 +58,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 {ctinyint}
-                1 
               keys:
                 0 cint (type: int)
                 1 cint (type: int)
@@ -75,9 +66,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 _col0 (type: tinyint)
                   1 ctinyint (type: tinyint)

@@ -29,9 +29,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {cint}
-                        1 {cint}
                       keys:
                         0 cint (type: int)
                         1 cint (type: int)

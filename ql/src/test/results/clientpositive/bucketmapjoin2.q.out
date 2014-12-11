@@ -232,9 +232,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -261,9 +258,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -784,9 +778,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -813,9 +804,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -1433,9 +1421,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 29 Data size: 3062 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -1462,9 +1447,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)

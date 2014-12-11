@@ -73,9 +73,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 value (type: string), key (type: string)
                   1 _col0 (type: string), _col1 (type: string)

@@ -19,14 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 
@@ -115,21 +111,6 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.dumpFilePrefix = clone.getDumpFilePrefix();
     this.bucketMapjoinContext = new BucketMapJoinContext(clone);
     this.hashtableMemoryUsage = clone.getHashTableMemoryUsage();
-  }
-
-
-  private void initRetainExprList() {
-    retainList = new HashMap<Byte, List<Integer>>();
-    Set<Entry<Byte, List<ExprNodeDesc>>> set = exprs.entrySet();
-    Iterator<Entry<Byte, List<ExprNodeDesc>>> setIter = set.iterator();
-    while (setIter.hasNext()) {
-      Entry<Byte, List<ExprNodeDesc>> current = setIter.next();
-      List<Integer> list = new ArrayList<Integer>();
-      for (int i = 0; i < current.getValue().size(); i++) {
-        list.add(i);
-      }
-      retainList.put(current.getKey(), list);
-    }
   }
 
   public float getHashtableMemoryUsage() {

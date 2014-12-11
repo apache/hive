@@ -36,9 +36,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Left Outer Join0 to 1
-                    condition expressions:
-                      0 {ctinyint}
-                      1 
                     keys:
                       0 cint (type: int)
                       1 cint (type: int)
@@ -49,9 +46,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 _col0 (type: tinyint)
                         1 ctinyint (type: tinyint)

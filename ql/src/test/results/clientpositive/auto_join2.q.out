@@ -39,9 +39,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {key}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -53,9 +50,6 @@ STAGE PLANS:
               predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0}
-                  1 {value}
                 keys:
                   0 (_col0 + _col5) (type: double)
                   1 UDFToDouble(key) (type: double)
@@ -72,9 +66,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key}
-                  1 {key}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -86,9 +77,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0}
-                      1 {value}
                     keys:
                       0 (_col0 + _col5) (type: double)
                       1 UDFToDouble(key) (type: double)

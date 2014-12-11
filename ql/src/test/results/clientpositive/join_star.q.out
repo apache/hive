@@ -151,9 +151,6 @@ STAGE PLANS:
               predicate: f1 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {m1} {m2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -170,9 +167,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {m1} {m2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -246,9 +240,6 @@ STAGE PLANS:
               predicate: f1 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {m1} {m2} {d2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -260,9 +251,6 @@ STAGE PLANS:
               predicate: f3 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col8}
-                  1 {f4}
                 keys:
                   0 _col3 (type: int)
                   1 f3 (type: int)
@@ -279,9 +267,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {m1} {m2} {d2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -290,9 +275,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col8}
-                    1 {f4}
                   keys:
                     0 _col3 (type: int)
                     1 f3 (type: int)
@@ -368,9 +350,6 @@ STAGE PLANS:
               predicate: (f1 is not null and f2 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {m1} {m2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -382,9 +361,6 @@ STAGE PLANS:
               predicate: f3 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col8}
-                  1 {f4}
                 keys:
                   0 _col8 (type: int)
                   1 f3 (type: int)
@@ -401,9 +377,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {m1} {m2}
-                  1 {f2}
                 keys:
                   0 d1 (type: int)
                   1 f1 (type: int)
@@ -412,9 +385,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col8}
-                    1 {f4}
                   keys:
                     0 _col8 (type: int)
                     1 f3 (type: int)
@@ -487,9 +457,6 @@ STAGE PLANS:
             alias: dim1
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {m1} {m2}
-                1 {f2}
               keys:
                 0 d1 (type: int)
                 1 f1 (type: int)
@@ -498,9 +465,6 @@ STAGE PLANS:
             alias: dim2
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8}
-                1 {f4}
               keys:
                 0 _col8 (type: int)
                 1 f3 (type: int)
@@ -514,9 +478,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 {m1} {m2}
-                1 {f2}
               keys:
                 0 d1 (type: int)
                 1 f1 (type: int)
@@ -525,9 +486,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col8}
-                  1 {f4}
                 keys:
                   0 _col8 (type: int)
                   1 f3 (type: int)
@@ -631,9 +589,6 @@ STAGE PLANS:
             alias: dim1
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {m1} {m2} {d2}
-                1 {f2}
               keys:
                 0 d1 (type: int)
                 1 f1 (type: int)
@@ -642,9 +597,6 @@ STAGE PLANS:
             alias: dim2
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col3} {_col8}
-                1 {f4}
               keys:
                 0 _col8 (type: int)
                 1 f3 (type: int)
@@ -653,9 +605,6 @@ STAGE PLANS:
             alias: dim3
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8} {_col13}
-                1 {f6}
               keys:
                 0 _col3 (type: int)
                 1 f5 (type: int)
@@ -664,10 +613,6 @@ STAGE PLANS:
             alias: dim4
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8} {_col13} {_col18}
-                1 {f8}
-                2 {f12}
               keys:
                 0 _col18 (type: int)
                 1 f7 (type: int)
@@ -677,9 +622,6 @@ STAGE PLANS:
             alias: dim5
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28}
-                1 {f10}
               keys:
                 0 _col23 (type: int)
                 1 f9 (type: int)
@@ -688,10 +630,6 @@ STAGE PLANS:
             alias: dim6
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8} {_col13} {_col18}
-                1 {f8}
-                2 {f12}
               keys:
                 0 _col18 (type: int)
                 1 f7 (type: int)
@@ -701,9 +639,6 @@ STAGE PLANS:
             alias: dim7
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28} {_col33}
-                1 {f14}
               keys:
                 0 _col28 (type: int)
                 1 f13 (type: int)
@@ -717,9 +652,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 {m1} {m2} {d2}
-                1 {f2}
               keys:
                 0 d1 (type: int)
                 1 f1 (type: int)
@@ -728,9 +660,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {_col0} {_col1} {_col3} {_col8}
-                  1 {f4}
                 keys:
                   0 _col8 (type: int)
                   1 f3 (type: int)
@@ -739,9 +668,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Left Outer Join0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col8} {_col13}
-                    1 {f6}
                   keys:
                     0 _col3 (type: int)
                     1 f5 (type: int)
@@ -751,10 +677,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Left Outer Join0 to 2
-                    condition expressions:
-                      0 {_col0} {_col1} {_col8} {_col13} {_col18}
-                      1 {f8}
-                      2 {f12}
                     keys:
                       0 _col18 (type: int)
                       1 f7 (type: int)
@@ -764,9 +686,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28}
-                        1 {f10}
                       keys:
                         0 _col23 (type: int)
                         1 f9 (type: int)
@@ -775,9 +694,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
-                        condition expressions:
-                          0 {_col0} {_col1} {_col8} {_col13} {_col18} {_col23} {_col28} {_col33}
-                          1 {f14}
                         keys:
                           0 _col28 (type: int)
                           1 f13 (type: int)

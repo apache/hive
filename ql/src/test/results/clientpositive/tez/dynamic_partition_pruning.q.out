@@ -247,9 +247,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -353,9 +350,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -521,9 +515,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2}
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -539,9 +530,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 _col3 (type: string)
                   1 hr (type: string)
@@ -667,9 +655,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2}
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -685,9 +670,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 _col3 (type: string)
                   1 hr (type: string)
@@ -837,9 +819,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string), hr (type: string)
                   1 ds (type: string), hr (type: string)
@@ -943,9 +922,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string), hr (type: string)
                   1 ds (type: string), hr (type: string)
@@ -1077,9 +1053,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -1183,9 +1156,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -1318,9 +1288,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 UDFToDouble(hr) (type: double)
                   1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
@@ -1442,9 +1409,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 (hr * 2) (type: double)
                   1 hr (type: double)
@@ -1551,9 +1515,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 UDFToDouble(hr) (type: double)
                   1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
@@ -1660,9 +1621,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 (hr * 2) (type: double)
                   1 hr (type: double)
@@ -1797,9 +1755,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 UDFToString((hr * 2)) (type: string)
                   1 UDFToString(hr) (type: string)
@@ -1952,9 +1907,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 _col0 (type: string)
@@ -2069,9 +2021,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2} {VALUE._col3}
-                  1 {VALUE._col0} {VALUE._col2}
                 keys:
                   0 
                   1 
@@ -2213,9 +2162,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
-                  1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 keys:
                   0 ds (type: string), hr (type: string)
                   1 ds (type: string), hr (type: string)
@@ -2323,9 +2269,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -2430,9 +2373,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -2515,9 +2455,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -2657,9 +2594,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -2674,9 +2608,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 '11' (type: string)
                   1 '11' (type: string)
@@ -2787,9 +2718,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -2804,9 +2732,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 '13' (type: string)
                   1 '13' (type: string)
@@ -2932,9 +2857,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 ds (type: string)
                   1 _col0 (type: string)
@@ -3118,9 +3040,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 ds (type: string)
                   1 _col0 (type: string)
@@ -3379,9 +3298,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3506,9 +3422,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -3638,9 +3551,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {hr}
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -3651,9 +3561,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 _col3 (type: string)
                         1 hr (type: string)
@@ -3812,9 +3719,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string), hr (type: string)
                       1 ds (type: string), hr (type: string)
@@ -3956,9 +3860,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4064,9 +3965,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 UDFToDouble(hr) (type: double)
                         1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
@@ -4183,9 +4081,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 (hr * 2) (type: double)
                         1 hr (type: double)
@@ -4335,9 +4230,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 _col0 (type: string)
@@ -4461,9 +4353,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Left Outer Join0 to 1
-                    condition expressions:
-                      0 
-                      1 {date}
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4549,9 +4438,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 ds (type: string)
                         1 ds (type: string)
@@ -4646,9 +4532,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
                 keys:
                   0 ds (type: string)
                   1 ds (type: string)
@@ -4722,9 +4605,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4734,9 +4614,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 '11' (type: string)
                         1 '11' (type: string)
@@ -4900,9 +4777,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 '13' (type: string)
                         1 '13' (type: string)
@@ -4980,9 +4854,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Left Semi Join 0 to 1
-                    condition expressions:
-                      0 {ds}
-                      1 
                     keys:
                       0 ds (type: string)
                       1 _col0 (type: string)
@@ -5202,9 +5073,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 ds (type: string), UDFToDouble(hr) (type: double)
                         1 ds (type: string), UDFToDouble(hr) (type: double)

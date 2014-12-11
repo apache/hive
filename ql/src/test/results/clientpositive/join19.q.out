@@ -184,10 +184,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
-            2 {VALUE._col0}
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col1 (type: string)
           outputColumnNames: _col0, _col2, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
@@ -243,10 +243,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {KEY.reducesinkkey0}
-            1 
-            2 {VALUE._col0}
+          keys:
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col0, _col2, _col3, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
@@ -286,9 +286,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {VALUE._col3} {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 _col7 (type: string)
+            1 _col0 (type: string)
           outputColumnNames: _col0, _col2, _col3, _col7, _col9
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator

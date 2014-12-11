@@ -169,9 +169,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount} {dim_shops_id}
-                      1 {id} {label}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
@@ -333,9 +330,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount} {dim_shops_id}
-                      1 {id} {label}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
@@ -472,9 +466,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {dim_shops_id}
-                      1 {id} {label}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
@@ -581,9 +572,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount}
-                      1 
                     keys:
                       0 1 (type: int)
                       1 1 (type: int)
@@ -686,9 +674,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount} {dim_shops_id}
-                      1 {id} {label}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
@@ -840,9 +825,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount} {dim_shops_id}
-                      1 {id}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
@@ -900,9 +882,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {amount} {dim_shops_id}
-                      1 {id}
                     keys:
                       0 dim_shops_id (type: int)
                       1 id (type: int)
