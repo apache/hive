@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -202,7 +201,11 @@ public final class ObjectInspectorFactory {
         .get(listElementObjectInspector);
     if (result == null) {
       result = new StandardListObjectInspector(listElementObjectInspector);
-      cachedStandardListObjectInspector.put(listElementObjectInspector, result);
+      StandardListObjectInspector prev =
+        cachedStandardListObjectInspector.putIfAbsent(listElementObjectInspector, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -227,7 +230,11 @@ public final class ObjectInspectorFactory {
     if (result == null) {
       result = new StandardMapObjectInspector(mapKeyObjectInspector,
           mapValueObjectInspector);
-      cachedStandardMapObjectInspector.put(signature, result);
+      StandardMapObjectInspector prev =
+        cachedStandardMapObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -250,7 +257,11 @@ public final class ObjectInspectorFactory {
         .get(unionObjectInspectors);
     if (result == null) {
       result = new StandardUnionObjectInspector(unionObjectInspectors);
-      cachedStandardUnionObjectInspector.put(unionObjectInspectors, result);
+      StandardUnionObjectInspector prev =
+        cachedStandardUnionObjectInspector.putIfAbsent(unionObjectInspectors, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -277,7 +288,11 @@ public final class ObjectInspectorFactory {
     StandardStructObjectInspector result = cachedStandardStructObjectInspector.get(signature);
     if(result == null) {
       result = new StandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, structComments);
-      cachedStandardStructObjectInspector.put(signature, result);
+      StandardStructObjectInspector prev =
+        cachedStandardStructObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -291,7 +306,11 @@ public final class ObjectInspectorFactory {
         .get(structObjectInspectors);
     if (result == null) {
       result = new UnionStructObjectInspector(structObjectInspectors);
-      cachedUnionStructObjectInspector.put(structObjectInspectors, result);
+      UnionStructObjectInspector prev =
+        cachedUnionStructObjectInspector.putIfAbsent(structObjectInspectors, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
@@ -319,7 +338,11 @@ public final class ObjectInspectorFactory {
     if (result == null) {
       result = new ColumnarStructObjectInspector(structFieldNames,
           structFieldObjectInspectors, structFieldComments);
-      cachedColumnarStructObjectInspector.put(signature, result);
+      ColumnarStructObjectInspector prev =
+        cachedColumnarStructObjectInspector.putIfAbsent(signature, result);
+      if (prev != null) {
+        result = prev;
+      }
     }
     return result;
   }
