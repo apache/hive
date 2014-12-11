@@ -114,10 +114,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0}
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col5
           Statistics: Num rows: 8 Data size: 37 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -274,10 +274,10 @@ STAGE PLANS:
             condition map:
                  Inner Join 0 to 1
                  Inner Join 1 to 2
-            condition expressions:
-              0 
-              1 {KEY.reducesinkkey0}
-              2 
+            keys:
+              0 key (type: int)
+              1 key (type: int)
+              2 key (type: int)
             outputColumnNames: _col5
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Mux Operator
@@ -390,10 +390,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
-                  2 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -406,10 +402,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 4 Data size: 17 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
-                  2 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -428,10 +420,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 1 to 2
-                condition expressions:
-                  0 
-                  1 {key}
-                  2 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -577,10 +565,10 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
                Left Outer Join1 to 2
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col0
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -728,10 +716,10 @@ STAGE PLANS:
             condition map:
                  Left Outer Join0 to 1
                  Left Outer Join1 to 2
-            condition expressions:
-              0 {KEY.reducesinkkey0}
-              1 
-              2 
+            keys:
+              0 key (type: int)
+              1 key (type: int)
+              2 key (type: int)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Mux Operator
@@ -862,10 +850,10 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
                Left Outer Join1 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0}
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1016,10 +1004,10 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
                Right Outer Join1 to 2
-          condition expressions:
-            0 
-            1 
-            2 {KEY.reducesinkkey0}
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col10
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1167,10 +1155,10 @@ STAGE PLANS:
             condition map:
                  Right Outer Join0 to 1
                  Right Outer Join1 to 2
-            condition expressions:
-              0 
-              1 
-              2 {KEY.reducesinkkey0}
+            keys:
+              0 key (type: int)
+              1 key (type: int)
+              2 key (type: int)
             outputColumnNames: _col10
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Mux Operator
@@ -1301,10 +1289,10 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
                Right Outer Join1 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0}
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1455,10 +1443,10 @@ STAGE PLANS:
           condition map:
                Outer Join 0 to 1
                Outer Join 1 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0}
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1605,10 +1593,10 @@ STAGE PLANS:
           condition map:
                Outer Join 0 to 1
                Outer Join 1 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0}
-            2 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
+            2 key (type: int)
           outputColumnNames: _col5
           Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
           Group By Operator

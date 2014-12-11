@@ -38,9 +38,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
                 keys:
                   0 
                   1 
@@ -104,9 +101,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
                 keys:
                   0 
                   1 
@@ -178,9 +172,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)

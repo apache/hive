@@ -123,9 +123,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {VALUE._col0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -267,11 +264,6 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Inner Join 1 to 2
                      Inner Join 2 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -404,11 +396,6 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Inner Join 1 to 2
                      Inner Join 2 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -504,9 +491,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1}
-                  1 {VALUE._col0}
                 keys:
                   0 UDFToDouble(key) (type: double)
                   1 (key + 1) (type: double)
@@ -623,9 +607,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -750,9 +731,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 _col0 (type: string), UDFToDouble(substring(_col1, 5)) (type: double)
                   1 _col0 (type: string), (substring(_col1, 5) + 1) (type: double)
@@ -903,10 +881,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {VALUE._col0}
-                  2 
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -1017,9 +991,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 {VALUE._col1}
                 keys:
                   0 (key + 1) (type: double)
                   1 UDFToDouble(key) (type: double)

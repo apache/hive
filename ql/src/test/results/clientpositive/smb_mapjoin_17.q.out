@@ -202,14 +202,6 @@ STAGE PLANS:
                      Inner Join 0 to 4
                      Inner Join 0 to 5
                      Inner Join 0 to 6
-                condition expressions:
-                  0 
-                  1 
-                  2 
-                  3 
-                  4 
-                  5 
-                  6 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -320,14 +312,6 @@ STAGE PLANS:
                    Left Outer Join0 to 4
                    Left Outer Join0 to 5
                    Left Outer Join0 to 6
-              condition expressions:
-                0 
-                1 
-                2 
-                3 
-                4 
-                5 
-                6 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -437,15 +421,6 @@ STAGE PLANS:
                    Left Outer Join0 to 5
                    Left Outer Join0 to 6
                    Left Outer Join0 to 7
-              condition expressions:
-                0 
-                1 
-                2 
-                3 
-                4 
-                5 
-                6 
-                7 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -596,23 +571,6 @@ STAGE PLANS:
                    Left Outer Join0 to 13
                    Left Outer Join0 to 14
                    Left Outer Join0 to 15
-              condition expressions:
-                0 {key} {value}
-                1 
-                2 
-                3 
-                4 
-                5 
-                6 
-                7 
-                8 
-                9 
-                10 
-                11 
-                12 
-                13 
-                14 
-                15 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -675,12 +633,12 @@ STAGE PLANS:
                Left Outer Join0 to 2
                Left Outer Join0 to 3
                Left Outer Join0 to 4
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0}
-            1 
-            2 
-            3 
-            4 
+          keys:
+            0 _col0 (type: int)
+            1 key (type: int)
+            2 key (type: int)
+            3 key (type: int)
+            4 key (type: int)
           outputColumnNames: _col0, _col1
           Select Operator
             expressions: _col0 (type: int), _col1 (type: string)

@@ -64,9 +64,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -199,9 +196,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -335,9 +329,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -487,9 +478,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 _col0 (type: string)
@@ -631,9 +619,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 _col0 (type: string)
@@ -766,9 +751,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -895,9 +877,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1030,9 +1009,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1159,9 +1135,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1291,9 +1264,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey1}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1414,9 +1384,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey1}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1546,9 +1513,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1675,9 +1639,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {KEY.reducesinkkey0}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1810,9 +1771,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -1939,9 +1897,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2076,9 +2031,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2205,9 +2157,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2343,9 +2292,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2479,9 +2425,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -2616,9 +2559,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -2751,9 +2691,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)

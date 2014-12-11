@@ -89,9 +89,6 @@ STAGE PLANS:
               predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -103,9 +100,6 @@ STAGE PLANS:
               predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -122,9 +116,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -151,9 +142,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -224,9 +212,6 @@ STAGE PLANS:
               predicate: (key is not null and (key = '2')) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -238,9 +223,6 @@ STAGE PLANS:
               predicate: (key is not null and (not (key = '2'))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -257,9 +239,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -286,9 +265,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {val}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)

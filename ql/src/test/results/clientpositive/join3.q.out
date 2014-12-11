@@ -66,10 +66,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 
-            2 {VALUE._col0}
+          keys:
+            0 key (type: string)
+            1 key (type: string)
+            2 key (type: string)
           outputColumnNames: _col0, _col11
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator

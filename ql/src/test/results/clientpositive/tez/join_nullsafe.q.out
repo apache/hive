@@ -62,9 +62,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0} {KEY.reducesinkkey0}
                 keys:
                   0 key (type: int)
                   1 value (type: int)
@@ -171,10 +168,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0} {KEY.reducesinkkey0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 key (type: int)
                   1 value (type: int)
@@ -263,10 +256,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0} {KEY.reducesinkkey0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
                 keys:
                   0 key (type: int)
                   1 value (type: int)
@@ -389,10 +378,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
-                  1 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-                  2 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 keys:
                   0 key (type: int), value (type: int)
                   1 value (type: int), key (type: int)
@@ -479,10 +464,6 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
-                  1 {KEY.reducesinkkey1} {KEY.reducesinkkey0}
-                  2 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
                 keys:
                   0 key (type: int), value (type: int)
                   1 value (type: int), key (type: int)
@@ -1619,9 +1600,6 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 {VALUE._col0}
                 keys:
                   0 null (type: void)
                   1 null (type: void)

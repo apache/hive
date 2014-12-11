@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-
 @Explain(displayName = "Merge Join Operator")
 public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;

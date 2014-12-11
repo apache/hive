@@ -103,9 +103,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 
-            1 {VALUE._col1}
+          keys:
+            0 key (type: int)
+            1 key (type: int)
           outputColumnNames: _col7
           Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -175,9 +175,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {myvalue}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -194,9 +191,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {myvalue}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -296,9 +290,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {value}
-                  1 {value2}
                 keys:
                   0 key (type: int)
                   1 key (type: int)

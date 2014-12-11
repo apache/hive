@@ -90,9 +90,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -119,9 +116,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -156,9 +150,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -320,9 +311,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
@@ -334,9 +322,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 _col0 (type: int)
                 1 _col0 (type: int)

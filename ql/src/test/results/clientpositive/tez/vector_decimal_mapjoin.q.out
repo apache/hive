@@ -52,9 +52,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {cdecimal1}
-                        1 {cdecimal2}
                       keys:
                         0 6981 (type: int)
                         1 6981 (type: int)

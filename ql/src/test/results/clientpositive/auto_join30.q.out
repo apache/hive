@@ -69,9 +69,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -83,9 +80,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -139,9 +133,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -153,9 +144,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -193,9 +181,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -331,9 +319,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -345,9 +330,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -411,9 +393,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -546,9 +528,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -560,9 +539,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -626,9 +602,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Right Outer Join0 to 1
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -778,10 +754,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -789,10 +761,6 @@ STAGE PLANS:
         $INTNAME2 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -806,10 +774,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -867,10 +831,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -878,10 +838,6 @@ STAGE PLANS:
         $INTNAME2 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -895,10 +851,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -930,10 +882,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -941,10 +889,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -958,10 +902,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Inner Join 0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1007,10 +947,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-            2 
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1194,10 +1134,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1205,10 +1141,6 @@ STAGE PLANS:
         $INTNAME2 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1222,10 +1154,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Left Outer Join0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1283,10 +1211,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1294,10 +1218,6 @@ STAGE PLANS:
         $INTNAME2 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1311,10 +1231,6 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
                    Left Outer Join0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1360,10 +1276,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Left Outer Join0 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-            2 
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1539,10 +1455,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1550,10 +1462,6 @@ STAGE PLANS:
         $INTNAME2 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1567,10 +1475,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Left Outer Join0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1642,10 +1546,10 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
                Left Outer Join0 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-            2 
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -1821,10 +1725,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1832,10 +1732,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1849,10 +1745,6 @@ STAGE PLANS:
               condition map:
                    Left Outer Join0 to 1
                    Right Outer Join0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -1924,10 +1816,10 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
                Right Outer Join0 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-            2 
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -2103,10 +1995,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -2114,10 +2002,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -2131,10 +2015,6 @@ STAGE PLANS:
               condition map:
                    Right Outer Join0 to 1
                    Right Outer Join0 to 2
-              condition expressions:
-                0 
-                1 {_col0} {_col1}
-                2 
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
@@ -2206,10 +2086,10 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
                Right Outer Join0 to 2
-          condition expressions:
-            0 
-            1 {KEY.reducesinkkey0} {VALUE._col0}
-            2 
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+            2 _col0 (type: string)
           outputColumnNames: _col2, _col3
           Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
