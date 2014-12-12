@@ -309,9 +309,7 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeLiteral(((Boolean) value).booleanValue());
       break;
     case BYTE:
-      byte[] byteArray = new byte[] { (Byte) value };
-      ByteString bs = new ByteString(byteArray);
-      calciteLiteral = rexBuilder.makeBinaryLiteral(bs);
+      calciteLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Byte) value), calciteDataType);
       break;
     case SHORT:
       calciteLiteral = rexBuilder.makeExactLiteral(new BigDecimal((Short) value), calciteDataType);
