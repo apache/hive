@@ -296,9 +296,6 @@ public class GenSparkSkewJoinProcessor {
           path = bigKeysDirMap.get(tags[j]);
           bigKeysDirToTaskMap.put(path, skewJoinMapJoinTask);
           bigMapWork = mapWork;
-          // in MR, ReduceWork is a terminal work, but that's not the case for spark, therefore for
-          // big dir MapWork, we'll have to clone all dependent works in the original work graph
-          cloneWorkGraph(currentWork, sparkWork, reduceWork, mapWork);
         } else {
           path = smallTblDirs.get(tags[j]);
         }
@@ -379,6 +376,8 @@ public class GenSparkSkewJoinProcessor {
     dummyOp.setChildOperators(mapJoinChildren);
     bigMapWork.addDummyOp(dummyOp);
     MapJoinDesc mjDesc = mapJoinOp.getConf();
+    // mapjoin should not be affected by join reordering
+    mjDesc.resetOrder();
     SparkHashTableSinkDesc hashTableSinkDesc = new SparkHashTableSinkDesc(mjDesc);
     SparkHashTableSinkOperator hashTableSinkOp =
         (SparkHashTableSinkOperator) OperatorFactory.get(hashTableSinkDesc);
@@ -398,6 +397,7 @@ public class GenSparkSkewJoinProcessor {
         new ArrayList<Operator<? extends OperatorDesc>>();
     tableScanParents.add(tableScan);
     hashTableSinkOp.setParentOperators(tableScanParents);
+    hashTableSinkOp.setTag(tag);
   }
 
   private static void setMemUsage(MapJoinOperator mapJoinOp, Task<? extends Serializable> task,
@@ -412,8 +412,6 @@ public class GenSparkSkewJoinProcessor {
       return;
     }
     MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
-    // mapjoin should not affected by join reordering
-    mapJoinDesc.resetOrder();
     HiveConf conf = context.getParseCtx().getConf();
     float hashtableMemoryUsage;
     if (context.isFollowedByGroupBy()) {
@@ -426,42 +424,17 @@ public class GenSparkSkewJoinProcessor {
     mapJoinDesc.setHashTableMemoryUsage(hashtableMemoryUsage);
   }
 
-  private static void cloneWorkGraph(SparkWork originSparkWork, SparkWork newSparkWork,
-      BaseWork originWork, BaseWork newWork) {
-    for (BaseWork child : originSparkWork.getChildren(originWork)) {
-      SparkEdgeProperty edgeProperty = originSparkWork.getEdgeProperty(originWork, child);
-      BaseWork cloneChild = Utilities.cloneBaseWork(child);
-      cloneChild.setName(cloneChild.getName().replaceAll("^([a-zA-Z]+)(\\s+)(\\d+)",
-          "$1$2" + GenSparkUtils.getUtils().getNextSeqNumber()));
-      newSparkWork.add(cloneChild);
-      newSparkWork.connect(newWork, cloneChild, edgeProperty);
-      cloneWorkGraph(originSparkWork, newSparkWork, child, cloneChild);
-    }
-  }
-
   /**
-   * ReduceWork is not terminal work in spark, so we disable runtime skew join for
-   * some complicated cases for now, leaving them to future tasks.
-   * As an example, consider the following spark work graph:
-   * M1  M5
-   * \   /
-   *  R2 (join)   M6
-   *    \         /
-   *     R3 (join)
-   *      |
-   *     R4 (group)
-   * If we create map join task for R2, we have to clone M6 as well so that the results
-   * get joined properly.
+   * Currently, we only support the simplest cases where join is the last work
+   * of a spark work, i.e. the current ReduceWork is a leave work
+   * If the reduce work has follow-up work, e.g. an aggregation following the join,
+   * it's difficult to union the results of the original join and conditional map join
+   * and feed that to the follow up works. This is not an issue for MR, where ReduceWork
+   * is always a terminal work.
    *
-   * Let's only support the case where downstream work of the current ReduceWork all
-   * have single parent.
+   * TODO: can we relax this
    */
   private static boolean supportRuntimeSkewJoin(SparkWork sparkWork, BaseWork work) {
-    for (BaseWork child : sparkWork.getChildren(work)) {
-      if (sparkWork.getParents(child).size() > 1 || !supportRuntimeSkewJoin(sparkWork, child)) {
-        return false;
-      }
-    }
-    return true;
+    return sparkWork.getChildren(work).isEmpty();
   }
 }

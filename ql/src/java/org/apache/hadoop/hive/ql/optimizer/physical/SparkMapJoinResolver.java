@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.Stack;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
@@ -43,6 +45,9 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
+import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -244,7 +249,8 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
     // all the parent SparkTasks that this new task is depend on, if they don't already exists.
     private SparkTask createSparkTask(SparkTask originalTask,
                                       SparkWork sparkWork,
-                                      Map<SparkWork, SparkTask> createdTaskMap) {
+                                      Map<SparkWork, SparkTask> createdTaskMap,
+                                      ConditionalTask conditionalTask) {
       if (createdTaskMap.containsKey(sparkWork)) {
         return createdTaskMap.get(sparkWork);
       }
@@ -252,19 +258,27 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
           originalTask : (SparkTask) TaskFactory.get(sparkWork, physicalContext.conf);
       if (!dependencyGraph.get(sparkWork).isEmpty()) {
         for (SparkWork parentWork : dependencyGraph.get(sparkWork)) {
-          SparkTask parentTask = createSparkTask(originalTask, parentWork, createdTaskMap);
+          SparkTask parentTask =
+              createSparkTask(originalTask, parentWork, createdTaskMap, conditionalTask);
           parentTask.addDependentTask(resultTask);
         }
       } else {
         if (originalTask != resultTask) {
           List<Task<? extends Serializable>> parentTasks = originalTask.getParentTasks();
           if (parentTasks != null && parentTasks.size() > 0) {
+            // avoid concurrent modification
+            originalTask.setParentTasks(new ArrayList<Task<? extends Serializable>>());
             for (Task<? extends Serializable> parentTask : parentTasks) {
               parentTask.addDependentTask(resultTask);
+              parentTask.removeDependentTask(originalTask);
             }
           } else {
-            physicalContext.addToRootTask(resultTask);
-            physicalContext.removeFromRootTask(originalTask);
+            if (conditionalTask == null) {
+              physicalContext.addToRootTask(resultTask);
+              physicalContext.removeFromRootTask(originalTask);
+            } else {
+              updateConditionalTask(conditionalTask, originalTask, resultTask);
+            }
           }
         }
       }
@@ -277,36 +291,100 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
     public Object dispatch(Node nd, Stack<Node> stack, Object... nos)
         throws SemanticException {
       Task<? extends Serializable> currentTask = (Task<? extends Serializable>) nd;
-      if (currentTask instanceof SparkTask) {
-        SparkTask sparkTask = (SparkTask) currentTask;
-        SparkWork sparkWork = sparkTask.getWork();
-
-        // Generate MapredLocalWorks for MJ and HTS
-        generateLocalWork(sparkTask);
-
-        dependencyGraph.put(sparkWork, new ArrayList<SparkWork>());
-        Set<BaseWork> leaves = sparkWork.getLeaves();
-        for (BaseWork leaf : leaves) {
-          moveWork(sparkWork, leaf, sparkWork);
-        }
-
-        // Now remove all BaseWorks in all the childSparkWorks that we created
-        // from the original SparkWork
-        for (SparkWork newSparkWork : sparkWorkMap.values()) {
-          for (BaseWork work : newSparkWork.getAllWorkUnsorted()) {
-            sparkWork.remove(work);
+      if(currentTask.isMapRedTask()) {
+        if (currentTask instanceof ConditionalTask) {
+          List<Task<? extends Serializable>> taskList =
+              ((ConditionalTask) currentTask).getListTasks();
+          for (Task<? extends Serializable> tsk : taskList) {
+            if (tsk instanceof SparkTask) {
+              processCurrentTask((SparkTask) tsk, (ConditionalTask) currentTask);
+            }
           }
-        }
-
-        Map<SparkWork, SparkTask> createdTaskMap = new LinkedHashMap<SparkWork, SparkTask>();
-
-        // Now create SparkTasks from the SparkWorks, also set up dependency
-        for (SparkWork work : dependencyGraph.keySet()) {
-          createSparkTask(sparkTask, work, createdTaskMap);
+        } else if (currentTask instanceof SparkTask) {
+          processCurrentTask((SparkTask) currentTask, null);
         }
       }
 
       return null;
+    }
+
+    /**
+     * @param sparkTask The current spark task we're processing.
+     * @param conditionalTask If conditional task is not null, it means the current task is
+     *                        wrapped in its task list.
+     */
+    private void processCurrentTask(SparkTask sparkTask, ConditionalTask conditionalTask) {
+      dependencyGraph.clear();
+      sparkWorkMap.clear();
+      SparkWork sparkWork = sparkTask.getWork();
+
+      // Generate MapredLocalWorks for MJ and HTS
+      generateLocalWork(sparkTask);
+
+      dependencyGraph.put(sparkWork, new ArrayList<SparkWork>());
+      Set<BaseWork> leaves = sparkWork.getLeaves();
+      for (BaseWork leaf : leaves) {
+        moveWork(sparkWork, leaf, sparkWork);
+      }
+
+      // Now remove all BaseWorks in all the childSparkWorks that we created
+      // from the original SparkWork
+      for (SparkWork newSparkWork : sparkWorkMap.values()) {
+        for (BaseWork work : newSparkWork.getAllWorkUnsorted()) {
+          sparkWork.remove(work);
+        }
+      }
+
+      Map<SparkWork, SparkTask> createdTaskMap = new LinkedHashMap<SparkWork, SparkTask>();
+
+      // Now create SparkTasks from the SparkWorks, also set up dependency
+      for (SparkWork work : dependencyGraph.keySet()) {
+        createSparkTask(sparkTask, work, createdTaskMap, conditionalTask);
+      }
+    }
+
+    /**
+     * Update the task/work list of this conditional task to replace originalTask with newTask.
+     * For runtime skew join, also update dirToTaskMap for the conditional resolver
+     */
+    private void updateConditionalTask(ConditionalTask conditionalTask,
+        SparkTask originalTask, SparkTask newTask) {
+      ConditionalWork conditionalWork = conditionalTask.getWork();
+      SparkWork originWork = originalTask.getWork();
+      SparkWork newWork = newTask.getWork();
+      List<Task<? extends Serializable>> listTask = conditionalTask.getListTasks();
+      List<Serializable> listWork = (List<Serializable>) conditionalWork.getListWorks();
+      int taskIndex = listTask.indexOf(originalTask);
+      int workIndex = listWork.indexOf(originWork);
+      if (taskIndex < 0 || workIndex < 0) {
+        return;
+      }
+      listTask.set(taskIndex, newTask);
+      listWork.set(workIndex, newWork);
+      ConditionalResolver resolver = conditionalTask.getResolver();
+      if (resolver instanceof ConditionalResolverSkewJoin) {
+        // get bigKeysDirToTaskMap
+        ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx context =
+            (ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx) conditionalTask
+                .getResolverCtx();
+        HashMap<Path, Task<? extends Serializable>> bigKeysDirToTaskMap = context
+            .getDirToTaskMap();
+        // to avoid concurrent modify the hashmap
+        HashMap<Path, Task<? extends Serializable>> newbigKeysDirToTaskMap =
+            new HashMap<Path, Task<? extends Serializable>>();
+        // reset the resolver
+        for (Map.Entry<Path, Task<? extends Serializable>> entry :
+            bigKeysDirToTaskMap.entrySet()) {
+          Task<? extends Serializable> task = entry.getValue();
+          Path bigKeyDir = entry.getKey();
+          if (task.equals(originalTask)) {
+            newbigKeysDirToTaskMap.put(bigKeyDir, newTask);
+          } else {
+            newbigKeysDirToTaskMap.put(bigKeyDir, task);
+          }
+        }
+        context.setDirToTaskMap(newbigKeysDirToTaskMap);
+      }
     }
   }
 }
