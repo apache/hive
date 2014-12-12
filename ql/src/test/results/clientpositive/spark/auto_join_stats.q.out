@@ -182,8 +182,8 @@ POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2, Stage-3
   Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
@@ -206,6 +206,28 @@ STAGE PLANS:
                       keys:
                         0 (_col0 + _col5) (type: double)
                         1 UDFToDouble(key) (type: double)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {key}
+                        1 
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
             Local Work:
               Map Reduce Local Work
 
@@ -300,28 +322,6 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-3
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: src2
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-            Local Work:
-              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator

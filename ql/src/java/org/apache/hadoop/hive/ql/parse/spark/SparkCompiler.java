@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
  *
@@ -272,6 +273,12 @@ public class SparkCompiler extends TaskCompiler {
 
     physicalCtx = new SplitSparkWorkResolver().resolve(physicalCtx);
 
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
+      (new SparkSkewJoinResolver()).resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping runtime skew join optimization");
+    }
+
     physicalCtx = new SparkMapJoinResolver().resolve(physicalCtx);
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
@@ -302,13 +309,6 @@ public class SparkCompiler extends TaskCompiler {
       (new StageIDsRearranger()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping stage id rearranger");
-    }
-
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
-      // TODO: enable after HIVE-8913 is done
-      //(new SparkSkewJoinResolver()).resolve(physicalCtx);
-    } else {
-      LOG.debug("Skipping runtime skew join optimization");
     }
     return;
   }
