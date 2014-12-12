@@ -294,15 +294,12 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         }
       }
     }
+    mapJoinOp.setPosToAliasMap(posToAliasMap);
     BucketMapjoinProc.checkAndConvertBucketMapJoin(
       parseContext, mapJoinOp, joinTree, baseBigAlias, joinAliases);
-    int numBuckets = -1;
     MapJoinDesc joinDesc = mapJoinOp.getConf();
-    if (joinDesc.isBucketMapJoin()) {
-      numBuckets = joinDesc.getBigTableBucketNumMapping().size();
-      mapJoinOp.setPosToAliasMap(joinOp.getPosToAliasMap());
-    }
-    return numBuckets;
+    return joinDesc.isBucketMapJoin() ?
+      joinDesc.getBigTableBucketNumMapping().size() : -1;
   }
 
   /**
