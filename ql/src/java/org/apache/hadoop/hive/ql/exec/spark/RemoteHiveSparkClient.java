@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,7 +89,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   @Override
   public int getExecutorCount() throws Exception {
     Future<Integer> handler = remoteClient.getExecutorCount();
-    return handler.get().intValue();
+    return handler.get(5, TimeUnit.SECONDS).intValue();
   }
 
   @Override
