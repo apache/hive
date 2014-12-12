@@ -76,6 +76,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -88,6 +89,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
@@ -100,6 +102,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
@@ -112,6 +115,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -288,6 +292,7 @@ PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
 #### A masked pattern was here ####
+Status: Failed
 POSTHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
