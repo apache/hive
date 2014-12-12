@@ -105,18 +105,18 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     kryoOut.flush();
 
     byte[] msgData = bytes.toByteArray();
+    LOG.debug("Encoded message of type {} ({} bytes)", msg.getClass().getName(), msgData.length);
     checkSize(msgData.length);
 
     buf.ensureWritable(msgData.length + 4);
     buf.writeInt(msgData.length);
     buf.writeBytes(msgData);
-    LOG.debug("Encoded message of type {} ({} bytes)", msg.getClass().getName(), msgData.length);
   }
 
   private void checkSize(int msgSize) {
-    Preconditions.checkArgument(msgSize > 0, "Message size must be positive.");
+    Preconditions.checkArgument(msgSize > 0, "Message size (%s bytes) must be positive.", msgSize);
     Preconditions.checkArgument(maxMessageSize <= 0 || msgSize <= maxMessageSize,
-        "Message exceeds maximum allowed size (%s bytes).", maxMessageSize);
+        "Message (%s bytes) exceeds maximum allowed size (%s bytes).", msgSize, maxMessageSize);
   }
 
 }

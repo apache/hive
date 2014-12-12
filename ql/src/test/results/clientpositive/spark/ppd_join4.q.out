@@ -23,6 +23,7 @@ select 'a','b' from dual
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dual
 PREHOOK: Output: default@test_tbl
+Status: Failed
 POSTHOOK: query: insert into table test_tbl
 select 'a','b' from dual
 POSTHOOK: type: QUERY
@@ -81,12 +82,14 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 'a' (type: string)
                       sort order: +
+                      Map-reduce partition columns: '' (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Reduce Output Operator
                 key expressions: 'a' (type: string)
                 sort order: +
+                Map-reduce partition columns: '' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
@@ -123,6 +126,7 @@ where t2.name='c' and t3.id='a'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tbl
 #### A masked pattern was here ####
+Status: Failed
 POSTHOOK: query: select t2.* 
 from
 (select id,name from (select id,name from test_tbl) t1 sort by id) t2

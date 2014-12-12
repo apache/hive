@@ -268,8 +268,10 @@ public class Rpc implements Closeable {
           @Override
           public void operationComplete(ChannelFuture cf) {
             if (!cf.isSuccess() && !promise.isDone()) {
+              LOG.warn("Failed to send RPC, closing connection.", cf.cause());
               promise.setFailure(cf.cause());
               dispatcher.get().discardRpc(id);
+              close();
             }
           }
       };

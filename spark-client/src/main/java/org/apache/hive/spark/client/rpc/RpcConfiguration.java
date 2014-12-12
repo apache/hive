@@ -65,7 +65,7 @@ public final class RpcConfiguration {
 
   /** Maximum message size. Default = 10MB. */
   public final static String RPC_MAX_MESSAGE_SIZE_KEY = "hive.spark.client.rpc.max.size";
-  public final static int RPC_MAX_MESSAGE_SIZE_DEFAULT = 10 * 1024 * 1024;
+  public final static int RPC_MAX_MESSAGE_SIZE_DEFAULT = 50 * 1024 * 1024;
 
   /** Channel logging level. */
   public final static String RPC_CHANNEL_LOG_LEVEL_KEY = "hive.spark.client.channel.log.level";
