@@ -410,6 +410,7 @@ public class MapJoinProcessor implements Transform {
       childOp.replaceParent(op, mapJoinOp);
     }
 
+    mapJoinOp.setPosToAliasMap(op.getPosToAliasMap());
     mapJoinOp.setChildOperators(childOps);
     op.setChildOperators(null);
     op.setParentOperators(null);

@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -204,6 +205,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     HashMap<String, Operator<? extends OperatorDesc>> topOps = pGraphContext.getTopOps();
     Map<TableScanOperator, Table> topToTable = pGraphContext.getTopToTable();
 
+    HashMap<String, String> aliasToNewAliasMap = new HashMap<String, String>();
+
     // (partition to bucket file names) and (partition to bucket number) for
     // the big table;
     LinkedHashMap<Partition, List<String>> bigTblPartsToBucketFileNames =
@@ -241,6 +244,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
             if (baseBigAlias.equals(alias)) {
               baseBigAlias = newAlias;
             }
+            aliasToNewAliasMap.put(alias, newAlias);
             alias = newAlias;
             break;
           }
@@ -353,6 +357,9 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     context.setJoinAliases(joinAliases);
     context.setBaseBigAlias(baseBigAlias);
     context.setBigTablePartitioned(bigTablePartitioned);
+    if (!aliasToNewAliasMap.isEmpty()) {
+      context.setAliasToNewAliasMap(aliasToNewAliasMap);
+    }
 
     return true;
   }
@@ -431,6 +438,18 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     boolean bigTablePartitioned = context.isBigTablePartitioned();
     if (bigTablePartitioned) {
       desc.setBigTablePartSpecToFileMapping(convert(bigTblPartsToBucketFileNames));
+    }
+
+    Map<Integer, Set<String>> posToAliasMap = mapJoinOp.getPosToAliasMap();
+    Map<String, String> aliasToNewAliasMap = context.getAliasToNewAliasMap();
+    if (aliasToNewAliasMap != null && posToAliasMap != null) {
+      for (Map.Entry<String, String> entry: aliasToNewAliasMap.entrySet()) {
+        for (Set<String> aliases: posToAliasMap.values()) {
+          if (aliases.remove(entry.getKey())) {
+            aliases.add(entry.getValue());
+          }
+        }
+      }
     }
 
     // successfully convert to bucket map join
