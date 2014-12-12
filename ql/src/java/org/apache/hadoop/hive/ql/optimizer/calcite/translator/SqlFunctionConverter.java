@@ -78,7 +78,8 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteOperator(String funcTextName, GenericUDF hiveUDF,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType retType) throws CalciteSemanticException {
+      ImmutableList<RelDataType> calciteArgTypes, RelDataType retType)
+      throws CalciteSemanticException {
     // handle overloaded methods first
     if (hiveUDF instanceof GenericUDFOPNegative) {
       return SqlStdOperatorTable.UNARY_MINUS;
@@ -87,15 +88,16 @@ public class SqlFunctionConverter {
     } // do generic lookup
     String name = null;
     if (StringUtils.isEmpty(funcTextName)) {
-      name = getName(hiveUDF); // this should probably never happen, see getName
-                               // comment
+      name = getName(hiveUDF); // this should probably never happen, see
+      // getName
+      // comment
       LOG.warn("The function text was empty, name from annotation is " + name);
     } else {
-      // We could just do toLowerCase here and let SA qualify it, but let's be
-      // proper...
+      // We could just do toLowerCase here and let SA qualify it, but
+      // let's be proper...
       name = FunctionRegistry.getNormalizedFunctionName(funcTextName);
     }
-    return getCalciteFn(name, calciteArgTypes, retType);
+    return getCalciteFn(name, calciteArgTypes, retType, FunctionRegistry.isDeterministic(hiveUDF));
   }
 
   public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt, int argsLength) {
@@ -129,7 +131,8 @@ public class SqlFunctionConverter {
     return hFn == null ? null : hFn.getGenericUDF();
   }
 
-  private static FunctionInfo handleExplicitCast(SqlOperator op, RelDataType dt) throws SemanticException {
+  private static FunctionInfo handleExplicitCast(SqlOperator op, RelDataType dt)
+      throws SemanticException {
     FunctionInfo castUDF = null;
 
     if (op.kind == SqlKind.CAST) {
@@ -158,7 +161,7 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
-      }  else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
+      } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
@@ -182,8 +185,8 @@ public class SqlFunctionConverter {
     return new FunctionInfo(fi.isNative(), fi.getDisplayName(), (GenericUDF) udf);
   }
 
-  // TODO: 1) handle Agg Func Name translation 2) is it correct to add func args
-  // as child of func?
+  // TODO: 1) handle Agg Func Name translation 2) is it correct to add func
+  // args as child of func?
   public static ASTNode buildAST(SqlOperator op, List<ASTNode> children) {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
@@ -232,11 +235,9 @@ public class SqlFunctionConverter {
   }
 
   // TODO: this is not valid. Function names for built-in UDFs are specified in
-  // FunctionRegistry,
-  // and only happen to match annotations. For user UDFs, the name is what user
-  // specifies at
-  // creation time (annotation can be absent, different, or duplicate some other
-  // function).
+  // FunctionRegistry, and only happen to match annotations. For user UDFs, the
+  // name is what user specifies at creation time (annotation can be absent,
+  // different, or duplicate some other function).
   private static String getName(GenericUDF hiveUDF) {
     String udfName = null;
     if (hiveUDF instanceof GenericUDFBridge) {
@@ -268,10 +269,12 @@ public class SqlFunctionConverter {
     return udfName;
   }
 
-  /** This class is used to build immutable hashmaps in the static block above. */
+  /**
+   * This class is used to build immutable hashmaps in the static block above.
+   */
   private static class StaticBlockBuilder {
-    final Map<String, SqlOperator>    hiveToCalcite        = Maps.newHashMap();
-    final Map<SqlOperator, HiveToken> calciteToHiveToken   = Maps.newHashMap();
+    final Map<String, SqlOperator>    hiveToCalcite      = Maps.newHashMap();
+    final Map<SqlOperator, HiveToken> calciteToHiveToken = Maps.newHashMap();
     final Map<SqlOperator, String>    reverseOperatorMap = Maps.newHashMap();
 
     StaticBlockBuilder() {
@@ -317,12 +320,29 @@ public class SqlFunctionConverter {
     return new HiveToken(type, text);
   }
 
+  // UDAF is assumed to be deterministic
   public static class CalciteUDAF extends SqlAggFunction {
     public CalciteUDAF(String opName, SqlReturnTypeInference returnTypeInference,
         SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
         ImmutableList<RelDataType> argTypes, RelDataType retType) {
       super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
           operandTypeChecker, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+    }
+  }
+
+  private static class CalciteSqlFn extends SqlFunction {
+    private final boolean deterministic;
+
+    public CalciteSqlFn(String name, SqlKind kind, SqlReturnTypeInference returnTypeInference,
+        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
+        SqlFunctionCategory category, boolean deterministic) {
+      super(name, kind, returnTypeInference, operandTypeInference, operandTypeChecker, category);
+      this.deterministic = deterministic;
+    }
+
+    @Override
+    public boolean isDeterministic() {
+      return deterministic;
     }
   }
 
@@ -354,22 +374,21 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteFn(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType)
+      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType, boolean deterministic)
       throws CalciteSemanticException {
 
     if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
       // We can create Calcite IS_DISTINCT_FROM operator for this. But since our
       // join reordering algo cant handle this anyway there is no advantage of
-      // this.
-      // So, bail out for now.
+      // this.So, bail out for now.
       throw new CalciteSemanticException("<=> is not yet supported for cbo.");
     }
     SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
     if (calciteOp == null) {
       CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-      calciteOp = new SqlFunction(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+      calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
           uInf.operandTypeInference, uInf.operandTypeChecker,
-          SqlFunctionCategory.USER_DEFINED_FUNCTION);
+          SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
     }
 
     return calciteOp;
@@ -381,8 +400,8 @@ public class SqlFunctionConverter {
     if (calciteAggFn == null) {
       CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
-      calciteAggFn = new CalciteUDAF(uInf.udfName, uInf.returnTypeInference, uInf.operandTypeInference,
-          uInf.operandTypeChecker, uInf.argTypes, uInf.retType);
+      calciteAggFn = new CalciteUDAF(uInf.udfName, uInf.returnTypeInference,
+          uInf.operandTypeInference, uInf.operandTypeChecker, uInf.argTypes, uInf.retType);
     }
 
     return calciteAggFn;

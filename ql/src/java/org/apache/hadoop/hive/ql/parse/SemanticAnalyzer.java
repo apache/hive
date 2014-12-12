@@ -194,6 +194,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
@@ -12673,9 +12675,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               SemiJoinProjectTransposeRule.INSTANCE);
 
       basePlan = hepPlan(basePlan, true, mdProvider,
-          new FilterProjectTransposeRule(
+          new HiveFilterProjectTransposeRule(
           Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
-          HiveProject.DEFAULT_PROJECT_FACTORY), new FilterSetOpTransposeRule(
+          HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
           HiveFilter.DEFAULT_FILTER_FACTORY), new FilterMergeRule(
           HiveFilter.DEFAULT_FILTER_FACTORY), HiveFilterJoinRule.JOIN,
           HiveFilterJoinRule.FILTER_ON_JOIN,
