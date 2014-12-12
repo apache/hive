@@ -34,11 +34,14 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexVisitor;
+import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -78,7 +81,7 @@ public class HiveCalciteUtil {
   public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
     String astTree = ast.toStringTree();
     // if any of following tokens are present in AST, bail out
-    String[] tokens = { "TOK_CHARSETLITERAL","TOK_TABLESPLITSAMPLE" };
+    String[] tokens = { "TOK_CHARSETLITERAL", "TOK_TABLESPLITSAMPLE" };
     for (String token : tokens) {
       if (astTree.contains(token)) {
         return false;
@@ -505,8 +508,8 @@ public class HiveCalciteUtil {
 
   /**
    * Get top level select starting from root. Assumption here is root can only
-   * be Sort & Project. Also the top project should be at most 2 levels
-   * below Sort; i.e Sort(Limit)-Sort(OB)-Select
+   * be Sort & Project. Also the top project should be at most 2 levels below
+   * Sort; i.e Sort(Limit)-Sort(OB)-Select
    *
    * @param rootRel
    * @return
@@ -526,5 +529,26 @@ public class HiveCalciteUtil {
     }
 
     return (new Pair<RelNode, RelNode>(parentOforiginalProjRel, originalProjRel));
+  }
+
+  public static boolean isDeterministic(RexNode expr) {
+    boolean deterministic = true;
+
+    RexVisitor<Void> visitor = new RexVisitorImpl<Void>(true) {
+      public Void visitCall(org.apache.calcite.rex.RexCall call) {
+        if (!call.getOperator().isDeterministic()) {
+          throw new Util.FoundOne(call);
+        }
+        return super.visitCall(call);
+      }
+    };
+
+    try {
+      expr.accept(visitor);
+    } catch (Util.FoundOne e) {
+        deterministic = false;
+    }
+
+    return deterministic;
   }
 }

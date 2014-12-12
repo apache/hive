@@ -24,6 +24,7 @@ import java.util.ListIterator;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
@@ -34,6 +35,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
@@ -57,10 +59,18 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
    */
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
-      super(RelOptRule.operand(Filter.class,
-          RelOptRule.operand(Join.class, RelOptRule.any())),
+      super(RelOptRule.operand(Filter.class, RelOptRule.operand(Join.class, RelOptRule.any())),
           "HiveFilterJoinRule:filter", true, HiveFilter.DEFAULT_FILTER_FACTORY,
           HiveProject.DEFAULT_PROJECT_FACTORY);
+    }
+
+    @Override
+    public boolean matches(RelOptRuleCall call) {
+      Filter filter = call.rel(0);
+      if (!HiveCalciteUtil.isDeterministic(filter.getCondition())) {
+        return false;
+      }
+      return true;
     }
 
     @Override
@@ -73,9 +83,22 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
   public static class HiveFilterJoinTransposeRule extends HiveFilterJoinRule {
     public HiveFilterJoinTransposeRule() {
-      super(RelOptRule.operand(Join.class, RelOptRule.any()),
-          "HiveFilterJoinRule:no-filter", true, HiveFilter.DEFAULT_FILTER_FACTORY,
-          HiveProject.DEFAULT_PROJECT_FACTORY);
+      super(RelOptRule.operand(Join.class, RelOptRule.any()), "HiveFilterJoinRule:no-filter", true,
+          HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.DEFAULT_PROJECT_FACTORY);
+    }
+
+    @Override
+    public boolean matches(RelOptRuleCall call) {
+      Join join = call.rel(0);
+      List<RexNode> joinConds = RelOptUtil.conjunctions(join.getCondition());
+
+      for (RexNode joinCnd : joinConds) {
+        if (!HiveCalciteUtil.isDeterministic(joinCnd)) {
+          return false;
+        }
+      }
+
+      return true;
     }
 
     @Override
@@ -140,12 +163,11 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     boolean refersToBothSides = false;
 
     int joinNoOfProjects = j.getRowType().getFieldCount();
-    ImmutableBitSet filterProjs = ImmutableBitSet.FROM_BIT_SET.apply(
-            new BitSet(joinNoOfProjects));
-    ImmutableBitSet allLeftProjs = filterProjs.union(
-            ImmutableBitSet.range(0, j.getInput(0).getRowType().getFieldCount()));
-    ImmutableBitSet allRightProjs = filterProjs.union(
-            ImmutableBitSet.range(j.getInput(0).getRowType().getFieldCount(), joinNoOfProjects));
+    ImmutableBitSet filterProjs = ImmutableBitSet.FROM_BIT_SET.apply(new BitSet(joinNoOfProjects));
+    ImmutableBitSet allLeftProjs = filterProjs.union(ImmutableBitSet.range(0, j.getInput(0)
+        .getRowType().getFieldCount()));
+    ImmutableBitSet allRightProjs = filterProjs.union(ImmutableBitSet.range(j.getInput(0)
+        .getRowType().getFieldCount(), joinNoOfProjects));
 
     filterProjs = filterProjs.union(InputFinder.bits(filter));
 
