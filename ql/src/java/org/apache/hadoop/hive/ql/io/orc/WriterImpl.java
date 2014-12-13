@@ -18,21 +18,13 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -84,11 +76,10 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -2387,13 +2378,23 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private void updateFileStatistics(OrcProto.StripeStatistics stripeStatistics) {
     List<OrcProto.ColumnStatistics> cs = stripeStatistics.getColStatsList();
+    List<TreeWriter> allWriters = getAllColumnTreeWriters(treeWriter);
+    for (int i = 0; i < allWriters.size(); i++) {
+      allWriters.get(i).fileStatistics.merge(ColumnStatisticsImpl.deserialize(cs.get(i)));
+    }
+  }
 
-    // root element
-    treeWriter.fileStatistics.merge(ColumnStatisticsImpl.deserialize(cs.get(0)));
-    TreeWriter[] childWriters = treeWriter.getChildrenWriters();
-    for (int i = 0; i < childWriters.length; i++) {
-      childWriters[i].fileStatistics.merge(
-          ColumnStatisticsImpl.deserialize(cs.get(i + 1)));
+  private List<TreeWriter> getAllColumnTreeWriters(TreeWriter rootTreeWriter) {
+    List<TreeWriter> result = Lists.newArrayList();
+    getAllColumnTreeWritersImpl(rootTreeWriter, result);
+    return result;
+  }
+
+  private void getAllColumnTreeWritersImpl(TreeWriter tw,
+      List<TreeWriter> result) {
+    result.add(tw);
+    for (TreeWriter child : tw.childrenWriters) {
+      getAllColumnTreeWritersImpl(child, result);
     }
   }
 
