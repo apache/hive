@@ -101,7 +101,9 @@ public class Optimizer {
       transformations.add(new RewriteGBUsingIndex());
     }
     transformations.add(new SamplePruner());
-    transformations.add(new MapJoinProcessor());
+
+    MapJoinProcessor mapJoinProcessor = isSparkExecEngine ? new SparkMapJoinProcessor() : new MapJoinProcessor();
+    transformations.add(mapJoinProcessor);
 
     if ((HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN)) && !isTezExecEngine && !isSparkExecEngine) {
       transformations.add(new BucketMapJoinOptimizer());

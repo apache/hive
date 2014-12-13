@@ -233,7 +233,7 @@ public class MapJoinProcessor implements Transform {
         newWork.getMapWork().getOpParseCtxMap();
     QBJoinTree newJoinTree = newWork.getMapWork().getJoinTree();
     // generate the map join operator; already checked the map join
-    MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(conf, opParseCtxMap, op,
+    MapJoinOperator newMapJoinOp = new MapJoinProcessor().convertMapJoin(conf, opParseCtxMap, op,
         newJoinTree, mapJoinPos, true, false);
     genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
   }
@@ -302,8 +302,9 @@ public class MapJoinProcessor implements Transform {
    *          position of the source to be read as part of map-reduce framework. All other sources
    *          are cached in memory
    * @param noCheckOuterJoin
+   * @param validateMapJoinTree
    */
-  public static MapJoinOperator convertMapJoin(HiveConf conf,
+  public MapJoinOperator convertMapJoin(HiveConf conf,
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
     JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
     boolean validateMapJoinTree)
@@ -598,7 +599,7 @@ public class MapJoinProcessor implements Transform {
     return mapJoinPos;
   }
 
-  private void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
+  protected void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
     List<Operator<? extends OperatorDesc>> childOps = input.getChildOperators();
     input.setChildOperators(null);
 

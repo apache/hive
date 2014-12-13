@@ -931,31 +931,16 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (SORT, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -972,26 +957,50 @@ STAGE PLANS:
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
+                        Spark HashTable Sink Operator
+                          condition expressions:
+                            0 {key}
+                            1 
+                          keys:
+                            0 key (type: int)
+                            1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 3)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Semi Join 0 to 1
+                      condition expressions:
+                        0 {key}
+                        1 
+                      keys:
+                        0 key (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 12 Data size: 89 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Statistics: Num rows: 12 Data size: 89 Basic stats: COMPLETE Column stats: NONE
+            Local Work:
+              Map Reduce Local Work
         Reducer 2 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                outputColumnNames: _col0
-                Statistics: Num rows: 12 Data size: 89 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Statistics: Num rows: 12 Data size: 89 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
@@ -1387,31 +1396,16 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3), Map 5 (PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (SORT, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
-                      Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -1428,12 +1422,18 @@ STAGE PLANS:
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
-        Map 5 
+                        Spark HashTable Sink Operator
+                          condition expressions:
+                            0 {key}
+                            1 
+                            2 
+                          keys:
+                            0 key (type: int)
+                            1 _col0 (type: int)
+                            2 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -1450,28 +1450,56 @@ STAGE PLANS:
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
+                        Spark HashTable Sink Operator
+                          condition expressions:
+                            0 {key}
+                            1 
+                            2 
+                          keys:
+                            0 key (type: int)
+                            1 _col0 (type: int)
+                            2 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 3)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 22 Data size: 163 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 11 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Semi Join 0 to 1
+                           Left Semi Join 0 to 2
+                      condition expressions:
+                        0 {key}
+                        1 
+                        2 
+                      keys:
+                        0 key (type: int)
+                        1 _col0 (type: int)
+                        2 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
+                        2 Map 4
+                      Statistics: Num rows: 24 Data size: 178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Statistics: Num rows: 24 Data size: 178 Basic stats: COMPLETE Column stats: NONE
+            Local Work:
+              Map Reduce Local Work
         Reducer 2 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Semi Join 0 to 1
-                     Left Semi Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
-                outputColumnNames: _col0
-                Statistics: Num rows: 24 Data size: 178 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Statistics: Num rows: 24 Data size: 178 Basic stats: COMPLETE Column stats: NONE
-        Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)

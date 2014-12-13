@@ -162,7 +162,7 @@
 
 <property>
   <name>hive.ignore.mapjoin.hint</name>
-  <value>true</value>
+  <value>false</value>
   <description>Whether Hive ignores the mapjoin hint</description>
 </property>
 

@@ -58,14 +58,14 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
-                  Statistics: Num rows: 2 Data size: 126 Basic stats: COMPLETE Column stats: NONE
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (col11 = 111) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key = 111) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       condition expressions:
                         0 {value}
@@ -79,17 +79,17 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 3)
+        Reducer 3 <- Map 2 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 126 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key = 111) (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (col11 = 111) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 63 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -101,7 +101,7 @@ STAGE PLANS:
                         1 '111' (type: string)
                       outputColumnNames: _col1, _col10
                       input vertices:
-                        1 Map 3
+                        0 Map 1
                       Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count(1)
@@ -117,7 +117,7 @@ STAGE PLANS:
                           value expressions: _col2 (type: bigint)
             Local Work:
               Map Reduce Local Work
-        Reducer 2 
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
