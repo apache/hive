@@ -96,12 +96,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected transient MapJoinPersistableTableContainer[] mapJoinTables;
   protected transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
 
-  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-  private static final MapJoinEagerRowContainer EMPTY_ROW_CONTAINER = new MapJoinEagerRowContainer();
-  static {
-    EMPTY_ROW_CONTAINER.addRow(EMPTY_OBJECT_ARRAY);
-  }
-  
+  private final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+  private final MapJoinEagerRowContainer EMPTY_ROW_CONTAINER = new MapJoinEagerRowContainer();
+
   private long rowNumber = 0;
   protected transient LogHelper console;
   private long hashTableScale;
@@ -121,6 +118,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
     memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
+    EMPTY_ROW_CONTAINER.addRow(EMPTY_OBJECT_ARRAY);
 
     // for small tables only; so get the big table position first
     posBigTableAlias = conf.getPosBigTable();

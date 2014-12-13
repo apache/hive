@@ -23,7 +23,6 @@ select 'a','b' from dual
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dual
 PREHOOK: Output: default@test_tbl
-Status: Failed
 POSTHOOK: query: insert into table test_tbl
 select 'a','b' from dual
 POSTHOOK: type: QUERY
@@ -126,7 +125,6 @@ where t2.name='c' and t3.id='a'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tbl
 #### A masked pattern was here ####
-Status: Failed
 POSTHOOK: query: select t2.* 
 from
 (select id,name from (select id,name from test_tbl) t1 sort by id) t2
