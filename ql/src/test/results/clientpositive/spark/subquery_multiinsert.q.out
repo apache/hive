@@ -32,6 +32,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_5
 RUN: Stage-0:DDL
+Warning: Shuffle Join JOIN[31][tables = [sq_2_notin_nullcheck]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -274,6 +275,7 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
+Warning: Shuffle Join JOIN[31][tables = [sq_2_notin_nullcheck]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 
@@ -461,6 +463,7 @@ POSTHOOK: Input: default@src_5
 199	val_199
 199	val_199
 2	val_2
+Warning: Map Join MAPJOIN[45][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -712,6 +715,7 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
+Warning: Map Join MAPJOIN[45][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 

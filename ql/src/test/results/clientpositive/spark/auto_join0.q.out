@@ -1,3 +1,4 @@
+Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -130,6 +131,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[20][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
