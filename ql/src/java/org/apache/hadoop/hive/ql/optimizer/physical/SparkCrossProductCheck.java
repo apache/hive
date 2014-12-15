@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -62,6 +63,11 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
       SparkWork sparkWork = ((SparkTask) currTask).getWork();
       checkShuffleJoin(sparkWork);
       checkMapJoin((SparkTask) currTask);
+    } else if (currTask instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
+      for (Task<? extends Serializable> task : taskList) {
+        dispatch(task, stack, nodeOutputs);
+      }
     }
     return null;
   }
