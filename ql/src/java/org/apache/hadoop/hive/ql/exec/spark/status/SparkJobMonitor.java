@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.spark.JobExecutionStatus;
 
@@ -40,8 +41,7 @@ public class SparkJobMonitor {
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private transient LogHelper console;
-  private final int checkInterval = 200;
-  private final int maxRetryInterval = 2500;
+  private final int checkInterval = 1000;
   private final int printInterval = 3000;
   private long lastPrintTime;
   private Set<String> completed;
@@ -58,15 +58,14 @@ public class SparkJobMonitor {
 
     boolean running = false;
     boolean done = false;
-    int failedCounter = 0;
     int rc = 0;
     JobExecutionStatus lastState = null;
     Map<String, SparkStageProgress> lastProgressMap = null;
     long startTime = -1;
 
     while (true) {
+      JobExecutionStatus state = sparkJobStatus.getState();
       try {
-        JobExecutionStatus state = sparkJobStatus.getState();
         if (LOG.isDebugEnabled()) {
           console.printInfo("state = " + state);
         }
@@ -123,16 +122,18 @@ public class SparkJobMonitor {
           Thread.sleep(checkInterval);
         }
       } catch (Exception e) {
-        console.printInfo("Exception: " + e.getMessage());
-        if (++failedCounter % maxRetryInterval / checkInterval == 0
-          || e instanceof InterruptedException) {
-          console.printInfo("Killing Job...");
-          console.printError("Execution has failed.");
-          rc = 1;
-          done = true;
+        String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
+        if (state == null || state.equals(JobExecutionStatus.UNKNOWN)) {
+          msg = "Job Submission failed" + msg;
         } else {
-          console.printInfo("Retrying...");
+          msg = "Ended Job = " + sparkJobStatus.getJobId() + msg;
         }
+
+        // Has to use full name to make sure it does not conflict with
+        // org.apache.commons.lang.StringUtils
+        LOG.error(msg, e);
+        console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        rc = 1;
       } finally {
         if (done) {
           break;

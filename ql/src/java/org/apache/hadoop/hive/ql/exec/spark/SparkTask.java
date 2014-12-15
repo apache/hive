@@ -89,7 +89,7 @@ public class SparkTask extends Task<SparkWork> {
   @Override
   public int execute(DriverContext driverContext) {
 
-    int rc = 1;
+    int rc = 0;
     SparkSession sparkSession = null;
     SparkSessionManager sparkSessionManager = null;
     try {
@@ -104,7 +104,7 @@ public class SparkTask extends Task<SparkWork> {
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (sparkJobStatus != null) {
         SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
-        monitor.startMonitor();
+        rc = monitor.startMonitor();
         // for RSC, we should get the counters after job has finished
         sparkCounters = sparkJobStatus.getCounter();
         SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
@@ -114,10 +114,14 @@ public class SparkTask extends Task<SparkWork> {
         }
         sparkJobStatus.cleanup();
       }
-      rc = 0;
     } catch (Exception e) {
-      LOG.error("Failed to execute spark task.", e);
-      return 1;
+      String msg = "Failed to execute spark task, with exception '" + Utilities.getNameMessage(e) + "'";
+
+      // Has to use full name to make sure it does not conflict with
+      // org.apache.commons.lang.StringUtils
+      console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error(msg, e);
+      rc = 1;
     } finally {
       if (sparkSession != null && sparkSessionManager != null) {
         rc = close(rc);
