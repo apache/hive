@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -101,30 +103,46 @@ public class NullScanTaskDispatcher implements Dispatcher {
     return paths;
   }
 
-  private void processAlias(MapWork work, String alias) {
-    List<String> paths = getPathsForAlias(work, alias);
-    if (paths.isEmpty()) {
-      // partitioned table which don't select any partitions
-      // there are no paths to replace with fakePath
-      return;
-    }
+  private void processAlias(MapWork work, ArrayList<String> aliases, String path) {
+ 
     work.setUseOneNullRowInputFormat(true);
+    for (String alias : aliases) {
+      // Change the conf for tableScanOp
+      TableScanOperator tso = (TableScanOperator) work.getAliasToWork().get(alias);
+      tso.getConf().setIsMetadataOnly(true);
+      // Change the alias partition desc
+      PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
+      changePartitionToMetadataOnly(aliasPartn);
+    }
 
-    // Change the alias partition desc
-    PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
-    changePartitionToMetadataOnly(aliasPartn);
+    PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+    PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
+    Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
+        + newPartition.getTableName() + encode(newPartition.getPartSpec()));
+    work.getPathToPartitionInfo().remove(path);
+    work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
+    assert(work.getPathToAliases().remove(path).equals(aliases));
+    work.getPathToAliases().put(fakePath.getName(), aliases);
+  }
 
-
-    for (String path : paths) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
-      PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
-      Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
-          + newPartition.getTableName()
-          + encode(newPartition.getPartSpec()));
-      work.getPathToPartitionInfo().remove(path);
-      work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
-      ArrayList<String> aliases = work.getPathToAliases().remove(path);
-      work.getPathToAliases().put(fakePath.getName(), aliases);
+  private void processAlias(MapWork work, HashSet<TableScanOperator> tableScans) {
+    ArrayList<String> aliasList = new ArrayList<String>();
+    for (TableScanOperator tso : tableScans) {
+      // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
+      // getAliasToWork()
+      String alias = getAliasForTableScanOperator(work, tso);
+      aliasList.add(alias);
+    }
+    // group path alias according to work
+    LinkedHashMap<String, ArrayList<String>> candidates = new LinkedHashMap<String, ArrayList<String>>();
+    for (String path : work.getPaths()) {
+      ArrayList<String> aliases = work.getPathToAliases().get(path);
+      if (aliases != null && aliasList.containsAll(aliases)) {
+        candidates.put(path, aliases);
+      }
+    }
+    for (Entry<String, ArrayList<String>> entry : candidates.entrySet()) {
+      processAlias(work, entry.getValue(), entry.getKey());
     }
   }
 
@@ -177,16 +195,8 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
       LOG.info(String.format("Found %d null table scans",
           walkerCtx.getMetadataOnlyTableScans().size()));
-      Iterator<TableScanOperator> iterator
-        = walkerCtx.getMetadataOnlyTableScans().iterator();
-
-      while (iterator.hasNext()) {
-        TableScanOperator tso = iterator.next();
-        tso.getConf().setIsMetadataOnly(true);
-        String alias = getAliasForTableScanOperator(mapWork, tso);
-        LOG.info("Null table scan for " + alias);
-        processAlias(mapWork, alias);
-      }
+      if (walkerCtx.getMetadataOnlyTableScans().size() > 0)
+        processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
     }
     return null;
   }
