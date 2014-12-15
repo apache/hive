@@ -128,7 +128,7 @@ public class ReadEntity extends Entity implements Serializable {
    *          Flag to decide whether this directory is local or in dfs.
    */
   public ReadEntity(Path d, boolean islocal) {
-    super(d.toString(), islocal, true);
+    super(d, islocal, true);
   }
 
   public Set<ReadEntity> getParents() {

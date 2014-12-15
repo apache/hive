@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -32,7 +31,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,9 +52,6 @@ import java.util.Map;
  *
  */
 public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
-
-  private boolean isLocal;
-  private boolean isOverWrite;
 
   public LoadSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
@@ -85,7 +80,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return (srcs);
   }
 
-  private URI initializeFromURI(String fromPath) throws IOException,
+  private URI initializeFromURI(String fromPath, boolean isLocal) throws IOException,
       URISyntaxException {
     URI fromURI = new Path(fromPath).toUri();
 
@@ -172,8 +167,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    isLocal = false;
-    isOverWrite = false;
+    boolean isLocal = false;
+    boolean isOverWrite = false;
     Tree fromTree = ast.getChild(0);
     Tree tableTree = ast.getChild(1);
 
@@ -194,7 +189,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     URI fromURI;
     try {
       String fromPath = stripQuotes(fromTree.getText());
-      fromURI = initializeFromURI(fromPath);
+      fromURI = initializeFromURI(fromPath, isLocal);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
           .getMessage()), e);
@@ -233,7 +228,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // make sure the arguments make sense
     applyConstraints(fromURI, toURI, fromTree, isLocal);
-    inputs.add(new ReadEntity(new Path(fromURI), isLocal));
+    inputs.add(toReadEntity(new Path(fromURI)));
     Task<? extends Serializable> rTask = null;
 
     // create final load/move work

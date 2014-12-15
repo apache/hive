@@ -45,7 +45,6 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -2740,17 +2739,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("LOCATION clause illegal for view partition");
         }
         currentLocation = unescapeSQLString(child.getChild(0).getText());
-        boolean isLocal = false;
-        try {
-          // do best effort to determine if this is a local file
-          String scheme = new URI(currentLocation).getScheme();
-          if (scheme != null) {
-            isLocal = FileUtils.isLocalFile(conf, currentLocation);
-          }
-        } catch (URISyntaxException e) {
-          LOG.warn("Unable to create URI from " + currentLocation, e);
-        }
-        inputs.add(new ReadEntity(new Path(currentLocation), isLocal));
+        inputs.add(toReadEntity(currentLocation));
         break;
       default:
         throw new SemanticException("Unknown child: " + child);
@@ -3382,8 +3371,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
-  private void addLocationToOutputs(String newLocation) {
-    outputs.add(new WriteEntity(new Path(newLocation), FileUtils.isLocalFile(conf, newLocation)));
+  private void addLocationToOutputs(String newLocation) throws SemanticException {
+    outputs.add(toWriteEntity(newLocation));
   }
 
   /**

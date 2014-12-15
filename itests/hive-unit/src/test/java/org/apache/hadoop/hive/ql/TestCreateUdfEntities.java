@@ -2,14 +2,9 @@ package org.apache.hadoop.hive.ql;
 
 import static org.junit.Assert.*;
 
-import java.net.URI;
-import java.util.Set;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +45,7 @@ public class TestCreateUdfEntities {
     assertEquals(funcName, outputEntities[1].getFunctionName());
 
     assertEquals(Entity.Type.LOCAL_DIR, outputEntities[2].getType());
-    assertEquals("file:/tmp/udf1.jar", outputEntities[2].getLocation().toString());
+    assertEquals("file:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
   }
 
   @Test
@@ -68,7 +63,7 @@ public class TestCreateUdfEntities {
     assertEquals(funcName, outputEntities[1].getFunctionName());
 
     assertEquals(Entity.Type.DFS_DIR, outputEntities[2].getType());
-    assertEquals("hdfs:/tmp/udf1.jar", outputEntities[2].getLocation().toString());
+    assertEquals("hdfs:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
   }
 
 }

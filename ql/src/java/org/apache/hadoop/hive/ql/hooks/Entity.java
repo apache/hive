@@ -67,7 +67,7 @@ public class Entity implements Serializable {
   /**
    * The directory if this is a directory
    */
-  private String d;
+  private Path d;
 
   /**
    * An object that is represented as a String
@@ -135,11 +135,11 @@ public class Entity implements Serializable {
     this.p = p;
   }
 
-  public String getD() {
+  public Path getD() {
     return d;
   }
 
-  public void setD(String d) {
+  public void setD(Path d) {
     this.d = d;
   }
 
@@ -218,7 +218,7 @@ public class Entity implements Serializable {
     this.complete = complete;
   }
 
-  public Entity(String d, boolean islocal, boolean complete) {
+  public Entity(Path d, boolean islocal, boolean complete) {
     this.d = d;
     p = null;
     t = null;
@@ -267,6 +267,10 @@ public class Entity implements Serializable {
     return typ;
   }
 
+  public boolean isPathType() {
+    return typ == Type.DFS_DIR || typ == Type.LOCAL_DIR;
+  }
+
   /**
    * Get the location of the entity.
    */
@@ -287,7 +291,7 @@ public class Entity implements Serializable {
     }
 
     if (typ == Type.DFS_DIR || typ == Type.LOCAL_DIR) {
-      return new URI(d);
+      return d.toUri();
     }
 
     return null;
@@ -341,7 +345,7 @@ public class Entity implements Serializable {
       }
       return stringObject;
     default:
-      return d;
+      return d.toString();
     }
   }
 

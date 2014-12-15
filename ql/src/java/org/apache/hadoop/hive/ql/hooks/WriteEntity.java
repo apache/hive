@@ -133,7 +133,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          True if this is a temporary location such as scratch dir
    */
   public WriteEntity(Path d, boolean islocal, boolean isTemp) {
-    super(d.toString(), islocal, true);
+    super(d, islocal, true);
     this.isTempURI = isTemp;
     this.writeType = WriteType.PATH_WRITE;
   }

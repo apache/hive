@@ -10950,7 +10950,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLELOCATION:
         location = unescapeSQLString(child.getChild(0).getText());
         location = EximUtil.relativeToAbsolutePath(conf, location);
-        inputs.add(new ReadEntity(new Path(location), FileUtils.isLocalFile(conf, location)));
+        inputs.add(toReadEntity(location));
         break;
       case HiveParser.TOK_TABLEPROPERTIES:
         tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));

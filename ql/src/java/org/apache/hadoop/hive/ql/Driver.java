@@ -114,7 +114,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
@@ -152,7 +151,7 @@ public class Driver implements CommandProcessor {
 
   private String userName;
 
-  private boolean checkConcurrency() throws SemanticException {
+  private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
       LOG.info("Concurrency mode is disabled, not creating a lock manager");
@@ -535,8 +534,8 @@ public class Driver implements CommandProcessor {
    * Do authorization using post semantic analysis information in the semantic analyzer
    * The original command is also passed so that authorization interface can provide
    * more useful information in logs.
-   * @param sem
-   * @param command
+   * @param sem SemanticAnalyzer used to parse input query
+   * @param command input query
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -583,7 +582,7 @@ public class Driver implements CommandProcessor {
     }
     if (outputs != null && outputs.size() > 0) {
       for (WriteEntity write : outputs) {
-        if (write.isDummy()) {
+        if (write.isDummy() || write.isPathType()) {
           continue;
         }
         if (write.getType() == Entity.Type.DATABASE) {
@@ -616,7 +615,7 @@ public class Driver implements CommandProcessor {
       //determine if partition level privileges should be checked for input tables
       Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy() || read.getType() == Entity.Type.DATABASE) {
+        if (read.isDummy() || read.isPathType() || read.getType() == Entity.Type.DATABASE) {
           continue;
         }
         Table tbl = read.getTable();
@@ -643,7 +642,7 @@ public class Driver implements CommandProcessor {
       // cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
-        if (read.isDummy()) {
+        if (read.isDummy() || read.isPathType()) {
           continue;
         }
         if (read.getType() == Entity.Type.DATABASE) {
@@ -804,7 +803,7 @@ public class Driver implements CommandProcessor {
         break;
       case DFS_DIR:
       case LOCAL_DIR:
-        objName = privObject.getD();
+        objName = privObject.getD().toString();
         break;
       case FUNCTION:
         if(privObject.getDatabase() != null) {
@@ -1151,20 +1150,6 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TIME_TO_SUBMIT);
 
-    boolean requireLock = false;
-    boolean ckLock = false;
-    SessionState ss = SessionState.get();
-    try {
-      ckLock = checkConcurrency();
-    } catch (SemanticException e) {
-      errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      downstreamError = e;
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return createProcessorResponse(10);
-    }
-
     int ret;
     if (!alreadyCompiled) {
       ret = compileInternal(command);
@@ -1176,34 +1161,9 @@ public class Driver implements CommandProcessor {
     // the reason that we set the txn manager for the cxt here is because each
     // query has its own ctx object. The txn mgr is shared across the
     // same instance of Driver, which can run multiple queries.
-    ctx.setHiveTxnManager(ss.getTxnMgr());
+    ctx.setHiveTxnManager(SessionState.get().getTxnMgr());
 
-    if (ckLock) {
-      boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
-      if(lockOnlyMapred) {
-        Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
-        taskQueue.addAll(plan.getRootTasks());
-        while (taskQueue.peek() != null) {
-          Task<? extends Serializable> tsk = taskQueue.remove();
-          requireLock = requireLock || tsk.requireLock();
-          if(requireLock) {
-            break;
-          }
-          if (tsk instanceof ConditionalTask) {
-            taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
-          }
-          if(tsk.getChildTasks()!= null) {
-            taskQueue.addAll(tsk.getChildTasks());
-          }
-          // does not add back up task here, because back up task should be the same
-          // type of the original task.
-        }
-      } else {
-        requireLock = true;
-      }
-    }
-
-    if (requireLock) {
+    if (requiresLock()) {
       ret = acquireLocksAndOpenTxn();
       if (ret != 0) {
         try {
@@ -1256,6 +1216,32 @@ public class Driver implements CommandProcessor {
     }
 
     return createProcessorResponse(ret);
+  }
+
+  private boolean requiresLock() {
+    if (!checkConcurrency()) {
+      return false;
+    }
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
+      return true;
+    }
+    Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
+    taskQueue.addAll(plan.getRootTasks());
+    while (taskQueue.peek() != null) {
+      Task<? extends Serializable> tsk = taskQueue.remove();
+      if (tsk.requireLock()) {
+        return true;
+      }
+      if (tsk instanceof ConditionalTask) {
+        taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
+      }
+      if (tsk.getChildTasks()!= null) {
+        taskQueue.addAll(tsk.getChildTasks());
+      }
+      // does not add back up task here, because back up task should be the same
+      // type of the original task.
+    }
+    return false;
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
