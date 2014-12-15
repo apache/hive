@@ -1592,6 +1592,11 @@ public class HiveConf extends Configuration {
     HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv2Hello,SSLv3",
         "SSL Versions to disable for all Hive Servers"),
 
+     // General Thrift configs (Thrift configs common to Metastore and HiveServer2)
+     HIVE_THRIFT_SASL_MESSAGE_LIMIT("hive.thrift.sasl.message.limit", 104857600,
+        "If the length of incoming sasl message is greater than this, regard it as invalid and close the transport. " +
+        "Zero or less value disables this. Default is 100MB."),
+
      // HiveServer2 specific configs
     HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L, new RangeValidator(0L, null),
         "Number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds " +
