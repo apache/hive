@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {
@@ -88,7 +88,7 @@ public class OrcFileStripeMergeRecordReader implements
         keyWrapper.setInputPath(path);
         keyWrapper.setCompression(reader.getCompression());
         keyWrapper.setCompressBufferSize(reader.getCompressionSize());
-        keyWrapper.setVersionList(((ReaderImpl) reader).getFileMetaInfo().versionList);
+        keyWrapper.setVersion(reader.getFileVersion());
         keyWrapper.setRowIndexStride(reader.getRowIndexStride());
         keyWrapper.setTypes(reader.getTypes());
       } else {
