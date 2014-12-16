@@ -4,6 +4,8 @@ set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
 
+-- SORT_QUERY_RESULTS
+
 -- 11. Union All
 select * from cbo_t1 order by key, c_boolean, value, dt union all select * from cbo_t2 order by key, c_boolean, value, dt;
 select key from (select key, c_int from (select * from cbo_t1 union all select * from cbo_t2 where cbo_t2.key >=0)r1 union all select key, c_int from cbo_t3)r2 where key >=0 order by key;
