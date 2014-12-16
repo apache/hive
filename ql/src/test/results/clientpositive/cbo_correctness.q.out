@@ -16719,7 +16719,11 @@ POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v4
 POSTHOOK: Output: default@v4
 PREHOOK: query: -- 11. Union All
-select * from t1 order by key, c_boolean, value, dt union all select * from t2 order by key, c_boolean, value, dt
+select * from (
+select * from t1 order by key, c_boolean, value, c_int, c_float, dt
+union all
+select * from t2 order by key, c_boolean, value, c_int, c_float, dt) a
+order by key, c_boolean, value, c_int, c_float, dt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@dt=2014
@@ -16727,7 +16731,11 @@ PREHOOK: Input: default@t2
 PREHOOK: Input: default@t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: -- 11. Union All
-select * from t1 order by key, c_boolean, value, dt union all select * from t2 order by key, c_boolean, value, dt
+select * from (
+select * from t1 order by key, c_boolean, value, c_int, c_float, dt
+union all
+select * from t2 order by key, c_boolean, value, c_int, c_float, dt) a
+order by key, c_boolean, value, c_int, c_float, dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@dt=2014
@@ -16736,28 +16744,14 @@ POSTHOOK: Input: default@t2@dt=2014
 #### A masked pattern was here ####
  1	 1	1	1.0	true	2014
  1	 1	1	1.0	true	2014
- 1 	 1 	1	1.0	true	2014
- 1 	 1 	1	1.0	true	2014
-1	1	1	1.0	false	2014
-1	1	1	1.0	false	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1	1	1	1.0	true	2014
-1 	1 	1	1.0	true	2014
-1 	1 	1	1.0	true	2014
-null	null	NULL	NULL	NULL	2014
-null	null	NULL	NULL	NULL	2014
  1	 1	1	1.0	true	2014
  1	 1	1	1.0	true	2014
  1 	 1 	1	1.0	true	2014
  1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	true	2014
@@ -16765,6 +16759,18 @@ null	null	NULL	NULL	NULL	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
 1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
 1 	1 	1	1.0	true	2014
 2	2	2	2.0	true	2014
@@ -16772,6 +16778,8 @@ null	null	NULL	NULL	NULL	2014
 2	2	2	2.0	true	2014
 2	2	2	2.0	true	2014
 2	2	2	2.0	true	2014
+null	null	NULL	NULL	NULL	2014
+null	null	NULL	NULL	NULL	2014
 null	null	NULL	NULL	NULL	2014
 null	null	NULL	NULL	NULL	2014
 PREHOOK: query: select key from (select key, c_int from (select * from t1 union all select * from t2 where t2.key >=0)r1 union all select key, c_int from t3)r2 where key >=0 order by key
