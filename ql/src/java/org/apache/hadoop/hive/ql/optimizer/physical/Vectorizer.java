@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -115,16 +117,11 @@ import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.util.ReflectionUtils;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
@@ -345,7 +342,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
       }
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      MapWorkValidationNodeProcessor vnp = new MapWorkValidationNodeProcessor(isTez);
+      MapWorkValidationNodeProcessor vnp = new MapWorkValidationNodeProcessor(mapWork, isTez);
       addMapWorkRules(opRules, vnp);
       Dispatcher disp = new DefaultRuleDispatcher(vnp, opRules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
@@ -515,9 +512,11 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class MapWorkValidationNodeProcessor implements NodeProcessor {
 
+    private MapWork mapWork;
     private boolean isTez;
 
-    public MapWorkValidationNodeProcessor(boolean isTez) {
+    public MapWorkValidationNodeProcessor(MapWork mapWork, boolean isTez) {
+      this.mapWork = mapWork;
       this.isTez = isTez;
     }
 
@@ -529,7 +528,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (nonVectorizableChildOfGroupBy(op)) {
           return new Boolean(true);
         }
-        boolean ret = validateMapWorkOperator(op, isTez);
+        boolean ret = validateMapWorkOperator(op, mapWork, isTez);
         if (!ret) {
           LOG.info("MapWork Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
@@ -845,7 +844,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return pctx;
   }
 
-  boolean validateMapWorkOperator(Operator<? extends OperatorDesc> op, boolean isTez) {
+  boolean validateMapWorkOperator(Operator<? extends OperatorDesc> op, MapWork mWork, boolean isTez) {
     boolean ret = false;
     switch (op.getType()) {
       case MAPJOIN:
@@ -868,7 +867,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         ret = validateReduceSinkOperator((ReduceSinkOperator) op);
         break;
       case TABLESCAN:
-        ret = validateTableScanOperator((TableScanOperator) op);
+        ret = validateTableScanOperator((TableScanOperator) op, mWork);
         break;
       case FILESINK:
       case LIMIT:
@@ -950,9 +949,72 @@ public class Vectorizer implements PhysicalPlanResolver {
     return validateMapJoinDesc(desc);
   }
 
-  private boolean validateTableScanOperator(TableScanOperator op) {
+  private boolean validateTableScanOperator(TableScanOperator op, MapWork mWork) {
     TableScanDesc desc = op.getConf();
-    return !desc.isGatherStats();
+    if (desc.isGatherStats()) {
+      return false;
+    }
+
+    String columns = "";
+    String types = "";
+    String partitionColumns = "";
+    String partitionTypes = "";
+    boolean haveInfo = false;
+
+    // This over-reaches slightly, since we can have > 1 table-scan  per map-work.
+    // It needs path to partition, path to alias, then check the alias == the same table-scan, to be accurate.
+    // That said, that is a TODO item to be fixed when we support >1 TableScans per vectorized pipeline later.
+    LinkedHashMap<String, PartitionDesc> partitionDescs = mWork.getPathToPartitionInfo();
+
+    // For vectorization, compare each partition information for against the others.
+    // We assume the table information will be from one of the partitions, so it will
+    // work to focus on the partition information and not compare against the TableScanOperator
+    // columns (in the VectorizationContext)....
+    for (Map.Entry<String, PartitionDesc> entry : partitionDescs.entrySet()) {
+      PartitionDesc partDesc = entry.getValue();
+      if (partDesc.getPartSpec() == null || partDesc.getPartSpec().isEmpty()) {
+        // No partition information -- we match because we would default to using the table description.
+        continue;
+      }
+      Properties partProps = partDesc.getProperties();
+      if (!haveInfo) {
+        columns = partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMNS);
+        types = partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMN_TYPES);
+        partitionColumns = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+        partitionTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+        haveInfo = true;
+      } else {
+        String nextColumns = partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMNS);
+        String nextTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMN_TYPES);
+        String nextPartitionColumns = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+        String nextPartitionTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+        if (!columns.equalsIgnoreCase(nextColumns)) {
+          LOG.info(
+                  String.format("Could not vectorize partition %s.  Its column names %s do not match the other column names %s",
+                            entry.getKey(), nextColumns, columns));
+          return false;
+        }
+        if (!types.equalsIgnoreCase(nextTypes)) {
+          LOG.info(
+                  String.format("Could not vectorize partition %s.  Its column types %s do not match the other column types %s",
+                              entry.getKey(), nextTypes, types));
+          return false;
+        }
+        if (!partitionColumns.equalsIgnoreCase(nextPartitionColumns)) {
+          LOG.info(
+                 String.format("Could not vectorize partition %s.  Its partition column names %s do not match the other partition column names %s",
+                              entry.getKey(), nextPartitionColumns, partitionColumns));
+          return false;
+        }
+        if (!partitionTypes.equalsIgnoreCase(nextPartitionTypes)) {
+          LOG.info(
+                 String.format("Could not vectorize partition %s.  Its partition column types %s do not match the other partition column types %s",
+                                entry.getKey(), nextPartitionTypes, partitionTypes));
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private boolean validateMapJoinOperator(MapJoinOperator op) {

@@ -108,7 +108,7 @@ public class TestVectorizer {
     gbyOp.setConf(desc);
 
     Vectorizer v = new Vectorizer();
-    Assert.assertTrue(v.validateMapWorkOperator(gbyOp, false));
+    Assert.assertTrue(v.validateMapWorkOperator(gbyOp, null, false));
     VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext);
     Assert.assertEquals(VectorUDAFSumLong.class, vectorOp.getAggregators()[0].getClass());
     VectorUDAFSumLong udaf = (VectorUDAFSumLong) vectorOp.getAggregators()[0];
@@ -188,7 +188,7 @@ public class TestVectorizer {
     map.setConf(mjdesc);
  
     Vectorizer vectorizer = new Vectorizer();
-    Assert.assertTrue(vectorizer.validateMapWorkOperator(map, false));
+    Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 
   
@@ -204,6 +204,6 @@ public class TestVectorizer {
       map.setConf(mjdesc);
     
       Vectorizer vectorizer = new Vectorizer();
-      Assert.assertTrue(vectorizer.validateMapWorkOperator(map, false)); 
+      Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false)); 
   }
 }
