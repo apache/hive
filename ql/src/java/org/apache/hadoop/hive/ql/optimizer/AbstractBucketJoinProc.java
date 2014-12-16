@@ -240,14 +240,12 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry : topOps.entrySet()) {
           if (topOpEntry.getValue() == tso) {
             String newAlias = topOpEntry.getKey();
-            if (!newAlias.equals(alias)) {
-              joinAliases.set(index, newAlias);
-              if (baseBigAlias.equals(alias)) {
-                baseBigAlias = newAlias;
-              }
-              aliasToNewAliasMap.put(alias, newAlias);
-              alias = newAlias;
+            joinAliases.set(index, newAlias);
+            if (baseBigAlias.equals(alias)) {
+              baseBigAlias = newAlias;
             }
+            aliasToNewAliasMap.put(alias, newAlias);
+            alias = newAlias;
             break;
           }
         }
