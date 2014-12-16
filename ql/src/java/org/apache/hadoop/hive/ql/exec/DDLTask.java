@@ -1848,6 +1848,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private static final String[] DELIMITER_PREFIXES = new String[] {
+      "FIELDS TERMINATED BY",
+      "COLLECTION ITEMS TERMINATED BY",
+      "MAP KEYS TERMINATED BY",
+      "LINES TERMINATED BY",
+      "NULL DEFINED AS"
+  };
+
   /**
    * Write a statement of how to create a table to a file.
    *
@@ -1989,80 +1997,65 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       // Row format (SerDe)
-      String tbl_row_format = "";
+      StringBuilder tbl_row_format = new StringBuilder();
       StorageDescriptor sd = tbl.getTTable().getSd();
       SerDeInfo serdeInfo = sd.getSerdeInfo();
-      tbl_row_format += "ROW FORMAT";
+      tbl_row_format.append("ROW FORMAT");
       if (tbl.getStorageHandler() == null) {
-        if (serdeInfo.getParametersSize() > 1) {
+        Map<String, String> serdeParams = serdeInfo.getParameters();
+        String[] delimiters = new String[] {
+            serdeParams.remove(serdeConstants.FIELD_DELIM),
+            serdeParams.remove(serdeConstants.COLLECTION_DELIM),
+            serdeParams.remove(serdeConstants.MAPKEY_DELIM),
+            serdeParams.remove(serdeConstants.LINE_DELIM),
+            serdeParams.remove(serdeConstants.SERIALIZATION_NULL_FORMAT)
+        };
+        serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
+        if (containsNonNull(delimiters)) {
           // There is a "serialization.format" property by default,
           // even with a delimited row format.
           // But our result will only cover the following four delimiters.
-          tbl_row_format += " DELIMITED \n";
-          Map<String, String> delims = serdeInfo.getParameters();
+          tbl_row_format.append(" DELIMITED \n");
+
           // Warn:
           // If the four delimiters all exist in a CREATE TABLE query,
           // this following order needs to be strictly followed,
           // or the query will fail with a ParseException.
-          if (delims.containsKey(serdeConstants.FIELD_DELIM)) {
-            tbl_row_format += "  FIELDS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.FIELD_DELIM))) + "' \n";
+          for (int i = 0; i < DELIMITER_PREFIXES.length; i++) {
+            if (delimiters[i] != null) {
+              tbl_row_format.append("  ").append(DELIMITER_PREFIXES[i]).append(" '");
+              tbl_row_format.append(escapeHiveCommand(StringEscapeUtils.escapeJava(delimiters[i])));
+              tbl_row_format.append("' \n");
+            }
           }
-          if (delims.containsKey(serdeConstants.COLLECTION_DELIM)) {
-            tbl_row_format += "  COLLECTION ITEMS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.COLLECTION_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.MAPKEY_DELIM)) {
-            tbl_row_format += "  MAP KEYS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.MAPKEY_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.LINE_DELIM)) {
-            tbl_row_format += "  LINES TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.LINE_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.SERIALIZATION_NULL_FORMAT)) {
-            tbl_row_format += "  NULL DEFINED AS '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.SERIALIZATION_NULL_FORMAT))) + "' \n";
-          }
+        } else {
+          tbl_row_format.append(" SERDE \n  '" +
+              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
         }
-        else {
-          tbl_row_format += " SERDE \n  '" +
-              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n";
+        if (!serdeParams.isEmpty()) {
+          appendSerdeParams(tbl_row_format, serdeParams).append(" \n");
         }
-        tbl_row_format += "STORED AS INPUTFORMAT \n  '" +
-            escapeHiveCommand(sd.getInputFormat()) + "' \n";
-        tbl_row_format += "OUTPUTFORMAT \n  '" +
-            escapeHiveCommand(sd.getOutputFormat()) + "'";
-      }
-      else {
+        tbl_row_format.append("STORED AS INPUTFORMAT \n  '" +
+            escapeHiveCommand(sd.getInputFormat()) + "' \n");
+        tbl_row_format.append("OUTPUTFORMAT \n  '" +
+            escapeHiveCommand(sd.getOutputFormat()) + "'");
+      } else {
         duplicateProps.add(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
-        tbl_row_format += " SERDE \n  '" +
-            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n";
-        tbl_row_format += "STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n";
+        tbl_row_format.append(" SERDE \n  '" +
+            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+        tbl_row_format.append("STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n");
         // SerDe Properties
         if (serdeInfo.getParametersSize() > 0) {
-          tbl_row_format += "WITH SERDEPROPERTIES ( \n";
-          List<String> serdeCols = new ArrayList<String>();
-          for (Map.Entry<String, String> entry : serdeInfo.getParameters().entrySet()) {
-            serdeCols.add("  '" + entry.getKey() + "'='"
-                + escapeHiveCommand(StringEscapeUtils.escapeJava(entry.getValue())) + "'");
-          }
-          tbl_row_format += StringUtils.join(serdeCols, ", \n");
-          tbl_row_format += ")";
+          appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
         }
       }
       String tbl_location = "  '" + escapeHiveCommand(sd.getLocation()) + "'";
 
       // Table properties
       String tbl_properties = "";
-      Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
-      if (properties.size() > 0) {
+      if (!tbl.getParameters().isEmpty()) {
+        Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
         List<String> realProps = new ArrayList<String>();
         for (String key : properties.keySet()) {
           if (properties.get(key) != null && !duplicateProps.contains(key)) {
@@ -2102,6 +2095,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  private boolean containsNonNull(String[] values) {
+    for (String value : values) {
+      if (value != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
+    serdeParam = new TreeMap<String, String>(serdeParam);
+    builder.append("WITH SERDEPROPERTIES ( \n");
+    List<String> serdeCols = new ArrayList<String>();
+    for (Entry<String, String> entry : serdeParam.entrySet()) {
+      serdeCols.add("  '" + entry.getKey() + "'='"
+          + escapeHiveCommand(StringEscapeUtils.escapeJava(entry.getValue())) + "'");
+    }
+    builder.append(StringUtils.join(serdeCols, ", \n")).append(')');
+    return builder;
   }
 
   /**
