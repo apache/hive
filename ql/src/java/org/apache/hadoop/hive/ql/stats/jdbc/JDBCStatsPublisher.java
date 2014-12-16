@@ -139,10 +139,9 @@ public class JDBCStatsPublisher implements StatsPublisher {
           + " stats: " + JDBCStatsUtils.getSupportedStatistics());
       return false;
     }
-    String rowId = JDBCStatsUtils.truncateRowId(fileID);
+    JDBCStatsUtils.validateRowId(fileID);
     if (LOG.isInfoEnabled()) {
-      String truncateSuffix = (rowId != fileID) ? " (from " + fileID + ")" : ""; // object equality
-      LOG.info("Stats publishing for key " + rowId + truncateSuffix);
+      LOG.info("Stats publishing for key " + fileID);
     }
 
     Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
@@ -157,7 +156,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
 
     for (int failures = 0;; failures++) {
       try {
-        insStmt.setString(1, rowId);
+        insStmt.setString(1, fileID);
         for (int i = 0; i < JDBCStatsUtils.getSupportedStatistics().size(); i++) {
           insStmt.setString(i + 2, stats.get(supportedStatistics.get(i)));
         }
@@ -176,10 +175,10 @@ public class JDBCStatsPublisher implements StatsPublisher {
             for (i = 0; i < JDBCStatsUtils.getSupportedStatistics().size(); i++) {
               updStmt.setString(i + 1, stats.get(supportedStatistics.get(i)));
             }
-            updStmt.setString(supportedStatistics.size() + 1, rowId);
+            updStmt.setString(supportedStatistics.size() + 1, fileID);
             updStmt.setString(supportedStatistics.size() + 2,
                 stats.get(JDBCStatsUtils.getBasicStat()));
-            updStmt.setString(supportedStatistics.size() + 3, rowId);
+            updStmt.setString(supportedStatistics.size() + 3, fileID);
             Utilities.executeWithRetry(execUpdate, updStmt, waitWindow, maxRetries);
             return true;
           } catch (SQLRecoverableException ue) {
@@ -281,14 +280,36 @@ public class JDBCStatsPublisher implements StatsPublisher {
         stmt = conn.createStatement();
         stmt.setQueryTimeout(timeout);
 
+        // TODO: why is this not done using Hive db scripts?
         // Check if the table exists
         DatabaseMetaData dbm = conn.getMetaData();
-        rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
+        String tableName = JDBCStatsUtils.getStatTableName();
+        rs = dbm.getTables(null, null, tableName, null);
         boolean tblExists = rs.next();
         if (!tblExists) { // Table does not exist, create it
           String createTable = JDBCStatsUtils.getCreate("");
-          stmt.executeUpdate(createTable);          
-        }      
+          stmt.executeUpdate(createTable);
+        } else {
+          // Upgrade column name to allow for longer paths.
+          String idColName = JDBCStatsUtils.getIdColumnName();
+          int colSize = -1;
+          try {
+            rs.close();
+            rs = dbm.getColumns(null, null, tableName, idColName);
+            if (rs.next()) {
+              colSize = rs.getInt("COLUMN_SIZE");
+              if (colSize < JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE) {
+                String alterTable = JDBCStatsUtils.getAlterIdColumn();
+                  stmt.executeUpdate(alterTable);
+              }
+            } else {
+              LOG.warn("Failed to update " + idColName + " - column not found");
+            }
+          } catch (Throwable t) {
+            LOG.warn("Failed to update " + idColName + " (size "
+                + (colSize == -1 ? "unknown" : colSize) + ")", t);
+          }
+        }
       }
     } catch (Exception e) {
       LOG.error("Error during JDBC initialization. ", e);
