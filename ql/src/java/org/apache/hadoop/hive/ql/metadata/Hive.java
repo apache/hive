@@ -29,6 +29,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -2148,7 +2149,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       boolean grantOption) throws HiveException {
     try {
       return getMSC().grant_role(roleName, userName, principalType, grantor,
-          grantorType, grantOption);
+        grantorType, grantOption);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2317,6 +2318,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return false;
   }
 
+  private static boolean isSubDir(Path srcf, Path destf, FileSystem fs){
+    if (srcf == null) {
+      return false;
+    }
+    URI srcfUri = srcf.toUri();
+    // If the source file is in the file schema, it can not be the subdirectory of a HDFS path
+    if (srcfUri != null && srcfUri.isAbsolute() && !srcfUri.getScheme().equals("hdfs")) {
+      return false;
+    } else {
+      return FileUtils.isSubDir(srcf, destf, fs);
+    }
+  }
+
   //it is assumed that parent directory of the destf should already exist when this
   //method is called. when the replace value is true, this method works a little different
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
@@ -2338,7 +2352,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // (1) Do not delete the dest dir before doing the move operation.
     // (2) It is assumed that subdir and dir are in same encryption zone.
     // (3) Move individual files from scr dir to dest dir.
-    boolean destIsSubDir = FileUtils.isSubDir(srcf, destf, fs);
+    boolean destIsSubDir = isSubDir(srcf, destf, fs);
     try {
       if (inheritPerms || replace) {
         try{
