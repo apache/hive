@@ -20,7 +20,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: (null + 7) (type: double), (1.0 - null) (type: double), (null + null) (type: double), 1 (type: bigint), 0 (type: bigint), 0.0 (type: double)
+            expressions: (UDFToDouble(null) + 7.0) (type: double), (1.0 - UDFToDouble(null)) (type: double), (UDFToDouble(null) + UDFToDouble(null)) (type: double), 1 (type: bigint), 0 (type: bigint), 0.0 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             Statistics: Num rows: 500 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit

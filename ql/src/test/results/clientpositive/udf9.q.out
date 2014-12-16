@@ -32,7 +32,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: -1 (type: int), 2 (type: int), 32 (type: int), -1 (type: int), '2009-01-01' (type: string), '2009-12-31' (type: string), '2008-03-01' (type: string), '2009-03-02' (type: string), '2008-02-28' (type: string), '2009-02-27' (type: string), '2008-12-31' (type: string), '2008-01-02' (type: string), '2008-02-26' (type: string), '2009-02-26' (type: string), '2006-02-28' (type: string), '2005-02-28' (type: string)

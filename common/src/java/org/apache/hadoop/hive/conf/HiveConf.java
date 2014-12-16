@@ -675,7 +675,7 @@ public class HiveConf extends Configuration {
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
 
     // CBO related
-    HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)

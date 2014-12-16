@@ -443,7 +443,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE temp_tbl2 SELECT COUNT(*) FROM temp_tbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: to_drop_db2@temp_tbl
 POSTHOOK: Output: to_drop_db2@temp_tbl2
-POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION []
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

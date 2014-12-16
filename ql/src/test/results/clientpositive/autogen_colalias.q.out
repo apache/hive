@@ -26,16 +26,16 @@ PREHOOK: Input: default@dest_grouped_old1
 POSTHOOK: query: describe dest_grouped_old1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dest_grouped_old1
-_c0                 	int                 	                    
+c0                  	int                 	                    
 zz                  	int                 	                    
 key                 	string              	                    
-_c3                 	int                 	                    
-_c4                 	bigint              	                    
-_c5                 	double              	                    
-_c6                 	bigint              	                    
-_c7                 	bigint              	                    
-_c8                 	int                 	                    
-_c9                 	int                 	                    
+c3                  	int                 	                    
+c4                  	bigint              	                    
+c5                  	double              	                    
+c6                  	bigint              	                    
+c7                  	bigint              	                    
+c8                  	int                 	                    
+c9                  	int                 	                    
 PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src

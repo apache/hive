@@ -133,11 +133,11 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
-              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
-                aggregations: sum(customer_balance), sum(order_quantity), count(discount)
-                keys: customer_name (type: string)
+                aggregations: sum(_col1), sum(_col2), count(_col3)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -200,11 +200,11 @@ STAGE PLANS:
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
-              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
-                aggregations: sum(customer_balance), sum(order_quantity), count(discount)
-                keys: customer_name (type: string)
+                aggregations: sum(_col1), sum(_col2), count(_col3)
+                keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE

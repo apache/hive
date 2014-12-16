@@ -14,7 +14,7 @@ STAGE PLANS:
         TableScan
           alias: alltypesorc
           Filter Operator
-            predicate: ((cbigint < cdouble) and (cint > 0)) (type: boolean)
+            predicate: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
             Select Operator
               expressions: cbigint (type: bigint), cdouble (type: double)
               outputColumnNames: _col0, _col1
@@ -155,12 +155,12 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ctinyint (type: tinyint), cdouble (type: double)
-                    outputColumnNames: ctinyint, cdouble
+                    expressions: ctinyint (type: tinyint), (cdouble + 1.0) (type: double)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg((cdouble + 1))
-                      keys: ctinyint (type: tinyint)
+                      aggregations: avg(_col1)
+                      keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
@@ -255,10 +255,10 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
-                    outputColumnNames: ctinyint
+                    outputColumnNames: _col0
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: ctinyint (type: tinyint)
+                      keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
@@ -350,11 +350,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cdouble (type: double)
-                    outputColumnNames: ctinyint, cdouble
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(DISTINCT cdouble)
-                      keys: ctinyint (type: tinyint), cdouble (type: double)
+                      aggregations: count(DISTINCT _col1)
+                      keys: _col0 (type: tinyint), _col1 (type: double)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
@@ -478,11 +478,11 @@ STAGE PLANS:
                     Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdouble (type: double), ctinyint (type: tinyint)
-                      outputColumnNames: cdouble, ctinyint
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: sum(ctinyint)
-                        keys: cdouble (type: double)
+                        aggregations: sum(_col1)
+                        keys: _col0 (type: double)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE

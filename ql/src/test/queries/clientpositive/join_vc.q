@@ -8,7 +8,7 @@ select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on
 
 explain
 select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100;
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE;
 
 select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100;
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE;

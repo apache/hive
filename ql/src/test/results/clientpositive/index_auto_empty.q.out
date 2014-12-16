@@ -62,10 +62,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: temp
-            filterExpr: (key = 86) (type: boolean)
+            filterExpr: (UDFToDouble(key) = 86.0) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: '86' (type: string), val (type: string)
