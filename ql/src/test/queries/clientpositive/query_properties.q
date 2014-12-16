@@ -1,3 +1,4 @@
+set hive.cbo.enable=false;
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.CheckQueryPropertiesHook;
 
 select * from src a join src b on a.key = b.key limit 0;

@@ -31,8 +31,10 @@ STAGE PLANS:
                   alias: s1
                   Select Operator
                     Select Operator
+                      expressions: 1 (type: int)
+                      outputColumnNames: _col0
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count(_col0)
                         mode: hash
                         outputColumnNames: _col0
                         Reduce Output Operator
@@ -41,11 +43,13 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Select Operator
                     Select Operator
+                      expressions: 1 (type: int)
+                      outputColumnNames: _col0
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count(_col0)
                         mode: hash
                         outputColumnNames: _col0
                         Reduce Output Operator

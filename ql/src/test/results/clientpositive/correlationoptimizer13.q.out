@@ -17,9 +17,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp
 POSTHOOK: Lineage: tmp.c1 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.c3 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- The query in this file have operators with same set of keys
 -- but having different sorting orders.
 -- Correlation optimizer currently do not optimize this case.

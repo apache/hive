@@ -33,9 +33,11 @@ STAGE PLANS:
             alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -50,7 +52,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 'tst1' (type: string)
+            expressions: 'tst3' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
@@ -67,11 +69,11 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: _col0 (type: string)
-                outputColumnNames: _col0
+                expressions: _col0 (type: string), 1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count(_col1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -86,11 +88,11 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: _col0 (type: string)
-                outputColumnNames: _col0
+                expressions: _col0 (type: string), 1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count(_col1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -105,11 +107,11 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: _col0 (type: string)
-                outputColumnNames: _col0
+                expressions: _col0 (type: string), 1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count(_col1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -143,12 +145,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s2
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -177,12 +181,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s3
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -197,7 +203,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 'tst3' (type: string)
+            expressions: 'tst1' (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator

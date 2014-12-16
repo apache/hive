@@ -1857,7 +1857,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "_c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");

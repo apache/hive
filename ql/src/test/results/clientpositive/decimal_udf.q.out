@@ -109,7 +109,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key + value) (type: decimal(21,10))
+            expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -176,7 +176,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key + (value / 2)) (type: double)
+            expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -243,7 +243,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key + '1.0') (type: double)
+            expressions: (UDFToDouble(key) + 1.0) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -379,7 +379,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key - value) (type: decimal(21,10))
+            expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -446,7 +446,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key - (value / 2)) (type: double)
+            expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -513,7 +513,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key - '1.0') (type: double)
+            expressions: (UDFToDouble(key) - 1.0) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -649,7 +649,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((key * value) > 0) (type: boolean)
+            predicate: ((key * CAST( value AS decimal(10,0))) > CAST( 0 AS decimal(31,10))) (type: boolean)
             Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
@@ -704,7 +704,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key * value) (type: decimal(31,10))
+            expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -771,7 +771,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key * (value / 2)) (type: double)
+            expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -838,7 +838,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key * '2.0') (type: double)
+            expressions: (UDFToDouble(key) * 2.0) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -907,7 +907,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key / 0) (type: decimal(22,12))
+            expressions: (key / CAST( 0 AS decimal(10,0))) (type: decimal(22,12))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -940,7 +940,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (key / null) (type: double)
+            expressions: (UDFToDouble(key) / UDFToDouble(null)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -973,7 +973,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (key <> 0) (type: boolean)
+            predicate: (key <> CAST( 0 AS decimal(20,10))) (type: boolean)
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / key) (type: decimal(38,24))
@@ -1042,7 +1042,7 @@ STAGE PLANS:
             predicate: (value <> 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (key / value) (type: decimal(31,21))
+              expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
               outputColumnNames: _col0
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               ListSink
@@ -1098,7 +1098,7 @@ STAGE PLANS:
             predicate: (value <> 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (key / (value / 2)) (type: double)
+              expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               ListSink
@@ -1151,7 +1151,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (1 + (key / '2.0')) (type: double)
+            expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -1291,11 +1291,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(key), count(key), avg(key)
-                keys: value (type: int)
+                aggregations: sum(_col1), count(_col1), avg(_col1)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
@@ -1313,7 +1313,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), (_col1 / _col2) (type: decimal(38,23)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
+            expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,23)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 1 Data size: 119 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1808,7 +1808,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
+            expressions: ((key + CAST( 1 AS decimal(10,0))) % (key / CAST( 2 AS decimal(10,0)))) (type: decimal(22,12))
             outputColumnNames: _col0
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -1878,11 +1878,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev(key), variance(key)
-                keys: value (type: int)
+                aggregations: stddev(_col1), variance(_col1)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
@@ -1961,11 +1961,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev_samp(key), var_samp(key)
-                keys: value (type: int)
+                aggregations: stddev_samp(_col1), var_samp(_col1)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
@@ -2043,11 +2043,11 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: decimal(20,10))
-              outputColumnNames: key
+              expressions: key (type: decimal(20,10)), 3 (type: int)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: histogram_numeric(key, 3)
+                aggregations: histogram_numeric(_col0, _col1)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -2107,10 +2107,10 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: min(key)
+                aggregations: min(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -2170,10 +2170,10 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: max(key)
+                aggregations: max(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -2233,10 +2233,10 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(key)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

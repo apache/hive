@@ -70,6 +70,53 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	128	val_128
+128	128	val_128
+128	128	val_128
+146	146	val_146
+146	146	val_146
+150	150	val_150
+213	213	val_213
+213	213	val_213
+224	224	val_224
+224	224	val_224
+238	238	val_238
+238	238	val_238
+255	255	val_255
+255	255	val_255
+273	273	val_273
+273	273	val_273
+273	273	val_273
+278	278	val_278
+278	278	val_278
+311	311	val_311
+311	311	val_311
+311	311	val_311
+369	369	val_369
+369	369	val_369
+369	369	val_369
+401	401	val_401
+401	401	val_401
+401	401	val_401
+401	401	val_401
+401	401	val_401
+406	406	val_406
+406	406	val_406
+406	406	val_406
+406	406	val_406
+66	66	val_66
+98	98	val_98
+98	98	val_98
 PREHOOK: query: -- DOT
 explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
@@ -141,6 +188,53 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	128
+128	128
+128	128
+146	146
+146	146
+150	150
+213	213
+213	213
+224	224
+224	224
+238	238
+238	238
+255	255
+255	255
+273	273
+273	273
+273	273
+278	278
+278	278
+311	311
+311	311
+311	311
+369	369
+369	369
+369	369
+401	401
+401	401
+401	401
+401	401
+401	401
+406	406
+406	406
+406	406
+406	406
+66	66
+98	98
+98	98
 PREHOOK: query: -- EXPRESSION
 explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
@@ -212,3 +306,50 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	128
+128	128
+128	128
+146	146
+146	146
+150	150
+213	213
+213	213
+224	224
+224	224
+238	238
+238	238
+255	255
+255	255
+273	273
+273	273
+273	273
+278	278
+278	278
+311	311
+311	311
+311	311
+369	369
+369	369
+369	369
+401	401
+401	401
+401	401
+401	401
+401	401
+406	406
+406	406
+406	406
+406	406
+66	66
+98	98
+98	98

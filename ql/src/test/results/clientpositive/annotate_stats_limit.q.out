@@ -80,7 +80,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- numRows: 4 rawDataSize: 396
@@ -103,7 +103,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 4
               Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
@@ -131,10 +131,10 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 16
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
@@ -157,7 +157,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 0
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
