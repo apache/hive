@@ -220,4 +220,9 @@
   <value>${maven.local.repository}/org/apache/hive/hive-it-util/${hive.version}/hive-it-util-${hive.version}.jar</value>
 </property>
 
+<property>
+  <name>hive.users.in.admin.role</name>
+  <value>hive_admin_user</value>
+</property>
+
 </configuration>
