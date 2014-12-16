@@ -97,17 +97,13 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         String bigInputPath = currentInputPath;
         if (currentInputPath != null && mapJoinCtx != null) {
-          if (!desc.isBucketMapJoin()) {
-            bigInputPath = null;
-          } else {
-            Set<String> aliases =
-              ((SparkBucketMapJoinContext)mapJoinCtx).getPosToAliasMap().get(pos);
-            String alias = aliases.iterator().next();
-            // Any one small table input path
-            String smallInputPath =
-              mapJoinCtx.getAliasBucketFileNameMapping().get(alias).get(bigInputPath).get(0);
-            bigInputPath = mapJoinCtx.getMappingBigFile(alias, smallInputPath);
-          }
+          Set<String> aliases =
+            ((SparkBucketMapJoinContext)mapJoinCtx).getPosToAliasMap().get(pos);
+          String alias = aliases.iterator().next();
+          // Any one small table input path
+          String smallInputPath =
+            mapJoinCtx.getAliasBucketFileNameMapping().get(alias).get(bigInputPath).get(0);
+          bigInputPath = mapJoinCtx.getMappingBigFile(alias, smallInputPath);
         }
         String fileName = localWork.getBucketFileName(bigInputPath);
         Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
