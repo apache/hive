@@ -32,8 +32,6 @@ import org.apache.hive.spark.client.Job;
 import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
-import org.apache.hive.spark.client.status.HiveSparkJobInfo;
-import org.apache.hive.spark.client.status.HiveSparkStageInfo;
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
@@ -158,7 +156,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         };
       }
     }
-    JobHandle<HiveSparkJobInfo> getJobInfo = sparkClient.submit(
+    JobHandle<SparkJobInfo> getJobInfo = sparkClient.submit(
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
       return getJobInfo.get();
@@ -169,7 +167,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   private SparkStageInfo getSparkStageInfo(int stageId) {
-    JobHandle<HiveSparkStageInfo> getStageInfo = sparkClient.submit(new GetStageInfoJob(stageId));
+    JobHandle<SparkStageInfo> getStageInfo = sparkClient.submit(new GetStageInfoJob(stageId));
     try {
       return getStageInfo.get();
     } catch (Throwable t) {
@@ -178,7 +176,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
   }
 
-  private static class GetJobInfoJob implements Job<HiveSparkJobInfo> {
+  private static class GetJobInfoJob implements Job<SparkJobInfo> {
     private final String clientJobId;
     private final int sparkJobId;
 
@@ -193,7 +191,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
 
     @Override
-    public HiveSparkJobInfo call(JobContext jc) throws Exception {
+    public SparkJobInfo call(JobContext jc) throws Exception {
       SparkJobInfo jobInfo = jc.sc().statusTracker().getJobInfo(sparkJobId);
       if (jobInfo == null) {
         List<JavaFutureAction<?>> list = jc.getMonitoredJobs().get(clientJobId);
@@ -237,11 +235,11 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
           }
         };
       }
-      return new HiveSparkJobInfo(jobInfo);
+      return jobInfo;
     }
   }
 
-  private static class GetStageInfoJob implements Job<HiveSparkStageInfo> {
+  private static class GetStageInfoJob implements Job<SparkStageInfo> {
     private final int stageId;
 
     private GetStageInfoJob() {
@@ -254,9 +252,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
 
     @Override
-    public HiveSparkStageInfo call(JobContext jc) throws Exception {
-      SparkStageInfo stageInfo = jc.sc().statusTracker().getStageInfo(stageId);
-      return stageInfo != null ? new HiveSparkStageInfo(stageInfo) : new HiveSparkStageInfo();
+    public SparkStageInfo call(JobContext jc) throws Exception {
+      return jc.sc().statusTracker().getStageInfo(stageId);
     }
   }
 

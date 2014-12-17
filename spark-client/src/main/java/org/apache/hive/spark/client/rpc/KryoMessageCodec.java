@@ -26,6 +26,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.ByteBufferInputStream;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -57,6 +58,7 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
         kryo.register(klass, REG_ID_BASE + count);
         count++;
       }
+      kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       return kryo;
     }
   };
