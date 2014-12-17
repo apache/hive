@@ -89,13 +89,6 @@ public class GenSparkUtils {
     sequenceNumber = 0;
   }
 
-  public UnionWork createUnionWork(GenSparkProcContext context, Operator<?> operator, SparkWork sparkWork) {
-    UnionWork unionWork = new UnionWork("Union "+ (++sequenceNumber));
-    context.unionWorkMap.put(operator, unionWork);
-    sparkWork.add(unionWork);
-    return unionWork;
-  }
-
   public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork) throws SemanticException {
     Preconditions.checkArgument(!root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be non-empty");
@@ -122,10 +115,7 @@ public class GenSparkUtils {
 
     SparkEdgeProperty edgeProp = getEdgeProperty(reduceSink, reduceWork);
 
-    sparkWork.connect(
-        context.preceedingWork,
-        reduceWork, edgeProp);
-    context.connectedReduceSinks.add(reduceSink);
+    sparkWork.connect(context.preceedingWork, reduceWork, edgeProp);
 
     return reduceWork;
   }
@@ -220,7 +210,7 @@ public class GenSparkUtils {
       for (Operator<?> op : opQueue) {
         Operator<?> newOp = newOpQueue_it.next();
         if (op instanceof FileSinkOperator) {
-          List<FileSinkOperator> fileSinkList = context.fileSinkMap.get((FileSinkOperator)op);
+          List<FileSinkOperator> fileSinkList = context.fileSinkMap.get(op);
           if (fileSinkList == null) {
             fileSinkList = new LinkedList<FileSinkOperator>();
           }

@@ -40,11 +40,26 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0), Map 4 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.union_subq_union
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -78,25 +93,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.union_subq_union
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
-                    Select Operator
-                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                      outputColumnNames: _col0, _col1
-                      File Output Operator
-                        compressed: false
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.union_subq_union
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-0
     Move Operator

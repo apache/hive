@@ -150,16 +150,10 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
      *
      */
     mapJoinWork = context.mapJoinWorkMap.get(mapJoinOp);
-    BaseWork parentWork;
-    if (context.unionWorkMap.containsKey(parentRS)) {
-      parentWork = context.unionWorkMap.get(parentRS);
-    } else {
-      int workMapSize = context.childToWorkMap.get(parentRS).size();
-      Preconditions.checkArgument(workMapSize == 1,
-          "AssertionError: expected context.childToWorkMap.get(parentRS).size() to be 1, but was " +
-              workMapSize);
-      parentWork = context.childToWorkMap.get(parentRS).get(0);
-    }
+    int workMapSize = context.childToWorkMap.get(parentRS).size();
+    Preconditions.checkArgument(workMapSize == 1,
+        "AssertionError: expected context.childToWorkMap.get(parentRS).size() to be 1, but was " + workMapSize);
+    BaseWork parentWork = context.childToWorkMap.get(parentRS).get(0);
 
     // set the link between mapjoin and parent vertex
     int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
@@ -204,7 +198,6 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
         }
         // remember the output name of the reduce sink
         r.getConf().setOutputName(myWork.getName());
-        context.connectedReduceSinks.add(r);
       }
     }
 

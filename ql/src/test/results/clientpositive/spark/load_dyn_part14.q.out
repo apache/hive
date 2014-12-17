@@ -63,9 +63,8 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
-        Reducer 7 <- Map 6 (GROUP, 1)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 5 (NONE, 0), Reducer 7 (NONE, 0)
+        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 6 <- Map 5 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -84,7 +83,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -100,7 +99,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -130,7 +129,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part14
-        Reducer 5 
+        Reducer 4 
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -144,7 +143,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part14
-        Reducer 7 
+        Reducer 6 
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -158,8 +157,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part14
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Move Operator

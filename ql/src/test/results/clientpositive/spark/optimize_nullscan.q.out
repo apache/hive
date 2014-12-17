@@ -650,8 +650,7 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 5 <- Map 4 (GROUP, 1)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 5 (NONE, 0)
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -724,7 +723,7 @@ STAGE PLANS:
                   name: default.src
             Truncated Path -> Alias:
               -mr-10003default.src{} [src]
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -967,7 +966,7 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        Reducer 5 
+        Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -997,8 +996,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator
@@ -1527,8 +1524,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 3), Map 5 (PARTITION-LEVEL SORT, 3)
-        Union 2 <- Map 1 (NONE, 0), Reducer 4 (NONE, 0)
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1614,7 +1610,7 @@ STAGE PLANS:
                   name: default.src
             Truncated Path -> Alias:
               /src [src]
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1680,8 +1676,8 @@ STAGE PLANS:
                   name: default.src
             Truncated Path -> Alias:
               -mr-10003default.src{} [src]
-        Map 5 
-        Reducer 4 
+        Map 4 
+        Reducer 3 
             Needs Tagging: true
             Reduce Operator Tree:
               Join Operator
@@ -1714,8 +1710,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-0
     Fetch Operator
@@ -1803,74 +1797,7 @@ STAGE PLANS:
                       value expressions: key (type: string)
                       auto parallelism: false
             Path -> Alias:
-              -mr-10004default.src{} [s1]
-            Path -> Partition:
-              -mr-10004default.src{} 
-                Partition
-                  base file name: src
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE true
-                    bucket_count -1
-                    columns key,value
-                    columns.comments default default
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.src
-                    numFiles 1
-                    numRows 500
-                    rawDataSize 5312
-                    serialization.ddl struct src { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.NullStructSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE true
-                      bucket_count -1
-                      columns key,value
-                      columns.comments default default
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.src
-                      numFiles 1
-                      numRows 500
-                      rawDataSize 5312
-                      serialization.ddl struct src { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src
-                  name: default.src
-            Truncated Path -> Alias:
-              -mr-10004default.src{} [s1]
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: false (type: boolean)
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: value (type: string)
-                      sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      tag: 1
-                      value expressions: key (type: string)
-                      auto parallelism: false
-            Path -> Alias:
-              -mr-10003default.src{} [s2]
+              -mr-10003default.src{} [s1]
             Path -> Partition:
               -mr-10003default.src{} 
                 Partition
@@ -1917,7 +1844,74 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              -mr-10003default.src{} [s2]
+              -mr-10003default.src{} [s1]
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: false (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      tag: 1
+                      value expressions: key (type: string)
+                      auto parallelism: false
+            Path -> Alias:
+              -mr-10004default.src{} [s2]
+            Path -> Partition:
+              -mr-10004default.src{} 
+                Partition
+                  base file name: src
+                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value
+                    columns.comments default default
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.src
+                    numFiles 1
+                    numRows 500
+                    rawDataSize 5312
+                    serialization.ddl struct src { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns key,value
+                      columns.comments default default
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.src
+                      numFiles 1
+                      numRows 500
+                      rawDataSize 5312
+                      serialization.ddl struct src { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 5812
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src
+                  name: default.src
+            Truncated Path -> Alias:
+              -mr-10004default.src{} [s2]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

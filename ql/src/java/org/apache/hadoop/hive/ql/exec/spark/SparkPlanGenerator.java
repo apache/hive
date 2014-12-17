@@ -90,26 +90,10 @@ public class SparkPlanGenerator {
 
     for (BaseWork work : sparkWork.getAllWork()) {
       SparkTran tran;
-      if (work instanceof MapWork) {
-        SparkTran mapInput = generateParentTran(sparkPlan, sparkWork, work);
-        tran = generate((MapWork)work);
-        sparkPlan.addTran(tran);
-        sparkPlan.connect(mapInput, tran);
-      } else if (work instanceof ReduceWork) {
-        SparkTran shuffleTran = generateParentTran(sparkPlan, sparkWork, work);
-        tran = generate((ReduceWork)work);
-        sparkPlan.addTran(tran);
-        sparkPlan.connect(shuffleTran, tran);
-      } else {
-        List<BaseWork> parentWorks = sparkWork.getParents(work);
-        tran = new IdentityTran();
-        sparkPlan.addTran(tran);
-        for (BaseWork parentWork : parentWorks) {
-          SparkTran parentTran = workToTranMap.get(parentWork);
-          sparkPlan.connect(parentTran, tran);
-        }
-      }
-
+      SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
+      tran = generate(work);
+      sparkPlan.addTran(tran);
+      sparkPlan.connect(parentTran, tran);
       workToTranMap.put(work, tran);
     }
 
@@ -137,8 +121,8 @@ public class SparkPlanGenerator {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
       }
     } else {
-      throw new IllegalStateException("AssertionError: generateParentTran() only expect MapWork or ReduceWork," +
-          " but found " + work.getClass().getName());
+      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, " +
+          "but found " + work.getClass().getName());
     }
 
     if (cloneToWork.containsKey(work)) {
@@ -199,23 +183,24 @@ public class SparkPlanGenerator {
     return new ShuffleTran(shuffler, edge.getNumPartitions(), toCache);
   }
 
-  private MapTran generate(MapWork mw) throws Exception {
-    initStatsPublisher(mw);
-    MapTran result = new MapTran();
-    JobConf newJobConf = cloneJobConf(mw);
+  private SparkTran generate(BaseWork work) throws Exception {
+    initStatsPublisher(work);
+    JobConf newJobConf = cloneJobConf(work);
     byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
-    HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
-    result.setMapFunction(mapFunc);
-    return result;
-  }
-
-  private ReduceTran generate(ReduceWork rw) throws Exception {
-    ReduceTran result = new ReduceTran();
-    JobConf newJobConf = cloneJobConf(rw);
-    byte[] confBytes = KryoSerializer.serializeJobConf(newJobConf);
-    HiveReduceFunction redFunc = new HiveReduceFunction(confBytes, sparkReporter);
-    result.setReduceFunction(redFunc);
-    return result;
+    if (work instanceof MapWork) {
+      MapTran mapTran = new MapTran();
+      HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
+      mapTran.setMapFunction(mapFunc);
+      return mapTran;
+    } else if (work instanceof ReduceWork) {
+      ReduceTran reduceTran = new ReduceTran();
+      HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
+      reduceTran.setReduceFunction(reduceFunc);
+      return reduceTran;
+    } else {
+      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, " +
+          "but found " + work.getClass().getName());
+    }
   }
 
   private JobConf cloneJobConf(BaseWork work) throws Exception {
