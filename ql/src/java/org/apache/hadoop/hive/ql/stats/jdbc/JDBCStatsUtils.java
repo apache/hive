@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.util.hash.MurmurHash;
 
 public class JDBCStatsUtils {
 
@@ -137,6 +136,15 @@ public class JDBCStatsUtils {
   }
 
   /**
+   * Prepares ALTER TABLE query
+   */
+  public static String getAlterIdColumn() {
+    return "ALTER TABLE " + JDBCStatsUtils.getStatTableName() + " ALTER COLUMN "
+        + JDBCStatsUtils.getIdColumnName() + " VARCHAR("
+        + JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE + ")";
+  }
+
+  /**
    * Prepares UPDATE statement issued when updating existing statistics
    */
   public static String getUpdate(String comment) {
@@ -195,11 +203,10 @@ public class JDBCStatsUtils {
 
   /**
    * Make sure the row ID fits into the row ID column in the table.
-   * @param rowId Row ID.
-   * @return Resulting row ID truncated to correct length, if necessary.
    */
-  public static String truncateRowId(String rowId) {
-    return (rowId.length() <= JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE)
-        ? rowId : Integer.toHexString(MurmurHash.getInstance().hash(rowId.getBytes()));
+  public static void validateRowId(String rowId) {
+    if (rowId.length() > JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE) {
+      throw new RuntimeException("ID is too big, client should have truncated it: " + rowId);
+    }
   }
 }
