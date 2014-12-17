@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -48,6 +47,7 @@ import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
 import org.apache.hive.spark.client.SparkClientFactory;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaFutureAction;
@@ -93,7 +93,6 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
-  @SuppressWarnings("serial")
   public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
     final Context ctx = driverContext.getCtx();
     final HiveConf hiveConf = (HiveConf) ctx.getConf();
@@ -220,7 +219,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
       // We use Spark RDD async action to submit job as it's the only way to get jobId now.
       JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
-      jc.monitor(future, sparkCounters);
+      jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
       return null;
     }
 

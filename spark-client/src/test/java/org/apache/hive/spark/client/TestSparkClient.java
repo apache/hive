@@ -17,6 +17,11 @@
 
 package org.apache.hive.spark.client;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,24 +32,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
 import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.io.ByteStreams;
-import org.apache.spark.FutureAction;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import org.apache.hive.spark.counter.SparkCounters;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.io.ByteStreams;
 
 public class TestSparkClient {
 
@@ -258,7 +259,7 @@ public class TestSparkClient {
         public void call(Integer l) throws Exception {
 
         }
-      }), null);
+      }), null, null);
 
       future.get(TIMEOUT, TimeUnit.SECONDS);
 
@@ -332,7 +333,7 @@ public class TestSparkClient {
       counters.createCounter("group2", "counter2");
 
       jc.monitor(jc.sc().parallelize(Arrays.asList(1, 2, 3, 4, 5), 5).foreachAsync(this),
-          counters);
+          counters, null);
 
       return null;
     }

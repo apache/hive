@@ -23,27 +23,29 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.spark.api.java.JavaPairRDD;
-
-import com.google.common.base.Preconditions;
-
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.storage.StorageLevel;
 
 import scala.Tuple2;
+
+import com.google.common.base.Preconditions;
 
 
 public class MapInput implements SparkTran<WritableComparable, Writable,
     WritableComparable, Writable> {
   private JavaPairRDD<WritableComparable, Writable> hadoopRDD;
   private boolean toCache;
+  private final SparkPlan sparkPlan;
 
-  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
-    this(hadoopRDD, false);
+  public MapInput(SparkPlan sparkPlan, JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
+    this(sparkPlan, hadoopRDD, false);
   }
 
-  public MapInput(JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
+  public MapInput(SparkPlan sparkPlan,
+      JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache) {
     this.hadoopRDD = hadoopRDD;
     this.toCache = toCache;
+    this.sparkPlan = sparkPlan;
   }
 
   public void setToCache(boolean toCache) {
@@ -55,8 +57,15 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
       JavaPairRDD<WritableComparable, Writable> input) {
     Preconditions.checkArgument(input == null,
         "AssertionError: MapInput doesn't take any input");
-    return toCache ? hadoopRDD.mapToPair(
-      new CopyFunction()).persist(StorageLevel.MEMORY_AND_DISK()) : hadoopRDD;
+    JavaPairRDD<WritableComparable, Writable> result;
+    if (toCache) {
+      result = hadoopRDD.mapToPair(new CopyFunction());
+      sparkPlan.addCachedRDDId(result.id());
+      result = result.persist(StorageLevel.MEMORY_AND_DISK());
+    } else {
+      result = hadoopRDD;
+    }
+    return result;
   }
 
   private static class CopyFunction implements PairFunction<Tuple2<WritableComparable, Writable>,

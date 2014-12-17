@@ -17,13 +17,14 @@
 
 package org.apache.hive.spark.client;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 class JobContextImpl implements JobContext {
 
@@ -44,8 +45,9 @@ class JobContextImpl implements JobContext {
   }
 
   @Override
-  public <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job, SparkCounters sparkCounters) {
-    monitorCb.get().call(job, sparkCounters);
+  public <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job,
+      SparkCounters sparkCounters, Set<Integer> cachedRDDIds) {
+    monitorCb.get().call(job, sparkCounters, cachedRDDIds);
     return job;
   }
 
