@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
@@ -38,6 +38,8 @@ import org.apache.spark.executor.TaskMetrics;
 
 import scala.Option;
 
+import com.google.common.collect.Maps;
+
 public class LocalSparkJobStatus implements SparkJobStatus {
 
   private final JavaSparkContext sparkContext;
@@ -47,14 +49,16 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   private JobMetricsListener jobMetricsListener;
   private SparkCounters sparkCounters;
   private JavaFutureAction<Void> future;
+  private Set<Integer> cachedRDDIds;
 
   public LocalSparkJobStatus(JavaSparkContext sparkContext, int jobId,
       JobMetricsListener jobMetricsListener, SparkCounters sparkCounters,
-      JavaFutureAction<Void> future) {
+      Set<Integer> cachedRDDIds, JavaFutureAction<Void> future) {
     this.sparkContext = sparkContext;
     this.jobId = jobId;
     this.jobMetricsListener = jobMetricsListener;
     this.sparkCounters = sparkCounters;
+    this.cachedRDDIds = cachedRDDIds;
     this.future = future;
   }
 
@@ -130,6 +134,11 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   @Override
   public void cleanup() {
     jobMetricsListener.cleanup(jobId);
+    if (cachedRDDIds != null) {
+      for (Integer cachedRDDId: cachedRDDIds) {
+        sparkContext.sc().unpersistRDD(cachedRDDId, false);
+      }
+    }
   }
 
   private Map<String, Long> combineJobLevelMetrics(Map<String, List<TaskMetrics>> jobMetric) {

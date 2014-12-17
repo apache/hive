@@ -27,20 +27,26 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
   private final SparkShuffler shuffler;
   private final int numOfPartitions;
   private final boolean toCache;
+  private final SparkPlan sparkPlan;
 
-  public ShuffleTran(SparkShuffler sf, int n) {
-    this(sf, n, false);
+  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n) {
+    this(sparkPlan, sf, n, false);
   }
 
-  public ShuffleTran(SparkShuffler sf, int n, boolean toCache) {
+  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache) {
     shuffler = sf;
     numOfPartitions = n;
     this.toCache = toCache;
+    this.sparkPlan = sparkPlan;
   }
 
   @Override
   public JavaPairRDD<HiveKey, Iterable<BytesWritable>> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
     JavaPairRDD<HiveKey, Iterable<BytesWritable>> result = shuffler.shuffle(input, numOfPartitions);
-    return toCache ? result.persist(StorageLevel.MEMORY_AND_DISK()) : result;
+    if (toCache) {
+      sparkPlan.addCachedRDDId(result.id());
+      result = result.persist(StorageLevel.MEMORY_AND_DISK());
+    }
+    return result;
   }
 }

@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobStatus;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -129,8 +129,8 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     JavaFutureAction<Void> future = finalRDD.foreachAsync(HiveVoidFunction.getInstance());
     // As we always use foreach action to submit RDD graph, it would only trigger one job.
     int jobId = future.jobIds().get(0);
-    LocalSparkJobStatus sparkJobStatus =
-      new LocalSparkJobStatus(sc, jobId, jobMetricsListener, sparkCounters, future);
+    LocalSparkJobStatus sparkJobStatus = new LocalSparkJobStatus(
+      sc, jobId, jobMetricsListener, sparkCounters, plan.getCachedRDDIds(), future);
     return new SparkJobRef(Integer.toString(jobId), sparkJobStatus);
   }
 

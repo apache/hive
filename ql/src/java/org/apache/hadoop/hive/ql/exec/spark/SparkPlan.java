@@ -18,12 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.spark.api.java.JavaPairRDD;
-
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,11 +26,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.spark.api.java.JavaPairRDD;
+
+import com.google.common.base.Preconditions;
+
 public class SparkPlan {
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
   private final Set<SparkTran> leafTrans = new HashSet<SparkTran>();
   private final Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
+  private final Set<Integer> cachedRDDIds = new HashSet<Integer>();
 
   public JavaPairRDD<HiveKey, BytesWritable> generateGraph() throws IllegalStateException {
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
@@ -80,6 +81,14 @@ public class SparkPlan {
   public void addTran(SparkTran tran) {
     rootTrans.add(tran);
     leafTrans.add(tran);
+  }
+
+  public void addCachedRDDId(int rddId) {
+    cachedRDDIds.add(rddId);
+  }
+
+  public Set<Integer> getCachedRDDIds() {
+    return cachedRDDIds;
   }
 
   /**

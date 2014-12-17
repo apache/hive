@@ -17,14 +17,14 @@
 
 package org.apache.hive.spark.client;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Holds runtime information about the job execution context.
@@ -44,7 +44,8 @@ public interface JobContext {
    *
    * @return The job (unmodified).
    */
-  <T> JavaFutureAction<T> monitor(JavaFutureAction<T> job, SparkCounters sparkCounters);
+  <T> JavaFutureAction<T> monitor(
+    JavaFutureAction<T> job, SparkCounters sparkCounters, Set<Integer> cachedRDDIds);
 
   /**
    * Return a map from client job Id to corresponding JavaFutureActions
