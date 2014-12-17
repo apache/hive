@@ -134,7 +134,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
       }
     };
 
-    fileID = JDBCStatsUtils.truncateRowId(fileID);
+    JDBCStatsUtils.validateRowId(fileID);
     String keyPrefix = Utilities.escapeSqlLike(fileID) + "%";
     for (int failures = 0;; failures++) {
       try {
@@ -218,7 +218,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
     };
     try {
 
-      rowID = JDBCStatsUtils.truncateRowId(rowID);
+      JDBCStatsUtils.validateRowId(rowID);
       String keyPrefix = Utilities.escapeSqlLike(rowID) + "%";
 
       PreparedStatement delStmt = Utilities.prepareWithRetry(conn,
