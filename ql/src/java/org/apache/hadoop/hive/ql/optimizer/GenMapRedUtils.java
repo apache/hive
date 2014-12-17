@@ -983,7 +983,7 @@ public final class GenMapRedUtils {
    * @param parseCtx
    * @return The TableScanOperator inserted before child.
    */
-  protected static TableScanOperator createTemporaryFile(
+  public static TableScanOperator createTemporaryFile(
       Operator<? extends OperatorDesc> parent, Operator<? extends OperatorDesc> child,
       Path taskTmpDir, TableDesc tt_desc, ParseContext parseCtx) {
 
