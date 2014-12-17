@@ -41,8 +41,10 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -75,9 +77,6 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
       if (task instanceof SparkTask) {
         SparkWork sparkWork = ((SparkTask) task).getWork();
-        if (sparkWork.getAllReduceWork().isEmpty()) {
-          return null;
-        }
         SparkSkewJoinProcCtx skewJoinProcCtx =
             new SparkSkewJoinProcCtx(task, physicalContext.getParseContext());
         Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
@@ -87,7 +86,10 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
             SparkSkewJoinProcFactory.getDefaultProc(), opRules, skewJoinProcCtx);
         GraphWalker ogw = new DefaultGraphWalker(disp);
         ArrayList<Node> topNodes = new ArrayList<Node>();
-        for (ReduceWork reduceWork : sparkWork.getAllReduceWork()) {
+        // since we may need to split the task, let's walk the graph bottom-up
+        List<ReduceWork> reduceWorkList = sparkWork.getAllReduceWork();
+        Collections.reverse(reduceWorkList);
+        for (ReduceWork reduceWork : reduceWorkList) {
           topNodes.add(reduceWork.getReducer());
           skewJoinProcCtx.getReducerToReduceWork().put(reduceWork.getReducer(), reduceWork);
         }

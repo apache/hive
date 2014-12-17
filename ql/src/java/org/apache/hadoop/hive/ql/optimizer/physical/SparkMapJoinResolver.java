@@ -78,7 +78,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
     return matchingOps != null && !matchingOps.isEmpty();
   }
 
-  private Set<Operator<? extends OperatorDesc>> getOp(BaseWork work, Class<?> clazz) {
+  public static Set<Operator<? extends OperatorDesc>> getOp(BaseWork work, Class<?> clazz) {
     Set<Operator<? extends OperatorDesc>> ops = new HashSet<Operator<? extends OperatorDesc>>();
     if (work instanceof MapWork) {
       Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();

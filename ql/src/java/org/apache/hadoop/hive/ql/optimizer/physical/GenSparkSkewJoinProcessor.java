@@ -82,22 +82,13 @@ public class GenSparkSkewJoinProcessor {
   public static void processSkewJoin(JoinOperator joinOp, Task<? extends Serializable> currTask,
       ReduceWork reduceWork, ParseContext parseCtx) throws SemanticException {
 
-    // We are trying to adding map joins to handle skew keys, and map join right
-    // now does not work with outer joins
-    if (!GenMRSkewJoinProcessor.skewJoinEnabled(parseCtx.getConf(), joinOp) ||
-        !(currTask instanceof SparkTask)) {
-      return;
-    }
     SparkWork currentWork = ((SparkTask) currTask).getWork();
-    if (!supportRuntimeSkewJoin(currentWork, reduceWork)) {
+    if (currentWork.getChildren(reduceWork).size() > 0) {
+      LOG.warn("Skip runtime skew join as the ReduceWork has child work and hasn't been split.");
       return;
     }
 
     List<Task<? extends Serializable>> children = currTask.getChildTasks();
-    if (children != null && children.size() > 1) {
-      LOG.warn("Skip runtime skew join as current task has multiple children.");
-      return;
-    }
 
     Task<? extends Serializable> child =
         children != null && children.size() == 1 ? children.get(0) : null;
@@ -424,17 +415,11 @@ public class GenSparkSkewJoinProcessor {
     mapJoinDesc.setHashTableMemoryUsage(hashtableMemoryUsage);
   }
 
-  /**
-   * Currently, we only support the simplest cases where join is the last work
-   * of a spark work, i.e. the current ReduceWork is a leave work
-   * If the reduce work has follow-up work, e.g. an aggregation following the join,
-   * it's difficult to union the results of the original join and conditional map join
-   * and feed that to the follow up works. This is not an issue for MR, where ReduceWork
-   * is always a terminal work.
-   *
-   * TODO: can we relax this
-   */
-  private static boolean supportRuntimeSkewJoin(SparkWork sparkWork, BaseWork work) {
-    return sparkWork.getChildren(work).isEmpty();
+  // check this before calling processSkewJoin
+  public static boolean supportRuntimeSkewJoin(JoinOperator joinOp,
+      Task<? extends Serializable> currTask, HiveConf hiveConf) {
+    List<Task<? extends Serializable>> children = currTask.getChildTasks();
+    return GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp) &&
+        (children == null || children.size() <= 1);
   }
 }

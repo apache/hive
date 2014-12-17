@@ -175,6 +175,7 @@ public class SparkWork extends AbstractOperatorDesc {
     if (getChildren(a).isEmpty()) {
       leaves.add(a);
     }
+    edgeProperties.remove(new ImmutablePair<BaseWork, BaseWork>(a, b));
   }
 
   /**
@@ -397,7 +398,7 @@ public class SparkWork extends AbstractOperatorDesc {
     return result;
   }
 
-  // get all reduce works in this spark work
+  // get all reduce works in this spark work in sorted order
   public List<ReduceWork> getAllReduceWork() {
     List<ReduceWork> result = new ArrayList<ReduceWork>();
     for (BaseWork work : getAllWork()) {
