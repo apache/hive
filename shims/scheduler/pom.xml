@@ -37,7 +37,7 @@
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-common-secure</artifactId>
+      <artifactId>hive-shims-common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->

@@ -162,7 +162,7 @@
                   </includes>
                 </filter>
                 <filter>
-                  <artifact>org.apache.hive.shims:hive-shims-common-secure</artifact>
+                  <artifact>org.apache.hive.shims:hive-shims-common</artifact>
                   <includes>
                     <include>org/apache/hadoop/hive/thrift/*</include>
                     <include>org/apache/hadoop/hive/thrift/client/*</include>
