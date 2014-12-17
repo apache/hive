@@ -86,10 +86,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Map 6 (PARTITION-LEVEL SORT, 1), Union 3 (PARTITION-LEVEL SORT, 1)
-        Reducer 8 <- Map 7 (PARTITION-LEVEL SORT, 1), Map 9 (PARTITION-LEVEL SORT, 1)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 8 (NONE, 0)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 7 <- Map 6 (PARTITION-LEVEL SORT, 1), Map 8 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -106,7 +105,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -120,7 +119,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -134,7 +133,7 @@ STAGE PLANS:
                       Map-reduce partition columns: val (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: key (type: string)
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -148,7 +147,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 9 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -176,7 +175,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   value expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -197,7 +196,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 8 
+        Reducer 7 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -211,8 +210,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
                   value expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator

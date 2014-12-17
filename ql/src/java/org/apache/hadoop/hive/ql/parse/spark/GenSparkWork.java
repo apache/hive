@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse.spark;
 import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -36,11 +36,11 @@ import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.UnionWork;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -83,9 +83,8 @@ public class GenSparkWork implements NodeProcessor {
     Preconditions.checkArgument(context.currentRootOperator != null,
         "AssertionError: expected context.currentRootOperator to be not null");
 
-    // Operator is a file sink or reduce sink. Something that forces
-    // a new vertex.
-    Operator<?> operator = (Operator<?>) nd;
+    // Operator is a file sink or reduce sink. Something that forces a new vertex.
+    Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
 
     // root is the start of the operator pipeline we're currently
     // packing into a vertex, typically a table scan, union or join
@@ -101,7 +100,6 @@ public class GenSparkWork implements NodeProcessor {
     }
 
     SparkWork sparkWork = context.currentTask.getWork();
-
 
     if (GenSparkUtils.getChildOperator(root, DummyStoreOperator.class) != null) {
       /*
@@ -120,7 +118,7 @@ public class GenSparkWork implements NodeProcessor {
        */
       return null;
     }
-    SMBMapJoinOperator smbOp = (SMBMapJoinOperator) GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
+    SMBMapJoinOperator smbOp = GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
 
     // Right now the work graph is pretty simple. If there is no
     // Preceding work we have a root and will generate a map
@@ -140,9 +138,9 @@ public class GenSparkWork implements NodeProcessor {
       // create a new vertex
       if (context.preceedingWork == null) {
         if (smbOp != null) {
-          //This logic is for SortMergeBucket MapJoin case.
-          //This MapWork (of big-table, see above..) is later initialized by SparkMapJoinFactory processor, so don't initialize it here.
-          //Just keep track of it in the context, for later processing.
+          // This logic is for SortMergeBucket MapJoin case.
+          // This MapWork (of big-table, see above..) is later initialized by SparkMapJoinFactory
+          // processor, so don't initialize it here. Just keep track of it in the context, for later processing.
           work = utils.createMapWork(context, root, sparkWork, null, true);
           if (context.smbJoinWorkMap.get(smbOp) != null) {
             throw new SemanticException("Each SMBMapJoin should be associated only with one Mapwork");
@@ -169,8 +167,7 @@ public class GenSparkWork implements NodeProcessor {
     if (!context.currentMapJoinOperators.isEmpty()) {
       for (MapJoinOperator mj: context.currentMapJoinOperators) {
         LOG.debug("Processing map join: " + mj);
-        // remember the mapping in case we scan another branch of the
-        // mapjoin later
+        // remember the mapping in case we scan another branch of the mapjoin later
         if (!context.mapJoinWorkMap.containsKey(mj)) {
           List<BaseWork> workItems = new LinkedList<BaseWork>();
           workItems.add(work);
@@ -211,8 +208,7 @@ public class GenSparkWork implements NodeProcessor {
 
               // need to set up output name for reduce sink now that we know the name
               // of the downstream work
-              for (ReduceSinkOperator r:
-                     context.linkWorkWithReduceSinkMap.get(parentWork)) {
+              for (ReduceSinkOperator r : context.linkWorkWithReduceSinkMap.get(parentWork)) {
                 if (r.getConf().getOutputName() != null) {
                   LOG.debug("Cloning reduce sink for multi-child broadcast edge");
                   // we've already set this one up. Need to clone for the next work.
@@ -221,7 +217,6 @@ public class GenSparkWork implements NodeProcessor {
                   context.clonedReduceSinks.add(r);
                 }
                 r.getConf().setOutputName(work.getName());
-                context.connectedReduceSinks.add(r);
               }
             }
           }
@@ -231,42 +226,35 @@ public class GenSparkWork implements NodeProcessor {
       context.currentMapJoinOperators.clear();
     }
 
-    // This is where we cut the tree as described above. We also remember that
-    // we might have to connect parent work with this work later.
-    for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
-      context.leafOperatorToFollowingWork.put(parent, work);
-      LOG.debug("Removing " + parent + " as parent from " + root);
-      root.removeParent(parent);
+    // Here we are disconnecting root with its parents. However, we need to save
+    // a few information, since in future we may reach the parent operators via a
+    // different path, and we may need to connect parent works with the work associated
+    // with this root operator.
+    if (root.getNumParent() > 0) {
+      Preconditions.checkArgument(work instanceof ReduceWork,
+          "AssertionError: expected work to be a ReduceWork, but was " + work.getClass().getName());
+      ReduceWork reduceWork = (ReduceWork) work;
+      for (Operator<?> parent : new ArrayList<Operator<?>>(root.getParentOperators())) {
+        Preconditions.checkArgument(parent instanceof ReduceSinkOperator,
+            "AssertionError: expected operator to be a ReduceSinkOperator, but was " + parent.getClass().getName());
+        ReduceSinkOperator rsOp = (ReduceSinkOperator) parent;
+        SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(rsOp, reduceWork);
+
+        rsOp.getConf().setOutputName(reduceWork.getName());
+        GenMapRedUtils.setKeyAndValueDesc(reduceWork, rsOp);
+
+        context.leafOpToFollowingWorkInfo.put(rsOp, ObjectPair.create(edgeProp, reduceWork));
+        LOG.debug("Removing " + parent + " as parent from " + root);
+        root.removeParent(parent);
+      }
     }
 
+    // If `currentUnionOperators` is not empty, it means we are creating BaseWork whose operator tree
+    // contains union operators. In this case, we need to save these BaseWorks, and remove
+    // the union operators from the operator tree later.
     if (!context.currentUnionOperators.isEmpty()) {
-      // if there are union all operators we need to add the work to the set
-      // of union operators.
-
-      UnionWork unionWork;
-      if (context.unionWorkMap.containsKey(operator)) {
-        // we've seen this terminal before and have created a union work object.
-        // just need to add this work to it. There will be no children of this one
-        // since we've passed this operator before.
-        Preconditions.checkArgument(operator.getChildOperators().isEmpty(),
-            "AssertionError: expected operator.getChildOperators() to be empty");
-        unionWork = (UnionWork) context.unionWorkMap.get(operator);
-
-      } else {
-        // first time through. we need to create a union work object and add this
-        // work to it. Subsequent work should reference the union and not the actual
-        // work.
-        unionWork = utils.createUnionWork(context, operator, sparkWork);
-      }
-
-      // finally hook everything up
-      LOG.debug("Connecting union work ("+unionWork+") with work ("+work+")");
-      SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
-      sparkWork.connect(work, unionWork, edgeProp);
-      unionWork.addUnionOperators(context.currentUnionOperators);
       context.currentUnionOperators.clear();
       context.workWithUnionOperators.add(work);
-      work = unionWork;
     }
 
     // We're scanning a tree from roots to leaf (this is not technically
@@ -280,39 +268,36 @@ public class GenSparkWork implements NodeProcessor {
     //
     // Also note: the concept of leaf and root is reversed in hive for historical
     // reasons. Roots are data sources, leaves are data sinks. I know.
-    if (context.leafOperatorToFollowingWork.containsKey(operator)) {
+    if (context.leafOpToFollowingWorkInfo.containsKey(operator)) {
+      ObjectPair<SparkEdgeProperty, ReduceWork> childWorkInfo = context.leafOpToFollowingWorkInfo.get(operator);
+      SparkEdgeProperty edgeProp = childWorkInfo.getFirst();
+      ReduceWork childWork = childWorkInfo.getSecond();
 
-      BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
-      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+      LOG.debug("Second pass. Leaf operator: " + operator + " has common downstream work:" + childWork);
 
-      LOG.debug("Second pass. Leaf operator: "+operator
-        +" has common downstream work:"+followingWork);
-
-      // need to add this branch to the key + value info
-      Preconditions.checkArgument(operator instanceof ReduceSinkOperator,
-          "AssertionError: expected operator to be an instance of ReduceSinkOperator, but was " +
-              operator.getClass().getName());
-      Preconditions.checkArgument(followingWork instanceof ReduceWork,
-          "AssertionError: expected followingWork to be an instance of ReduceWork, but was " +
-              followingWork.getClass().getName());
-      ReduceSinkOperator rs = (ReduceSinkOperator) operator;
-      ReduceWork rWork = (ReduceWork) followingWork;
-      GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
-
-      // remember which parent belongs to which tag
-      rWork.getTagToInput().put(rs.getConf().getTag(), work.getName());
-
-      // remember the output name of the reduce sink
-      rs.getConf().setOutputName(rWork.getName());
-
-      if (!context.connectedReduceSinks.contains(rs)) {
-        // add dependency between the two work items
-        SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(rs, rWork);
-        sparkWork.connect(work, rWork, edgeProp);
-        context.connectedReduceSinks.add(rs);
+      // We may have already connected `work` with `childWork`, in case, for example, lateral view:
+      //    TS
+      //     |
+      //    ...
+      //     |
+      //    LVF
+      //     | \
+      //    SEL SEL
+      //     |    |
+      //    LVJ-UDTF
+      //     |
+      //    SEL
+      //     |
+      //    RS
+      // Here, RS can be reached from TS via two different paths. If there is any child work after RS,
+      // we don't want to connect them with the work associated with TS more than once.
+      if (sparkWork.getEdgeProperty(work, childWork) == null) {
+        sparkWork.connect(work, childWork, edgeProp);
+      } else {
+        LOG.debug("work " + work.getName() + " is already connected to " + childWork.getName() + " before");
       }
     } else {
-      LOG.debug("First pass. Leaf operator: "+operator);
+      LOG.debug("First pass. Leaf operator: " + operator);
     }
 
     // No children means we're at the bottom. If there are more operators to scan

@@ -23,9 +23,8 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 4 <- Union 3 (GROUP, 1)
-        Reducer 6 <- Map 5 (GROUP, 1)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
+        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (GROUP, 1), Reducer 5 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -44,7 +43,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: s2
@@ -82,7 +81,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         value expressions: _col1 (type: bigint)
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -101,7 +100,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -123,8 +122,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         value expressions: _col1 (type: bigint)
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator

@@ -1203,8 +1203,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1232,7 +1230,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1257,8 +1255,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-3
     Dependency Collection
@@ -1382,8 +1378,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1411,7 +1405,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1436,8 +1430,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-3
     Dependency Collection
@@ -1561,8 +1553,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1590,7 +1580,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1615,8 +1605,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-3
     Dependency Collection
@@ -1740,8 +1728,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1769,7 +1755,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1794,8 +1780,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi2
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-3
     Dependency Collection

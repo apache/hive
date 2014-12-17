@@ -44,7 +44,6 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Union 3 <- Map 4 (NONE, 0), Reducer 2 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -63,7 +62,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: s2
@@ -113,8 +112,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest2
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Move Operator

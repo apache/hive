@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -25,7 +26,6 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
@@ -86,9 +87,9 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   // one.
   public BaseWork preceedingWork;
 
-  // map that keeps track of the last operator of a task to the work
-  // that follows it. This is used for connecting them later.
-  public final Map<Operator<?>, BaseWork> leafOperatorToFollowingWork;
+  // map that keeps track of the last operator of a task to the following work
+  // of this operator. This is used for connecting them later.
+  public final Map<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>> leafOpToFollowingWorkInfo;
 
   // a map that keeps track of work that need to be linked while
   // traversing an operator tree
@@ -132,9 +133,6 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   public final Set<FileSinkOperator> fileSinkSet;
   public final Map<FileSinkOperator, List<FileSinkOperator>> fileSinkMap;
 
-  // remember which reducesinks we've already connected
-  public final Set<ReduceSinkOperator> connectedReduceSinks;
-
   // Alias to operator map, from the semantic analyzer.
   // This is necessary as sometimes semantic analyzer's mapping is different than operator's own alias.
   public final Map<String, Operator<? extends OperatorDesc>> topOps;
@@ -153,7 +151,8 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.currentTask = (SparkTask) TaskFactory.get(
         new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
     this.rootTasks.add(currentTask);
-    this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
+    this.leafOpToFollowingWorkInfo =
+        new LinkedHashMap<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, SparkEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
     this.smbJoinWorkMap = new LinkedHashMap<SMBMapJoinOperator, MapWork>();
@@ -173,6 +172,5 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.clonedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
     this.fileSinkSet = new LinkedHashSet<FileSinkOperator>();
     this.fileSinkMap = new LinkedHashMap<FileSinkOperator, List<FileSinkOperator>>();
-    this.connectedReduceSinks = new LinkedHashSet<ReduceSinkOperator>();
   }
 }

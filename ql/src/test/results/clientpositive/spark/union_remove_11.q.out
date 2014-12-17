@@ -88,8 +88,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Spark
-      Edges:
-        Union 2 <- Map 1 (NONE, 0), Map 3 (NONE, 0), Map 4 (NONE, 0)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -109,7 +107,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                             name: default.outputtbl1
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1
@@ -126,7 +124,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                             name: default.outputtbl1
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1
@@ -143,8 +141,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                             name: default.outputtbl1
-        Union 2 
-            Vertex: Union 2
 
   Stage: Stage-6
     Conditional Operator

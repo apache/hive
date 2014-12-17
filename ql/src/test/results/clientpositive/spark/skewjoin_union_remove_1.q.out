@@ -68,9 +68,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -87,7 +86,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -101,7 +100,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -115,7 +114,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -147,7 +146,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -165,8 +164,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator
@@ -210,9 +207,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 3), Map 7 (PARTITION-LEVEL SORT, 3)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 3), Map 6 (PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -229,7 +225,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -243,7 +239,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -257,7 +253,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -289,7 +285,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -307,8 +303,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Fetch Operator
@@ -360,9 +354,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 3), Map 7 (PARTITION-LEVEL SORT, 3)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 3), Map 6 (PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -379,7 +372,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -393,7 +386,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -407,7 +400,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -440,7 +433,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-        Reducer 6 
+        Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -459,8 +452,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Move Operator
@@ -520,9 +511,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 3), Map 7 (PARTITION-LEVEL SORT, 3)
-        Union 3 <- Reducer 2 (NONE, 0), Reducer 6 (NONE, 0)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 5 <- Map 4 (PARTITION-LEVEL SORT, 3), Map 6 (PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -539,7 +529,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -553,7 +543,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -567,7 +557,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                       value expressions: val (type: string)
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -600,7 +590,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-        Reducer 6 
+        Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -619,8 +609,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-        Union 3 
-            Vertex: Union 3
 
   Stage: Stage-0
     Move Operator
