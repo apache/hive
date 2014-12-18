@@ -100,24 +100,6 @@ public class GenSparkWork implements NodeProcessor {
     }
 
     SparkWork sparkWork = context.currentTask.getWork();
-
-    if (GenSparkUtils.getChildOperator(root, DummyStoreOperator.class) != null) {
-      /*
-       *  SMB join case:
-       *
-       *   (Big)   (Small)  (Small)
-       *    TS       TS       TS
-       *     \       |       /
-       *       \     DS     DS
-       *         \   |    /
-       *          SMBJoinOP
-       *
-       * Only create MapWork rooted at TS of big table.
-       * If there are dummy-store operators anywhere in TS's children path, then this is for the small tables.
-       * No separate Map-Task need to be created for small table TS, as they will be read by the MapWork of the big-table.
-       */
-      return null;
-    }
     SMBMapJoinOperator smbOp = GenSparkUtils.getChildOperator(root, SMBMapJoinOperator.class);
 
     // Right now the work graph is pretty simple. If there is no

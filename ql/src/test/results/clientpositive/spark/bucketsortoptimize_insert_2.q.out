@@ -95,12 +95,13 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -112,7 +113,31 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-                    Sorted Merge Bucket Map Join Operator
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       condition expressions:
@@ -122,16 +147,33 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col7
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), concat(_col1, _col7) (type: string)
                         outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.test_table3
+                        Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: int), _col1 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table3
 
   Stage: Stage-0
     Move Operator
@@ -229,15 +271,14 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key WHERE a.ds is not null and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -248,7 +289,31 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Sorted Merge Bucket Map Join Operator
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       condition expressions:
@@ -258,19 +323,28 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col7
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), concat(_col1, _col7) (type: string)
                         outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: int), _col1 (type: string)
-        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
             Reduce Operator Tree:
               Extract
+                Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -397,12 +471,13 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -414,7 +489,31 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-                    Sorted Merge Bucket Map Join Operator
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 {value}
+                        1 {value}
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 168 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       condition expressions:
@@ -424,16 +523,33 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col7
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 92 Data size: 809 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), concat(_col1, _col7) (type: string)
                         outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.test_table3
+                        Statistics: Num rows: 92 Data size: 809 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 92 Data size: 809 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: int), _col1 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 92 Data size: 809 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 92 Data size: 809 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table3
 
   Stage: Stage-0
     Move Operator
@@ -559,12 +675,13 @@ JOIN
 ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -580,7 +697,35 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-                      Sorted Merge Bucket Map Join Operator
+                      Spark HashTable Sink Operator
+                        condition expressions:
+                          0 {_col1}
+                          1 {_col1}
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: test_table2
+                  Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         condition expressions:
@@ -590,16 +735,33 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), concat(_col1, _col3) (type: string)
                           outputColumnNames: _col0, _col1
-                          File Output Operator
-                            compressed: false
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.test_table3
+                          Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: int)
+                            Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table3
 
   Stage: Stage-0
     Move Operator
@@ -707,12 +869,13 @@ JOIN
 ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -728,7 +891,35 @@ STAGE PLANS:
                       expressions: key (type: int), concat(value, value) (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-                      Sorted Merge Bucket Map Join Operator
+                      Spark HashTable Sink Operator
+                        condition expressions:
+                          0 {_col1}
+                          1 {_col1}
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: test_table2
+                  Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), concat(value, value) (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         condition expressions:
@@ -738,16 +929,33 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), concat(_col1, _col3) (type: string)
                           outputColumnNames: _col0, _col1
-                          File Output Operator
-                            compressed: false
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.test_table3
+                          Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: int)
+                            Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table3
 
   Stage: Stage-0
     Move Operator
@@ -855,15 +1063,14 @@ JOIN
 ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-3
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -878,7 +1085,35 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
-                      Sorted Merge Bucket Map Join Operator
+                      Spark HashTable Sink Operator
+                        condition expressions:
+                          0 {_col1}
+                          1 {_col1}
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: test_table2
+                  Statistics: Num rows: 84 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 42 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         condition expressions:
@@ -888,19 +1123,28 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: (_col0 + _col0) (type: int), concat(_col1, _col3) (type: string)
                           outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
+                            Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: string)
-        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+        Reducer 3 
             Reduce Operator Tree:
               Extract
+                Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Statistics: Num rows: 46 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
