@@ -1964,7 +1964,12 @@ public class HiveConf extends Configuration {
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,
-        "Updates tez job execution progress in-place in the terminal.")
+        "Updates tez job execution progress in-place in the terminal."),
+    SPARK_CLIENT_FUTURE_TIMEOUT(
+        "hive.spark.client.future.timeout",
+        "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "remote spark client JobHandle future timeout value in seconds.")
     ;
 
     public final String varname;

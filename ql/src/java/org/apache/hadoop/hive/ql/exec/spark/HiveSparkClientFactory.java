@@ -28,7 +28,7 @@ import java.util.Properties;
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 
@@ -39,22 +39,22 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_MASTER = "local";
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
 
-  public static HiveSparkClient createHiveSparkClient(Configuration configuration)
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf)
     throws IOException, SparkException {
 
-    Map<String, String> conf = initiateSparkConf(configuration);
+    Map<String, String> sparkConf = initiateSparkConf(hiveconf);
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
-    String master = conf.get("spark.master");
+    String master = sparkConf.get("spark.master");
     if (master.equals("local") || master.startsWith("local[")) {
       // With local spark context, all user sessions share the same spark context.
-      return LocalHiveSparkClient.getInstance(generateSparkConf(conf));
+      return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf));
     } else {
-      return new RemoteHiveSparkClient(conf);
+      return new RemoteHiveSparkClient(hiveconf, sparkConf);
     }
   }
 
-  public static Map<String, String> initiateSparkConf(Configuration hiveConf) {
+  public static Map<String, String> initiateSparkConf(HiveConf hiveConf) {
     Map<String, String> sparkConf = new HashMap<String, String>();
 
     // set default spark configurations.

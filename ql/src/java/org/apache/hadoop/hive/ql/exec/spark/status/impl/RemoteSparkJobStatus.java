@@ -56,10 +56,12 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   private final long startTime;
   private final SparkClient sparkClient;
   private final JobHandle<Serializable> jobHandle;
+  private final transient long sparkClientTimeoutInSeconds;
 
-  public RemoteSparkJobStatus(SparkClient sparkClient, JobHandle<Serializable> jobHandle) {
+  public RemoteSparkJobStatus(SparkClient sparkClient, JobHandle<Serializable> jobHandle, long timeoutInSeconds) {
     this.sparkClient = sparkClient;
     this.jobHandle = jobHandle;
+    this.sparkClientTimeoutInSeconds = timeoutInSeconds;
     startTime = System.nanoTime();
   }
 
@@ -146,7 +148,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     JobHandle<SparkJobInfo> getJobInfo = sparkClient.submit(
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
-      return getJobInfo.get();
+      return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Throwable t) {
       LOG.warn("Error getting job info", t);
       return null;
@@ -156,7 +158,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   private SparkStageInfo getSparkStageInfo(int stageId) {
     JobHandle<SparkStageInfo> getStageInfo = sparkClient.submit(new GetStageInfoJob(stageId));
     try {
-      return getStageInfo.get();
+      return getStageInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Throwable t) {
       LOG.warn("Error getting stage info", t);
       return null;
