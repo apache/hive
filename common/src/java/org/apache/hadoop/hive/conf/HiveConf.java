@@ -1589,7 +1589,7 @@ public class HiveConf extends Configuration {
         "table. From 0.12 onwards, they are displayed separately. This flag will let you\n" +
         "get old behavior, if desired. See, test-case in patch for HIVE-6689."),
 
-    HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv2Hello,SSLv3",
+    HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv3",
         "SSL Versions to disable for all Hive Servers"),
 
      // General Thrift configs (Thrift configs common to Metastore and HiveServer2)
