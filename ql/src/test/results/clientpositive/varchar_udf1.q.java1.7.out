@@ -24,7 +24,9 @@ POSTHOOK: Lineage: varchar_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:
 POSTHOOK: Lineage: varchar_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: varchar_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: varchar_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- UDFs with varchar support
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+-- UDFs with varchar support
 select 
   concat(c1, c2),
   concat(c3, c4),
@@ -33,7 +35,9 @@ from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- UDFs with varchar support
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+-- UDFs with varchar support
 select 
   concat(c1, c2),
   concat(c3, c4),
