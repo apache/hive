@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
@@ -89,6 +90,8 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  * TODO: need to complete and make it fit to Spark.
  */
 public class SparkCompiler extends TaskCompiler {
+  private static final String CLASS_NAME = SparkCompiler.class.getName();
+  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final Log logger = LogFactory.getLog(SparkCompiler.class);
 
   public SparkCompiler() {
@@ -141,6 +144,7 @@ public class SparkCompiler extends TaskCompiler {
   protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
     GenSparkUtils.getUtils().resetSequenceNumber();
 
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
@@ -212,6 +216,8 @@ public class SparkCompiler extends TaskCompiler {
     for (FileSinkOperator fileSink: procCtx.fileSinkSet) {
       GenSparkUtils.getUtils().processFileSink(procCtx, fileSink);
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
   }
 
   @Override

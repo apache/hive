@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinPersistableTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -44,6 +45,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public class SparkHashTableSinkOperator
     extends TerminalOperator<SparkHashTableSinkDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
+  private final String CLASS_NAME = this.getClass().getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   protected static final Log LOG = LogFactory.getLog(SparkHashTableSinkOperator.class.getName());
 
   private HashTableSinkOperator htsOperator;
@@ -90,6 +93,7 @@ public class SparkHashTableSinkOperator
 
   protected void flushToFile(MapJoinPersistableTableContainer tableContainer,
       byte tag) throws IOException, HiveException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_FLUSH_HASHTABLE + this.getName());
     MapredLocalWork localWork = getExecContext().getLocalWork();
     BucketMapJoinContext mapJoinCtx = localWork.getBucketMapjoinContext();
     Path inputPath = getExecContext().getCurrentInputPath();
@@ -151,6 +155,7 @@ public class SparkHashTableSinkOperator
     FileStatus status = fs.getFileStatus(path);
     htsOperator.console.printInfo(Utilities.now() + "\tUploaded 1 File to: " + path +
       " (" + status.getLen() + " bytes)");
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_FLUSH_HASHTABLE + this.getName());
   }
 
   public void setTag(byte tag) {

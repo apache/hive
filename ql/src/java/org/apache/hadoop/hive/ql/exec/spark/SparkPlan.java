@@ -27,12 +27,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 import com.google.common.base.Preconditions;
 
 public class SparkPlan {
+  private final String CLASS_NAME = SparkPlan.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
   private final Set<SparkTran> leafTrans = new HashSet<SparkTran>();
   private final Map<SparkTran, List<SparkTran>> transGraph = new HashMap<SparkTran, List<SparkTran>>();
@@ -40,6 +44,7 @@ public class SparkPlan {
   private final Set<Integer> cachedRDDIds = new HashSet<Integer>();
 
   public JavaPairRDD<HiveKey, BytesWritable> generateGraph() throws IllegalStateException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
         = new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
     for (SparkTran tran : getAllTrans()) {
@@ -75,6 +80,7 @@ public class SparkPlan {
       }
     }
 
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     return finalRDD;
   }
 
