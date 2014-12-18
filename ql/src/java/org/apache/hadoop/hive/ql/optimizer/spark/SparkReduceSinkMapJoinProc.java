@@ -18,13 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
+import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -53,13 +47,17 @@ import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
@@ -185,19 +183,6 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
         SparkWork sparkWork = context.currentTask.getWork();
         LOG.debug("connecting "+parentWork.getName()+" with "+myWork.getName());
         sparkWork.connect(parentWork, myWork, edgeProp);
-
-        ReduceSinkOperator r;
-        if (parentRS.getConf().getOutputName() != null) {
-          LOG.debug("Cloning reduce sink for multi-child broadcast edge");
-          // we've already set this one up. Need to clone for the next work.
-          r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-              (ReduceSinkDesc) parentRS.getConf().clone(), parentRS.getParentOperators());
-          context.clonedReduceSinks.add(r);
-        } else {
-          r = parentRS;
-        }
-        // remember the output name of the reduce sink
-        r.getConf().setOutputName(myWork.getName());
       }
     }
 

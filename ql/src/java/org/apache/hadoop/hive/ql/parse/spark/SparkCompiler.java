@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -46,9 +47,9 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.ForwardWalker;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -66,7 +67,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkMapJoinOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkJoinOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSkewJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
@@ -109,31 +110,29 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
-    // TODO: need to add spark specific optimization.
     // Sequence of TableScan operators to be walked
     Deque<Operator<? extends OperatorDesc>> deque = new LinkedList<Operator<? extends OperatorDesc>>();
     deque.addAll(pCtx.getTopOps().values());
 
-    // Create the context for the walker
-    OptimizeSparkProcContext procCtx
-      = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs, deque);
+    OptimizeSparkProcContext procCtx = new OptimizeSparkProcContext(conf, pCtx, inputs, outputs, deque);
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
-        ReduceSinkOperator.getOperatorName() + "%"),
-        new SetSparkReducerParallelism());
+      ReduceSinkOperator.getOperatorName() + "%"),
+      new SetSparkReducerParallelism());
 
-    // TODO: need to research and verify support convert join to map join optimization.
     opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
-        JoinOperator.getOperatorName() + "%"), new SparkMapJoinOptimizer());
+      JoinOperator.getOperatorName() + "%"), new SparkJoinOptimizer(pCtx));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    List<Node> topNodes = new ArrayList<Node>();
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 
@@ -159,8 +158,7 @@ public class SparkCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"), genSparkWork);
 
-    opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
-        MapJoinOperator.getOperatorName() + "%"), new SparkReduceSinkMapJoinProc());
+    opRules.put(new TypeRule(MapJoinOperator.class), new SparkReduceSinkMapJoinProc());
 
     opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
         FileSinkOperator.getOperatorName() + "%"),
@@ -185,6 +183,32 @@ public class SparkCompiler extends TaskCompiler {
         }
     );
 
+    /**
+     *  SMB join case:   (Big)   (Small)  (Small)
+     *                     TS       TS       TS
+     *                      \       |       /
+     *                       \      DS     DS
+     *                         \   |    /
+     *                         SMBJoinOP
+     *
+     * Some of the other processors are expecting only one traversal beyond SMBJoinOp.
+     * We need to traverse from the big-table path only, and stop traversing on the small-table path once we reach SMBJoinOp.
+     */
+    opRules.put(new TypeRule(SMBMapJoinOperator.class),
+      new NodeProcessor() {
+        @Override
+        public Object process(Node currNode, Stack<Node> stack,
+                              NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+          for (Node stackNode : stack) {
+            if (stackNode instanceof DummyStoreOperator) {
+              return true;
+            }
+          }
+          return false;
+        }
+      }
+    );
+
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
@@ -192,7 +216,6 @@ public class SparkCompiler extends TaskCompiler {
     topNodes.addAll(pCtx.getTopOps().values());
     GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
-
 
 
     // ------------------- Second Pass -----------------------

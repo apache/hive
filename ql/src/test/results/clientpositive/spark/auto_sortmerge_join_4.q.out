@@ -168,12 +168,15 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                       Position of Big Table: 1
+                      Statistics: Num rows: 15 Data size: 1567 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
@@ -237,14 +240,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -351,12 +357,15 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                       Position of Big Table: 0
+                      Statistics: Num rows: 15 Data size: 1567 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
@@ -420,14 +429,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -504,10 +516,143 @@ TOK_QUERY
 
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 4 Data size: 452 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 226 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      condition expressions:
+                        0 
+                        1 
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+                      Position of Big Table: 0
+            Local Work:
+              Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2008-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count 4
+                    bucket_field_name key
+                    columns key,value
+                    columns.comments  
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_small
+                    numFiles 4
+                    numRows 0
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 0
+                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 226
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 4
+                      bucket_field_name key
+                      columns key,value
+                      columns.comments  
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_small
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_small
+                  name: default.bucket_small
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2008-04-09
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count 4
+                    bucket_field_name key
+                    columns key,value
+                    columns.comments  
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_small
+                    numFiles 4
+                    numRows 0
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 0
+                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 226
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 4
+                      bucket_field_name key
+                      columns key,value
+                      columns.comments  
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_small
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_small
+                  name: default.bucket_small
+            Truncated Path -> Alias:
+              /bucket_small/ds=2008-04-08 [b]
+              /bucket_small/ds=2008-04-09 [b]
+
   Stage: Stage-1
     Spark
       Edges:
@@ -524,7 +669,7 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 14 Data size: 1425 Basic stats: COMPLETE Column stats: NONE
-                    Sorted Merge Bucket Map Join Operator
+                    Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       condition expressions:
@@ -533,16 +678,29 @@ STAGE PLANS:
                       keys:
                         0 key (type: string)
                         1 key (type: string)
+                      input vertices:
+                        1 Map 3
                       Position of Big Table: 0
+                      Statistics: Num rows: 15 Data size: 1567 Basic stats: COMPLETE Column stats: NONE
+                      BucketMapJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
+            Local Work:
+              Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -603,14 +761,17 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: bigint)
                   outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat

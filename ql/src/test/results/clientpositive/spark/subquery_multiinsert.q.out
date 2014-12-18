@@ -463,7 +463,7 @@ POSTHOOK: Input: default@src_5
 199	val_199
 199	val_199
 2	val_2
-Warning: Map Join MAPJOIN[45][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[46][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -715,7 +715,7 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-Warning: Map Join MAPJOIN[45][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[46][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 

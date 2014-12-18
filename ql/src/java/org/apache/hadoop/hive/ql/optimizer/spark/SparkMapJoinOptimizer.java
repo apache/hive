@@ -163,7 +163,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
     context.getMjOpSizes().put(mapJoinOp, mapJoinInfo[1] + mapJoinInfo[2]);
 
-    return null;
+    return mapJoinOp;
   }
 
   // replaces the join operator with a new CommonJoinOperator, removes the
