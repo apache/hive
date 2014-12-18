@@ -138,13 +138,21 @@ public class LazyHBaseRow extends LazyStruct {
     boolean [] fieldsInited = getFieldInited();
 
     if (!fieldsInited[fieldID]) {
-      ByteArrayRef ref = null;
+      fieldsInited[fieldID] = true;
+
       ColumnMapping colMap = columnsMapping[fieldID];
 
-      if (colMap.hbaseRowKey) {
-        ref = new ByteArrayRef();
-        ref.setData(result.getRow());
-      } else if (colMap.hbaseTimestamp) {
+      if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp && colMap.qualifierName == null) {
+        // it is a column family
+        // primitive type for Map<Key, Value> can be stored in binary format. Pass in the
+        // qualifier prefix to cherry pick the qualifiers that match the prefix instead of picking
+        // up everything
+        ((LazyHBaseCellMap) fields[fieldID]).init(
+            result, colMap.familyNameBytes, colMap.binaryStorage, colMap.qualifierPrefixBytes);
+        return fields[fieldID].getObject();
+      }
+
+      if (colMap.hbaseTimestamp) {
         long timestamp = result.rawCells()[0].getTimestamp(); // from hbase-0.96.0
         LazyObjectBase lz = fields[fieldID];
         if (lz instanceof LazyTimestamp) {
@@ -152,34 +160,24 @@ public class LazyHBaseRow extends LazyStruct {
         } else {
           ((LazyLong) lz).getWritableObject().set(timestamp);
         }
-      } else {
-        if (colMap.qualifierName == null) {
-          // it is a column family
-          // primitive type for Map<Key, Value> can be stored in binary format. Pass in the
-          // qualifier prefix to cherry pick the qualifiers that match the prefix instead of picking
-          // up everything
-          ((LazyHBaseCellMap) fields[fieldID]).init(
-              result, colMap.familyNameBytes, colMap.binaryStorage, colMap.qualifierPrefixBytes);
-        } else {
-          // it is a column i.e. a column-family with column-qualifier
-          byte [] res = result.getValue(colMap.familyNameBytes, colMap.qualifierNameBytes);
-
-          if (res == null) {
-            return null;
-          } else {
-            ref = new ByteArrayRef();
-            ref.setData(res);
-          }
-        }
+        return lz.getObject();
       }
 
-      if (ref != null) {
-        fields[fieldID].init(ref, 0, ref.getData().length);
+      byte[] bytes;
+      if (colMap.hbaseRowKey) {
+        bytes = result.getRow();
+      } else {
+        // it is a column i.e. a column-family with column-qualifier
+        bytes = result.getValue(colMap.familyNameBytes, colMap.qualifierNameBytes);
+      }
+      if (bytes == null || isNull(oi.getNullSequence(), bytes, 0, bytes.length)) {
+        fields[fieldID].setNull();
+      } else {
+        ByteArrayRef ref = new ByteArrayRef();
+        ref.setData(bytes);
+        fields[fieldID].init(ref, 0, bytes.length);
       }
     }
-
-    // Has to be set last because of HIVE-3179: NULL fields would not work otherwise
-    fieldsInited[fieldID] = true;
 
     return fields[fieldID].getObject();
   }

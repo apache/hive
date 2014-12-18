@@ -10,7 +10,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-null	NULL	NULL
+NULL	NULL	NULL
  1	4	2
  1 	4	2
 1	4	12

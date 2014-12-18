@@ -66,8 +66,8 @@ public class LazyHBaseCellMap extends LazyMap {
       Result r,
       byte [] columnFamilyBytes,
       List<Boolean> binaryStorage, byte[] qualPrefix) {
-
-    result = r;
+    this.isNull = false;
+    this.result = r;
     this.columnFamilyBytes = columnFamilyBytes;
     this.binaryStorage = binaryStorage;
     this.qualPrefix = qualPrefix;
@@ -114,9 +114,15 @@ public class LazyHBaseCellMap extends LazyMap {
           LazyFactory.createLazyObject(lazyMoi.getMapValueObjectInspector(),
               binaryStorage.get(1));
 
-        ByteArrayRef valueRef = new ByteArrayRef();
-        valueRef.setData(e.getValue());
-        value.init(valueRef, 0, valueRef.getData().length);
+        byte[] bytes = e.getValue();
+
+        if (isNull(oi.getNullSequence(), bytes, 0, bytes.length)) {
+          value.setNull();
+        } else {
+          ByteArrayRef valueRef = new ByteArrayRef();
+          valueRef.setData(bytes);
+          value.init(valueRef, 0, valueRef.getData().length);
+        }
 
         // Put the key/value into the map
         cachedMap.put(key.getObject(), value.getObject());

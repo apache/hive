@@ -90,9 +90,14 @@ public class LazyAccumuloMap extends LazyMap {
       LazyObject<?> value = LazyFactory.createLazyObject(lazyMoi.getMapValueObjectInspector(),
           ColumnEncoding.BINARY == columnMapping.getValueEncoding());
 
-      ByteArrayRef valueRef = new ByteArrayRef();
-      valueRef.setData(tuple.getValue());
-      value.init(valueRef, 0, valueRef.getData().length);
+      byte[] bytes = tuple.getValue();
+      if (bytes == null || isNull(oi.getNullSequence(), bytes, 0, bytes.length)) {
+        value.setNull();
+      } else {
+        ByteArrayRef valueRef = new ByteArrayRef();
+        valueRef.setData(bytes);
+        value.init(valueRef, 0, valueRef.getData().length);
+      }
 
       cachedMap.put(key, value);
     }
