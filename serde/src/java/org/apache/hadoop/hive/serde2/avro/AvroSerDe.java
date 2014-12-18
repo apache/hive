@@ -55,12 +55,14 @@ public class AvroSerDe extends AbstractSerDe {
   public static final String CHAR_TYPE_NAME = "char";
   public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String DATE_TYPE_NAME = "date";
+  public static final String TIMESTAMP_TYPE_NAME = "timestamp-millis";
   public static final String AVRO_PROP_LOGICAL_TYPE = "logicalType";
   public static final String AVRO_PROP_PRECISION = "precision";
   public static final String AVRO_PROP_SCALE = "scale";
   public static final String AVRO_PROP_MAX_LENGTH = "maxLength";
   public static final String AVRO_STRING_TYPE_NAME = "string";
   public static final String AVRO_INT_TYPE_NAME = "int";
+  public static final String AVRO_LONG_TYPE_NAME = "long";
 
   private ObjectInspector oi;
   private List<String> columnNames;
