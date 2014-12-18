@@ -388,7 +388,6 @@ public final class Utilities {
           in = new InflaterInputStream(in);
         } else {
           LOG.info("Open file to read in plan: " + localPath);
-//          in = new FileInputStream(localPath.toUri().getPath());
           in = localPath.getFileSystem(conf).open(localPath);
         }
 
@@ -427,8 +426,9 @@ public final class Utilities {
       LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
-      LOG.error("Failed to load plan: "+path, e);
-      throw new RuntimeException(e);
+      String msg = "Failed to load plan: " + path + ": " + e;
+      LOG.error(msg, e);
+      throw new RuntimeException(msg, e);
     } finally {
       if (in != null) {
         try {
@@ -710,11 +710,11 @@ public final class Utilities {
 
       // Cache the plan in this process
       gWorkMap.put(planPath, w);
-
       return planPath;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+      String msg = "Error caching " + name + ": " + e;
+      LOG.error(msg, e);
+      throw new RuntimeException(msg, e);
     }
   }
 
