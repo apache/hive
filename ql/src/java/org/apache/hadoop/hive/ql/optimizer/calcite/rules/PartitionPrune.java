@@ -22,7 +22,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -64,7 +67,7 @@ public class PartitionPrune {
 
   public static class ExtractPartPruningPredicate extends
       RexVisitorImpl<RexNode> {
-
+    private static final Log LOG = LogFactory.getLog(ExtractPartPruningPredicate.class);
     final RelOptHiveTable hiveTable;
     final RelDataType rType;
     final Set<String> partCols;
@@ -104,16 +107,29 @@ public class PartitionPrune {
         return null;
       }
 
-      List<RexNode> args = new LinkedList<RexNode>();
-      boolean argsPruned = false;
-
-      GenericUDF hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
-          call.getType(), call.operands.size());
-      if (hiveUDF != null &&
-          !FunctionRegistry.isDeterministic(hiveUDF)) {
-        return null;
+      GenericUDF hiveUDF = null;
+      try {
+        hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
+            call.getType(), call.operands.size());
+        if (hiveUDF != null &&
+            !FunctionRegistry.isDeterministic(hiveUDF)) {
+          return null;
+        }
+      } finally {
+        if (hiveUDF != null) {
+          try {
+            hiveUDF.close();
+          } catch (IOException  e) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Exception in closing " + hiveUDF, e);
+            }
+          }
+        }
       }
 
+      List<RexNode> args = new LinkedList<RexNode>();
+      boolean argsPruned = false;
+      
       for (RexNode operand : call.operands) {
         RexNode n = operand.accept(this);
         if (n != null) {
