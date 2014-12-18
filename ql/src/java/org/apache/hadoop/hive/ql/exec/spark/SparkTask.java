@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticGroup;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
@@ -75,6 +76,8 @@ import org.apache.hadoop.util.StringUtils;
 import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
+  private final String CLASS_NAME = SparkTask.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private transient JobConf job;
   private transient ContentSummary inputSummary;
@@ -100,7 +103,10 @@ public class SparkTask extends Task<SparkWork> {
       SparkWork sparkWork = getWork();
       sparkWork.setRequiredCounterPrefix(getCounterPrefixes());
 
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
+
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (sparkJobStatus != null) {
         SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
@@ -198,6 +204,7 @@ public class SparkTask extends Task<SparkWork> {
       if (w instanceof MapWork) {
         List<BaseWork> parents = work.getParents(w);
         boolean candidate = true;
+        // TODO: since we don't have UnionWork anymore, can we simplify this?
         for (BaseWork parent: parents) {
           if (!(parent instanceof UnionWork)) {
             candidate = false;
@@ -290,7 +297,7 @@ public class SparkTask extends Task<SparkWork> {
       } else {
         tableName = work.getLoadFileDesc().getDestinationCreateTable();
       }
-    Table table = null;
+    Table table;
     try {
       table = db.getTable(tableName);
     } catch (HiveException e) {

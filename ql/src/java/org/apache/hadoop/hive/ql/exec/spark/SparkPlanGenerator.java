@@ -22,9 +22,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -32,9 +39,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -45,15 +49,14 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-import com.google.common.base.Preconditions;
 
 public class SparkPlanGenerator {
+  private final String CLASS_NAME = SparkPlanGenerator.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final Log LOG = LogFactory.getLog(SparkPlanGenerator.class);
 
   private JavaSparkContext sc;
@@ -82,25 +85,29 @@ public class SparkPlanGenerator {
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     SparkPlan sparkPlan = new SparkPlan();
     cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
 
     for (BaseWork work : sparkWork.getAllWork()) {
-      SparkTran tran;
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
+      SparkTran tran = generate(work);
       SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
-      tran = generate(work);
       sparkPlan.addTran(tran);
       sparkPlan.connect(parentTran, tran);
       workToTranMap.put(work, tran);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
     }
 
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     return sparkPlan;
   }
 
   // Generate (possibly get from a cached result) parent SparkTran
-  private SparkTran generateParentTran(SparkPlan sparkPlan, SparkWork sparkWork, BaseWork work) throws Exception {
+  private SparkTran generateParentTran(SparkPlan sparkPlan, SparkWork sparkWork,
+                                       BaseWork work) throws Exception {
     if (cloneToWork.containsKey(work)) {
       BaseWork originalWork = cloneToWork.get(work);
       if (workToParentWorkTranMap.containsKey(originalWork)) {
@@ -208,15 +215,17 @@ public class SparkPlanGenerator {
     // Make sure we'll use a different plan path from the original one
     HiveConf.setVar(cloned, HiveConf.ConfVars.PLAN, "");
     try {
-      cloned.setPartitionerClass((Class<? extends Partitioner>) (Class.forName(HiveConf.getVar(cloned,
-        HiveConf.ConfVars.HIVEPARTITIONER))));
+      cloned.setPartitionerClass((Class<? extends Partitioner>)
+          (Class.forName(HiveConf.getVar(cloned, HiveConf.ConfVars.HIVEPARTITIONER))));
     } catch (ClassNotFoundException e) {
-      String msg = "Could not find partitioner class: " + e.getMessage() + " which is specified by: " +
+      String msg = "Could not find partitioner class: " + e.getMessage() +
+          " which is specified by: " +
         HiveConf.ConfVars.HIVEPARTITIONER.varname;
       throw new IllegalArgumentException(msg, e);
     }
     if (work instanceof MapWork) {
-      List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work, scratchDir, context, false);
+      List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work,
+          scratchDir, context, false);
       Utilities.setInputPaths(cloned, inputPaths);
       Utilities.setMapWork(cloned, (MapWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (MapWork) work);
@@ -224,7 +233,8 @@ public class SparkPlanGenerator {
         MergeFileWork mergeFileWork = (MergeFileWork) work;
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, MergeFileMapper.class.getName());
         cloned.set("mapred.input.format.class", mergeFileWork.getInputformat());
-        cloned.setClass("mapred.output.format.class", MergeFileOutputFormat.class, FileOutputFormat.class);
+        cloned.setClass("mapred.output.format.class", MergeFileOutputFormat.class,
+            FileOutputFormat.class);
       } else {
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
       }

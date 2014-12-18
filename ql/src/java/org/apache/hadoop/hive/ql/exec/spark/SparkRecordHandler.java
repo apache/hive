@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
@@ -33,6 +34,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public abstract class SparkRecordHandler {
+  protected final String CLASS_NAME = this.getClass().getName();
+  protected final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private final Log LOG = LogFactory.getLog(this.getClass());
 
   // used to log memory usage periodically

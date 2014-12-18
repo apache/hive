@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.spark.JobExecutionStatus;
 
@@ -41,6 +42,7 @@ public class SparkJobMonitor {
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   private transient LogHelper console;
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private final int checkInterval = 1000;
   private final int printInterval = 3000;
   private long lastPrintTime;
@@ -63,6 +65,9 @@ public class SparkJobMonitor {
     Map<String, SparkStageProgress> lastProgressMap = null;
     long startTime = -1;
 
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+
     while (true) {
       JobExecutionStatus state = sparkJobStatus.getState();
       try {
@@ -77,6 +82,7 @@ public class SparkJobMonitor {
           switch (state) {
           case RUNNING:
             if (!running) {
+              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               // print job stages.
               console.printInfo("\nQuery Hive on Spark job[" +
                 sparkJobStatus.getJobId() + "] stages:");
@@ -140,10 +146,13 @@ public class SparkJobMonitor {
         }
       }
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     return rc;
   }
 
-  private void printStatus(Map<String, SparkStageProgress> progressMap, Map<String, SparkStageProgress> lastProgressMap) {
+  private void printStatus(Map<String, SparkStageProgress> progressMap,
+                           Map<String, SparkStageProgress> lastProgressMap) {
 
     // do not print duplicate status while still in middle of print interval.
     boolean isDuplicateState = isSameAsPreviousProgress(progressMap, lastProgressMap);
@@ -170,9 +179,17 @@ public class SparkJobMonitor {
       } else {
         if (complete == total && !completed.contains(s)) {
           completed.add(s);
+
+          if (!perfLogger.startTimeHasMethod(PerfLogger.SPARK_RUN_STAGE + s)) {
+            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE);
+          }
+          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE);
         }
         if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
           /* stage is started, but not complete */
+          if (!perfLogger.startTimeHasMethod(PerfLogger.SPARK_RUN_STAGE + s)) {
+            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE + s);
+          }
           if (failed > 0) {
             reportBuffer.append(
               String.format(

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -56,7 +57,6 @@ import java.util.List;
  *
  */
 public class SparkMapRecordHandler extends SparkRecordHandler {
-
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
   public static final Log l4j = LogFactory.getLog(SparkMapRecordHandler.class);
@@ -67,6 +67,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   private ExecMapperContext execContext;
 
   public void init(JobConf job, OutputCollector output, Reporter reporter) {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
 
     isLogInfoEnabled = l4j.isInfoEnabled();
@@ -136,6 +137,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         throw new RuntimeException("Map operator initialization failed", e);
       }
     }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
   }
 
   @Override

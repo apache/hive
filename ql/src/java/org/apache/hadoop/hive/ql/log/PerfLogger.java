@@ -65,6 +65,17 @@ public class PerfLogger {
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String ORC_GET_SPLITS = "OrcGetSplits";
 
+  public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
+  public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
+  public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
+  public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
+  public static final String SPARK_RUN_JOB = "SparkRunJob";
+  public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";
+  public static final String SPARK_RUN_STAGE = "SparkRunStage.";
+  public static final String SPARK_INIT_OPERATORS = "SparkInitializeOperators";
+  public static final String SPARK_GENERATE_TASK_TREE = "SparkGenerateTaskTree";
+  public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
+
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
