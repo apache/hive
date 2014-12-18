@@ -43,7 +43,7 @@ public class SubQueryUtils {
   }
 
   /*
-   * Remove the SubQuery from the Where CLause Tree.
+   * Remove the SubQuery from the Where Clause Tree.
    * return the remaining WhereClause.
    */
   static ASTNode rewriteParentQueryWhere(ASTNode whereCond, ASTNode subQuery)
@@ -271,10 +271,9 @@ public class SubQueryUtils {
     return r;
   }
 
-  static List<String> getTableAliasesInSubQuery(QBSubQuery sq) {
+  static List<String> getTableAliasesInSubQuery(ASTNode fromClause) {
     List<String> aliases = new ArrayList<String>();
-    ASTNode joinAST = (ASTNode) sq.getSubQueryAST().getChild(0);
-    getTableAliasesInSubQuery((ASTNode) joinAST.getChild(0), aliases);
+    getTableAliasesInSubQuery((ASTNode) fromClause.getChild(0), aliases);
     return aliases;
   }
 
@@ -318,10 +317,10 @@ public class SubQueryUtils {
     return null;
   }
   
-  static ASTNode subQueryWhere(ASTNode subQueryAST) {
-    if ( subQueryAST.getChild(1).getChildCount() > 2 &&
-        subQueryAST.getChild(1).getChild(2).getType() == HiveParser.TOK_WHERE ) {
-      return (ASTNode) subQueryAST.getChild(1).getChild(2);
+  static ASTNode subQueryWhere(ASTNode insertClause) {
+    if (insertClause.getChildCount() > 2 &&
+        insertClause.getChild(2).getType() == HiveParser.TOK_WHERE ) {
+      return (ASTNode) insertClause.getChild(2);
     }
     return null;
   }
