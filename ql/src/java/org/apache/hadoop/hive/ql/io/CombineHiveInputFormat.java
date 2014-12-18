@@ -82,8 +82,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   public static class CombineHiveInputSplit extends InputSplitShim {
 
-    String inputFormatClassName;
-    CombineFileSplit inputSplitShim;
+    private String inputFormatClassName;
+    private CombineFileSplit inputSplitShim;
+    private Map<String, PartitionDesc> pathToPartitionInfo;
 
     public CombineHiveInputSplit() throws IOException {
       this(ShimLoader.getHadoopShims().getCombineFileInputFormat()
@@ -93,20 +94,25 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public CombineHiveInputSplit(CombineFileSplit inputSplitShim) throws IOException {
       this(inputSplitShim.getJob(), inputSplitShim);
     }
-
     public CombineHiveInputSplit(JobConf job, CombineFileSplit inputSplitShim)
         throws IOException {
+      this(job, inputSplitShim, null);
+    }
+    public CombineHiveInputSplit(JobConf job, CombineFileSplit inputSplitShim,
+        Map<String, PartitionDesc> pathToPartitionInfo) throws IOException {
       this.inputSplitShim = inputSplitShim;
+      this.pathToPartitionInfo = pathToPartitionInfo;
       if (job != null) {
-        Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-            .getMapWork(job).getPathToPartitionInfo();
+        if (this.pathToPartitionInfo == null) {
+          this.pathToPartitionInfo = Utilities.getMapWork(job).getPathToPartitionInfo();
+        }
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         if (ipaths.length > 0) {
           PartitionDesc part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+              .getPartitionDescFromPathRecursively(this.pathToPartitionInfo,
                   ipaths[0], IOPrepareCache.get().getPartitionDescMap());
           inputFormatClassName = part.getInputFileFormatClass().getName();
         }
@@ -215,8 +221,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       inputSplitShim.write(out);
 
       if (inputFormatClassName == null) {
-        Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-            .getMapWork(getJob()).getPathToPartitionInfo();
+        if (pathToPartitionInfo == null) {
+          pathToPartitionInfo = Utilities.getMapWork(getJob()).getPathToPartitionInfo();
+        }
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
@@ -268,8 +275,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   /**
    * Create Hive splits based on CombineFileSplit.
    */
-  private InputSplit[] getCombineSplits(JobConf job,
-                                        int numSplits) throws IOException {
+  private InputSplit[] getCombineSplits(JobConf job, int numSplits, Map<String, PartitionDesc> pathToPartitionInfo)
+      throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
@@ -438,7 +445,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     for (CombineFileSplit is : iss) {
-      CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is);
+      CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is, pathToPartitionInfo);
       result.add(csplit);
     }
 
@@ -505,7 +512,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     if (combinablePaths.size() > 0) {
       FileInputFormat.setInputPaths(job, combinablePaths.toArray
           (new Path[combinablePaths.size()]));
-      InputSplit[] splits = getCombineSplits(job, numSplits);
+      Map<String, PartitionDesc> pathToPartitionInfo = Utilities.getMapWork(job).getPathToPartitionInfo();
+      InputSplit[] splits = getCombineSplits(job, numSplits, pathToPartitionInfo);
       for (InputSplit split : splits) {
         result.add(split);
       }
