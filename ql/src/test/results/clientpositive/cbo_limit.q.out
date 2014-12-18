@@ -10,7 +10,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-null	NULL	NULL
+NULL	NULL	NULL
 PREHOOK: query: select x, y, count(*) from (select key, (c_int+c_float+1+2) as x, sum(c_int) as y from cbo_t1 group by c_float, cbo_t1.c_int, key) R group by y, x order by x,y limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
@@ -47,8 +47,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-null	NULL
-null	NULL
+NULL	NULL
+NULL	NULL
 1	1
 1	1
 1	1

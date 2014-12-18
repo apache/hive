@@ -97,7 +97,7 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
-160
+156
 PREHOOK: query: create view v3 as select v1.value val from v1 join cbo_t1 on v1.c_boolean = cbo_t1.c_boolean
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t1

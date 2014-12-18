@@ -78,11 +78,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
+0	NULL	NULL
 2	1.0	 1
 2	1.0	 1 
 12	1.0	1
 2	1.0	1 
-0	NULL	null
 PREHOOK: query: select count(distinct c_int) as a, avg(c_float) from cbo_t1 group by c_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
