@@ -1,0 +1,1 @@
+select * from src where src.key in (select key);

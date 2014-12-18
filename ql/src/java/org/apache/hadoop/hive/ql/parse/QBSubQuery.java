@@ -382,7 +382,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     /*
      * row resolver of the SubQuery.
      * Set by the SemanticAnalyzer after the Plan for the SubQuery is genned.
-     * This is neede in case the SubQuery select list contains a TOK_ALLCOLREF
+     * This is needed in case the SubQuery select list contains a TOK_ALLCOLREF
      */
     RowResolver sqRR;
 
@@ -513,7 +513,10 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       String outerQueryAlias,
       Set<String> outerQryAliases) throws SemanticException {
 
-    ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
+    ASTNode fromClause = getChildFromSubqueryAST("From", HiveParser.TOK_FROM);
+    ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
+
+    ASTNode selectClause = (ASTNode) insertClause.getChild(1);
 
     int selectExprStart = 0;
     if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
@@ -537,7 +540,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
      * Restriction 17.s :: SubQuery cannot use the same table alias as one used in
      * the Outer Query.
      */
-    List<String> sqAliases = SubQueryUtils.getTableAliasesInSubQuery(this);
+    List<String> sqAliases = SubQueryUtils.getTableAliasesInSubQuery(fromClause);
     String sharedAlias = null;
     for(String s : sqAliases ) {
       if ( outerQryAliases.contains(s) ) {
@@ -545,7 +548,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       }
     }
     if ( sharedAlias != null) {
-      ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
+      ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
 
       if ( whereClause != null ) {
         ASTNode u = SubQueryUtils.hasUnQualifiedColumnReferences(whereClause);
@@ -581,7 +584,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       containsAggregationExprs = containsAggregationExprs | ( r == 1 );
     }
 
-    rewrite(outerQueryRR, forHavingClause, outerQueryAlias);
+    rewrite(outerQueryRR, forHavingClause, outerQueryAlias, insertClause, selectClause);
 
     SubQueryUtils.setOriginDeep(subQueryAST, originalSQASTOrigin);
 
@@ -629,6 +632,16 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "For Exists/Not Exists operator SubQuery must be Correlated."));
     }
 
+  }
+
+  private ASTNode getChildFromSubqueryAST(String errorMsg, int type) throws SemanticException {
+    ASTNode childAST = (ASTNode) subQueryAST.getFirstChildWithType(type);
+    if (childAST == null && errorMsg != null) {
+      subQueryAST.setOrigin(originalSQASTOrigin);
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+          subQueryAST, errorMsg + " clause is missing in SubQuery."));
+    }
+    return childAST;
   }
 
   private void setJoinType() {
@@ -744,7 +757,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    *         R2.x = min(R1.y)
    *      Where R1 is an outer table reference, and R2 is a SubQuery table reference.
    *   b. When hoisting the correlation predicate to a join predicate, we need to
-   *      rewrite it to be in the form the Join code allows: so the predicte needs
+   *      rewrite it to be in the form the Join code allows: so the predict needs
    *      to contain a qualified column references.
    *      We handle this by generating a new name for the aggregation expression,
    *      like R1._gby_sq_col_1 and adding this mapping to the Outer Query's
@@ -753,9 +766,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    */
   private void rewrite(RowResolver parentQueryRR,
       boolean forHavingClause,
-      String outerQueryAlias) throws SemanticException {
-    ASTNode selectClause = (ASTNode) subQueryAST.getChild(1).getChild(1);
-    ASTNode whereClause = SubQueryUtils.subQueryWhere(subQueryAST);
+      String outerQueryAlias, ASTNode insertClause, ASTNode selectClause) throws SemanticException {
+    ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
 
     if ( whereClause == null ) {
       return;
