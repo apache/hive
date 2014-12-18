@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -747,7 +746,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapreduce.reduce.speculative");
     ret.put("MAPREDSETUPCLEANUPNEEDED", "mapreduce.job.committer.setup.cleanup.needed");
     ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
-    ret.put("HADOOPSECURITYKEYPROVIDER", "dfs.encryption.key.provider.uri");
     return ret;
  }
 
@@ -951,18 +949,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
       hdfsAdmin = new HdfsAdmin(uri, conf);
-      // We get the key provider via the MiniDFSCluster in the test and in the product
-      // environment we get the key provider via the key provider factory.
       if (keyProvider == null) {
         try {
-          String keyProviderPath = conf
-            .get(ShimLoader.getHadoopShims().getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"),
-              null);
-          if (keyProviderPath != null) {
-            keyProvider = KeyProviderFactory.get(new URI(keyProviderPath), conf);
+          // We use the first key provider found in the list of key providers. We don't know
+          // what to do with the rest, so let's skip them.
+          if (keyProvider == null) {
+            keyProvider = KeyProviderFactory.getProviders(conf).get(0);
           }
-        } catch (URISyntaxException e) {
-          throw new IOException("Invalid HDFS security key provider path", e);
         } catch (Exception e) {
           throw new IOException("Cannot create HDFS security object: ", e);
         }
