@@ -419,8 +419,9 @@ public final class Utilities {
       LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
-      LOG.error("Failed to load plan: "+path, e);
-      throw new RuntimeException(e);
+      String msg = "Failed to load plan: " + path + ": " + e;
+      LOG.error(msg, e);
+      throw new RuntimeException(msg, e);
     } finally {
       if (in != null) {
         try {
@@ -702,11 +703,11 @@ public final class Utilities {
 
       // Cache the plan in this process
       gWorkMap.put(planPath, w);
-
       return planPath;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+      String msg = "Error caching " + name + ": " + e;
+      LOG.error(msg, e);
+      throw new RuntimeException(msg, e);
     }
   }
 
