@@ -254,7 +254,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10002default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -325,7 +324,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10003default.srcpart{ds=2008-04-08, hr=11} 
                 Partition
-                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -371,7 +369,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10004default.srcpart{ds=2008-04-08, hr=12} 
                 Partition
-                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -417,7 +414,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10005default.srcpart{ds=2008-04-09, hr=11} 
                 Partition
-                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -463,7 +459,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10006default.srcpart{ds=2008-04-09, hr=12} 
                 Partition
-                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -683,7 +678,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10002default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1121,7 +1115,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10002default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1192,7 +1185,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10003default.srcpart{ds=2008-04-08, hr=11} 
                 Partition
-                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1238,7 +1230,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10004default.srcpart{ds=2008-04-08, hr=12} 
                 Partition
-                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1284,7 +1275,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10005default.srcpart{ds=2008-04-09, hr=11} 
                 Partition
-                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1330,7 +1320,6 @@ STAGE PLANS:
                   name: default.srcpart
               -mr-10006default.srcpart{ds=2008-04-09, hr=12} 
                 Partition
-                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1640,7 +1629,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10002default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1812,7 +1800,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10002default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1879,7 +1866,6 @@ STAGE PLANS:
             Path -> Partition:
               -mr-10003default.src{} 
                 Partition
-                  base file name: src
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
