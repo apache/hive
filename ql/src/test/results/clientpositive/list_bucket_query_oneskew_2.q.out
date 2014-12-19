@@ -280,7 +280,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -302,7 +302,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -447,7 +447,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -469,7 +469,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -594,7 +594,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -616,7 +616,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -790,7 +790,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -812,7 +812,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.fact_daily
