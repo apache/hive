@@ -759,7 +759,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments default default
+              columns.comments 'default','default'
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
@@ -779,7 +779,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
-                columns.comments default default
+                columns.comments 'default','default'
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src

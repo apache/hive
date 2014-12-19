@@ -386,7 +386,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       // Print the key
       if (out != null) {
         out.print(indentString(indent));
-        out.printf("%s ", ent.getKey().toString());
+        out.print(ent.getKey());
+        out.print(" ");
       }
 
       // Print the value
@@ -625,7 +626,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (isPrintable(val)) {
             if (out != null && shouldPrint(xpl_note, val)) {
               if (!skipHeader) {
-                out.printf("%s ", header);
+                out.print(header);
+                out.print(" ");
               }
               out.println(val);
             }
@@ -752,7 +754,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (out != null) {
       out.print(indentString(indent));
-      out.printf("Stage: %s\n", task.getId());
+      out.print("Stage: ");
+      out.print(task.getId());
+      out.print("\n");
     }
 
     // Start by getting the work part of the task and call the output plan for
@@ -778,7 +782,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     JSONObject json = jsonOutput ? new JSONObject() : null;
     if (out != null) {
       out.print(indentString(indent));
-      out.printf("%s", task.getId());
+      out.print(task.getId());
     }
 
     if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
@@ -845,7 +849,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
     if (taskType) {
       if (out != null) {
-        out.printf(" [%s]", task.getType());
+        out.print(" [");
+        out.print(task.getType());
+        out.print("]");
       }
       if (jsonOutput) {
         json.put("TASK TYPE", task.getType().name());

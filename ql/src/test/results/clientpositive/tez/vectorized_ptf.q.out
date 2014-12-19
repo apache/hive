@@ -258,7 +258,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -278,7 +278,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -548,7 +548,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -568,7 +568,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -615,7 +615,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -635,7 +635,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -861,7 +861,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -881,7 +881,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -1118,7 +1118,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -1138,7 +1138,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -1406,7 +1406,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -1426,7 +1426,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -1704,7 +1704,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -1724,7 +1724,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -1968,7 +1968,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -1988,7 +1988,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -2034,7 +2034,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -2054,7 +2054,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -2285,7 +2285,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -2305,7 +2305,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -2349,7 +2349,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -2369,7 +2369,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -2607,7 +2607,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -2627,7 +2627,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -2884,7 +2884,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -2904,7 +2904,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -3163,7 +3163,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -3183,7 +3183,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -3452,7 +3452,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -3472,7 +3472,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -3778,7 +3778,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -3798,7 +3798,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -4164,7 +4164,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -4184,7 +4184,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -4230,7 +4230,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -4250,7 +4250,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -4491,7 +4491,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -4511,7 +4511,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -4773,7 +4773,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -4793,7 +4793,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -5234,7 +5234,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -5254,7 +5254,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -5337,7 +5337,7 @@ STAGE PLANS:
                           properties:
                             bucket_count -1
                             columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
-                            columns.comments        
+                            columns.comments 
                             columns.types string:string:int:int:int:int:double:int
 #### A masked pattern was here ####
                             name default.part_5
@@ -5374,7 +5374,7 @@ STAGE PLANS:
                           properties:
                             bucket_count -1
                             columns p_mfgr,p_name,p_size,r,dr,s
-                            columns.comments      
+                            columns.comments 
                             columns.types string:string:int:int:int:double
 #### A masked pattern was here ####
                             name default.part_4
@@ -5402,7 +5402,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
-                columns.comments        
+                columns.comments 
                 columns.types string:string:int:int:int:int:double:int
 #### A masked pattern was here ####
                 name default.part_5
@@ -5428,7 +5428,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns p_mfgr,p_name,p_size,r,dr,s
-                columns.comments      
+                columns.comments 
                 columns.types string:string:int:int:int:double
 #### A masked pattern was here ####
                 name default.part_4
@@ -5742,7 +5742,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -5762,7 +5762,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -6099,7 +6099,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -6119,7 +6119,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -6452,7 +6452,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -6472,7 +6472,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -6802,7 +6802,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -6822,7 +6822,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -7200,7 +7200,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -7220,7 +7220,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc
@@ -7549,7 +7549,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                    columns.comments         
+                    columns.comments 
                     columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                     name default.part_orc
@@ -7569,7 +7569,7 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns p_partkey,p_name,p_mfgr,p_brand,p_type,p_size,p_container,p_retailprice,p_comment
-                      columns.comments         
+                      columns.comments 
                       columns.types int:string:string:string:string:int:string:double:string
 #### A masked pattern was here ####
                       name default.part_orc

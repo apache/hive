@@ -221,7 +221,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -241,7 +241,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -346,7 +346,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -366,7 +366,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small
@@ -472,7 +472,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
-              columns.comments     
+              columns.comments 
               columns.types int:string:string:int:int
 #### A masked pattern was here ####
               name default.orderpayment_small
@@ -492,7 +492,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
-                columns.comments     
+                columns.comments 
                 columns.types int:string:string:int:int
 #### A masked pattern was here ####
                 name default.orderpayment_small

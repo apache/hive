@@ -217,7 +217,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
@@ -239,7 +239,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
@@ -313,7 +313,7 @@ STAGE PLANS:
                         properties:
                           bucket_count -1
                           columns key,value1,value2
-                          columns.comments   
+                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -343,7 +343,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_2
@@ -365,7 +365,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part_2
@@ -401,7 +401,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -432,7 +432,7 @@ STAGE PLANS:
                   properties:
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -456,7 +456,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -471,7 +471,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -501,7 +501,7 @@ STAGE PLANS:
                   properties:
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -525,7 +525,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -540,7 +540,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -770,7 +770,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -792,7 +792,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -867,7 +867,7 @@ STAGE PLANS:
                           COLUMN_STATS_ACCURATE true
                           bucket_count -1
                           columns key,value1,value2
-                          columns.comments   
+                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -901,7 +901,7 @@ STAGE PLANS:
               bucket_count 4
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part
@@ -923,7 +923,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part
@@ -960,7 +960,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -996,7 +996,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -1025,7 +1025,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -1045,7 +1045,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -1080,7 +1080,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -1109,7 +1109,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -1129,7 +1129,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
