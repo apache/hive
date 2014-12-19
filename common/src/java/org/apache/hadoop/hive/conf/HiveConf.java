@@ -1724,7 +1724,11 @@ public class HiveConf extends Configuration {
         "SPNego service principal would be used by HiveServer2 when Kerberos security is enabled\n" +
         "and HTTP transport mode is used.\n" +
         "This needs to be set only if SPNEGO is to be used in authentication."),
-    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null, "LDAP connection URL"),
+    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null,
+        "LDAP connection URL(s),\n" +
+         "this value could contain URLs to mutiple LDAP servers instances for HA,\n" +
+         "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
+         " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null, ""),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
