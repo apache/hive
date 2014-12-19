@@ -376,14 +376,15 @@ public class SparkTask extends Task<SparkWork> {
     List<String> hiveCounters = new LinkedList<String>();
     counters.put(groupName, hiveCounters);
     hiveCounters.add(Operator.HIVECOUNTERCREATEDFILES);
+    // MapOperator is out of SparkWork, SparkMapRecordHandler use it to bridge
+    // Spark transformation and Hive operators in SparkWork.
+    for (MapOperator.Counter counter : MapOperator.Counter.values()) {
+      hiveCounters.add(counter.toString());
+    }
     SparkWork sparkWork = this.getWork();
     for (BaseWork work : sparkWork.getAllWork()) {
       for (Operator operator : work.getAllOperators()) {
-        if (operator instanceof MapOperator) {
-          for (MapOperator.Counter counter : MapOperator.Counter.values()) {
-            hiveCounters.add(counter.toString());
-          }
-        } else if (operator instanceof FileSinkOperator) {
+        if (operator instanceof FileSinkOperator) {
           for (FileSinkOperator.Counter counter : FileSinkOperator.Counter.values()) {
             hiveCounters.add(counter.toString());
           }
