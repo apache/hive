@@ -102,47 +102,51 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
     return paths;
   }
-
-  private void processAlias(MapWork work, ArrayList<String> aliases, String path) {
- 
-    work.setUseOneNullRowInputFormat(true);
-    for (String alias : aliases) {
-      // Change the conf for tableScanOp
-      TableScanOperator tso = (TableScanOperator) work.getAliasToWork().get(alias);
-      tso.getConf().setIsMetadataOnly(true);
-      // Change the alias partition desc
-      PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
-      changePartitionToMetadataOnly(aliasPartn);
+  
+  private void processAlias(MapWork work, String path, ArrayList<String> aliasesAffected,
+      ArrayList<String> aliases) {
+    // the aliases that are allowed to map to a null scan.
+    ArrayList<String> allowed = new ArrayList<String>();
+    for (String alias : aliasesAffected) {
+      if (aliases.contains(alias)) {
+        allowed.add(alias);
+      }
     }
-
-    PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
-    PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
-    Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
-        + newPartition.getTableName() + encode(newPartition.getPartSpec()));
-    work.getPathToPartitionInfo().remove(path);
-    work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
-    assert(work.getPathToAliases().remove(path).equals(aliases));
-    work.getPathToAliases().put(fakePath.getName(), aliases);
+    if (allowed.size() > 0) {
+      work.setUseOneNullRowInputFormat(true);
+      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
+      PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
+      Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
+          + newPartition.getTableName() + encode(newPartition.getPartSpec()));
+      work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
+      work.getPathToAliases().put(fakePath.getName(), new ArrayList<String>(allowed));
+      aliasesAffected.removeAll(allowed);
+      if (aliasesAffected.isEmpty()) {
+        work.getPathToAliases().remove(path);
+        work.getPathToPartitionInfo().remove(path);
+      }
+    }
   }
 
   private void processAlias(MapWork work, HashSet<TableScanOperator> tableScans) {
-    ArrayList<String> aliasList = new ArrayList<String>();
+    ArrayList<String> aliases = new ArrayList<String>();
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
       // getAliasToWork()
       String alias = getAliasForTableScanOperator(work, tso);
-      aliasList.add(alias);
+      aliases.add(alias);
+      tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
     LinkedHashMap<String, ArrayList<String>> candidates = new LinkedHashMap<String, ArrayList<String>>();
     for (String path : work.getPaths()) {
-      ArrayList<String> aliases = work.getPathToAliases().get(path);
-      if (aliases != null && aliasList.containsAll(aliases)) {
-        candidates.put(path, aliases);
+      ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
+      if (aliasesAffected != null && aliasesAffected.size() > 0) {
+        candidates.put(path, aliasesAffected);
       }
     }
     for (Entry<String, ArrayList<String>> entry : candidates.entrySet()) {
-      processAlias(work, entry.getValue(), entry.getKey());
+      processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }
 
