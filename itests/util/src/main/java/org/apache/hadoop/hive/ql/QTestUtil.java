@@ -108,7 +108,6 @@ public class QTestUtil {
   // database names used for testing the encrypted databases
   private static final String ENCRYPTED_WITH_128_BITS_KEY_DB_NAME = "encryptedwith128bitskeydb";
   private static final String ENCRYPTED_WITH_256_BITS_KEY_DB_NAME = "encryptedwith256bitskeydb";
-  private static final String UNENCRYPTED_DB_NAME = "unencrypteddb";
 
   // security property names
   private static final String SECURITY_KEY_BIT_LENGTH_PROP_NAME =
@@ -596,7 +595,7 @@ public class QTestUtil {
     if (clusterType == MiniClusterType.encrypted) {
       return (DEFAULT_DATABASE_NAME.equals(dbName) ||
         ENCRYPTED_WITH_128_BITS_KEY_DB_NAME.equals(dbName) ||
-        ENCRYPTED_WITH_256_BITS_KEY_DB_NAME.equals(dbName) || UNENCRYPTED_DB_NAME.equals(dbName));
+        ENCRYPTED_WITH_256_BITS_KEY_DB_NAME.equals(dbName));
     } else {
       return DEFAULT_DATABASE_NAME.equals(dbName);
     }

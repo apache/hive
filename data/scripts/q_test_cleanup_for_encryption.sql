@@ -2,4 +2,4 @@ DROP DATABASE encryptedWith128BitsKeyDB;
 
 DROP DATABASE encryptedWith256BitsKeyDB;
 
-DROP DATABASE unencryptedDB;
+DROP TABLE IF EXISTS src;
