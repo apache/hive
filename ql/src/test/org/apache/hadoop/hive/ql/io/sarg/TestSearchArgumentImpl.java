@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
 import com.google.common.collect.Sets;
+
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
@@ -37,9 +39,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * These test the SARG implementation.
@@ -176,6 +175,17 @@ public class TestSearchArgumentImpl {
     assertEquals("(and leaf-1)",
         ExpressionBuilder.foldMaybe(and(or(leaf(2),
             constant(TruthValue.YES_NO_NULL)), leaf(1))).toString());
+    assertEquals("(and leaf-100)", ExpressionBuilder.foldMaybe(
+        ExpressionBuilder.convertToCNF(and(leaf(100),
+            or(and(leaf(0), leaf(1)),
+                and(leaf(2), leaf(3)),
+                and(leaf(4), leaf(5)),
+                and(leaf(6), leaf(7)),
+                and(leaf(8), leaf(9)),
+                and(leaf(10), leaf(11)),
+                and(leaf(12), leaf(13)),
+                and(leaf(14), leaf(15)),
+                and(leaf(16), leaf(17)))))).toString());
   }
 
   @Test
@@ -237,6 +247,25 @@ public class TestSearchArgumentImpl {
             and(leaf(3), leaf(4), leaf(5)),
             and(leaf(6), leaf(7)),
             leaf(8))).toString());
+    assertEquals("YES_NO_NULL", ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1)),
+        and(leaf(2), leaf(3)),
+        and(leaf(4), leaf(5)),
+        and(leaf(6), leaf(7)),
+        and(leaf(8), leaf(9)),
+        and(leaf(10), leaf(11)),
+        and(leaf(12), leaf(13)),
+        and(leaf(14), leaf(15)),
+        and(leaf(16), leaf(17)))).toString());
+    assertEquals("(and leaf-100 YES_NO_NULL)", ExpressionBuilder.convertToCNF(and(leaf(100),
+        or(and(leaf(0), leaf(1)),
+        and(leaf(2), leaf(3)),
+        and(leaf(4), leaf(5)),
+        and(leaf(6), leaf(7)),
+        and(leaf(8), leaf(9)),
+        and(leaf(10), leaf(11)),
+        and(leaf(12), leaf(13)),
+        and(leaf(14), leaf(15)),
+        and(leaf(16), leaf(17))))).toString());
     assertNoSharedNodes(ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
         and(leaf(3), leaf(4), leaf(5)),
         and(leaf(6), leaf(7)),

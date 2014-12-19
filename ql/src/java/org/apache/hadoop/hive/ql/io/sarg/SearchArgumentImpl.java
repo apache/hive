@@ -18,15 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -56,9 +50,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The implementation of SearchArguments.
@@ -300,6 +300,8 @@ final class SearchArgumentImpl implements SearchArgument {
   }
 
   static class ExpressionBuilder {
+    // max threshold for CNF conversion. having >8 elements in andList will be converted to maybe
+    private static final int CNF_COMBINATIONS_THRESHOLD = 256;
     private final List<PredicateLeaf> leaves = new ArrayList<PredicateLeaf>();
 
     /**
@@ -725,12 +727,27 @@ final class SearchArgumentImpl implements SearchArgument {
             }
           }
           if (!andList.isEmpty()) {
-            root = new ExpressionTree(ExpressionTree.Operator.AND);
-            generateAllCombinations(root.children, andList, nonAndList);
+            if (checkCombinationsThreshold(andList)) {
+              root = new ExpressionTree(ExpressionTree.Operator.AND);
+              generateAllCombinations(root.children, andList, nonAndList);
+            } else {
+              root = new ExpressionTree(TruthValue.YES_NO_NULL);
+            }
           }
         }
       }
       return root;
+    }
+
+    private static boolean checkCombinationsThreshold(List<ExpressionTree> andList) {
+      int numComb = 1;
+      for (ExpressionTree tree : andList) {
+        numComb *= tree.children.size();
+        if (numComb > CNF_COMBINATIONS_THRESHOLD) {
+          return false;
+        }
+      }
+      return true;
     }
 
     /**
