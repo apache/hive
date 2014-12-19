@@ -29,8 +29,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FooterBuffer;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.io.IOContext.Comparison;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -68,6 +68,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private boolean wasUsingSortedSearch = false;
   private String genericUDFClassName = null;
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
+  private Map<String, PartitionDesc> pathToPartitionInfo;
 
   protected RecordReader recordReader;
   protected JobConf jobConf;
@@ -185,6 +186,8 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       IOContext.getMap().put(SparkUtilities.MAP_IO_CONTEXT, iocontext);
     }
 
+    pathToPartitionInfo =
+      Utilities.getMapWork(jobConf).getPathToPartitionInfo();
     initDone = true;
   }
 
@@ -324,8 +327,6 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         Path filePath = this.ioCxtRef.getInputPath();
         PartitionDesc part = null;
         try {
-          Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-              .getMapWork(jobConf).getPathToPartitionInfo();
           part = HiveFileFormatUtils
               .getPartitionDescFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
