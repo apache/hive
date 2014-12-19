@@ -1,0 +1,109 @@
+PREHOOK: query: create table implicit_cast_during_insert (c1 int, c2 string)
+  partitioned by (p1 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@implicit_cast_during_insert
+POSTHOOK: query: create table implicit_cast_during_insert (c1 int, c2 string)
+  partitioned by (p1 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@implicit_cast_during_insert
+PREHOOK: query: explain 
+insert overwrite table implicit_cast_during_insert partition (p1)
+  select key, value, key key1 from (select * from src where key in (0,1)) q
+  distribute by key1 sort by key1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+insert overwrite table implicit_cast_during_insert partition (p1)
+  select key, value, key key1 from (select * from src where key in (0,1)) q
+  distribute by key1 sort by key1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key) IN (0, 1) (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: value (type: string), key (type: string)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col2 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col2 (type: string)
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: UDFToInteger(KEY.reducesinkkey0) (type: int), VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.implicit_cast_during_insert
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            p1 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.implicit_cast_during_insert
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: insert overwrite table implicit_cast_during_insert partition (p1)
+  select key, value, key key1 from (select * from src where key in (0,1)) q
+  distribute by key1 sort by key1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@implicit_cast_during_insert
+POSTHOOK: query: insert overwrite table implicit_cast_during_insert partition (p1)
+  select key, value, key key1 from (select * from src where key in (0,1)) q
+  distribute by key1 sort by key1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@implicit_cast_during_insert@p1=0
+POSTHOOK: Lineage: implicit_cast_during_insert PARTITION(p1=0).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: implicit_cast_during_insert PARTITION(p1=0).c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from implicit_cast_during_insert
+PREHOOK: type: QUERY
+PREHOOK: Input: default@implicit_cast_during_insert
+PREHOOK: Input: default@implicit_cast_during_insert@p1=0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from implicit_cast_during_insert
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@implicit_cast_during_insert
+POSTHOOK: Input: default@implicit_cast_during_insert@p1=0
+#### A masked pattern was here ####
+0	val_0	0
+0	val_0	0
+0	val_0	0
+PREHOOK: query: drop table implicit_cast_during_insert
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@implicit_cast_during_insert
+PREHOOK: Output: default@implicit_cast_during_insert
+POSTHOOK: query: drop table implicit_cast_during_insert
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@implicit_cast_during_insert
+POSTHOOK: Output: default@implicit_cast_during_insert
