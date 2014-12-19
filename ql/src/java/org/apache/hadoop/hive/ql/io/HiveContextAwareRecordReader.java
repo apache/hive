@@ -66,6 +66,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private boolean wasUsingSortedSearch = false;
   private String genericUDFClassName = null;
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
+  private Map<String, PartitionDesc> pathToPartitionInfo;
 
   protected RecordReader recordReader;
   protected JobConf jobConf;
@@ -171,6 +172,8 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     ioCxtRef.isBlockPointer = isBlockPointer;
     ioCxtRef.inputPath = inputPath;
     LOG.info("Processing file " + inputPath);
+    pathToPartitionInfo =
+      Utilities.getMapWork(jobConf).getPathToPartitionInfo();
     initDone = true;
   }
 
@@ -310,8 +313,6 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
         Path filePath = this.ioCxtRef.getInputPath();
         PartitionDesc part = null;
         try {
-          Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-              .getMapWork(jobConf).getPathToPartitionInfo();
           part = HiveFileFormatUtils
               .getPartitionDescFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
