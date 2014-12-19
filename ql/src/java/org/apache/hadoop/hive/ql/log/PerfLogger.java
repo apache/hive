@@ -74,6 +74,8 @@ public class PerfLogger {
   public static final String SPARK_RUN_STAGE = "SparkRunStage.";
   public static final String SPARK_INIT_OPERATORS = "SparkInitializeOperators";
   public static final String SPARK_GENERATE_TASK_TREE = "SparkGenerateTaskTree";
+  public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
+  public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
   public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
