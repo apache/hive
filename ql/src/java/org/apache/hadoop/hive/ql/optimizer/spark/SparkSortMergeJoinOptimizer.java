@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import java.util.Stack;
 
 /**
- * Converts a join operator to an SMB join if eligible.
+ * Converts a common join operator to an SMB join if eligible.  Handles auto SMB conversion.
  */
 public class SparkSortMergeJoinOptimizer extends AbstractSMBJoinProc implements NodeProcessor {
 
