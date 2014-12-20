@@ -219,6 +219,11 @@ STAGE PLANS:
                       Position of Big Table: 0
             Local Work:
               Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -300,6 +305,7 @@ STAGE PLANS:
                         1 Map 2
                       Position of Big Table: 0
                       Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                      BucketMapJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
                         outputColumnNames: _col0, _col1, _col2
@@ -332,6 +338,11 @@ STAGE PLANS:
                           MultiFileSpray: false
             Local Work:
               Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -623,6 +634,11 @@ STAGE PLANS:
                       Position of Big Table: 1
             Local Work:
               Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -704,6 +720,7 @@ STAGE PLANS:
                         0 Map 1
                       Position of Big Table: 1
                       Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
+                      BucketMapJoin: true
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
                         outputColumnNames: _col0, _col1, _col2
@@ -741,6 +758,11 @@ STAGE PLANS:
                           MultiFileSpray: false
             Local Work:
               Map Reduce Local Work
+                Bucket Mapjoin Context:
+                    Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+                    Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

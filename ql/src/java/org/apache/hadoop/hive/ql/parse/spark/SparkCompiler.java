@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SetSparkReducerParallelism;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkJoinHintOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkJoinOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSkewJoinResolver;
@@ -123,8 +124,9 @@ public class SparkCompiler extends TaskCompiler {
       ReduceSinkOperator.getOperatorName() + "%"),
       new SetSparkReducerParallelism());
 
-    opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
-      JoinOperator.getOperatorName() + "%"), new SparkJoinOptimizer(pCtx));
+    opRules.put(new TypeRule(JoinOperator.class), new SparkJoinOptimizer(pCtx));
+
+    opRules.put(new TypeRule(MapJoinOperator.class), new SparkJoinHintOptimizer(pCtx));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
