@@ -186,7 +186,9 @@ public class NonBlockingOpDeDupProc implements Transform {
    * @param pSEL parent operator
    */
   private void fixContextReferences(SelectOperator cSEL, SelectOperator pSEL) {
-    Collection<QBJoinTree> qbJoinTrees = pctx.getJoinContext().values();
+    Collection<QBJoinTree> qbJoinTrees = new ArrayList<QBJoinTree>();
+    qbJoinTrees.addAll(pctx.getJoinContext().values());
+    qbJoinTrees.addAll(pctx.getMapJoinContext().values());
     for (QBJoinTree qbJoinTree : qbJoinTrees) {
       Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo = qbJoinTree.getAliasToOpInfo();
       for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToOpInfo.entrySet()) {
