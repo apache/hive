@@ -73,7 +73,7 @@ import org.apache.thrift.transport.TTransportFactory;
  * SASL callback handlers and authentication classes.
  */
 public class HadoopThriftAuthBridge {
-  static final Log LOG = LogFactory.getLog(HadoopThriftAuthBridge.class);
+  private static final Log LOG = LogFactory.getLog(HadoopThriftAuthBridge.class);
 
   public Client createClient() {
     return new Client();
@@ -290,9 +290,9 @@ public class HadoopThriftAuthBridge {
     public enum ServerMode {
       HIVESERVER2, METASTORE
     };
-    final UserGroupInformation realUgi;
-    DelegationTokenSecretManager secretManager;
-    private final static long DELEGATION_TOKEN_GC_INTERVAL = 3600000; // 1 hour
+    public static final String  DELEGATION_TOKEN_GC_INTERVAL =
+        "hive.cluster.delegation.token.gc-interval";
+    private final static long DELEGATION_TOKEN_GC_INTERVAL_DEFAULT = 3600000; // 1 hour
     //Delegation token related keys
     public static final String  DELEGATION_KEY_UPDATE_INTERVAL_KEY =
         "hive.cluster.delegation.key.update-interval";
@@ -322,6 +322,9 @@ public class HadoopThriftAuthBridge {
         "hive.cluster.delegation.token.store.zookeeper.acl";
     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
         "/hivedelegation";
+
+    protected final UserGroupInformation realUgi;
+    protected DelegationTokenSecretManager secretManager;
 
     public Server() throws TTransportException {
       try {
@@ -434,13 +437,15 @@ public class HadoopThriftAuthBridge {
       long tokenRenewInterval =
           conf.getLong(DELEGATION_TOKEN_RENEW_INTERVAL_KEY,
               DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT);
+      long tokenGcInterval = conf.getLong(DELEGATION_TOKEN_GC_INTERVAL,
+          DELEGATION_TOKEN_GC_INTERVAL_DEFAULT);
 
       DelegationTokenStore dts = getTokenStore(conf);
       dts.init(rawStore, smode);
       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
           tokenMaxLifetime,
           tokenRenewInterval,
-          DELEGATION_TOKEN_GC_INTERVAL, dts);
+          tokenGcInterval, dts);
       secretManager.startThreads();
     }
 
