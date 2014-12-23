@@ -1,7 +1,11 @@
-PREHOOK: query: explain
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+explain
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2036,6 +2040,28 @@ POSTHOOK: query: SELECT * FROM src src1 RIGHT OUTER JOIN src src2 ON (src1.key =
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	0	val_0	0	val_0
+NULL	NULL	2	val_2	2	val_2
+NULL	NULL	4	val_4	4	val_4
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	5	val_5	5	val_5
+NULL	NULL	8	val_8	8	val_8
+NULL	NULL	9	val_9	9	val_9
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -2526,28 +2552,6 @@ NULL	NULL	NULL	NULL	97	val_97
 NULL	NULL	NULL	NULL	97	val_97
 NULL	NULL	NULL	NULL	98	val_98
 NULL	NULL	NULL	NULL	98	val_98
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	0	val_0	0	val_0
-NULL	NULL	2	val_2	2	val_2
-NULL	NULL	4	val_4	4	val_4
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	5	val_5	5	val_5
-NULL	NULL	8	val_8	8	val_8
-NULL	NULL	9	val_9	9	val_9
 PREHOOK: query: explain
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) LEFT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
