@@ -15,18 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.service.cli.operation;
+package org.apache.hadoop.hive.ql.session;
 
-import com.google.common.base.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,14 +75,14 @@ public class OperationLog {
 
   /**
    * Read operation execution logs from log file
-   * @param fetchOrientation one of Enum FetchOrientation values
+   * @param isFetchFirst true if the Enum FetchOrientation value is Fetch_First
    * @param maxRows the max number of fetched lines from log
    * @return
-   * @throws HiveSQLException
+   * @throws java.sql.SQLException
    */
-  public List<String> readOperationLog(FetchOrientation fetchOrientation, long maxRows)
-      throws HiveSQLException{
-    return logFile.read(fetchOrientation, maxRows);
+  public List<String> readOperationLog(boolean isFetchFirst, long maxRows)
+      throws SQLException{
+    return logFile.read(isFetchFirst, maxRows);
   }
 
   /**
@@ -116,10 +113,10 @@ public class OperationLog {
       out.print(msg);
     }
 
-    synchronized List<String> read(FetchOrientation fetchOrientation, long maxRows)
-        throws HiveSQLException{
+    synchronized List<String> read(boolean isFetchFirst, long maxRows)
+        throws SQLException{
       // reset the BufferReader, if fetching from the beginning of the file
-      if (fetchOrientation.equals(FetchOrientation.FETCH_FIRST)) {
+      if (isFetchFirst) {
         resetIn();
       }
 
@@ -148,16 +145,16 @@ public class OperationLog {
       }
     }
 
-    private List<String> readResults(long nLines) throws HiveSQLException {
+    private List<String> readResults(long nLines) throws SQLException {
       if (in == null) {
         try {
           in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         } catch (FileNotFoundException e) {
           if (isRemoved) {
-            throw new HiveSQLException("The operation has been closed and its log file " +
+            throw new SQLException("The operation has been closed and its log file " +
                 file.getAbsolutePath() + " has been removed.", e);
           } else {
-            throw new HiveSQLException("Operation Log file " + file.getAbsolutePath() +
+            throw new SQLException("Operation Log file " + file.getAbsolutePath() +
                 " is not found.", e);
           }
         }
@@ -176,10 +173,10 @@ public class OperationLog {
           }
         } catch (IOException e) {
           if (isRemoved) {
-            throw new HiveSQLException("The operation has been closed and its log file " +
+            throw new SQLException("The operation has been closed and its log file " +
                 file.getAbsolutePath() + " has been removed.", e);
           } else {
-            throw new HiveSQLException("Reading operation log file encountered an exception: ", e);
+            throw new SQLException("Reading operation log file encountered an exception: ", e);
           }
         }
       }
