@@ -201,6 +201,11 @@
 </property>
 
 <property>
+  <name>spark.serializer</name>
+  <value>org.apache.spark.serializer.KryoSerializer</value>
+</property>
+
+<property>
   <name>spark.akka.logLifecycleEvents</name>
   <value>true</value>
 </property>
