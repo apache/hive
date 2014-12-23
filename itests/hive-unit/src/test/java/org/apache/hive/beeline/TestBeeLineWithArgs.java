@@ -534,6 +534,20 @@ public class TestBeeLineWithArgs {
   }
 
   /**
+   * Test Beeline could show the query progress for time-consuming query when hive.exec.parallel
+   * is true
+   * @throws Throwable
+   */
+  @Test
+  public void testQueryProgressParallel() throws Throwable {
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+        "set hive.exec.parallel = true;\n" +
+        "select count(*) from " + tableName + ";\n";
+    final String EXPECTED_PATTERN = "number of splits";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()));
+  }
+
+  /**
    * Test Beeline will hide the query progress when silent option is set.
    * @throws Throwable
    */
