@@ -1,4 +1,5 @@
 set hive.optimize.ppd=true;
+set hive.entity.capture.transform=true;
 
 EXPLAIN EXTENDED
 FROM (
