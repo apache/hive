@@ -523,6 +523,11 @@ public interface HadoopShims {
   public KerberosNameShim getKerberosNameShim(String name) throws IOException;
 
   /**
+   * Check whether file is directory.
+   */
+  boolean isDirectory(FileStatus fileStatus);
+
+  /**
    * Shim for KerberosName
    */
   public interface KerberosNameShim {

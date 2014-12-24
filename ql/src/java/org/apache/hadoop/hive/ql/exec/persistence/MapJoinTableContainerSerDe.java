@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 
 @SuppressWarnings("deprecation")
@@ -118,7 +119,7 @@ public class MapJoinTableContainerSerDe {
 
       for (FileStatus fileStatus: fileStatuses) {
         Path filePath = fileStatus.getPath();
-        if (fileStatus.isDirectory()) {
+        if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
           throw new HiveException("Error, not a file: " + filePath);
         }
         InputStream is = null;

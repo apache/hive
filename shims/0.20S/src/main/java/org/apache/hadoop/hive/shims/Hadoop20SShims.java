@@ -562,6 +562,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     return null;
   }
 
+  @Override
+  public boolean isDirectory(FileStatus fileStatus) {
+    return fileStatus.isDir();
+  }
+
   /**
    * Returns a shim to wrap KerberosName
    */
