@@ -1,6 +1,10 @@
-PREHOOK: query: desc function str_to_map
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+desc function str_to_map
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: desc function str_to_map
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+desc function str_to_map
 POSTHOOK: type: DESCFUNCTION
 str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
 PREHOOK: query: desc function extended str_to_map
@@ -76,9 +80,9 @@ POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"b":"2","a":"1","c":"3"}
-{"b":"2","a":"1","c":"3"}
-{"b":"2","a":"1","c":"3"}
+{"a":"1","b":"2","c":"3"}
+{"a":"1","b":"2","c":"3"}
+{"a":"1","b":"2","c":"3"}
 PREHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
@@ -111,9 +115,9 @@ POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"b":"2","a":"1","c":"3"}
-{"b":"2","a":"1","c":"3"}
-{"b":"2","a":"1","c":"3"}
+{"a":"1","b":"2","c":"3"}
+{"a":"1","b":"2","c":"3"}
+{"a":"1","b":"2","c":"3"}
 PREHOOK: query: explain select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
