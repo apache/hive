@@ -346,6 +346,7 @@ class SparkClientImpl implements SparkClient {
       jobs.put(jobId, handle);
 
       final io.netty.util.concurrent.Future<Void> rpc = driverRpc.call(new JobRequest(jobId, job));
+      LOG.debug("Send JobRequest[{}].", jobId);
 
       // Link the RPC and the promise so that events from one are propagated to the other as
       // needed.
