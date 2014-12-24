@@ -588,8 +588,10 @@ public class SkewJoinOptimizer implements Transform {
 
     private Map<String, Operator<? extends OperatorDesc>> getTopOps(
       Operator<? extends OperatorDesc> op) {
+      // Must be deterministic order map for consistent q-test output across
+      // Java versions
       Map<String, Operator<? extends OperatorDesc>> topOps =
-        new HashMap<String, Operator<? extends OperatorDesc>>();
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       if (op.getParentOperators() == null || op.getParentOperators().size() == 0) {
         topOps.put(((TableScanOperator)op).getConf().getAlias(), op);
       } else {
