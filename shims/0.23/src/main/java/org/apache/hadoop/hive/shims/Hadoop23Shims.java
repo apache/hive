@@ -895,6 +895,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new KerberosNameShim(name);
   }
 
+  @Override
+  public boolean isDirectory(FileStatus fileStatus) {
+    return fileStatus.isDirectory();
+  }
+
   /**
    * Shim for KerberosName
    */
