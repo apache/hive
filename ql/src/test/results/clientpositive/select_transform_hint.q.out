@@ -80,6 +80,7 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+MAPJOIN(a)*/ 
@@ -87,6 +88,7 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238	val_238
@@ -1195,6 +1197,7 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+STREAMTABLE(a)*/ 
@@ -1202,6 +1205,7 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	val_0

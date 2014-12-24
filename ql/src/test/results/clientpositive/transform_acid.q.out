@@ -23,9 +23,11 @@ POSTHOOK: Lineage: transform_acid.b EXPRESSION [(alltypesorc)alltypesorc.FieldSc
 PREHOOK: query: SELECT transform(*) USING 'transform_acid_grep.sh' AS (col string) FROM transform_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform_acid
+PREHOOK: Input: transform_acid_grep.sh
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT transform(*) USING 'transform_acid_grep.sh' AS (col string) FROM transform_acid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transform_acid
+POSTHOOK: Input: transform_acid_grep.sh
 #### A masked pattern was here ####
 a

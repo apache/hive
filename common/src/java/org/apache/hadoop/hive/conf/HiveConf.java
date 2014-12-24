@@ -1596,6 +1596,8 @@ public class HiveConf extends Configuration {
         "readable text) or \"json\" (for a json object)."),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@",
         "Separator used to construct names of tables and partitions. For example, dbname@tablename@partitionname"),
+    HIVE_CAPTURE_TRANSFORM_ENTITY("hive.entity.capture.transform", false,
+        "Compiler to capture transform URI referred in the query"),
     HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY("hive.display.partition.cols.separately", true,
         "In older Hive version (0.10 and earlier) no distinction was made between\n" +
         "partition columns or non-partition columns while displaying columns in describe\n" +

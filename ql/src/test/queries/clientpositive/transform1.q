@@ -1,3 +1,4 @@
+set hive.entity.capture.transform=true;
 
 create table transform1_t1(a string, b string);
 
