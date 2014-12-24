@@ -1,4 +1,7 @@
 PREHOOK: query: -- Verify that nullable fields properly work
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
                              tinyint1 TINYINT,
@@ -20,6 +23,9 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_serializer
 POSTHOOK: query: -- Verify that nullable fields properly work
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
                              tinyint1 TINYINT,
@@ -153,21 +159,21 @@ POSTHOOK: query: SELECT * FROM as_avro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@as_avro
 #### A masked pattern was here ####
-why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
 another record	98	4	101	9999999	false	99.89	9.0E-8	["beta"]	{"Earth":101}	{"sint":1134,"sboolean":false,"sstring":"wazzup"}	RED	NULL		ef
 third record	45	5	102	999999999	true	89.99	9.0E-14	["alpha","gamma"]	{"Earth":237,"Bob":723}	{"sint":102,"sboolean":false,"sstring":"BNL"}	GREEN	NULL		hi
-NULL	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	NULL	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	NULL	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	NULL	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+NULL	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	NULL	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	NULL	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	NULL	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
 string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	NULL	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	NULL	BLUE	72		bc
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72		bc
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL		bc
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	bc
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		NULL
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	NULL	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Control":86,"Bob":31}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		NULL

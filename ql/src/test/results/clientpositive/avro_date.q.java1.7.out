@@ -1,6 +1,10 @@
-PREHOOK: query: DROP TABLE avro_date_staging
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+DROP TABLE avro_date_staging
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE avro_date_staging
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+DROP TABLE avro_date_staging
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE avro_date
 PREHOOK: type: DROPTABLE

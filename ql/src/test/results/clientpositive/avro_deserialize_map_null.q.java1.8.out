@@ -4,6 +4,7 @@ PREHOOK: query: -- These test attempts to deserialize an Avro file that contains
 -- fileSchema   = [{ "type" : "map", "values" : ["string","null"]}, "null"]
 -- recordSchema = ["null", { "type" : "map", "values" : ["string","null"]}]
 
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table
 PREHOOK: type: DROPTABLE
@@ -13,6 +14,7 @@ POSTHOOK: query: -- These test attempts to deserialize an Avro file that contain
 -- fileSchema   = [{ "type" : "map", "values" : ["string","null"]}, "null"]
 -- recordSchema = ["null", { "type" : "map", "values" : ["string","null"]}]
 
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table
 POSTHOOK: type: DROPTABLE
@@ -40,11 +42,11 @@ POSTHOOK: query: SELECT * FROM avro_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@avro_table
 #### A masked pattern was here ####
-{"key4":null,"key3":"val3"}
-{"key4":null,"key3":"val3"}
-{"key2":"val2","key1":null}
-{"key4":null,"key3":"val3"}
-{"key4":null,"key3":"val3"}
+{"key3":"val3","key4":null}
+{"key3":"val3","key4":null}
+{"key1":null,"key2":"val2"}
+{"key3":"val3","key4":null}
+{"key3":"val3","key4":null}
 PREHOOK: query: DROP TABLE avro_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_table

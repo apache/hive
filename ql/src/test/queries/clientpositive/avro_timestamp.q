@@ -1,3 +1,5 @@
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 DROP TABLE avro_timestamp_staging;
 DROP TABLE avro_timestamp;
 DROP TABLE avro_timestamp_casts;
