@@ -17,6 +17,7 @@
 
 package org.apache.hive.spark.client;
 
+import com.google.common.base.Throwables;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.nio.NioEventLoopGroup;
 
@@ -224,20 +225,24 @@ public class RemoteDriver {
   private class DriverProtocol extends BaseProtocol {
 
     void sendError(Throwable error) {
+      LOG.debug("Send error to Client: {}", Throwables.getStackTraceAsString(error));
       clientRpc.call(new Error(error));
     }
 
     <T extends Serializable> void jobFinished(String jobId, T result,
         Throwable error, SparkCounters counters) {
+      LOG.debug("Send job({}) result to Client.", jobId);
       clientRpc.call(new JobResult(jobId, result, error, counters));
     }
 
     void jobSubmitted(String jobId, int sparkJobId) {
+      LOG.debug("Send job({}/{}) submitted to Client.", jobId, sparkJobId);
       clientRpc.call(new JobSubmitted(jobId, sparkJobId));
     }
 
-    void sendMetrics(String clientId, int jobId, int stageId, long taskId, Metrics metrics) {
-      clientRpc.call(new JobMetrics(clientId, jobId, stageId, taskId, metrics));
+    void sendMetrics(String jobId, int sparkJobId, int stageId, long taskId, Metrics metrics) {
+      LOG.debug("Send task({}/{}/{}/{}) metric to Client.", jobId, sparkJobId, stageId, taskId);
+      clientRpc.call(new JobMetrics(jobId, sparkJobId, stageId, taskId, metrics));
     }
 
     private void handle(ChannelHandlerContext ctx, CancelJob msg) {

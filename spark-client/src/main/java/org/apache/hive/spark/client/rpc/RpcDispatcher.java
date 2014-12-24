@@ -139,6 +139,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
   private void handleError(ChannelHandlerContext ctx, Object msg, OutstandingRpc rpc)
       throws Exception {
     if (msg instanceof String) {
+      LOG.warn("Received error message:{}.", msg);
       rpc.future.setFailure(new RpcException((String) msg));
     } else {
       String error = String.format("Received error with unexpected payload (%s).",
