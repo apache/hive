@@ -2907,6 +2907,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (descDatabase.isExt()) {
         params = database.getParameters();
       }
+
+      // If this is a q-test, let's order the params map (lexicographically) by
+      // key. This is to get consistent param ordering between Java7 and Java8.
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
+          params != null) {
+        params = new TreeMap<String, String>(params);
+      }
+
       String location = database.getLocationUri();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
         location = "location/in/test";

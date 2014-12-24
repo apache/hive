@@ -118,7 +118,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
@@ -130,7 +130,7 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: val (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
@@ -251,7 +251,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
@@ -263,7 +263,7 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: val (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
@@ -403,7 +403,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
@@ -415,7 +415,7 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: val (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not ((key = '2') or (key = '3')))) (type: boolean)
@@ -554,7 +554,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: a
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
@@ -566,7 +566,7 @@ STAGE PLANS:
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 value expressions: val (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (not ((key = '2') or (key = '3'))) (type: boolean)
