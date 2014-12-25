@@ -1,5 +1,6 @@
 PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- list bucketing DML: static partition. multiple skewed columns. merge.
 -- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
@@ -27,6 +28,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- list bucketing DML: static partition. multiple skewed columns. merge.
 -- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
@@ -340,7 +342,7 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key]               	 
 Skewed Values:      	[[484], [103]]      	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484, [103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103}	 
+Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- list bucketing DML with merge. use bucketize to generate a few small files.
@@ -743,7 +745,7 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key]               	 
 Skewed Values:      	[[484], [103]]      	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484, [103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103}	 
+Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08'

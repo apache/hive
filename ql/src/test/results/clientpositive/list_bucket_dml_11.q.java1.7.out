@@ -1,6 +1,7 @@
 PREHOOK: query: -- Ensure it works if skewed column is not the first column in the table columns
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- list bucketing DML: static partition. multiple skewed columns.
 
@@ -16,6 +17,7 @@ PREHOOK: Output: default@list_bucketing_static_part
 POSTHOOK: query: -- Ensure it works if skewed column is not the first column in the table columns
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- list bucketing DML: static partition. multiple skewed columns.
 
