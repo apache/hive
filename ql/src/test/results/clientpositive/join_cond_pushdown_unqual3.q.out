@@ -111,10 +111,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-            1 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-            2 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
+          keys:
+            0 p_name (type: string)
+            1 p2_name (type: string)
+            2 p3_name (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
           Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -195,10 +195,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-            1 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-            2 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
+          keys:
+            0 p_name (type: string)
+            1 p2_name (type: string)
+            2 p3_name (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
           Statistics: Num rows: 28 Data size: 3460 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -261,9 +261,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8}
-            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
           Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -302,9 +302,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8} {VALUE._col12} {KEY.reducesinkkey0} {VALUE._col13} {VALUE._col14} {VALUE._col15} {VALUE._col16} {VALUE._col17} {VALUE._col18} {VALUE._col19}
-            1 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
+          keys:
+            0 _col13 (type: string)
+            1 p3_name (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
           Statistics: Num rows: 7 Data size: 951 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -367,9 +367,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8}
-            1 {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
           Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -405,9 +405,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7} {VALUE._col8} {KEY.reducesinkkey0} {VALUE._col13} {VALUE._col14} {VALUE._col15} {VALUE._col16} {VALUE._col17} {VALUE._col18} {VALUE._col19}
-            1 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
+          keys:
+            0 _col13 (type: string)
+            1 p3_name (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
           Statistics: Num rows: 30 Data size: 3807 Basic stats: COMPLETE Column stats: NONE
           Filter Operator

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Date;
@@ -38,6 +39,8 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -1274,6 +1277,40 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
     return HiveMetaStore.PARTITION_DATE_FORMAT.get().format(value);
+  }
+
+  protected WriteEntity toWriteEntity(String location) throws SemanticException {
+    return toWriteEntity(new Path(location));
+  }
+
+  protected WriteEntity toWriteEntity(Path location) throws SemanticException {
+    try {
+      Path path = tryQualifyPath(location);
+      return new WriteEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  protected ReadEntity toReadEntity(String location) throws SemanticException {
+    return toReadEntity(new Path(location));
+  }
+
+  protected ReadEntity toReadEntity(Path location) throws SemanticException {
+    try {
+      Path path = tryQualifyPath(location);
+      return new ReadEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  private Path tryQualifyPath(Path path) throws IOException {
+    try {
+      return path.getFileSystem(conf).makeQualified(path);
+    } catch (IOException e) {
+      return path;  // some tests expected to pass invalid schema
+    }
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {

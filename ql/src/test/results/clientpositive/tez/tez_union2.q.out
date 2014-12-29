@@ -1,0 +1,801 @@
+PREHOOK: query: explain 
+SELECT key, value FROM
+(
+  SELECT key, value FROM src
+  UNION ALL
+  SELECT key, key as value FROM ( 
+    SELECT distinct key FROM (
+      SELECT key, value FROM (
+        SELECT key, value FROM src
+        UNION ALL
+        SELECT key, value FROM src
+      )t1 
+    group by key, value)t2
+  )t3
+)t4
+group by key, value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+SELECT key, value FROM
+(
+  SELECT key, value FROM src
+  UNION ALL
+  SELECT key, key as value FROM ( 
+    SELECT distinct key FROM (
+      SELECT key, value FROM (
+        SELECT key, value FROM src
+        UNION ALL
+        SELECT key, value FROM src
+      )t1 
+    group by key, value)t2
+  )t3
+)t4
+group by key, value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 4 <- Union 5 (CONTAINS)
+        Map 7 <- Union 5 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 6 <- Union 2 (CONTAINS), Union 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 375 Data size: 3984 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 375 Data size: 3984 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 375 Data size: 3984 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: complete
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string), _col0 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+        Union 2 
+            Vertex: Union 2
+        Union 5 
+            Vertex: Union 5
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value FROM
+(
+  SELECT key, value FROM src
+  UNION ALL
+  SELECT key, key as value FROM ( 
+    SELECT distinct key FROM (
+      SELECT key, value FROM (
+        SELECT key, value FROM src
+        UNION ALL
+        SELECT key, value FROM src
+      )t1 
+    group by key, value)t2
+  )t3
+)t4
+group by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM
+(
+  SELECT key, value FROM src
+  UNION ALL
+  SELECT key, key as value FROM ( 
+    SELECT distinct key FROM (
+      SELECT key, value FROM (
+        SELECT key, value FROM src
+        UNION ALL
+        SELECT key, value FROM src
+      )t1 
+    group by key, value)t2
+  )t3
+)t4
+group by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0
+0	val_0
+10	10
+10	val_10
+100	100
+100	val_100
+103	103
+103	val_103
+104	104
+104	val_104
+105	105
+105	val_105
+11	11
+11	val_11
+111	111
+111	val_111
+113	113
+113	val_113
+114	114
+114	val_114
+116	116
+116	val_116
+118	118
+118	val_118
+119	119
+119	val_119
+12	12
+12	val_12
+120	120
+120	val_120
+125	125
+125	val_125
+126	126
+126	val_126
+128	128
+128	val_128
+129	129
+129	val_129
+131	131
+131	val_131
+133	133
+133	val_133
+134	134
+134	val_134
+136	136
+136	val_136
+137	137
+137	val_137
+138	138
+138	val_138
+143	143
+143	val_143
+145	145
+145	val_145
+146	146
+146	val_146
+149	149
+149	val_149
+15	15
+15	val_15
+150	150
+150	val_150
+152	152
+152	val_152
+153	153
+153	val_153
+155	155
+155	val_155
+156	156
+156	val_156
+157	157
+157	val_157
+158	158
+158	val_158
+160	160
+160	val_160
+162	162
+162	val_162
+163	163
+163	val_163
+164	164
+164	val_164
+165	165
+165	val_165
+166	166
+166	val_166
+167	167
+167	val_167
+168	168
+168	val_168
+169	169
+169	val_169
+17	17
+17	val_17
+170	170
+170	val_170
+172	172
+172	val_172
+174	174
+174	val_174
+175	175
+175	val_175
+176	176
+176	val_176
+177	177
+177	val_177
+178	178
+178	val_178
+179	179
+179	val_179
+18	18
+18	val_18
+180	180
+180	val_180
+181	181
+181	val_181
+183	183
+183	val_183
+186	186
+186	val_186
+187	187
+187	val_187
+189	189
+189	val_189
+19	19
+19	val_19
+190	190
+190	val_190
+191	191
+191	val_191
+192	192
+192	val_192
+193	193
+193	val_193
+194	194
+194	val_194
+195	195
+195	val_195
+196	196
+196	val_196
+197	197
+197	val_197
+199	199
+199	val_199
+2	2
+2	val_2
+20	20
+20	val_20
+200	200
+200	val_200
+201	201
+201	val_201
+202	202
+202	val_202
+203	203
+203	val_203
+205	205
+205	val_205
+207	207
+207	val_207
+208	208
+208	val_208
+209	209
+209	val_209
+213	213
+213	val_213
+214	214
+214	val_214
+216	216
+216	val_216
+217	217
+217	val_217
+218	218
+218	val_218
+219	219
+219	val_219
+221	221
+221	val_221
+222	222
+222	val_222
+223	223
+223	val_223
+224	224
+224	val_224
+226	226
+226	val_226
+228	228
+228	val_228
+229	229
+229	val_229
+230	230
+230	val_230
+233	233
+233	val_233
+235	235
+235	val_235
+237	237
+237	val_237
+238	238
+238	val_238
+239	239
+239	val_239
+24	24
+24	val_24
+241	241
+241	val_241
+242	242
+242	val_242
+244	244
+244	val_244
+247	247
+247	val_247
+248	248
+248	val_248
+249	249
+249	val_249
+252	252
+252	val_252
+255	255
+255	val_255
+256	256
+256	val_256
+257	257
+257	val_257
+258	258
+258	val_258
+26	26
+26	val_26
+260	260
+260	val_260
+262	262
+262	val_262
+263	263
+263	val_263
+265	265
+265	val_265
+266	266
+266	val_266
+27	27
+27	val_27
+272	272
+272	val_272
+273	273
+273	val_273
+274	274
+274	val_274
+275	275
+275	val_275
+277	277
+277	val_277
+278	278
+278	val_278
+28	28
+28	val_28
+280	280
+280	val_280
+281	281
+281	val_281
+282	282
+282	val_282
+283	283
+283	val_283
+284	284
+284	val_284
+285	285
+285	val_285
+286	286
+286	val_286
+287	287
+287	val_287
+288	288
+288	val_288
+289	289
+289	val_289
+291	291
+291	val_291
+292	292
+292	val_292
+296	296
+296	val_296
+298	298
+298	val_298
+30	30
+30	val_30
+302	302
+302	val_302
+305	305
+305	val_305
+306	306
+306	val_306
+307	307
+307	val_307
+308	308
+308	val_308
+309	309
+309	val_309
+310	310
+310	val_310
+311	311
+311	val_311
+315	315
+315	val_315
+316	316
+316	val_316
+317	317
+317	val_317
+318	318
+318	val_318
+321	321
+321	val_321
+322	322
+322	val_322
+323	323
+323	val_323
+325	325
+325	val_325
+327	327
+327	val_327
+33	33
+33	val_33
+331	331
+331	val_331
+332	332
+332	val_332
+333	333
+333	val_333
+335	335
+335	val_335
+336	336
+336	val_336
+338	338
+338	val_338
+339	339
+339	val_339
+34	34
+34	val_34
+341	341
+341	val_341
+342	342
+342	val_342
+344	344
+344	val_344
+345	345
+345	val_345
+348	348
+348	val_348
+35	35
+35	val_35
+351	351
+351	val_351
+353	353
+353	val_353
+356	356
+356	val_356
+360	360
+360	val_360
+362	362
+362	val_362
+364	364
+364	val_364
+365	365
+365	val_365
+366	366
+366	val_366
+367	367
+367	val_367
+368	368
+368	val_368
+369	369
+369	val_369
+37	37
+37	val_37
+373	373
+373	val_373
+374	374
+374	val_374
+375	375
+375	val_375
+377	377
+377	val_377
+378	378
+378	val_378
+379	379
+379	val_379
+382	382
+382	val_382
+384	384
+384	val_384
+386	386
+386	val_386
+389	389
+389	val_389
+392	392
+392	val_392
+393	393
+393	val_393
+394	394
+394	val_394
+395	395
+395	val_395
+396	396
+396	val_396
+397	397
+397	val_397
+399	399
+399	val_399
+4	4
+4	val_4
+400	400
+400	val_400
+401	401
+401	val_401
+402	402
+402	val_402
+403	403
+403	val_403
+404	404
+404	val_404
+406	406
+406	val_406
+407	407
+407	val_407
+409	409
+409	val_409
+41	41
+41	val_41
+411	411
+411	val_411
+413	413
+413	val_413
+414	414
+414	val_414
+417	417
+417	val_417
+418	418
+418	val_418
+419	419
+419	val_419
+42	42
+42	val_42
+421	421
+421	val_421
+424	424
+424	val_424
+427	427
+427	val_427
+429	429
+429	val_429
+43	43
+43	val_43
+430	430
+430	val_430
+431	431
+431	val_431
+432	432
+432	val_432
+435	435
+435	val_435
+436	436
+436	val_436
+437	437
+437	val_437
+438	438
+438	val_438
+439	439
+439	val_439
+44	44
+44	val_44
+443	443
+443	val_443
+444	444
+444	val_444
+446	446
+446	val_446
+448	448
+448	val_448
+449	449
+449	val_449
+452	452
+452	val_452
+453	453
+453	val_453
+454	454
+454	val_454
+455	455
+455	val_455
+457	457
+457	val_457
+458	458
+458	val_458
+459	459
+459	val_459
+460	460
+460	val_460
+462	462
+462	val_462
+463	463
+463	val_463
+466	466
+466	val_466
+467	467
+467	val_467
+468	468
+468	val_468
+469	469
+469	val_469
+47	47
+47	val_47
+470	470
+470	val_470
+472	472
+472	val_472
+475	475
+475	val_475
+477	477
+477	val_477
+478	478
+478	val_478
+479	479
+479	val_479
+480	480
+480	val_480
+481	481
+481	val_481
+482	482
+482	val_482
+483	483
+483	val_483
+484	484
+484	val_484
+485	485
+485	val_485
+487	487
+487	val_487
+489	489
+489	val_489
+490	490
+490	val_490
+491	491
+491	val_491
+492	492
+492	val_492
+493	493
+493	val_493
+494	494
+494	val_494
+495	495
+495	val_495
+496	496
+496	val_496
+497	497
+497	val_497
+498	498
+498	val_498
+5	5
+5	val_5
+51	51
+51	val_51
+53	53
+53	val_53
+54	54
+54	val_54
+57	57
+57	val_57
+58	58
+58	val_58
+64	64
+64	val_64
+65	65
+65	val_65
+66	66
+66	val_66
+67	67
+67	val_67
+69	69
+69	val_69
+70	70
+70	val_70
+72	72
+72	val_72
+74	74
+74	val_74
+76	76
+76	val_76
+77	77
+77	val_77
+78	78
+78	val_78
+8	8
+8	val_8
+80	80
+80	val_80
+82	82
+82	val_82
+83	83
+83	val_83
+84	84
+84	val_84
+85	85
+85	val_85
+86	86
+86	val_86
+87	87
+87	val_87
+9	9
+9	val_9
+90	90
+90	val_90
+92	92
+92	val_92
+95	95
+95	val_95
+96	96
+96	val_96
+97	97
+97	val_97
+98	98
+98	val_98

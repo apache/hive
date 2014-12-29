@@ -36,6 +36,11 @@ public interface LazyObjectBase {
   void init(ByteArrayRef bytes, int start, int length);
 
   /**
+   * called for null binary, hbase columns, for example
+   */
+  void setNull();
+
+  /**
    * If the LazyObjectBase is a primitive Object, then deserialize it and return the
    * actual primitive Object. Otherwise (array, map, struct), return this.
    */

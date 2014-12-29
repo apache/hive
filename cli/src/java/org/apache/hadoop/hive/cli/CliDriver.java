@@ -29,9 +29,14 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.google.common.base.Splitter;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
@@ -53,6 +58,7 @@ import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -81,6 +87,7 @@ public class CliDriver {
   public static String prompt = null;
   public static String prompt2 = null; // when ';' is not yet seen
   public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
+  public static final int DELIMITED_CANDIDATE_THRESHOLD = 10;
 
   public static final String HIVERCFILE = ".hiverc";
 
@@ -274,7 +281,7 @@ public class CliDriver {
    * for the output.
    *
    * @param qp Driver that executed the command
-   * @param out Printstream which to send output to
+   * @param out PrintStream which to send output to
    */
   private void printHeader(Driver qp, PrintStream out) {
     List<FieldSchema> fieldSchemas = qp.getSchema().getFieldSchemas();
@@ -302,20 +309,20 @@ public class CliDriver {
    *
    * @param line
    *          The commands to process
-   * @param allowInterupting
+   * @param allowInterrupting
    *          When true the function will handle SIG_INT (Ctrl+C) by interrupting the processing and
    *          returning -1
    * @return 0 if ok
    */
-  public int processLine(String line, boolean allowInterupting) {
+  public int processLine(String line, boolean allowInterrupting) {
     SignalHandler oldSignal = null;
-    Signal interupSignal = null;
+    Signal interruptSignal = null;
 
-    if (allowInterupting) {
+    if (allowInterrupting) {
       // Remember all threads that were running at the time we started line processing.
       // Hook up the custom Ctrl+C handler while processing this line
-      interupSignal = new Signal("INT");
-      oldSignal = Signal.handle(interupSignal, new SignalHandler() {
+      interruptSignal = new Signal("INT");
+      oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
         private final Thread cliThread = Thread.currentThread();
         private boolean interruptRequested;
 
@@ -375,8 +382,8 @@ public class CliDriver {
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler
-      if (oldSignal != null && interupSignal != null) {
-        Signal.handle(interupSignal, oldSignal);
+      if (oldSignal != null && interruptSignal != null) {
+        Signal.handle(interruptSignal, oldSignal);
       }
     }
   }
@@ -538,32 +545,61 @@ public class CliDriver {
       }
     };
 
-    HiveConf.ConfVars[] confs = HiveConf.ConfVars.values();
-    String[] vars = new String[confs.length];
-    for (int i = 0; i < vars.length; i++) {
-      vars[i] = confs[i].varname;
+    List<String> vars = new ArrayList<String>();
+    for (HiveConf.ConfVars conf : HiveConf.ConfVars.values()) {
+      vars.add(conf.varname);
     }
-    ArgumentCompleter.ArgumentDelimiter delimiter = new ArgumentCompleter.AbstractArgumentDelimiter() {
+
+    StringsCompleter confCompleter = new StringsCompleter(vars) {
       @Override
-      public boolean isDelimiterChar(CharSequence buffer, int pos) {
-        char c = buffer.charAt(pos);
-        return  c == '.';
+      public int complete(final String buffer, final int cursor, final List<CharSequence> clist) {
+        int result = super.complete(buffer, cursor, clist);
+        if (clist.isEmpty() && cursor > 1 && buffer.charAt(cursor - 1) == '=') {
+          HiveConf.ConfVars var = HiveConf.getConfVars(buffer.substring(0, cursor - 1));
+          if (var == null) {
+            return result;
+          }
+          if (var.getValidator() instanceof Validator.StringSet) {
+            Validator.StringSet validator = (Validator.StringSet)var.getValidator();
+            clist.addAll(validator.getExpected());
+          } else if (var.getValidator() != null) {
+            clist.addAll(Arrays.asList(var.getValidator().toDescription(), ""));
+          } else {
+            clist.addAll(Arrays.asList("Expects " + var.typeString() + " type value", ""));
+          }
+          return cursor;
+        }
+        if (clist.size() > DELIMITED_CANDIDATE_THRESHOLD) {
+          Set<CharSequence> delimited = new LinkedHashSet<CharSequence>();
+          for (CharSequence candidate : clist) {
+            Iterator<String> it = Splitter.on(".").split(
+                candidate.subSequence(cursor, candidate.length())).iterator();
+            if (it.hasNext()) {
+              String next = it.next();
+              if (next.isEmpty()) {
+                next = ".";
+              }
+              candidate = buffer != null ? buffer.substring(0, cursor) + next : next;
+            }
+            delimited.add(candidate);
+          }
+          clist.clear();
+          clist.addAll(delimited);
+        }
+        return result;
       }
     };
 
     StringsCompleter setCompleter = new StringsCompleter("set") {
       @Override
-      public int complete(String buffer, int cursor, List clist) {
+      public int complete(String buffer, int cursor, List<CharSequence> clist) {
         return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
       }
     };
 
-    ArgumentCompleter confCompleter = new ArgumentCompleter(delimiter, setCompleter);
-
-    ArgumentCompleter propCompleter = new ArgumentCompleter(new Completer[]{setCompleter, confCompleter}) {
+    ArgumentCompleter propCompleter = new ArgumentCompleter(setCompleter, confCompleter) {
       @Override
-      @SuppressWarnings("unchecked")
-      public int complete(String buffer, int offset, List completions) {
+      public int complete(String buffer, int offset, List<CharSequence> completions) {
         int ret = super.complete(buffer, offset, completions);
         if (completions.size() == 1) {
           completions.set(0, ((String)completions.get(0)).trim());
@@ -634,27 +670,22 @@ public class CliDriver {
     SessionState.start(ss);
 
     // execute cli driver work
-    int ret = 0;
     try {
-      ret = executeDriver(ss, conf, oproc);
-    } catch (Exception e) {
+      return executeDriver(ss, conf, oproc);
+    } finally {
       ss.close();
-      throw e;
     }
-
-    ss.close();
-    return ret;
   }
 
   /**
    * Execute the cli work
    * @param ss CliSessionState of the CLI driver
-   * @param conf HiveConf for the driver sionssion
-   * @param oproc Opetion processor of the CLI invocation
-   * @return status of the CLI comman execution
+   * @param conf HiveConf for the driver session
+   * @param oproc Operation processor of the CLI invocation
+   * @return status of the CLI command execution
    * @throws Exception
    */
-  private  int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
+  private int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
       throws Exception {
 
     CliDriver cli = new CliDriver();

@@ -262,7 +262,7 @@ public class Warehouse {
     }
     final UserGroupInformation ugi;
     try {
-      ugi = Utils.getUGIForConf(conf);
+      ugi = Utils.getUGI();
     } catch (LoginException le) {
       throw new IOException(le);
     }

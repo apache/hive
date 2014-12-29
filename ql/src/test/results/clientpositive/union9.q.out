@@ -30,9 +30,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -41,16 +43,18 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
           TableScan
-            alias: s2
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
                 Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -59,16 +63,18 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
           TableScan
-            alias: s3
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
               Union
                 Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

@@ -24,7 +24,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (key + 100) BETWEEN 100 AND 200 (type: boolean)
+            predicate: (UDFToDouble(key) + 100.0) BETWEEN 100 AND 200 (type: boolean)
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -79,7 +79,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (key + 100) NOT BETWEEN 100 AND 200 (type: boolean)
+            predicate: (UDFToDouble(key) + 100.0) NOT BETWEEN 100 AND 200 (type: boolean)
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)

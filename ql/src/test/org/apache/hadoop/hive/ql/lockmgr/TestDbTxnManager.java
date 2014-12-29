@@ -275,6 +275,21 @@ public class TestDbTxnManager {
     Assert.assertNull(locks);
   }
 
+  @Test
+  public void concurrencyFalse() throws Exception {
+    HiveConf badConf = new HiveConf();
+    badConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER,
+        "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    badConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    boolean sawException = false;
+    try {
+      TxnManagerFactory.getTxnManagerFactory().getTxnManager(badConf);
+    } catch (RuntimeException e) {
+      sawException = true;
+    }
+    Assert.assertTrue(sawException);
+  }
+
 
   @Before
   public void setUp() throws Exception {

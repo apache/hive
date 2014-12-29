@@ -124,9 +124,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -204,9 +201,6 @@ STAGE PLANS:
               predicate: ((key is not null and value2 is not null) and (key < 10)) (type: boolean)
               Statistics: Num rows: 41 Data size: 517 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 key (type: string), value2 (type: string)
                   1 key (type: string), value2 (type: string)
@@ -223,9 +217,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 key (type: string), value2 (type: string)
                   1 key (type: string), value2 (type: string)

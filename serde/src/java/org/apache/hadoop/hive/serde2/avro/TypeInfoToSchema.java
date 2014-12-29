@@ -157,6 +157,11 @@ public class TypeInfoToSchema {
             "\"type\":\"" + AvroSerDe.AVRO_INT_TYPE_NAME + "\"," +
             "\"logicalType\":\"" + AvroSerDe.DATE_TYPE_NAME + "\"}");
         break;
+      case TIMESTAMP:
+        schema = AvroSerdeUtils.getSchemaFor("{" +
+          "\"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
+          "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}");
+        break;
       case VOID:
         schema = Schema.create(Schema.Type.NULL);
         break;

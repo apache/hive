@@ -62,7 +62,7 @@ public class TestMiniHiveKdc {
     assertNotNull(servicePrinc);
     miniHiveKdc.loginUser(servicePrinc);
     assertTrue(UserGroupInformation.isLoginKeytabBased());
-    UserGroupInformation ugi = Utils.getUGIForConf(hiveConf);
+    UserGroupInformation ugi = Utils.getUGI();
     assertEquals(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL, ugi.getShortUserName());
   }
 

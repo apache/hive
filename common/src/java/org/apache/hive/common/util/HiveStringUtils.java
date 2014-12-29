@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import com.google.common.collect.Interner;
@@ -886,4 +887,46 @@ public class HiveStringUtils {
   public static String normalizeIdentifier(String identifier) {
 	  return identifier.trim().toLowerCase();
 	}
+
+  public static Map getPropertiesExplain(Properties properties) {
+    if (properties != null) {
+      String value = properties.getProperty("columns.comments");
+      if (value != null) {
+        // should copy properties first
+        Map clone = new HashMap(properties);
+        clone.put("columns.comments", quoteComments(value));
+        return clone;
+      }
+    }
+    return properties;
+  }
+
+  public static String quoteComments(String value) {
+    char[] chars = value.toCharArray();
+    if (!commentProvided(chars)) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    int prev = 0;
+    for (int i = 0; i < chars.length; i++) {
+      if (chars[i] == 0x00) {
+        if (builder.length() > 0) {
+          builder.append(',');
+        }
+        builder.append('\'').append(chars, prev, i - prev).append('\'');
+        prev = i + 1;
+      }
+    }
+    builder.append(",\'").append(chars, prev, chars.length - prev).append('\'');
+    return builder.toString();
+  }
+
+  public static boolean commentProvided(char[] chars) {
+    for (char achar : chars) {
+      if (achar != 0x00) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

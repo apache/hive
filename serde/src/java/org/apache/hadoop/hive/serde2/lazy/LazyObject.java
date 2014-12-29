@@ -50,4 +50,28 @@ public abstract class LazyObject<OI extends ObjectInspector> implements LazyObje
   protected void setInspector(OI oi) {
     this.oi = oi;
   }
+
+  protected boolean isNull;
+
+  @Override
+  public void init(ByteArrayRef bytes, int start, int length) {
+    if (bytes == null) {
+      throw new RuntimeException("bytes cannot be null!");
+    }
+    this.isNull = false;
+  }
+
+  @Override
+  public void setNull() {
+    this.isNull = true;
+  }
+
+  /**
+   * Returns the primitive object represented by this LazyObject. This is useful
+   * because it can make sure we have "null" for null objects.
+   */
+  @Override
+  public Object getObject() {
+    return isNull ? null : this;
+  }
 }

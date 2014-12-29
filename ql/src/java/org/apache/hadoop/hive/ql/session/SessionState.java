@@ -428,7 +428,7 @@ public class SessionState {
       // shared with SessionState, other parts of the code might update the config, but
       // Hive.get(HiveConf) would not recognize the case when it needs refreshing
       Hive.get(new HiveConf(startSs.conf)).getMSC();
-      UserGroupInformation sessionUGI = Utils.getUGIForConf(startSs.conf);
+      UserGroupInformation sessionUGI = Utils.getUGI();
       FileSystem.get(startSs.conf);
 
       // Create scratch dirs for this session

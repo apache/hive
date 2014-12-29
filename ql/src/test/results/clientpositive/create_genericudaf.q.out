@@ -40,11 +40,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: string)
-              outputColumnNames: value
+              expressions: 1 (type: int), substr(value, 5) (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: test_avg(1), test_avg(substr(value, 5))
+                aggregations: test_avg(_col0), test_avg(_col1)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

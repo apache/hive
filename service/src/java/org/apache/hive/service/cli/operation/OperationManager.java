@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.operation;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -258,7 +260,13 @@ public class OperationManager extends AbstractService {
     }
 
     // read logs
-    List<String> logs = operationLog.readOperationLog(orientation, maxRows);
+    List<String> logs;
+    try {
+      logs = operationLog.readOperationLog(isFetchFirst(orientation), maxRows);
+    } catch (SQLException e) {
+      throw new HiveSQLException(e.getMessage(), e.getCause());
+    }
+
 
     // convert logs to RowSet
     TableSchema tableSchema = new TableSchema(getLogSchema());
@@ -268,6 +276,15 @@ public class OperationManager extends AbstractService {
     }
 
     return rowSet;
+  }
+
+  private boolean isFetchFirst(FetchOrientation fetchOrientation) {
+    //TODO: Since OperationLog is moved to package o.a.h.h.ql.session,
+    // we may add a Enum there and map FetchOrientation to it.
+    if (fetchOrientation.equals(FetchOrientation.FETCH_FIRST)) {
+      return true;
+    }
+    return false;
   }
 
   private Schema getLogSchema() {

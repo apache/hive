@@ -60,7 +60,7 @@ public class SampleTezSessionState extends TezSessionState {
   public void open(HiveConf conf) throws IOException, LoginException, URISyntaxException,
       TezException {
     this.hiveConf = conf;
-    UserGroupInformation ugi = Utils.getUGIForConf(conf);
+    UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
   }

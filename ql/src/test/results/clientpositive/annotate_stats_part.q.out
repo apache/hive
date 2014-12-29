@@ -102,7 +102,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 5 Data size: 727 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- partition level analyze statistics for specific parition
@@ -162,7 +162,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 9 Data size: 727 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 9 Data size: 1656 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
@@ -249,7 +249,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 727 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 8 Data size: 1472 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
@@ -272,7 +272,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 727 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 8 Data size: 1472 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- both partitions will be pruned
@@ -475,7 +475,7 @@ STAGE PLANS:
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 727 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 8 Data size: 2192 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: -- This is to test filter expression evaluation on partition column
@@ -575,10 +575,10 @@ STAGE PLANS:
               Select Operator
                 expressions: locid (type: int), '2001' (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

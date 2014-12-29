@@ -760,7 +760,7 @@ public class DagUtils {
    */
   @SuppressWarnings("deprecation")
   public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
-    UserGroupInformation ugi = Utils.getUGIForConf(conf);
+    UserGroupInformation ugi = Utils.getUGI();
     String userName = ugi.getShortUserName();
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
     Path userPath = new Path(userPathStr);
@@ -1124,7 +1124,7 @@ public class DagUtils {
     UserGroupInformation ugi;
     String userName = System.getProperty("user.name");
     try {
-      ugi = Utils.getUGIForConf(conf);
+      ugi = Utils.getUGI();
       userName = ugi.getShortUserName();
     } catch (LoginException e) {
       throw new IOException(e);

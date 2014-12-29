@@ -1123,9 +1123,8 @@ public class TypeCheckProcFactory {
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
-      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(expr
-          .getChildCount()
-          - childrenBegin);
+      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(
+          expr.getChildCount() - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
         if (nodeOutputs[ci] instanceof ExprNodeColumnListDesc) {
           children.addAll(((ExprNodeColumnListDesc)nodeOutputs[ci]).getChildren());

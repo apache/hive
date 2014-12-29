@@ -42,9 +42,11 @@ STAGE PLANS:
             alias: tstparttbl
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -133,9 +135,11 @@ STAGE PLANS:
             alias: tstparttbl2
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -232,9 +236,11 @@ STAGE PLANS:
             alias: tstparttbl
             Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -331,9 +337,11 @@ STAGE PLANS:
             alias: tstparttbl2
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count(_col0)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

@@ -209,7 +209,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -230,7 +230,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -255,7 +255,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -276,7 +276,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -290,8 +290,8 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
-        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -408,7 +408,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -429,7 +429,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -443,7 +443,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -581,7 +581,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -602,7 +602,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -627,7 +627,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -648,7 +648,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -662,8 +662,8 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
-        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+        /fact_daily/ds=1/hr=4/key=238/value=val_238 [$hdt$_0:fact_daily]
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator

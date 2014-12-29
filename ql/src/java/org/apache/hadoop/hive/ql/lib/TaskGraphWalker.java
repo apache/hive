@@ -112,20 +112,6 @@ public class TaskGraphWalker implements GraphWalker {
     retMap.put(nd, retVal);
   }
 
-  public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {
-    Object[] nodeOutputs = null;
-    if (nd.getChildren() != null) {
-      nodeOutputs = new Object[nd.getChildren().size()];
-      int i = 1;
-      for (Node child : nd.getChildren()) {
-        nodeOutputs[i++] = retMap.get(child);
-      }
-    }
-
-    Object retVal = dispatcher.dispatch(nd, ndStack, nodeOutputs);
-    retMap.put(nd, retVal);
-  }
-
   /**
    * starting point for walking.
    *

@@ -1,3 +1,5 @@
+set hive.cbo.enable=false;
+
 -- non agg, non corr
 explain rewrite
  select * 

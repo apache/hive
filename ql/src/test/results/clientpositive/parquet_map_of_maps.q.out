@@ -42,7 +42,7 @@ POSTHOOK: query: SELECT * FROM parquet_map_of_maps_copy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_of_maps_copy
 #### A masked pattern was here ####
-{"b":{"b":-2,"a":-1},"a":{"b":1}}
+{"a":{"b":1},"b":{"a":-1,"b":-2}}
 PREHOOK: query: DROP TABLE parquet_map_of_maps
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_map_of_maps

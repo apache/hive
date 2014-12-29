@@ -271,7 +271,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Tez Merge File Work 
+        File Merge 
           Merge File Operator
             Map Operator Tree:
                 ORC File Merge Operator
@@ -282,7 +282,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Vertices:
-        Tez Merge File Work 
+        File Merge 
           Merge File Operator
             Map Operator Tree:
                 ORC File Merge Operator

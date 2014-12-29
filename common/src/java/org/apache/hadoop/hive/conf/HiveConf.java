@@ -684,7 +684,7 @@ public class HiveConf extends Configuration {
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
 
     // CBO related
-    HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -1606,6 +1606,8 @@ public class HiveConf extends Configuration {
         "readable text) or \"json\" (for a json object)."),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@",
         "Separator used to construct names of tables and partitions. For example, dbname@tablename@partitionname"),
+    HIVE_CAPTURE_TRANSFORM_ENTITY("hive.entity.capture.transform", false,
+        "Compiler to capture transform URI referred in the query"),
     HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY("hive.display.partition.cols.separately", true,
         "In older Hive version (0.10 and earlier) no distinction was made between\n" +
         "partition columns or non-partition columns while displaying columns in describe\n" +
@@ -1734,7 +1736,11 @@ public class HiveConf extends Configuration {
         "SPNego service principal would be used by HiveServer2 when Kerberos security is enabled\n" +
         "and HTTP transport mode is used.\n" +
         "This needs to be set only if SPNEGO is to be used in authentication."),
-    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null, "LDAP connection URL"),
+    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null,
+        "LDAP connection URL(s),\n" +
+         "this value could contain URLs to mutiple LDAP servers instances for HA,\n" +
+         "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
+         " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null, ""),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
@@ -2062,6 +2068,10 @@ public class HiveConf extends Configuration {
 
     public boolean isType(String value) {
       return valType.isType(value);
+    }
+
+    public Validator getValidator() {
+      return validator;
     }
 
     public String validate(String value) {
@@ -2777,7 +2787,7 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      UserGroupInformation ugi = Utils.getUGIForConf(this);
+      UserGroupInformation ugi = Utils.getUGI();
       return ugi.getUserName();
     } catch (LoginException le) {
       throw new IOException(le);

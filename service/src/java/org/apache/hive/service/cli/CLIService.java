@@ -87,7 +87,7 @@ public class CLIService extends CompositeService implements ICLIService {
     if (UserGroupInformation.isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
-        this.serviceUGI = Utils.getUGIForConf(hiveConf);
+        this.serviceUGI = Utils.getUGI();
       } catch (IOException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       } catch (LoginException e) {

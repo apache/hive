@@ -394,9 +394,12 @@ public class ObjectStore implements RawStore, Configurable {
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
     } else {
-      // something is wrong since openTransactionCalls is greater than 1 but
-      // currentTransaction is not active
-      assert ((currentTransaction != null) && (currentTransaction.isActive()));
+      // openTransactionCalls > 1 means this is an interior transaction
+      // We should already have a transaction created that is active.
+      if ((currentTransaction == null) || (!currentTransaction.isActive())){
+        throw new RuntimeException("openTransaction called in an interior"
+            + " transaction scope, but currentTransaction is not active.");
+      }
     }
 
     boolean result = currentTransaction.isActive();
@@ -462,20 +465,19 @@ public class ObjectStore implements RawStore, Configurable {
       debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
       return;
     }
-    openTrasactionCalls = 0;
     debugLog("Rollback transaction, isActive: " + currentTransaction.isActive());
-    if (currentTransaction.isActive()
-        && transactionStatus != TXN_STATUS.ROLLBACK) {
-      transactionStatus = TXN_STATUS.ROLLBACK;
-      try {
-        // could already be rolled back
+    try {
+      if (currentTransaction.isActive()
+          && transactionStatus != TXN_STATUS.ROLLBACK) {
         currentTransaction.rollback();
-      } finally {
-        // remove all detached objects from the cache, since the transaction is
-        // being rolled back they are no longer relevant, and this prevents them
-        // from reattaching in future transactions
-        pm.evictAll();
       }
+    } finally {
+      openTrasactionCalls = 0;
+      transactionStatus = TXN_STATUS.ROLLBACK;
+      // remove all detached objects from the cache, since the transaction is
+      // being rolled back they are no longer relevant, and this prevents them
+      // from reattaching in future transactions
+      pm.evictAll();
     }
   }
 

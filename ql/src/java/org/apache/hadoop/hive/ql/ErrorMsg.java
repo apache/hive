@@ -219,7 +219,7 @@ public enum ErrorMsg {
       "Dynamic partitions do not support IF NOT EXISTS. Specified partitions with value :"),
   UDAF_INVALID_LOCATION(10128, "Not yet supported place for UDAF"),
   DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY(10129,
-    "Drop partitions for a non string partition columns is not allowed using non-equality"),
+    "Drop partitions for a non-string partition column is only allowed using equality"),
   ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
@@ -388,6 +388,8 @@ public enum ErrorMsg {
   TXN_NO_SUCH_TRANSACTION(10262, "No record of transaction could be found, " +
       "may have timed out"),
   TXN_ABORTED(10263, "Transaction manager has aborted the transaction."),
+  DBTXNMGR_REQUIRES_CONCURRENCY(10264,
+      "To use DbTxnManager you must set hive.support.concurrency=true"),
 
   LOCK_NO_SUCH_LOCK(10270, "No record of lock could be found, " +
       "may have timed out"),

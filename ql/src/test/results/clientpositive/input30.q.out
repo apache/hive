@@ -37,15 +37,19 @@ STAGE PLANS:
             Filter Operator
               predicate: (((hash(rand(460476415)) & 2147483647) % 32) = 0) (type: boolean)
               Statistics: Num rows: 250 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Group By Operator
-                aggregations: count(1)
-                mode: hash
+              Select Operator
+                expressions: 1 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
+                Statistics: Num rows: 250 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col0)
+                  mode: hash
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: bigint)
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -88,7 +92,7 @@ select count(1) from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tst_dest30
-POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tst_dest30.a EXPRESSION []
 PREHOOK: query: select * from tst_dest30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest30

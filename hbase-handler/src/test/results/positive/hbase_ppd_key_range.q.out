@@ -308,7 +308,7 @@ STAGE PLANS:
             filterExpr: (key >= '90') (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: ((value like '%9%') and (key = UDFToInteger(value))) (type: boolean)
+              predicate: ((value like '%9%') and (UDFToDouble(key) = UDFToDouble(UDFToInteger(value)))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

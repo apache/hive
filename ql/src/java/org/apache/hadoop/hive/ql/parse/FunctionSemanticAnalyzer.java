@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -189,8 +187,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (resources != null) {
       for (ResourceUri resource : resources) {
         String uriPath = resource.getUri();
-        outputs.add(new WriteEntity(new Path(uriPath),
-            FileUtils.isLocalFile(conf, uriPath)));
+        outputs.add(toWriteEntity(uriPath));
       }
     }
   }

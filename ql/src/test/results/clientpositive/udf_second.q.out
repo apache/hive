@@ -34,7 +34,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (key = 86) (type: boolean)
+            predicate: (UDFToDouble(key) = 86.0) (type: boolean)
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: 15 (type: int), 15 (type: int), null (type: void)

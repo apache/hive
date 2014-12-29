@@ -92,7 +92,7 @@ public class MemoryTokenStore implements DelegationTokenStore {
     DelegationTokenInformation token) {
     DelegationTokenInformation tokenInfo = tokens.putIfAbsent(tokenIdentifier, token);
     if (LOG.isTraceEnabled()) {
-      LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + (tokenInfo == null));
+      LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", added = " + (tokenInfo == null));
     }
     return (tokenInfo == null);
   }

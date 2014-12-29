@@ -73,7 +73,7 @@ public class DBTokenStore implements DelegationTokenStore {
       boolean result = (Boolean)invokeOnRawStore("addToken", new Object[] {identifier, tokenStr},
         String.class, String.class);
       if (LOG.isTraceEnabled()) {
-        LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + result);
+        LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", added = " + result);
       }
       return result;
     } catch (IOException e) {
@@ -106,7 +106,7 @@ public class DBTokenStore implements DelegationTokenStore {
       boolean result = (Boolean)invokeOnRawStore("removeToken", new Object[] {
         TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
       if (LOG.isTraceEnabled()) {
-        LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", addded = " + result);
+        LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", removed = " + result);
       }
       return result;
     } catch (IOException e) {

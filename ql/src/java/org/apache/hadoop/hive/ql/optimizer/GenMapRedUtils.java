@@ -1292,7 +1292,7 @@ public final class GenMapRedUtils {
           dpCtx != null && dpCtx.getNumDPCols() > 0);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Tez Merge File Work");
+        cplan.setName("File Merge");
         ((TezWork) work).add(cplan);
       } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
@@ -1305,7 +1305,7 @@ public final class GenMapRedUtils {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Tez Merge File Work");
+        cplan.setName("File Merge");
         ((TezWork)work).add(cplan);
       } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));

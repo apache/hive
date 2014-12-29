@@ -71,15 +71,22 @@ public class SampleHBaseKeyFactory extends DefaultHBaseKeyFactory {
   private static class DoubleDollarSeparated implements LazyObjectBase {
 
     private Object[] fields;
+    private transient boolean isNull;
 
     @Override
     public void init(ByteArrayRef bytes, int start, int length) {
       fields = new String(bytes.getData(), start, length).split(DELIMITER_PATTERN);
+      isNull = false;
+    }
+
+    @Override
+    public void setNull() {
+      isNull = true;
     }
 
     @Override
     public Object getObject() {
-      return this;
+      return isNull ? null : this;
     }
   }
 

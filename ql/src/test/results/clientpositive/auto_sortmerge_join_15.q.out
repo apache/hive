@@ -62,9 +62,6 @@ STAGE PLANS:
           TableScan
             alias: b
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -77,9 +74,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -116,9 +110,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -178,9 +169,6 @@ STAGE PLANS:
           TableScan
             alias: a
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -193,9 +181,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)
@@ -232,9 +217,6 @@ STAGE PLANS:
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join0 to 1
-              condition expressions:
-                0 
-                1 
               keys:
                 0 key (type: int)
                 1 key (type: int)

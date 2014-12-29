@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -207,6 +209,10 @@ class AvroSerializer {
     case DATE:
       Date date = ((DateObjectInspector)fieldOI).getPrimitiveJavaObject(structFieldData);
       return DateWritable.dateToDays(date);
+    case TIMESTAMP:
+      Timestamp timestamp =
+        ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
+      return timestamp.getTime();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");
     case VOID:
