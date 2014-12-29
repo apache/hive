@@ -67,6 +67,8 @@ public class SparkPlanGenerator {
   private Map<BaseWork, BaseWork> cloneToWork;
   private final Map<BaseWork, SparkTran> workToTranMap;
   private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
+  // a map from each BaseWork to its cloned JobConf
+  private final Map<BaseWork, JobConf> workToJobConf;
 
   public SparkPlanGenerator(
     JavaSparkContext sc,
@@ -82,6 +84,7 @@ public class SparkPlanGenerator {
     this.workToTranMap = new HashMap<BaseWork, SparkTran>();
     this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
     this.sparkReporter = sparkReporter;
+    this.workToJobConf = new HashMap<BaseWork, JobConf>();
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
@@ -211,6 +214,9 @@ public class SparkPlanGenerator {
   }
 
   private JobConf cloneJobConf(BaseWork work) throws Exception {
+    if (workToJobConf.containsKey(work)) {
+      return workToJobConf.get(work);
+    }
     JobConf cloned = new JobConf(jobConf);
     // Make sure we'll use a different plan path from the original one
     HiveConf.setVar(cloned, HiveConf.ConfVars.PLAN, "");
@@ -238,6 +244,8 @@ public class SparkPlanGenerator {
       } else {
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
       }
+      // remember the JobConf cloned for each MapWork, so we won't clone for it again
+      workToJobConf.put(work, cloned);
     } else if (work instanceof ReduceWork) {
       Utilities.setReduceWork(cloned, (ReduceWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (ReduceWork) work);
