@@ -163,9 +163,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -180,9 +177,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col6}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
@@ -202,9 +196,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -214,9 +205,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col6}
-                    1 {value}
                   keys:
                     0 _col1 (type: string)
                     1 value (type: string)
@@ -264,7 +252,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl1
@@ -286,7 +274,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl1
@@ -312,7 +300,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl2
@@ -334,7 +322,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl2
@@ -360,7 +348,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl3
@@ -382,7 +370,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl3
@@ -579,9 +567,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -596,9 +581,6 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col0} {_col1} {_col6}
-                  1 
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
@@ -618,9 +600,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -630,9 +609,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1} {_col6}
-                    1 {value}
                   keys:
                     0 _col1 (type: string)
                     1 value (type: string)
@@ -680,7 +656,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl1
@@ -702,7 +678,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl1
@@ -728,7 +704,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl2
@@ -750,7 +726,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl2
@@ -776,7 +752,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.tbl3
@@ -798,7 +774,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.tbl3
