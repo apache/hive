@@ -80,11 +80,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Left Outer Join1 to 2
                      Left Outer Join0 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                  3 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -173,11 +173,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Left Outer Join1 to 2
                      Right Outer Join0 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                  3 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -266,11 +266,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Right Outer Join1 to 2
                      Left Outer Join0 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                  3 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -359,11 +359,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Right Outer Join1 to 2
                      Right Outer Join0 to 3
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
-                  3 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
+                  3 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -454,10 +454,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Left Outer Join0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -471,9 +471,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -562,10 +562,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Right Outer Join0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -579,9 +579,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -670,10 +670,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Outer Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -687,9 +687,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -786,9 +786,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -802,9 +802,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -818,9 +818,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col0 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -915,9 +915,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -931,9 +931,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -947,9 +947,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col0 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -1044,9 +1044,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -1060,9 +1060,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -1076,9 +1076,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col0 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -1173,9 +1173,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -1189,9 +1189,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -1205,9 +1205,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0} {VALUE._col4} {VALUE._col5} {VALUE._col9} {VALUE._col10}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col0 (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -1303,9 +1303,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
@@ -1320,10 +1320,10 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join0 to 1
                      Left Outer Join1 to 2
-                condition expressions:
-                  0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 {KEY.reducesinkkey0} {VALUE._col0}
+                keys:
+                  0 _col6 (type: string)
+                  1 key (type: string)
+                  2 key (type: string)
                 outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11, _col15, _col16
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator

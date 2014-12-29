@@ -20,10 +20,6 @@ STAGE PLANS:
                   alias: src1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Spark HashTable Sink Operator
-                    condition expressions:
-                      0 {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     filter predicates:
                       0 {(key < 10)}
                       1 
@@ -43,10 +39,6 @@ STAGE PLANS:
                     predicate: (key > 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                        2 {key} {value}
                       filter predicates:
                         0 {(key < 10)}
                         1 
@@ -73,10 +65,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Right Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     filter predicates:
                       0 {(key < 10)}
                       1 

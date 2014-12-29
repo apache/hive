@@ -51,9 +51,6 @@ STAGE PLANS:
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col5}
-                        1 {key}
                       keys:
                         0 (_col0 + _col5) (type: double)
                         1 UDFToDouble(key) (type: double)
@@ -99,9 +96,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col5
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -110,9 +107,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col5}
-                      1 {key}
                     keys:
                       0 (_col0 + _col5) (type: double)
                       1 UDFToDouble(key) (type: double)
@@ -197,9 +191,6 @@ STAGE PLANS:
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col5}
-                        1 {key}
                       keys:
                         0 (_col0 + _col5) (type: double)
                         1 UDFToDouble(key) (type: double)
@@ -214,9 +205,6 @@ STAGE PLANS:
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0} {_col5} {_col10}
-                        1 
                       keys:
                         0 (_col0 + _col5) (type: double)
                         1 UDFToDouble(key) (type: double)
@@ -262,9 +250,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {KEY.reducesinkkey0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col0, _col5
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -273,9 +261,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col5}
-                      1 {key}
                     keys:
                       0 (_col0 + _col5) (type: double)
                       1 UDFToDouble(key) (type: double)
@@ -289,9 +274,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0} {_col5} {_col10}
-                          1 
                         keys:
                           0 (_col0 + _col5) (type: double)
                           1 UDFToDouble(key) (type: double)

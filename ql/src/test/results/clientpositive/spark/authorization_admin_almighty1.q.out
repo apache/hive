@@ -42,10 +42,10 @@ PREHOOK: query: show grant user user1 on table t1
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user1 on table t1
 POSTHOOK: type: SHOW_GRANT
-default	t1			user1	USER	DELETE	false	1418683689000	hive_admin_user
-default	t1			user1	USER	INSERT	false	1418683689000	hive_admin_user
-default	t1			user1	USER	SELECT	false	1418683689000	hive_admin_user
-default	t1			user1	USER	UPDATE	false	1418683689000	hive_admin_user
+default	t1			user1	USER	DELETE	false	1419786901000	hive_admin_user
+default	t1			user1	USER	INSERT	false	1419786901000	hive_admin_user
+default	t1			user1	USER	SELECT	false	1419786901000	hive_admin_user
+default	t1			user1	USER	UPDATE	false	1419786901000	hive_admin_user
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
