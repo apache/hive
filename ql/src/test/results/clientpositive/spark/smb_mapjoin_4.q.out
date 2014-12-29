@@ -77,10 +77,6 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                            Inner Join 1 to 2
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {key} {value}
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -141,10 +137,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Inner Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -205,10 +197,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Left Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -274,10 +262,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Right Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -344,10 +328,6 @@ STAGE PLANS:
                     condition map:
                          Left Outer Join0 to 1
                          Outer Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -419,10 +399,6 @@ STAGE PLANS:
                     condition map:
                          Right Outer Join0 to 1
                          Inner Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -485,10 +461,6 @@ STAGE PLANS:
                     condition map:
                          Right Outer Join0 to 1
                          Left Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -553,10 +525,6 @@ STAGE PLANS:
                     condition map:
                          Right Outer Join0 to 1
                          Right Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -623,10 +591,6 @@ STAGE PLANS:
                     condition map:
                          Right Outer Join0 to 1
                          Outer Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -695,10 +659,6 @@ STAGE PLANS:
                     condition map:
                          Outer Join 0 to 1
                          Inner Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -761,10 +721,6 @@ STAGE PLANS:
                     condition map:
                          Outer Join 0 to 1
                          Left Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -834,10 +790,6 @@ STAGE PLANS:
                     condition map:
                          Outer Join 0 to 1
                          Right Outer Join1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -904,10 +856,6 @@ STAGE PLANS:
                     condition map:
                          Outer Join 0 to 1
                          Outer Join 1 to 2
-                    condition expressions:
-                      0 {key} {value}
-                      1 {key} {value}
-                      2 {key} {value}
                     keys:
                       0 key (type: int)
                       1 key (type: int)

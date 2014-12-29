@@ -92,9 +92,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -118,9 +115,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -275,9 +269,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -301,9 +292,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -458,9 +446,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -484,9 +469,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -576,9 +558,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -602,9 +581,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -700,9 +676,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -726,9 +699,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -901,9 +871,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -927,9 +894,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -1112,9 +1076,6 @@ STAGE PLANS:
                     predicate: (key is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)
@@ -1138,9 +1099,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {key2} {value}
-                        1 {value}
                       keys:
                         0 key (type: int), key2 (type: int)
                         1 key (type: int), key2 (type: int)

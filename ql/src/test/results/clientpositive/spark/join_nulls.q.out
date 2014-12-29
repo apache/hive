@@ -18,6 +18,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE my
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@myinput1
+Warning: Shuffle Join JOIN[4][tables = [a, b]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -35,6 +36,7 @@ POSTHOOK: Input: default@myinput1
 NULL	35	100	100
 NULL	35	48	NULL
 NULL	35	NULL	35
+Warning: Shuffle Join JOIN[4][tables = [a, b]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -52,6 +54,7 @@ POSTHOOK: Input: default@myinput1
 NULL	35	100	100
 NULL	35	48	NULL
 NULL	35	NULL	35
+Warning: Shuffle Join JOIN[4][tables = [a, b]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -278,6 +281,7 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	35	NULL	35	NULL	35
 NULL	NULL	NULL	NULL	48	NULL
+Warning: Map Join MAPJOIN[7][bigTable=b] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

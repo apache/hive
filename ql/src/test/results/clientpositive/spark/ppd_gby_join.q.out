@@ -76,9 +76,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0}
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 69 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -126,6 +126,157 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+309	4
+378	1
+333	4
+302	1
+306	1
+392	1
+242	4
+238	4
+384	9
+315	1
+30	1
+395	4
+229	4
+292	1
+325	4
+216	4
+233	4
+237	4
+217	4
+362	1
+239	4
+200	4
+201	1
+285	1
+399	4
+222	1
+265	4
+336	1
+260	1
+256	4
+360	1
+244	1
+252	1
+281	4
+339	1
+283	1
+368	1
+255	4
+266	1
+262	1
+365	1
+317	4
+396	9
+307	4
+230	25
+286	1
+24	4
+335	1
+373	1
+316	9
+353	4
+367	4
+382	4
+257	1
+394	1
+366	1
+248	1
+288	4
+235	1
+273	9
+221	4
+342	4
+226	1
+397	4
+33	1
+224	4
+389	1
+296	1
+34	1
+386	1
+28	1
+272	4
+214	1
+348	25
+369	9
+202	1
+37	4
+289	1
+27	1
+223	4
+310	1
+318	9
+228	1
+379	1
+278	4
+280	4
+287	1
+393	1
+341	1
+305	1
+344	4
+274	1
+209	4
+364	1
+219	4
+35	9
+323	1
+203	4
+213	4
+282	4
+218	1
+247	1
+207	4
+338	1
+205	4
+311	9
+331	4
+351	1
+284	1
+208	9
+26	4
+275	1
+322	4
+291	1
+375	1
+308	1
+345	1
+298	9
+377	1
+277	16
+356	1
+327	9
+332	1
+321	4
+263	1
+249	1
+241	1
+258	1
+374	1
 PREHOOK: query: EXPLAIN
 SELECT src1.c1, count(1) 
 FROM
@@ -154,8 +305,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Reducer 2 (GROUP, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -198,9 +349,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0}
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 19 Data size: 210 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -248,3 +399,154 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+255	4
+213	4
+309	4
+282	4
+333	4
+378	1
+306	1
+396	9
+30	1
+384	9
+315	1
+207	4
+348	25
+24	4
+369	9
+351	1
+27	1
+318	9
+216	4
+228	1
+291	1
+237	4
+252	1
+375	1
+345	1
+366	1
+201	1
+285	1
+399	4
+222	1
+393	1
+336	1
+288	4
+360	1
+321	4
+327	9
+273	9
+219	4
+249	1
+342	4
+339	1
+33	1
+258	1
+28	1
+262	1
+34	1
+307	4
+238	4
+247	1
+286	1
+205	4
+214	1
+229	4
+331	4
+292	1
+202	1
+373	1
+37	4
+289	1
+208	9
+316	9
+310	1
+223	4
+367	4
+322	4
+382	4
+394	1
+217	4
+325	4
+298	9
+379	1
+277	16
+280	4
+265	4
+256	4
+244	1
+235	1
+274	1
+226	1
+364	1
+241	1
+283	1
+397	4
+389	1
+296	1
+224	4
+272	4
+302	1
+386	1
+392	1
+242	4
+395	4
+233	4
+278	4
+362	1
+239	4
+200	4
+260	1
+287	1
+341	1
+305	1
+344	4
+209	4
+281	4
+35	9
+323	1
+368	1
+203	4
+266	1
+365	1
+317	4
+230	25
+218	1
+338	1
+311	9
+335	1
+284	1
+353	4
+26	4
+275	1
+257	1
+356	1
+308	1
+377	1
+332	1
+248	1
+263	1
+221	4
+374	1

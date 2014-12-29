@@ -76,9 +76,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -177,9 +174,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -328,9 +322,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -359,9 +350,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -386,30 +374,30 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {VALUE._col0}
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -421,12 +409,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
@@ -523,9 +511,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -637,9 +622,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 key (type: int)
@@ -775,9 +757,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -903,9 +882,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -1032,9 +1008,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1129,9 +1105,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 key (type: int)
@@ -1236,10 +1209,6 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                              Inner Join 0 to 2
-                        condition expressions:
-                          0 
-                          1 
-                          2 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -1360,9 +1329,6 @@ STAGE PLANS:
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 key (type: int)
@@ -1489,9 +1455,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -1692,9 +1655,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)

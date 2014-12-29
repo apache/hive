@@ -52,9 +52,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -93,9 +90,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -207,9 +201,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -245,9 +236,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Left Outer Join0 to 1
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -358,9 +346,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -397,9 +382,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Right Outer Join0 to 1
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -538,10 +520,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -555,10 +533,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -599,10 +573,6 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                        Inner Join 0 to 2
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -743,10 +713,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -760,10 +726,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -801,10 +763,6 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                        Left Outer Join0 to 2
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -945,10 +903,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -962,10 +916,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1003,10 +953,6 @@ STAGE PLANS:
                   condition map:
                        Left Outer Join0 to 1
                        Left Outer Join0 to 2
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1146,10 +1092,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1163,10 +1105,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1205,10 +1143,6 @@ STAGE PLANS:
                   condition map:
                        Left Outer Join0 to 1
                        Right Outer Join0 to 2
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1348,10 +1282,6 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1365,10 +1295,6 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Spark HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -1407,10 +1333,6 @@ STAGE PLANS:
                   condition map:
                        Right Outer Join0 to 1
                        Right Outer Join0 to 2
-                  condition expressions:
-                    0 
-                    1 {_col0} {_col1}
-                    2 
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)

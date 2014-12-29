@@ -139,10 +139,11 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
    */
   private boolean canReuseSession(SparkSession existingSession, HiveConf conf) throws HiveException {
     try {
-      UserGroupInformation newUgi = Utils.getUGIForConf(conf);
+      UserGroupInformation newUgi = Utils.getUGI();
       String newUserName = newUgi.getShortUserName();
 
-      UserGroupInformation ugiInSession = Utils.getUGIForConf(existingSession.getConf());
+      // TODOD this we need to store the session username somewhere else as getUGIForConf never used the conf
+      UserGroupInformation ugiInSession = Utils.getUGI();
       String userNameInSession = ugiInSession.getShortUserName();
 
       return newUserName.equals(userNameInSession);

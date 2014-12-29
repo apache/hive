@@ -41,8 +41,7 @@ INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHER
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-4 depends on stages: Stage-8
+  Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
@@ -52,30 +51,10 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-8
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-            Local Work:
-              Map Reduce Local Work
-
   Stage: Stage-4
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -86,80 +65,94 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: (_col0 < 100) (type: boolean)
-                        Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi1
-                      Filter Operator
-                        predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
-                        Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi2
-                      Filter Operator
-                        predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
-                        Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi3
-                      Filter Operator
-                        predicate: (_col0 >= 300) (type: boolean)
-                        Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Local Work:
-              Map Reduce Local Work
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 100) (type: boolean)
+                  Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi1
+                Filter Operator
+                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi2
+                Filter Operator
+                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi3
+                Filter Operator
+                  predicate: (_col0 >= 300) (type: boolean)
+                  Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -828,468 +821,468 @@ POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 298	2008-04-08	12
 298	2008-04-08	12
 298	2008-04-08	12
-val_311
-val_311
-val_311
-val_409
-val_409
-val_409
-val_484
-val_401
-val_401
-val_401
-val_401
-val_401
-val_369
-val_369
-val_369
-val_406
-val_406
-val_406
-val_406
-val_429
-val_429
-val_374
-val_469
-val_469
-val_469
-val_469
-val_469
-val_495
-val_327
-val_327
-val_327
-val_403
-val_403
-val_403
-val_417
-val_417
-val_417
-val_430
-val_430
-val_430
-val_338
-val_446
-val_459
-val_459
-val_394
-val_482
-val_413
-val_413
-val_494
-val_466
-val_466
-val_466
-val_399
-val_399
-val_396
-val_396
-val_396
-val_417
-val_417
-val_417
-val_489
-val_489
-val_489
-val_489
-val_377
-val_397
-val_397
-val_309
-val_309
-val_365
-val_439
-val_439
-val_342
-val_342
-val_367
-val_367
-val_325
-val_325
-val_475
-val_339
-val_455
-val_311
-val_311
-val_311
-val_316
-val_316
-val_316
 val_302
-val_438
-val_438
-val_438
-val_345
-val_489
-val_489
-val_489
-val_489
-val_378
-val_427
-val_356
-val_399
-val_399
-val_382
-val_382
-val_498
-val_498
-val_498
-val_386
-val_437
-val_469
-val_469
-val_469
-val_469
-val_469
-val_459
-val_459
-val_430
-val_430
-val_430
-val_318
-val_318
-val_318
-val_332
-val_311
-val_311
-val_311
-val_333
-val_333
-val_404
-val_404
-val_384
-val_384
-val_384
-val_489
-val_489
-val_489
-val_489
-val_353
-val_353
-val_373
-val_348
-val_348
-val_348
-val_348
-val_348
-val_466
-val_466
-val_466
-val_411
-val_348
-val_348
-val_348
-val_348
-val_348
-val_463
-val_463
-val_431
-val_431
-val_431
-val_496
-val_322
-val_322
-val_468
-val_468
-val_468
-val_468
-val_393
-val_454
-val_454
-val_454
-val_418
-val_327
-val_327
-val_327
-val_404
-val_404
-val_436
-val_469
-val_469
-val_469
-val_469
-val_469
-val_468
-val_468
-val_468
-val_468
-val_308
-val_481
-val_457
-val_318
-val_318
-val_318
-val_318
-val_318
-val_318
-val_409
-val_409
-val_409
-val_470
-val_369
-val_369
-val_369
-val_316
-val_316
-val_316
-val_413
-val_413
-val_490
-val_364
-val_395
-val_395
-val_419
-val_307
-val_307
-val_435
-val_306
-val_309
-val_309
-val_389
-val_327
-val_327
-val_327
-val_369
-val_369
-val_369
-val_392
-val_331
-val_331
-val_401
-val_401
-val_401
-val_401
-val_401
-val_452
-val_497
-val_402
-val_396
-val_396
-val_396
-val_317
-val_317
-val_395
-val_395
-val_336
-val_472
-val_322
-val_322
-val_498
-val_498
-val_498
-val_321
-val_321
-val_430
-val_430
-val_430
-val_489
-val_489
-val_489
-val_489
-val_458
-val_458
-val_492
-val_492
-val_449
-val_453
-val_468
-val_468
-val_468
-val_468
-val_342
-val_342
-val_368
-val_367
-val_367
-val_344
-val_344
-val_485
-val_487
-val_480
-val_480
-val_480
-val_401
-val_401
-val_401
-val_401
-val_401
-val_438
-val_438
-val_438
-val_467
-val_432
-val_316
-val_316
-val_316
-val_469
-val_469
-val_469
-val_469
-val_469
-val_463
-val_463
-val_331
-val_331
-val_321
-val_321
-val_335
-val_466
-val_466
-val_466
-val_366
-val_403
-val_403
-val_403
-val_483
-val_406
-val_406
-val_406
-val_406
-val_409
-val_409
-val_409
-val_406
-val_406
-val_406
-val_406
-val_401
-val_401
-val_401
-val_401
-val_401
-val_348
-val_348
-val_348
-val_348
-val_348
-val_424
-val_424
-val_396
-val_396
-val_396
-val_431
-val_431
-val_431
-val_454
-val_454
-val_454
-val_478
-val_478
-val_431
-val_431
-val_431
-val_424
-val_424
-val_382
-val_382
-val_397
-val_397
-val_480
-val_480
-val_480
-val_351
-val_438
-val_438
-val_438
-val_414
-val_414
-val_491
-val_439
-val_439
-val_360
-val_479
 val_305
-val_417
-val_417
-val_417
-val_444
-val_429
-val_429
-val_443
+val_306
+val_307
+val_307
+val_307
+val_307
+val_308
+val_309
+val_309
+val_309
+val_309
+val_310
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_315
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_317
+val_317
+val_317
+val_317
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_321
+val_321
+val_321
+val_321
+val_322
+val_322
+val_322
+val_322
 val_323
 val_325
 val_325
-val_478
-val_478
-val_468
-val_468
-val_468
-val_468
-val_310
-val_317
-val_317
+val_325
+val_325
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_331
+val_331
+val_331
+val_331
+val_332
 val_333
 val_333
-val_493
-val_460
-val_480
-val_480
-val_480
-val_353
-val_353
-val_462
-val_462
-val_406
-val_406
-val_406
-val_406
-val_454
-val_454
-val_454
-val_375
-val_401
-val_401
-val_401
-val_401
-val_401
-val_421
-val_407
-val_384
-val_384
-val_384
-val_384
-val_384
-val_384
-val_379
-val_462
-val_462
-val_492
-val_492
+val_333
+val_333
+val_335
+val_336
+val_338
+val_339
 val_341
-val_498
-val_498
-val_498
-val_458
-val_458
+val_342
+val_342
+val_342
+val_342
+val_344
+val_344
+val_344
+val_344
+val_345
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_351
+val_353
+val_353
+val_353
+val_353
+val_356
+val_360
 val_362
-val_348
-val_348
-val_348
-val_348
-val_348
-val_344
-val_344
-val_469
-val_469
-val_469
-val_469
-val_469
-val_315
-val_448
-val_348
-val_348
-val_348
-val_348
-val_348
-val_307
-val_307
-val_414
-val_414
-val_477
-val_403
-val_403
-val_403
+val_364
+val_365
+val_366
+val_367
+val_367
+val_367
+val_367
+val_368
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_373
+val_374
+val_375
+val_377
+val_378
+val_379
+val_382
+val_382
+val_382
+val_382
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_386
+val_389
+val_392
+val_393
+val_394
+val_395
+val_395
+val_395
+val_395
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_397
+val_397
+val_397
+val_397
+val_399
+val_399
+val_399
+val_399
 val_400
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_402
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_404
+val_404
+val_404
+val_404
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_407
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_411
+val_413
+val_413
+val_413
+val_413
+val_414
+val_414
+val_414
+val_414
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_418
+val_419
+val_421
+val_424
+val_424
+val_424
+val_424
+val_427
+val_429
+val_429
+val_429
+val_429
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_432
+val_435
+val_436
+val_437
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_439
+val_439
+val_439
+val_439
+val_443
+val_444
+val_446
+val_448
+val_449
+val_452
+val_453
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_455
+val_457
+val_458
+val_458
+val_458
+val_458
+val_459
+val_459
+val_459
+val_459
+val_460
+val_462
+val_462
+val_462
+val_462
+val_463
+val_463
+val_463
+val_463
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_467
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_470
+val_472
+val_475
+val_477
+val_478
+val_478
+val_478
+val_478
+val_479
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_481
+val_482
+val_483
+val_484
+val_485
+val_487
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_490
+val_491
+val_492
+val_492
+val_492
+val_492
+val_493
+val_494
+val_495
+val_496
+val_497
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
 PREHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -1305,8 +1298,7 @@ INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHER
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-4 depends on stages: Stage-8
+  Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
@@ -1316,30 +1308,10 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-8
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-            Local Work:
-              Map Reduce Local Work
-
   Stage: Stage-4
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1350,80 +1322,94 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: (_col0 < 100) (type: boolean)
-                        Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi1
-                      Filter Operator
-                        predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
-                        Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi2
-                      Filter Operator
-                        predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
-                        Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToInteger(_col0) (type: int)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.mi3
-                      Filter Operator
-                        predicate: (_col0 >= 300) (type: boolean)
-                        Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col1 (type: string)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Local Work:
-              Map Reduce Local Work
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 < 100) (type: boolean)
+                  Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi1
+                Filter Operator
+                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi2
+                Filter Operator
+                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.mi3
+                Filter Operator
+                  predicate: (_col0 >= 300) (type: boolean)
+                  Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col1 (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 91 Data size: 966 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -2092,465 +2078,465 @@ POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 298	2008-04-08	12
 298	2008-04-08	12
 298	2008-04-08	12
-val_311
-val_311
-val_311
-val_409
-val_409
-val_409
-val_484
-val_401
-val_401
-val_401
-val_401
-val_401
-val_369
-val_369
-val_369
-val_406
-val_406
-val_406
-val_406
-val_429
-val_429
-val_374
-val_469
-val_469
-val_469
-val_469
-val_469
-val_495
-val_327
-val_327
-val_327
-val_403
-val_403
-val_403
-val_417
-val_417
-val_417
-val_430
-val_430
-val_430
-val_338
-val_446
-val_459
-val_459
-val_394
-val_482
-val_413
-val_413
-val_494
-val_466
-val_466
-val_466
-val_399
-val_399
-val_396
-val_396
-val_396
-val_417
-val_417
-val_417
-val_489
-val_489
-val_489
-val_489
-val_377
-val_397
-val_397
-val_309
-val_309
-val_365
-val_439
-val_439
-val_342
-val_342
-val_367
-val_367
-val_325
-val_325
-val_475
-val_339
-val_455
-val_311
-val_311
-val_311
-val_316
-val_316
-val_316
-val_302
-val_438
-val_438
-val_438
-val_345
-val_489
-val_489
-val_489
-val_489
-val_378
-val_427
-val_356
-val_399
-val_399
-val_382
-val_382
-val_498
-val_498
-val_498
-val_386
-val_437
-val_469
-val_469
-val_469
-val_469
-val_469
-val_459
-val_459
-val_430
-val_430
-val_430
-val_318
-val_318
-val_318
-val_332
-val_311
-val_311
-val_311
-val_333
-val_333
-val_404
-val_404
-val_384
-val_384
-val_384
-val_489
-val_489
-val_489
-val_489
-val_353
-val_353
-val_373
-val_348
-val_348
-val_348
-val_348
-val_348
-val_466
-val_466
-val_466
-val_411
-val_348
-val_348
-val_348
-val_348
-val_348
-val_463
-val_463
-val_431
-val_431
-val_431
-val_496
-val_322
-val_322
-val_468
-val_468
-val_468
-val_468
-val_393
-val_454
-val_454
-val_454
-val_418
-val_327
-val_327
-val_327
-val_404
-val_404
-val_436
-val_469
-val_469
-val_469
-val_469
-val_469
-val_468
-val_468
-val_468
-val_468
-val_308
-val_481
-val_457
-val_318
-val_318
-val_318
-val_318
-val_318
-val_318
-val_409
-val_409
-val_409
-val_470
-val_369
-val_369
-val_369
-val_316
-val_316
-val_316
-val_413
-val_413
-val_490
-val_364
-val_395
-val_395
-val_419
-val_307
-val_307
-val_435
 val_306
 val_309
 val_309
-val_389
-val_327
-val_327
-val_327
-val_369
-val_369
-val_369
-val_392
-val_331
-val_331
-val_401
-val_401
-val_401
-val_401
-val_401
-val_452
-val_497
-val_402
-val_396
-val_396
-val_396
-val_317
-val_317
-val_395
-val_395
-val_336
-val_472
-val_322
-val_322
-val_498
-val_498
-val_498
-val_321
-val_321
-val_430
-val_430
-val_430
-val_489
-val_489
-val_489
-val_489
-val_458
-val_458
-val_492
-val_492
-val_449
-val_453
-val_468
-val_468
-val_468
-val_468
-val_342
-val_342
-val_368
-val_367
-val_367
-val_344
-val_344
-val_485
-val_487
-val_480
-val_480
-val_480
-val_401
-val_401
-val_401
-val_401
-val_401
-val_438
-val_438
-val_438
-val_467
-val_432
-val_316
-val_316
-val_316
-val_469
-val_469
-val_469
-val_469
-val_469
-val_463
-val_463
-val_331
-val_331
-val_321
-val_321
-val_335
-val_466
-val_466
-val_466
-val_366
-val_403
-val_403
-val_403
-val_483
-val_406
-val_406
-val_406
-val_406
-val_409
-val_409
-val_409
-val_406
-val_406
-val_406
-val_406
-val_401
-val_401
-val_401
-val_401
-val_401
-val_348
-val_348
-val_348
-val_348
-val_348
-val_424
-val_424
-val_396
-val_396
-val_396
-val_431
-val_431
-val_431
-val_454
-val_454
-val_454
-val_478
-val_478
-val_431
-val_431
-val_431
-val_424
-val_424
-val_382
-val_382
-val_397
-val_397
-val_480
-val_480
-val_480
-val_351
-val_438
-val_438
-val_438
-val_414
-val_414
-val_491
-val_439
-val_439
-val_360
-val_479
-val_305
-val_417
-val_417
-val_417
-val_444
-val_429
-val_429
-val_443
-val_323
-val_325
-val_325
-val_478
-val_478
-val_468
-val_468
-val_468
-val_468
-val_310
-val_317
-val_317
-val_333
-val_333
-val_493
-val_460
-val_480
-val_480
-val_480
-val_353
-val_353
-val_462
-val_462
-val_406
-val_406
-val_406
-val_406
-val_454
-val_454
-val_454
-val_375
-val_401
-val_401
-val_401
-val_401
-val_401
-val_421
-val_407
-val_384
-val_384
-val_384
-val_384
-val_384
-val_384
-val_379
-val_462
-val_462
-val_492
-val_492
-val_341
-val_498
-val_498
-val_498
-val_458
-val_458
-val_362
-val_348
-val_348
-val_348
-val_348
-val_348
-val_344
-val_344
-val_469
-val_469
-val_469
-val_469
-val_469
+val_309
+val_309
 val_315
-val_448
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_318
+val_321
+val_321
+val_321
+val_321
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_327
+val_333
+val_333
+val_333
+val_333
+val_336
+val_339
+val_342
+val_342
+val_342
+val_342
+val_345
 val_348
 val_348
 val_348
 val_348
 val_348
-val_307
-val_307
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_348
+val_351
+val_360
+val_366
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_369
+val_375
+val_378
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_384
+val_393
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_396
+val_399
+val_399
+val_399
+val_399
+val_402
+val_411
 val_414
 val_414
+val_414
+val_414
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_417
+val_429
+val_429
+val_429
+val_429
+val_432
+val_435
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_438
+val_444
+val_453
+val_459
+val_459
+val_459
+val_459
+val_462
+val_462
+val_462
+val_462
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
+val_468
 val_477
-val_403
-val_403
-val_403
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_480
+val_483
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_489
+val_492
+val_492
+val_492
+val_492
+val_495
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_498
+val_307
+val_307
+val_307
+val_307
+val_310
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_316
+val_322
+val_322
+val_322
+val_322
+val_325
+val_325
+val_325
+val_325
+val_331
+val_331
+val_331
+val_331
+val_364
+val_367
+val_367
+val_367
+val_367
+val_373
+val_379
+val_382
+val_382
+val_382
+val_382
+val_394
+val_397
+val_397
+val_397
+val_397
 val_400
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_403
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_406
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_409
+val_418
+val_421
+val_424
+val_424
+val_424
+val_424
+val_427
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_430
+val_436
+val_439
+val_439
+val_439
+val_439
+val_448
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_454
+val_457
+val_460
+val_463
+val_463
+val_463
+val_463
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_466
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_469
+val_472
+val_475
+val_478
+val_478
+val_478
+val_478
+val_481
+val_484
+val_487
+val_490
+val_493
+val_496
+val_302
+val_305
+val_308
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_311
+val_317
+val_317
+val_317
+val_317
+val_323
+val_332
+val_335
+val_338
+val_341
+val_344
+val_344
+val_344
+val_344
+val_353
+val_353
+val_353
+val_353
+val_356
+val_362
+val_365
+val_368
+val_374
+val_377
+val_386
+val_389
+val_392
+val_395
+val_395
+val_395
+val_395
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_401
+val_404
+val_404
+val_404
+val_404
+val_407
+val_413
+val_413
+val_413
+val_413
+val_419
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_431
+val_437
+val_443
+val_446
+val_449
+val_452
+val_455
+val_458
+val_458
+val_458
+val_458
+val_467
+val_470
+val_479
+val_482
+val_485
+val_491
+val_494
+val_497

@@ -80,6 +80,7 @@ PREHOOK: query: FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: FROM (
@@ -90,6 +91,7 @@ POSTHOOK: query: FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	val_0
@@ -258,6 +260,7 @@ PREHOOK: query: FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: FROM (
@@ -268,6 +271,7 @@ POSTHOOK: query: FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	val_0

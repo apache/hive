@@ -71,10 +71,6 @@ STAGE PLANS:
                     predicate: ((key < 300) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {key} {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}
@@ -94,10 +90,6 @@ STAGE PLANS:
                     predicate: (key < 300) (type: boolean)
                     Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}
@@ -127,10 +119,6 @@ STAGE PLANS:
                       condition map:
                            Right Outer Join0 to 1
                            Inner Join 1 to 2
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}
@@ -244,10 +232,6 @@ STAGE PLANS:
                     predicate: ((key < 300) and (key < 10)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 {key} {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}
@@ -267,10 +251,6 @@ STAGE PLANS:
                     predicate: (key < 300) (type: boolean)
                     Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}
@@ -300,10 +280,6 @@ STAGE PLANS:
                       condition map:
                            Right Outer Join0 to 1
                            Inner Join 1 to 2
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
-                        2 {key} {value}
                       filter predicates:
                         0 
                         1 {(key > 10)}

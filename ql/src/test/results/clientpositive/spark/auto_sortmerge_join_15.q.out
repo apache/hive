@@ -56,9 +56,6 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Spark HashTable Sink Operator
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -79,9 +76,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Left Outer Join0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -146,9 +140,6 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   Spark HashTable Sink Operator
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -169,9 +160,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Right Outer Join0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 key (type: int)
                       1 key (type: int)

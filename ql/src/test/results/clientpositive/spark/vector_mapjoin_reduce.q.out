@@ -41,9 +41,6 @@ STAGE PLANS:
                     predicate: ((l_partkey is not null and l_orderkey is not null) and (l_linenumber = 1)) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1439 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 {l_orderkey} {l_suppkey}
                       keys:
                         0 _col0 (type: int)
                         1 l_partkey (type: int)
@@ -67,9 +64,6 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
-                          condition expressions:
-                            0 {_col0} {_col3}
-                            1 
                           keys:
                             0 _col1 (type: int)
                             1 _col0 (type: int)
@@ -108,40 +102,34 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0}
-                    1 {l_orderkey} {l_suppkey}
                   keys:
                     0 _col0 (type: int)
                     1 l_partkey (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   input vertices:
                     1 Map 3
-                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Left Semi Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col3}
-                      1 
                     keys:
                       0 _col1 (type: int)
                       1 _col0 (type: int)
                     outputColumnNames: _col0, _col3
                     input vertices:
                       1 Map 4
-                    Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -211,9 +199,6 @@ STAGE PLANS:
                     predicate: (((l_partkey is not null and l_orderkey is not null) and l_linenumber is not null) and (l_linenumber = 1)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 {l_orderkey} {l_suppkey}
                       keys:
                         0 _col0 (type: int)
                         1 l_partkey (type: int)
@@ -237,9 +222,6 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6 Data size: 719 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
-                          condition expressions:
-                            0 {_col0} {_col3}
-                            1 
                           keys:
                             0 _col1 (type: int), 1 (type: int)
                             1 _col0 (type: int), _col1 (type: int)
@@ -278,40 +260,34 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0}
-                    1 {l_orderkey} {l_suppkey}
                   keys:
                     0 _col0 (type: int)
                     1 l_partkey (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   input vertices:
                     1 Map 3
-                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 3298 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Left Semi Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col3}
-                      1 
                     keys:
                       0 _col1 (type: int), 1 (type: int)
                       1 _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col3
                     input vertices:
                       1 Map 4
-                    Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 29 Data size: 3627 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

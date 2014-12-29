@@ -131,9 +131,6 @@ STAGE PLANS:
                     predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {value}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -148,9 +145,6 @@ STAGE PLANS:
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 {key}
                       keys:
                         0 _col1 (type: string)
                         1 value (type: string)
@@ -172,9 +166,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
                       keys:
                         0 key (type: int)
                         1 key (type: int)
@@ -185,9 +176,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {key}
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
@@ -264,9 +252,6 @@ STAGE PLANS:
                     predicate: UDFToDouble(key) is not null (type: boolean)
                     Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
                       keys:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(key) (type: double)
@@ -288,9 +273,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value}
                       keys:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(key) (type: double)
@@ -347,9 +329,6 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
-                        condition expressions:
-                          0 {_col0}
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -375,9 +354,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -434,9 +410,6 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
-                        condition expressions:
-                          0 {_col0}
-                          1 
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -462,9 +435,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -521,9 +491,6 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
-                        condition expressions:
-                          0 
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -549,9 +516,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Right Outer Join0 to 1
-                        condition expressions:
-                          0 {_col0}
-                          1 {_col0}
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
@@ -591,28 +555,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-2
     Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 key (type: int)
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 3)
 #### A masked pattern was here ####
@@ -643,31 +585,47 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0}
-                    1 {key}
+                Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
                     1 key (type: int)
-                  outputColumnNames: _col0, _col1
-                  input vertices:
-                    1 Map 3
-                  Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col1
+                      input vertices:
+                        0 Reducer 2
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator
@@ -686,28 +644,6 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
-                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 {value}
-                      keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(key) (type: double)
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 3)
@@ -739,31 +675,47 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0}
-                    1 {value}
+                Statistics: Num rows: 60 Data size: 636 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
                   keys:
                     0 UDFToDouble(_col0) (type: double)
                     1 UDFToDouble(key) (type: double)
-                  outputColumnNames: _col0, _col2
-                  input vertices:
-                    1 Map 3
-                  Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col2 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 242 Data size: 2566 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 121 Data size: 1283 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 UDFToDouble(_col0) (type: double)
+                        1 UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col2
+                      input vertices:
+                        0 Reducer 2
                       Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Select Operator
+                        expressions: _col0 (type: string), _col2 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 133 Data size: 1411 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
 
   Stage: Stage-0
     Fetch Operator

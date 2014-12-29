@@ -69,9 +69,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col6
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -84,9 +84,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0} {KEY.reducesinkkey0} {VALUE._col1}
+                keys:
+                  0 _col6 (type: string)
+                  1 value (type: string)
                 outputColumnNames: _col10, _col11, _col12
                 Statistics: Num rows: 302 Data size: 3213 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -133,11 +133,11 @@ POSTHOOK: Input: default@src
 0	238	val_238
 PREHOOK: query: explain
 select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -147,7 +147,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -163,7 +164,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -182,22 +183,32 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col1}
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
                 outputColumnNames: _col7
                 Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col7 (type: bigint)
                   outputColumnNames: _col0
                   Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
+                  Reduce Output Operator
+                    key expressions: _col0 (type: bigint)
+                    sort order: +
                     Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -206,12 +217,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select t2.BLOCK__OFFSET__INSIDE__FILE
-from src t1 join src t2 on t1.key = t2.key where t1.key < 100
+from src t1 join src t2 on t1.key = t2.key where t1.key < 100 order by t2.BLOCK__OFFSET__INSIDE__FILE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

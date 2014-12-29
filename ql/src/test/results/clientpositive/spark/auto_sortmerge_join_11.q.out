@@ -158,9 +158,6 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -182,7 +179,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -204,7 +201,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -239,9 +236,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -277,7 +271,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -299,7 +293,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -324,7 +318,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -346,7 +340,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -484,9 +478,6 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -513,7 +504,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -535,7 +526,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -570,9 +561,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -614,7 +602,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -636,7 +624,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -661,7 +649,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -683,7 +671,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -820,9 +808,6 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -849,7 +834,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -871,7 +856,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -906,9 +891,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
@@ -950,7 +932,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -972,7 +954,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -997,7 +979,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -1019,7 +1001,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -1171,15 +1153,11 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 
-                        2 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
-                      Position of Big Table: 1
+                      Position of Big Table: 2
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -1202,7 +1180,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -1224,7 +1202,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -1239,10 +1217,10 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: b
                   Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1250,15 +1228,11 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 
-                        1 
-                        2 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
-                      Position of Big Table: 1
+                      Position of Big Table: 2
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -1281,7 +1255,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -1303,7 +1277,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -1328,7 +1302,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -1350,7 +1324,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -1364,19 +1338,19 @@ STAGE PLANS:
                     name: default.bucket_big
                   name: default.bucket_big
             Truncated Path -> Alias:
-              /bucket_big/ds=2008-04-08 [c]
-              /bucket_big/ds=2008-04-09 [c]
+              /bucket_big/ds=2008-04-08 [b]
+              /bucket_big/ds=2008-04-09 [b]
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP, 1)
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: c
                   Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1387,18 +1361,14 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                            Inner Join 0 to 2
-                      condition expressions:
-                        0 
-                        1 
-                        2 
                       keys:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
                       input vertices:
                         0 Map 1
-                        2 Map 4
-                      Position of Big Table: 1
+                        1 Map 2
+                      Position of Big Table: 2
                       Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
                       BucketMapJoin: true
                       Group By Operator
@@ -1434,7 +1404,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -1456,7 +1426,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -1481,7 +1451,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -1503,7 +1473,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -1517,9 +1487,9 @@ STAGE PLANS:
                     name: default.bucket_big
                   name: default.bucket_big
             Truncated Path -> Alias:
-              /bucket_big/ds=2008-04-08 [b]
-              /bucket_big/ds=2008-04-09 [b]
-        Reducer 3 
+              /bucket_big/ds=2008-04-08 [c]
+              /bucket_big/ds=2008-04-09 [c]
+        Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

@@ -144,9 +144,6 @@ STAGE PLANS:
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {value} {key}
                       keys:
                         0 key (type: int)
                         1 value (type: int)
@@ -178,7 +175,7 @@ STAGE PLANS:
                     bucket_count 16
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.test_table1
@@ -200,7 +197,7 @@ STAGE PLANS:
                       bucket_count 16
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.test_table1
@@ -350,9 +347,6 @@ STAGE PLANS:
                     predicate: UDFToDouble(value) is not null (type: boolean)
                     Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
                       keys:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(value) (type: double)
@@ -373,7 +367,7 @@ STAGE PLANS:
                     bucket_count 16
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.test_table4
@@ -395,7 +389,7 @@ STAGE PLANS:
                       bucket_count 16
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.test_table4
@@ -432,9 +426,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 {key} {value}
                       keys:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(value) (type: double)
@@ -470,7 +461,7 @@ STAGE PLANS:
                     bucket_count 16
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.test_table3
@@ -492,7 +483,7 @@ STAGE PLANS:
                       bucket_count 16
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.test_table3

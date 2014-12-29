@@ -171,9 +171,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -273,9 +273,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -377,9 +377,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -469,9 +469,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -580,9 +580,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -679,9 +679,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col1
                 Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -782,9 +782,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col1
                 Statistics: Num rows: 6 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -882,9 +882,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -958,9 +958,6 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
-                          condition expressions:
-                            0 {key}
-                            1 
                           keys:
                             0 key (type: int)
                             1 _col0 (type: int)
@@ -984,9 +981,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Semi Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
                       keys:
                         0 key (type: int)
                         1 _col0 (type: int)
@@ -1106,9 +1100,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 (2 * _col0) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 47 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1221,10 +1215,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                      Left Semi Join 1 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 {KEY.reducesinkkey0} {VALUE._col0}
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col5, _col6
                 Statistics: Num rows: 24 Data size: 178 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -1338,9 +1332,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
-                  1 
+                keys:
+                  0 key (type: int), value (type: string)
+                  1 _col0 (type: int), _col1 (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1423,10 +1417,6 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 43 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
-                          condition expressions:
-                            0 {key}
-                            1 
-                            2 
                           keys:
                             0 key (type: int)
                             1 _col0 (type: int)
@@ -1451,10 +1441,6 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 45 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
-                          condition expressions:
-                            0 {key}
-                            1 
-                            2 
                           keys:
                             0 key (type: int)
                             1 _col0 (type: int)
@@ -1480,10 +1466,6 @@ STAGE PLANS:
                       condition map:
                            Left Semi Join 0 to 1
                            Left Semi Join 0 to 2
-                      condition expressions:
-                        0 {key}
-                        1 
-                        2 
                       keys:
                         0 key (type: int)
                         1 _col0 (type: int)
@@ -1606,10 +1588,10 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join0 to 1
                      Left Semi Join 1 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 _col0 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1735,10 +1717,10 @@ STAGE PLANS:
                 condition map:
                      Right Outer Join0 to 1
                      Left Semi Join 1 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 _col0 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1867,10 +1849,10 @@ STAGE PLANS:
                 condition map:
                      Outer Join 0 to 1
                      Left Semi Join 1 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                  2 _col0 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1999,10 +1981,10 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                      Left Outer Join0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
+                  2 key (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -2131,10 +2113,10 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                      Right Outer Join0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
+                  2 key (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -2265,10 +2247,10 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                      Outer Join 0 to 2
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                  2 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
+                  2 key (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 48 Data size: 358 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -2417,9 +2399,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {VALUE._col0}
-                  1 
+                keys:
+                  0 key (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12 Data size: 89 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -2433,9 +2415,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
+                keys:
+                  0 _col1 (type: string)
+                  1 value (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 13 Data size: 97 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -2565,9 +2547,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col0}
-                  1 
+                keys:
+                  0 value (type: string)
+                  1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
