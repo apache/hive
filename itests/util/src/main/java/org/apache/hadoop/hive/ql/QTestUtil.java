@@ -1208,6 +1208,7 @@ public class QTestUtil {
 
   private void maskPatterns(Pattern[] patterns, String fname) throws Exception {
     String maskPattern = "#### A masked pattern was here ####";
+    String partialMaskPattern = "#### A PARTIAL masked pattern was here ####";
 
     String line;
     BufferedReader in;
@@ -1221,9 +1222,24 @@ public class QTestUtil {
     out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 
     boolean lastWasMasked = false;
+    boolean partialMaskWasMatched = false;
+    Matcher matcher;
     while (null != (line = in.readLine())) {
-      for (Pattern pattern : patterns) {
-        line = pattern.matcher(line).replaceAll(maskPattern);
+      if (clusterType == MiniClusterType.encrypted) {
+        for (Pattern pattern : partialReservedPlanMask) {
+          matcher = pattern.matcher(line);
+          if (matcher.find()) {
+            line = partialMaskPattern + " " + matcher.group(0);
+            partialMaskWasMatched = true;
+            break;
+          }
+        }
+      }
+
+      if (!partialMaskWasMatched) {
+        for (Pattern pattern : patterns) {
+          line = pattern.matcher(line).replaceAll(maskPattern);
+        }
       }
 
       if (line.equals(maskPattern)) {
@@ -1237,6 +1253,7 @@ public class QTestUtil {
         out.write(line);
         out.write("\n");
         lastWasMasked = false;
+        partialMaskWasMatched = false;
       }
     }
 
@@ -1278,6 +1295,11 @@ public class QTestUtil {
       ".*Output:.*/data/files/.*",
       ".*total number of created files now is.*",
       ".*.hive-staging.*"
+  });
+
+  private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
+      "data/warehouse/(.*?/)+\\.hive-staging"  // the directory might be db/table/partition
+      //TODO: add more expected test result here
   });
 
   public int checkCliDriverResults(String tname) throws Exception {
