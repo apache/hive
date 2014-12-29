@@ -8,4 +8,4 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED std
 POSTHOOK: type: DESCFUNCTION
 std(x) - Returns the standard deviation of a set of numbers
-Synonyms: stddev_pop, stddev
+Synonyms: stddev, stddev_pop

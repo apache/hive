@@ -4,6 +4,7 @@
 -- fileSchema   = [{ "type" : "map", "values" : ["string","null"]}, "null"]
 -- recordSchema = ["null", { "type" : "map", "values" : ["string","null"]}]
 
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table;
 

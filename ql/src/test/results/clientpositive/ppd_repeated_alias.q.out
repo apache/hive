@@ -65,9 +65,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -136,9 +136,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -212,9 +212,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
@@ -272,9 +272,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -310,9 +310,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0} {VALUE._col1}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col3, _col4
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator

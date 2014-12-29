@@ -31,5 +31,5 @@ if [%1]==[orcfiledump_help] goto :orcfiledump_help
 goto :EOF
 
 :orcfiledump_help
-	echo "usage hive --orcfiledump <path_to_file>"
+	echo "usage hive --orcfiledump [-d] [--rowindex _col_ids_] <path_to_file>"
 goto :EOF

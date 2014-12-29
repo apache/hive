@@ -57,7 +57,7 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
     // Hadoop FS ACLs do not work with LocalFileSystem, so set up MiniDFS.
     HiveConf conf = super.createHiveConf();
-    String currentUserName = Utils.getUGIForConf(conf).getShortUserName();
+    String currentUserName = Utils.getUGI().getShortUserName();
     conf.set("dfs.namenode.acls.enabled", "true");
     conf.set("hadoop.proxyuser." + currentUserName + ".groups", "*");
     conf.set("hadoop.proxyuser." + currentUserName + ".hosts", "*");

@@ -314,7 +314,7 @@ public class BytesColumnVector extends ColumnVector {
   @Override
   public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
     BytesColumnVector in = (BytesColumnVector) inputVector;
-    setVal(outElementNum, in.vector[inputElementNum], in.start[inputElementNum], in.length[outElementNum]);
+    setVal(outElementNum, in.vector[inputElementNum], in.start[inputElementNum], in.length[inputElementNum]);
   }
 
   @Override

@@ -42,6 +42,10 @@ public abstract class LazyBinaryObject<OI extends ObjectInspector> implements La
     this.oi = oi;
   }
 
+  public void setNull() {
+    throw new IllegalStateException("should not be called");
+  }
+
   @Override
   public abstract int hashCode();
 }

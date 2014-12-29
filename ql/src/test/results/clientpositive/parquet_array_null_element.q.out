@@ -144,9 +144,9 @@ POSTHOOK: query: SELECT mp from parquet_array_null_element
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_array_null_element
 #### A masked pattern was here ####
-{"key12":"value12","key11":"value11","key13":"value13"}
+{"key11":"value11","key12":"value12","key13":"value13"}
 NULL
-{"key12":null,"key11":"value11","key13":null}
+{"key11":"value11","key12":null,"key13":null}
 PREHOOK: query: SELECT * FROM parquet_array_null_element
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_array_null_element
@@ -155,6 +155,6 @@ POSTHOOK: query: SELECT * FROM parquet_array_null_element
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_array_null_element
 #### A masked pattern was here ####
-1	[null,7]	["CARRELAGE","MOQUETTE"]	{"key12":"value12","key11":"value11","key13":"value13"}
+1	[null,7]	["CARRELAGE","MOQUETTE"]	{"key11":"value11","key12":"value12","key13":"value13"}
 2	[null,null]	["CAILLEBOTIS",null]	NULL
-3	[null,42,null]	NULL	{"key12":null,"key11":"value11","key13":null}
+3	[null,42,null]	NULL	{"key11":"value11","key12":null,"key13":null}

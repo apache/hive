@@ -69,6 +69,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   public static final String USERNAME = "user";
   public static final String INSTANCE_TYPE = "instanceType";
   public static final String NUM_THREADS = "numThreads";
+  public static final String USER_METADATA = "userMetadata";
 
   private final RandomAccessFile mHostLog;
   private final String mPrivateKey;
@@ -449,7 +450,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     Integer numThreads = context.getInteger(NUM_THREADS, 3);
     String instanceType = context.getString(INSTANCE_TYPE, "c1.xlarge");
     CloudComputeService cloudComputeService = new CloudComputeService(apiKey, accessKey,
-        instanceType, groupName, imageId, keyPair, securityGroup, maxBid);
+        instanceType, groupName, imageId, keyPair, securityGroup, maxBid, context.getSubProperties(USER_METADATA + "."));
     CloudExecutionContextProvider service = new CloudExecutionContextProvider(
         dataDir, numHosts, cloudComputeService, new SSHCommandExecutor(LOG), workingDirectory,
         privateKey, user, localDirs, numThreads, 60, maxHostsPerCreateRequest);

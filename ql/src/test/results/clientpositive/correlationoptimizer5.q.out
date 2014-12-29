@@ -145,9 +145,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 
+          keys:
+            0 key (type: int)
+            1 key (type: int)
           outputColumnNames: _col0
           Statistics: Num rows: 799 Data size: 3198 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -177,9 +177,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
           outputColumnNames: _col0, _col3
           Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -238,9 +238,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 key (type: int)
+            1 key (type: int)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 29 Data size: 118 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -360,9 +360,9 @@ STAGE PLANS:
           Join Operator
             condition map:
                  Inner Join 0 to 1
-            condition expressions:
-              0 {KEY.reducesinkkey0}
-              1 
+            keys:
+              0 key (type: int)
+              1 key (type: int)
             outputColumnNames: _col0
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Mux Operator
@@ -370,9 +370,9 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 {VALUE._col0}
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col3
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Select Operator
@@ -390,9 +390,9 @@ STAGE PLANS:
           Join Operator
             condition map:
                  Inner Join 0 to 1
-            condition expressions:
-              0 {KEY.reducesinkkey0}
-              1 {VALUE._col0}
+            keys:
+              0 key (type: int)
+              1 key (type: int)
             outputColumnNames: _col0, _col6
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
@@ -404,9 +404,9 @@ STAGE PLANS:
                 Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {KEY.reducesinkkey0}
-                    1 {VALUE._col0}
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
                   outputColumnNames: _col0, _col3
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                   Select Operator
@@ -513,9 +513,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 724 Data size: 2897 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key}
-                  1 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -532,9 +529,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key}
-                  1 
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -562,9 +556,6 @@ STAGE PLANS:
         $INTNAME1 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 {_col0}
-                1 {_col1}
               keys:
                 0 _col0 (type: int)
                 1 _col0 (type: int)
@@ -576,9 +567,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0}
-                1 {_col1}
               keys:
                 0 _col0 (type: int)
                 1 _col0 (type: int)
@@ -619,9 +607,6 @@ STAGE PLANS:
         $INTNAME 
           TableScan
             HashTable Sink Operator
-              condition expressions:
-                0 
-                1 {_col1}
               keys:
                 0 _col0 (type: int)
                 1 _col0 (type: int)
@@ -633,9 +618,6 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-              condition expressions:
-                0 {_col0}
-                1 {_col1}
               keys:
                 0 _col0 (type: int)
                 1 _col0 (type: int)
@@ -673,9 +655,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
           outputColumnNames: _col0, _col3
           Statistics: Num rows: 878 Data size: 3517 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -706,9 +688,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {val}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -725,9 +704,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key}
-                  1 {val}
                 keys:
                   0 key (type: int)
                   1 key (type: int)

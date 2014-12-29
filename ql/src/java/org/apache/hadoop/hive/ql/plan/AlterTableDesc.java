@@ -54,7 +54,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     ALTERPARTITIONPROTECTMODE("alter partition protect mode"), ALTERLOCATION("alter location"),
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
-    ALTERPARTITION("alter partition"), COMPACT("compact");
+    ALTERPARTITION("alter partition"), COMPACT("compact"),
+    TRUNCATE("truncate"), MERGEFILES("merge files");
+    ;
 
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }

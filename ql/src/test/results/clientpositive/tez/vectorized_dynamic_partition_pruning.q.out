@@ -59,10 +59,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: ds (type: string)
+                      keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -249,9 +249,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -354,9 +354,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -521,9 +521,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2}
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 outputColumnNames: _col3
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -536,9 +536,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col3 (type: string)
+                  1 hr (type: string)
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -663,9 +663,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2}
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 outputColumnNames: _col3
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -678,9 +678,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col3 (type: string)
+                  1 hr (type: string)
                 Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -828,9 +828,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string), hr (type: string)
+                  1 ds (type: string), hr (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -932,9 +932,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string), hr (type: string)
+                  1 ds (type: string), hr (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1065,9 +1065,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1170,9 +1170,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1303,9 +1303,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 UDFToDouble(hr) (type: double)
+                  1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1425,9 +1425,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 (hr * 2) (type: double)
+                  1 hr (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1532,9 +1532,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 UDFToDouble(hr) (type: double)
+                  1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1639,9 +1639,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 (hr * 2) (type: double)
+                  1 hr (type: double)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1774,9 +1774,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 UDFToString((hr * 2)) (type: string)
+                  1 UDFToString(hr) (type: string)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1859,12 +1859,27 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -1872,10 +1887,10 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: '2008-04-08' (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: ds (type: string)
+                      keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1884,53 +1899,14 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                      Dynamic Partitioning Event Operator
-                        Target Input: srcpart
-                        Partition key expr: ds
-                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                        Target column: ds
-                        Target Vertex: Map 1
         Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Reducer 3 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1941,7 +1917,7 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
-        Reducer 4 
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1960,6 +1936,33 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Target column: ds
+                      Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -2043,9 +2046,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {VALUE._col2} {VALUE._col3}
-                  1 {VALUE._col0} {VALUE._col2}
+                keys:
+                  0 
+                  1 
                 outputColumnNames: _col2, _col3, _col7, _col9
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -2185,9 +2188,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
-                  1 {KEY.reducesinkkey0} {KEY.reducesinkkey1}
+                keys:
+                  0 ds (type: string), hr (type: string)
+                  1 ds (type: string), hr (type: string)
                 outputColumnNames: _col2, _col3, _col7, _col9
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -2294,9 +2297,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 outputColumnNames: _col8
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -2400,9 +2403,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Outer Join0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2484,9 +2487,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 outputColumnNames: _col8
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -2625,9 +2628,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: '11' (type: string)
@@ -2639,9 +2642,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 '11' (type: string)
+                  1 '11' (type: string)
                 Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2751,9 +2754,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                 Reduce Output Operator
                   key expressions: '13' (type: string)
@@ -2765,9 +2768,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 '13' (type: string)
+                  1 '13' (type: string)
                 Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2845,11 +2848,15 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2857,10 +2864,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: max(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2875,10 +2882,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: min(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -2891,9 +2898,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -3029,11 +3036,15 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ds (type: string)
-                    sort order: +
-                    Map-reduce partition columns: ds (type: string)
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3041,10 +3052,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: max(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3059,10 +3070,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: min(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3075,13 +3086,13 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
-                outputColumnNames: _col2
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col2 (type: string)
+                  keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -3217,16 +3228,20 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: ds (type: string)
-                    mode: hash
+                  Select Operator
+                    expressions: ds (type: string)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -3234,10 +3249,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: min(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3251,16 +3266,20 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: ds (type: string)
-                    mode: hash
+                  Select Operator
+                    expressions: ds (type: string)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -3268,10 +3287,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: max(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -3335,9 +3354,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                condition expressions:
-                  0 {KEY.reducesinkkey0}
-                  1 
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
@@ -3460,9 +3479,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -3594,9 +3610,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 {hr}
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -3607,9 +3620,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 _col3 (type: string)
                         1 hr (type: string)
@@ -3770,9 +3780,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string), hr (type: string)
                       1 ds (type: string), hr (type: string)
@@ -3915,9 +3922,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4025,9 +4029,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 UDFToDouble(hr) (type: double)
                         1 UDFToDouble(UDFToInteger((hr / 2))) (type: double)
@@ -4145,9 +4146,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 (hr * 2) (type: double)
                         1 hr (type: double)
@@ -4264,7 +4262,7 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 3 <- Reducer 2 (BROADCAST_EDGE)
+        Map 1 <- Reducer 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -4273,14 +4271,42 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
+                      input vertices:
+                        1 Reducer 4
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: '2008-04-08' (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: ds (type: string)
+                      keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -4289,61 +4315,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
-                    keys:
-                      0 ds (type: string)
-                      1 _col0 (type: string)
-                    input vertices:
-                      1 Reducer 2
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
         Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Dynamic Partitioning Event Operator
-                      Target Input: srcpart
-                      Partition key expr: ds
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                      Target column: ds
-                      Target Vertex: Map 3
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4362,6 +4334,33 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Target column: ds
+                      Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -4425,9 +4424,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Left Outer Join0 to 1
-                    condition expressions:
-                      0 
-                      1 {date}
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4515,9 +4511,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 ds (type: string)
                         1 ds (type: string)
@@ -4615,9 +4608,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Outer Join 0 to 1
-                condition expressions:
-                  0 
-                  1 {VALUE._col0}
+                keys:
+                  0 ds (type: string)
+                  1 ds (type: string)
                 outputColumnNames: _col8
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
@@ -4689,9 +4682,6 @@ STAGE PLANS:
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
                     keys:
                       0 ds (type: string)
                       1 ds (type: string)
@@ -4701,9 +4691,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 '11' (type: string)
                         1 '11' (type: string)
@@ -4870,9 +4857,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 '13' (type: string)
                         1 '13' (type: string)
@@ -4948,29 +4932,30 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Semi Join 0 to 1
-                    condition expressions:
-                      0 {ds}
-                      1 
-                    keys:
-                      0 ds (type: string)
-                      1 _col0 (type: string)
-                    outputColumnNames: _col2
-                    input vertices:
-                      1 Union 5
-                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col2 (type: string)
-                      mode: hash
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Semi Join 0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
                       outputColumnNames: _col0
+                      input vertices:
+                        1 Union 5
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4978,10 +4963,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: max(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -4996,10 +4981,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
-                    outputColumnNames: ds
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: min(_col0)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -5174,9 +5159,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       keys:
                         0 ds (type: string), UDFToDouble(hr) (type: double)
                         1 ds (type: string), UDFToDouble(hr) (type: double)

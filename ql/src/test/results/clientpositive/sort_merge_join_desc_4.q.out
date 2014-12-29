@@ -81,9 +81,6 @@ STAGE PLANS:
               predicate: ((key is not null and value is not null) and (key < 10)) (type: boolean)
               Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -100,9 +97,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)

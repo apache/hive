@@ -26,44 +26,48 @@ STAGE PLANS:
                   alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 3
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
                         outputColumnNames: _col0, _col1
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        input vertices:
+                          1 Map 3
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string)
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: s3
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -220,9 +224,9 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 
-                  1 
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -318,7 +322,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Select Operator
@@ -327,17 +331,14 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {key}
-                          1 {_col0}
                         keys:
-                          0 key (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col0, _col5
+                        outputColumnNames: _col0, _col1
                         input vertices:
-                          0 Map 4
+                          1 Map 4
                         Select Operator
-                          expressions: _col0 (type: string), _col5 (type: string)
+                          expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
                           File Output Operator
                             compressed: false
@@ -348,7 +349,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Select Operator
@@ -357,17 +358,14 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 {key}
-                          1 {_col0}
                         keys:
-                          0 key (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col0, _col5
+                        outputColumnNames: _col0, _col1
                         input vertices:
-                          0 Map 4
+                          1 Map 4
                         Select Operator
-                          expressions: _col0 (type: string), _col5 (type: string)
+                          expressions: _col1 (type: string), _col0 (type: string)
                           outputColumnNames: _col0, _col1
                           File Output Operator
                             compressed: false
@@ -383,16 +381,20 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Union 2 
             Vertex: Union 2
 
@@ -487,188 +489,192 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        1 Map 4
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                             Inner Join 1 to 2
-                        condition expressions:
-                          0 {key}
-                          1 {_col0}
-                          2 {key}
                         keys:
-                          0 key (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                          2 key (type: string)
-                        outputColumnNames: _col0, _col5, _col6
+                        outputColumnNames: _col0
                         input vertices:
-                          0 Map 9
-                          2 Map 10
-                        Select Operator
-                          expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
+                          1 Map 4
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                               Inner Join 0 to 2
+                          keys:
+                            0 _col0 (type: string)
+                            1 _col0 (type: string)
+                            2 _col0 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Reduce Output Operator
-                            key expressions: _col2 (type: string)
-                            sort order: +
-                            value expressions: _col0 (type: string), _col1 (type: string)
+                          input vertices:
+                            1 Map 9
+                            2 Map 10
+                          Select Operator
+                            expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
+                            Reduce Output Operator
+                              key expressions: _col2 (type: string)
+                              sort order: +
+                              value expressions: _col0 (type: string), _col1 (type: string)
         Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: s8
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s3
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s4
+                  alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        1 Map 6
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                             Inner Join 1 to 2
-                        condition expressions:
-                          0 {key}
-                          1 {_col0}
-                          2 {key}
                         keys:
-                          0 key (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                          2 key (type: string)
-                        outputColumnNames: _col0, _col5, _col6
+                        outputColumnNames: _col0
                         input vertices:
-                          0 Map 9
-                          2 Map 10
-                        Select Operator
-                          expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
+                          1 Map 6
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                               Inner Join 0 to 2
+                          keys:
+                            0 _col0 (type: string)
+                            1 _col0 (type: string)
+                            2 _col0 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Reduce Output Operator
-                            key expressions: _col2 (type: string)
-                            sort order: +
-                            value expressions: _col0 (type: string), _col1 (type: string)
+                          input vertices:
+                            1 Map 9
+                            2 Map 10
+                          Select Operator
+                            expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
+                            Reduce Output Operator
+                              key expressions: _col2 (type: string)
+                              sort order: +
+                              value expressions: _col0 (type: string), _col1 (type: string)
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: s5
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: s6
+                  alias: s1
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        1 Map 8
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                             Inner Join 1 to 2
-                        condition expressions:
-                          0 {key}
-                          1 {_col0}
-                          2 {key}
                         keys:
-                          0 key (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                          2 key (type: string)
-                        outputColumnNames: _col0, _col5, _col6
+                        outputColumnNames: _col0
                         input vertices:
-                          0 Map 9
-                          2 Map 10
-                        Select Operator
-                          expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
+                          1 Map 8
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                               Inner Join 0 to 2
+                          keys:
+                            0 _col0 (type: string)
+                            1 _col0 (type: string)
+                            2 _col0 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Reduce Output Operator
-                            key expressions: _col2 (type: string)
-                            sort order: +
-                            value expressions: _col0 (type: string), _col1 (type: string)
+                          input vertices:
+                            1 Map 9
+                            2 Map 10
+                          Select Operator
+                            expressions: _col1 (type: string), _col0 (type: string), _col2 (type: string)
+                            outputColumnNames: _col0, _col1, _col2
+                            Reduce Output Operator
+                              key expressions: _col2 (type: string)
+                              sort order: +
+                              value expressions: _col0 (type: string), _col1 (type: string)
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: s7
+                  alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -677,21 +683,25 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
@@ -880,80 +890,88 @@ STAGE PLANS:
                   alias: s2
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        1 Map 3
-                      Select Operator
-                        expressions: _col0 (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
                         outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        input vertices:
+                          1 Map 3
+                        Select Operator
+                          expressions: _col0 (type: string)
+                          outputColumnNames: _col0
+                          File Output Operator
+                            compressed: false
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: s3
+                  alias: s2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s4
+                  alias: s2
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key}
-                        1 
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
                       outputColumnNames: _col0
-                      input vertices:
-                        1 Map 5
-                      Select Operator
-                        expressions: _col0 (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
                         outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        input vertices:
+                          1 Map 5
+                        Select Operator
+                          expressions: _col0 (type: string)
+                          outputColumnNames: _col0
+                          File Output Operator
+                            compressed: false
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s5
+                  alias: s2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Union 2 
             Vertex: Union 2
 
@@ -1055,12 +1073,9 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 {_col0} {_col1}
-                        1 {key} {value}
                       keys:
                         0 _col0 (type: string)
-                        1 key (type: string)
+                        1 _col0 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
@@ -1083,12 +1098,9 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
-                      condition expressions:
-                        0 {_col0} {_col1}
-                        1 {key} {value}
                       keys:
                         0 _col0 (type: string)
-                        1 key (type: string)
+                        1 _col0 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Map 4
@@ -1104,20 +1116,24 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s
+                  alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: value (type: string)
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: value (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
         Union 2 
             Vertex: Union 2
 
@@ -1175,32 +1191,33 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s
+                  alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Right Outer Join0 to 1
-                    condition expressions:
-                      0 {_col0}
-                      1 {key}
-                    keys:
-                      0 _col0 (type: string)
-                      1 key (type: string)
-                    outputColumnNames: _col0, _col2
-                    input vertices:
-                      0 Union 2
-                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string), _col2 (type: string)
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Right Outer Join0 to 1
+                      keys:
+                        0 _col0 (type: string)
+                        1 _col0 (type: string)
                       outputColumnNames: _col0, _col1
+                      input vertices:
+                        0 Union 2
                       Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 2 
             Vertex: Union 2
 

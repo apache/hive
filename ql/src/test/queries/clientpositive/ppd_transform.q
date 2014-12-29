@@ -1,5 +1,6 @@
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=false;
+set hive.entity.capture.transform=true;
 
 EXPLAIN
 FROM (

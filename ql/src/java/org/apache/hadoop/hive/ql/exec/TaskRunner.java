@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -32,6 +33,7 @@ public class TaskRunner extends Thread {
   protected Task<? extends Serializable> tsk;
   protected TaskResult result;
   protected SessionState ss;
+  private OperationLog operationLog;
   private static AtomicLong taskCounter = new AtomicLong(0);
   private static ThreadLocal<Long> taskRunnerID = new ThreadLocal<Long>() {
     @Override
@@ -68,6 +70,7 @@ public class TaskRunner extends Thread {
   public void run() {
     runner = Thread.currentThread();
     try {
+      OperationLog.setCurrentOperationLog(operationLog);
       SessionState.start(ss);
       runSequential();
     } finally {
@@ -94,5 +97,9 @@ public class TaskRunner extends Thread {
 
   public static long getTaskRunnerID () {
     return taskRunnerID.get();
+  }
+
+  public void setOperationLog(OperationLog operationLog) {
+    this.operationLog = operationLog;
   }
 }

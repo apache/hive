@@ -88,7 +88,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           if (vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
-            outputColVector.setRef(i, arg3Scalar, 0, arg2Scalar.length);
+            outputColVector.setRef(i, arg3Scalar, 0, arg3Scalar.length);
           }
         }
       } else {
@@ -96,7 +96,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           if (vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
-            outputColVector.setRef(i, arg3Scalar, 0, arg2Scalar.length);
+            outputColVector.setRef(i, arg3Scalar, 0, arg3Scalar.length);
           }
         }
       }
@@ -107,7 +107,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
-            outputColVector.setRef(i, arg3Scalar, 0, arg2Scalar.length);
+            outputColVector.setRef(i, arg3Scalar, 0, arg3Scalar.length);
           }
         }
       } else {
@@ -115,7 +115,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
           if (!arg1ColVector.isNull[i] && vector1[i] == 1) {
             outputColVector.setRef(i, arg2Scalar, 0, arg2Scalar.length);
           } else {
-            outputColVector.setRef(i, arg3Scalar, 0, arg2Scalar.length);
+            outputColVector.setRef(i, arg3Scalar, 0, arg3Scalar.length);
           }
         }
       }

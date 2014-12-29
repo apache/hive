@@ -29,8 +29,6 @@ import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.io.Text;
 
 /**
  * LazyObject for storing a struct. The field of a struct can be primitive or
@@ -215,25 +213,22 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
    * @return The value of the field
    */
   private Object uncheckedGetField(int fieldID) {
-    Text nullSequence = oi.getNullSequence();
-    // Test the length first so in most cases we avoid doing a byte[]
-    // comparison.
+    if (fieldInited[fieldID]) {
+      return fields[fieldID].getObject();
+    }
+    fieldInited[fieldID] = true;
+
     int fieldByteBegin = startPosition[fieldID];
     int fieldLength = startPosition[fieldID + 1] - startPosition[fieldID] - 1;
-    if ((fieldLength < 0)
-        || (fieldLength == nullSequence.getLength() && LazyUtils.compare(bytes
-            .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
-            0, nullSequence.getLength()) == 0)) {
-      return null;
-    }
-    if (!fieldInited[fieldID]) {
-      fieldInited[fieldID] = true;
+    if (isNull(oi.getNullSequence(), bytes, fieldByteBegin, fieldLength)) {
+      fields[fieldID].setNull();
+    } else {
       fields[fieldID].init(bytes, fieldByteBegin, fieldLength);
     }
     return fields[fieldID].getObject();
   }
 
-  List<Object> cachedList;
+  private transient List<Object> cachedList;
 
   /**
    * Get the values of the fields as an ArrayList.
@@ -253,11 +248,6 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       cachedList.add(uncheckedGetField(i));
     }
     return cachedList;
-  }
-
-  @Override
-  public Object getObject() {
-    return this;
   }
 
   protected boolean getParsed() {
@@ -294,7 +284,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
       return;
     }
     if (fields == null) {
-      List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
+      List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
       fields = new LazyObject[fieldRefs.size()];
       for (int i = 0; i < fields.length; i++) {
         fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());

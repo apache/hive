@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -778,7 +779,8 @@ public final class FunctionRegistry {
    * @return Set of synonyms for funcName
    */
   public static Set<String> getFunctionSynonyms(String funcName) {
-    Set<String> synonyms = new HashSet<String>();
+    // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
+    Set<String> synonyms = new LinkedHashSet<String>();
 
     FunctionInfo funcInfo;
     try {

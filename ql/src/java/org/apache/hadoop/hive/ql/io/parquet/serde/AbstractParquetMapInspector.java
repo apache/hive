@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -65,7 +66,7 @@ public abstract class AbstractParquetMapInspector implements SettableMapObjectIn
       }
 
       final Writable[] mapArray = ((ArrayWritable) mapContainer[0]).get();
-      final Map<Writable, Writable> map = new HashMap<Writable, Writable>();
+      final Map<Writable, Writable> map = new LinkedHashMap<Writable, Writable>();
 
       for (final Writable obj : mapArray) {
         final ArrayWritable mapObj = (ArrayWritable) obj;

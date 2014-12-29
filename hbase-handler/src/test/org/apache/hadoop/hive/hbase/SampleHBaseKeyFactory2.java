@@ -200,6 +200,8 @@ public class SampleHBaseKeyFactory2 extends AbstractHBaseKeyFactory {
     private final int fixedLength;
     private final List<Object> fields = new ArrayList<Object>();
 
+    private transient boolean isNull;
+
     public FixedLengthed(int fixedLength) {
       this.fixedLength = fixedLength;
     }
@@ -213,11 +215,17 @@ public class SampleHBaseKeyFactory2 extends AbstractHBaseKeyFactory {
       for (; rowStart < length; rowStart = rowStop + 1, rowStop = rowStart + fixedLength) {
         fields.add(new String(data, rowStart, rowStop - rowStart).trim());
       }
+      isNull = false;
+    }
+
+    @Override
+    public void setNull() {
+      isNull = true;
     }
 
     @Override
     public Object getObject() {
-      return this;
+      return isNull ? null : this;
     }
   }
 

@@ -76,4 +76,4 @@ POSTHOOK: Input: default@alter_part_offline@year=1996/month=10
 POSTHOOK: Input: default@alter_part_offline@year=1996/month=12
 POSTHOOK: Output: default@alter_part_offline@year=1996/month=10
 POSTHOOK: Output: default@alter_part_offline@year=1996/month=12
-FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table alter_part_offline Partition year=1996/month=12
+FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table alter_part_offline Partition year=1996/month=10

@@ -92,9 +92,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -273,9 +270,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -454,9 +448,6 @@ STAGE PLANS:
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)

@@ -3,6 +3,7 @@ set hive.mapred.supports.subdirectories=true;
 set mapred.input.dir.recursive=true;
 
 -- run this test case in minimr to ensure it works in cluster
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- list bucketing DML: static partition. multiple skewed columns.
 -- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:

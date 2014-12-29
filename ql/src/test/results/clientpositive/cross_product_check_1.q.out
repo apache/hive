@@ -24,7 +24,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
-Warning: Shuffle Join JOIN[4][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B
@@ -40,28 +40,36 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string), value (type: string)
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: b
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-            Reduce Output Operator
-              sort order: 
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
-              value expressions: key (type: string), value (type: string)
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-          outputColumnNames: _col0, _col1, _col5, _col6
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -120,9 +128,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -151,9 +159,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col5} {VALUE._col6}
-            1 {VALUE._col0} {VALUE._col1}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1, _col5, _col6, _col10, _col11
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -221,9 +229,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -252,7 +260,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -266,7 +274,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             alias: a
@@ -279,9 +287,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1, _col5
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -335,8 +343,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0}
+          keys:
+            0 
             1 
           outputColumnNames: _col0
           Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
@@ -366,7 +374,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -380,7 +388,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 51 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             alias: a
@@ -393,9 +401,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1, _col5
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -458,7 +466,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -472,29 +480,29 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -529,9 +537,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 
+          keys:
+            0 key (type: string)
+            1 key (type: string)
           outputColumnNames: _col0
           Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
@@ -560,7 +568,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:

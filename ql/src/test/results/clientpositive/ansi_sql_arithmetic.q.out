@@ -16,7 +16,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (UDFToInteger(key) / UDFToInteger(key)) (type: decimal(21,11))
+              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit
@@ -63,7 +63,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (UDFToInteger(key) / UDFToInteger(key)) (type: double)
+              expressions: (UDFToDouble(UDFToInteger(key)) / UDFToDouble(UDFToInteger(key))) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit

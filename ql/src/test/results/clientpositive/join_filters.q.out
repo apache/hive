@@ -57,7 +57,7 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-Warning: Shuffle Join JOIN[4][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -807,7 +807,7 @@ POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-Warning: Shuffle Join JOIN[10][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

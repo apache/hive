@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
 /**
@@ -25,6 +27,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
  * phase in query compilation.
  */
 public class TypeCheckCtx implements NodeProcessorCtx {
+  protected static final Log LOG = LogFactory.getLog(TypeCheckCtx.class);
 
   /**
    * The row resolver of the previous operator. This field is used to generate
@@ -144,6 +147,11 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    *
    */
   public void setError(String error, ASTNode errorSrcNode) {
+    if (LOG.isDebugEnabled()) {
+      // Log the callstack from which the error has been set.
+      LOG.debug("Setting error: [" + error + "] from "
+          + ((errorSrcNode == null) ? "null" : errorSrcNode.toStringTree()), new Exception());
+    }
     this.error = error;
     this.errorSrcNode = errorSrcNode;
   }

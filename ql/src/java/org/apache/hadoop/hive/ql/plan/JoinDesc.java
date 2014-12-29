@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
-
 /**
  * Join operator Descriptor implementation.
  *
@@ -87,17 +86,20 @@ public class JoinDesc extends AbstractOperatorDesc {
   // it's resulted from RS-dedup optimization, which removes following RS under some condition
   private boolean fixedAsSorted;
 
+  // used only for explain.
+  private transient ExprNodeDesc [][] joinKeys;
   public JoinDesc() {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters) {
+      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters, ExprNodeDesc[][] joinKeys) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
     this.filters = filters;
+    this.joinKeys = joinKeys;
 
     resetOrder();
   }
@@ -157,22 +159,6 @@ public class JoinDesc extends AbstractOperatorDesc {
     return ret;
   }
 
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds) {
-    this(exprs, outputColumnNames, noOuterJoin, conds, null);
-  }
-
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames) {
-    this(exprs, outputColumnNames, true, null);
-  }
-
-  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      List<String> outputColumnNames, final JoinCondDesc[] conds) {
-    this(exprs, outputColumnNames, true, conds, null);
-  }
-
   public JoinDesc(JoinDesc clone) {
     this.bigKeysDirMap = clone.bigKeysDirMap;
     this.conds = clone.conds;
@@ -204,33 +190,16 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.reversedExprs = reversedExprs;
   }
 
-  @Explain(displayName = "condition expressions")
-  public Map<Byte, String> getExprsStringMap() {
-    if (getExprs() == null) {
-      return null;
+  /**
+   * @return the keys in string form
+   */
+  @Explain(displayName = "keys")
+  public Map<Byte, String> getKeysString() {
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    for (byte i = 0; i < joinKeys.length; i++) {
+      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
     }
-
-    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
-
-    for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getExprs().entrySet()) {
-      StringBuilder sb = new StringBuilder();
-      boolean first = true;
-      if (ent.getValue() != null) {
-        for (ExprNodeDesc expr : ent.getValue()) {
-          if (!first) {
-            sb.append(" ");
-          }
-
-          first = false;
-          sb.append("{");
-          sb.append(expr.getExprString());
-          sb.append("}");
-        }
-      }
-      ret.put(ent.getKey(), sb.toString());
-    }
-
-    return ret;
+    return keyMap;
   }
 
   public void setExprs(final Map<Byte, List<ExprNodeDesc>> exprs) {

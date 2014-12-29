@@ -131,7 +131,7 @@ public class MiniHiveKdc {
       throws Exception {
     UserGroupInformation.loginUserFromKeytab(principal,
         getKeyTabFile(principal));
-    return Utils.getUGIForConf(conf);
+    return Utils.getUGI();
   }
 
   public Properties getKdcConf() {

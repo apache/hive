@@ -4,6 +4,8 @@ create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)
 insert overwrite table varchar_udf_1
   select key, value, key, value from src where key = '238' limit 1;
 
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 -- UDFs with varchar support
 select 
   concat(c1, c2),

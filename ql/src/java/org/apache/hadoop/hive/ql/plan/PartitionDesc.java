@@ -24,6 +24,7 @@ import com.google.common.collect.Interners;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * PartitionDesc.
@@ -167,12 +169,16 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
   }
 
-  @Explain(displayName = "properties", normalExplain = false)
   public Properties getProperties() {
     if (properties == null && tableDesc != null) {
       return tableDesc.getProperties();
     }
     return properties;
+  }
+
+  @Explain(displayName = "properties", normalExplain = false)
+  public Map getPropertiesExplain() {
+    return HiveStringUtils.getPropertiesExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {

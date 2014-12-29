@@ -248,7 +248,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -271,7 +271,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
@@ -299,9 +299,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 {key}
                       Estimated key counts: Map 1 => 1
                       keys:
                         0 key (type: string)
@@ -333,7 +330,7 @@ STAGE PLANS:
                     bucket_count 3
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_medium
@@ -356,7 +353,7 @@ STAGE PLANS:
                       bucket_count 3
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_medium
@@ -384,9 +381,6 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      condition expressions:
-                        0 
-                        1 
                       Estimated key counts: Map 2 => 1
                       keys:
                         0 _col6 (type: string), _col6 (type: string)
@@ -398,9 +392,6 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        condition expressions:
-                          0 
-                          1 
                         keys:
                           0 
                           1 
@@ -434,7 +425,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -457,7 +448,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -482,7 +473,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_big
@@ -505,7 +496,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
@@ -547,7 +538,7 @@ STAGE PLANS:
                     bucket_count 3
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_medium
@@ -570,7 +561,7 @@ STAGE PLANS:
                       bucket_count 3
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_medium

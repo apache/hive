@@ -80,9 +80,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -98,9 +100,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -116,9 +120,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -134,9 +140,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -152,9 +160,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -170,9 +180,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -188,9 +200,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -206,9 +220,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -224,9 +240,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -242,9 +260,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -260,9 +280,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -278,9 +300,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -296,9 +320,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -314,9 +340,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -332,9 +360,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -350,9 +380,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -368,9 +400,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -386,9 +420,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -404,9 +440,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -422,9 +460,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -440,9 +480,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -458,9 +500,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -476,9 +520,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -494,9 +540,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -512,9 +560,11 @@ STAGE PLANS:
               Union
                 Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
+                  expressions: 1 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count(_col0)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

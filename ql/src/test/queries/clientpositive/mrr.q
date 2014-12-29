@@ -51,9 +51,9 @@ EXPLAIN
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key);
+  JOIN src ON (s1.key = src.key) order by s1.key;
 
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
-  JOIN src ON (s1.key = src.key);
+  JOIN src ON (s1.key = src.key) order by s1.key;

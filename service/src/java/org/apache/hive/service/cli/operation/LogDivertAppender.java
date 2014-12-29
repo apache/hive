@@ -21,6 +21,7 @@ import java.io.CharArrayWriter;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.apache.log4j.WriterAppender;

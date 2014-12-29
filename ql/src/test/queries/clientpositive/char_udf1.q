@@ -4,6 +4,8 @@ create table char_udf_1 (c1 string, c2 string, c3 char(10), c4 char(20));
 insert overwrite table char_udf_1
   select key, value, key, value from src where key = '238' limit 1;
 
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 -- UDFs with char support
 select 
   concat(c1, c2),

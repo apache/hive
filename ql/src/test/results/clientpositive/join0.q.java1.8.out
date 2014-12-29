@@ -1,0 +1,238 @@
+Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+EXPLAIN
+SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+EXPLAIN
+SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 10) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < 10) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+              sort order: ++++
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN FORMATTED
+SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FORMATTED
+SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+POSTHOOK: type: QUERY
+{"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-1"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Reduce Operator Tree:":{"Join Operator":{"Statistics:":"Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE","keys:":{},"children":{"File Output Operator":{"compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"}}},"condition map:":[{"":"Inner Join 0 to 1"}],"outputColumnNames:":["_col0","_col1","_col2","_col3"]}},"Map Operator Tree:":[{"TableScan":{"alias:":"src","Statistics:":"Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE","children":{"Filter Operator":{"Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"value expressions:":"_col0 (type: string), _col1 (type: string)","sort order:":"","Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE"}},"outputColumnNames:":["_col0","_col1"],"expressions:":"key (type: string), value (type: string)"}},"predicate:":"(key < 10) (type: boolean)"}}}},{"TableScan":{"alias:":"src","Statistics:":"Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE","children":{"Filter Operator":{"Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"value expressions:":"_col0 (type: string), _col1 (type: string)","sort order:":"","Statistics:":"Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE"}},"outputColumnNames:":["_col0","_col1"],"expressions:":"key (type: string), value (type: string)"}},"predicate:":"(key < 10) (type: boolean)"}}}}]}},"Stage-2":{"Map Reduce":{"Reduce Operator Tree:":{"Select Operator":{"Statistics:":"Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}},"outputColumnNames:":["_col0","_col1","_col2","_col3"],"expressions:":"KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string)"}},"Map Operator Tree:":[{"TableScan":{"children":{"Reduce Output Operator":{"sort order:":"++++","Statistics:":"Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE","key expressions:":"_col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)"}}}}]}},"Stage-0":{"Fetch Operator":{"Processor Tree:":{"ListSink":{}},"limit:":"-1"}}}}
+Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.key as k1, src1.value as v1, 
+       src2.key as k2, src2.value as v2 FROM 
+  (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN 
+  (SELECT * FROM src WHERE src.key < 10) src2
+  SORT BY k1, v1, k2, v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	2	val_2
+0	val_0	2	val_2
+0	val_0	2	val_2
+0	val_0	4	val_4
+0	val_0	4	val_4
+0	val_0	4	val_4
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	5	val_5
+0	val_0	8	val_8
+0	val_0	8	val_8
+0	val_0	8	val_8
+0	val_0	9	val_9
+0	val_0	9	val_9
+0	val_0	9	val_9
+2	val_2	0	val_0
+2	val_2	0	val_0
+2	val_2	0	val_0
+2	val_2	2	val_2
+2	val_2	4	val_4
+2	val_2	5	val_5
+2	val_2	5	val_5
+2	val_2	5	val_5
+2	val_2	8	val_8
+2	val_2	9	val_9
+4	val_4	0	val_0
+4	val_4	0	val_0
+4	val_4	0	val_0
+4	val_4	2	val_2
+4	val_4	4	val_4
+4	val_4	5	val_5
+4	val_4	5	val_5
+4	val_4	5	val_5
+4	val_4	8	val_8
+4	val_4	9	val_9
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	0	val_0
+5	val_5	2	val_2
+5	val_5	2	val_2
+5	val_5	2	val_2
+5	val_5	4	val_4
+5	val_5	4	val_4
+5	val_5	4	val_4
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	5	val_5
+5	val_5	8	val_8
+5	val_5	8	val_8
+5	val_5	8	val_8
+5	val_5	9	val_9
+5	val_5	9	val_9
+5	val_5	9	val_9
+8	val_8	0	val_0
+8	val_8	0	val_0
+8	val_8	0	val_0
+8	val_8	2	val_2
+8	val_8	4	val_4
+8	val_8	5	val_5
+8	val_8	5	val_5
+8	val_8	5	val_5
+8	val_8	8	val_8
+8	val_8	9	val_9
+9	val_9	0	val_0
+9	val_9	0	val_0
+9	val_9	0	val_0
+9	val_9	2	val_2
+9	val_9	4	val_4
+9	val_9	5	val_5
+9	val_9	5	val_5
+9	val_9	5	val_5
+9	val_9	8	val_8
+9	val_9	9	val_9
