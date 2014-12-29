@@ -44,8 +44,9 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
   public CombineHiveRecordReader(InputSplit split, Configuration conf,
       Reporter reporter, Integer partition) throws IOException {
     super((JobConf)conf);
-    CombineHiveInputSplit hsplit = new CombineHiveInputSplit(jobConf,
-        (CombineFileSplit) split);
+    CombineHiveInputSplit hsplit = split instanceof CombineHiveInputSplit ?
+        (CombineHiveInputSplit) split :
+        new CombineHiveInputSplit(jobConf, (CombineFileSplit) split);
     String inputFormatClassName = hsplit.inputFormatClassName();
     Class inputFormatClass = null;
     try {

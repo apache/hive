@@ -275,7 +275,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   /**
    * Create Hive splits based on CombineFileSplit.
    */
-  private InputSplit[] getCombineSplits(JobConf job, int numSplits, Map<String, PartitionDesc> pathToPartitionInfo)
+  private InputSplit[] getCombineSplits(JobConf job, int numSplits,
+      Map<String, PartitionDesc> pathToPartitionInfo)
       throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
@@ -512,7 +513,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     if (combinablePaths.size() > 0) {
       FileInputFormat.setInputPaths(job, combinablePaths.toArray
           (new Path[combinablePaths.size()]));
-      Map<String, PartitionDesc> pathToPartitionInfo = Utilities.getMapWork(job).getPathToPartitionInfo();
+      Map<String, PartitionDesc> pathToPartitionInfo = this.pathToPartitionInfo != null ?
+          this.pathToPartitionInfo : Utilities.getMapWork(job).getPathToPartitionInfo();
       InputSplit[] splits = getCombineSplits(job, numSplits, pathToPartitionInfo);
       for (InputSplit split : splits) {
         result.add(split);
@@ -658,7 +660,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     return ShimLoader.getHadoopShims().getCombineFileInputFormat()
         .getRecordReader(job,
-        ((CombineHiveInputSplit) split).getInputSplitShim(), reporter,
+        (CombineFileSplit) split, reporter,
         CombineHiveRecordReader.class);
   }
 
