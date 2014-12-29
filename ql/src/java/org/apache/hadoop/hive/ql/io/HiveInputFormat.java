@@ -258,15 +258,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   protected void init(JobConf job) {
-    if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      mrwork = (MapWork) Utilities.getMergeWork(job);
-      if (mrwork == null) {
+    if (mrwork == null || pathToPartitionInfo == null) {
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        mrwork = (MapWork) Utilities.getMergeWork(job);
+        if (mrwork == null) {
+          mrwork = Utilities.getMapWork(job);
+        }
+      } else {
         mrwork = Utilities.getMapWork(job);
       }
-    } else {
-      mrwork = Utilities.getMapWork(job);
+      pathToPartitionInfo = mrwork.getPathToPartitionInfo();
     }
-    pathToPartitionInfo = mrwork.getPathToPartitionInfo();
   }
 
   /*
