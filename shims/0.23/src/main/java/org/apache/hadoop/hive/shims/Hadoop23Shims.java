@@ -1040,6 +1040,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       if (keyProvider.getMetadata(keyName) != null) {
         keyProvider.deleteKey(keyName);
+        keyProvider.flush();
       } else {
         throw new IOException("key '" + keyName + "' does not exist.");
       }
