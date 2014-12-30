@@ -58,6 +58,7 @@ import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
@@ -97,8 +98,6 @@ import com.google.common.collect.Iterables;
 public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
-  MiniDFSCluster miniDFSCluster = null;
-  KeyProvider keyProvider;
   final boolean zeroCopy;
 
   public Hadoop23Shims() {
@@ -382,8 +381,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       int numDataNodes,
       boolean format,
       String[] racks) throws IOException {
-    miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
-    keyProvider = miniDFSCluster.getNameNode().getNamesystem().getProvider();
+    MiniDFSCluster miniDFSCluster = new MiniDFSCluster(conf, numDataNodes, format, racks);
+
+    // Need to set the client's KeyProvider to the NN's for JKS,
+    // else the updates do not get flushed properly
+    miniDFSCluster.getFileSystem().getClient().setKeyProvider(
+        miniDFSCluster.getNameNode().getNamesystem().getProvider());
+
     cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
   }
@@ -942,24 +946,26 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   public class HdfsEncryptionShim implements HadoopShims.HdfsEncryptionShim {
+    private final String HDFS_SECURITY_DEFAULT_CIPHER = "AES/CTR/NoPadding";
+
     /**
      * Gets information about HDFS encryption zones
      */
     private HdfsAdmin hdfsAdmin = null;
 
+    /**
+     * Used to compare encryption key strengths.
+     */
+    private KeyProvider keyProvider = null;
+
+    private Configuration conf;
+
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
-      hdfsAdmin = new HdfsAdmin(uri, conf);
-      if (keyProvider == null) {
-        try {
-          // We use the first key provider found in the list of key providers. We don't know
-          // what to do with the rest, so let's skip them.
-          if (keyProvider == null) {
-            keyProvider = KeyProviderFactory.getProviders(conf).get(0);
-          }
-        } catch (Exception e) {
-          throw new IOException("Cannot create HDFS security object: ", e);
-        }
-      }
+      DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
+
+      this.conf = conf;
+      this.keyProvider = dfs.getClient().getKeyProvider();
+      this.hdfsAdmin = new HdfsAdmin(uri, conf);
     }
 
     @Override
@@ -1007,16 +1013,36 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
 
     @Override
-    public void createKey(String keyName, Configuration conf)
+    public void createKey(String keyName, int bitLength)
       throws IOException, NoSuchAlgorithmException {
 
+      if (keyProvider == null) {
+        throw new IOException("HDFS security key provider is not configured on your server.");
+      }
+
       if (keyProvider.getMetadata(keyName) != null) {
-        LOG.info("key " + keyName + " has already exists");
+        LOG.info("key '" + keyName + "' already exists");
         return;
       }
-      Options options = new Options(conf);
+
+      final KeyProvider.Options options = new Options(this.conf);
+      options.setCipher(HDFS_SECURITY_DEFAULT_CIPHER);
+      options.setBitLength(bitLength);
       keyProvider.createKey(keyName, options);
       keyProvider.flush();
+    }
+
+    @Override
+    public void deleteKey(String keyName) throws IOException {
+      if (keyProvider == null) {
+        throw new IOException("HDFS security key provider is not configured on your server.");
+      }
+
+      if (keyProvider.getMetadata(keyName) != null) {
+        keyProvider.deleteKey(keyName);
+      } else {
+        throw new IOException("key '" + keyName + "' does not exist.");
+      }
     }
 
     /**

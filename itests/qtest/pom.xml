@@ -544,7 +544,7 @@
                               runDisabled="${run_disabled}"
                               hiveConfDir="${basedir}/${hive.path.to.root}/data/conf"
                               resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/encrypted"
-                              className="TestEncrytedHDFSCliDriver"
+                              className="TestEncryptedHDFSCliDriver"
                               logFile="${project.build.directory}/testencryptedhdfsclidrivergen.log"
                               logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                               hadoopVersion="${active.hadoop.version}"

@@ -494,7 +494,6 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     ret.put("HADOOPSPECULATIVEEXECREDUCERS", "mapred.reduce.tasks.speculative.execution");
     ret.put("MAPREDSETUPCLEANUPNEEDED", "mapred.committer.job.setup.cleanup.needed");
     ret.put("MAPREDTASKCLEANUPNEEDED", "mapreduce.job.committer.task.cleanup.needed");
-    ret.put("HADOOPSECURITYKEYPROVIDER", "dfs.encryption.key.provider.uri");
     return ret;
   }
 

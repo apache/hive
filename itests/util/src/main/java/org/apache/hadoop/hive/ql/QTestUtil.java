@@ -38,6 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.lang.RuntimeException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -94,6 +96,10 @@ import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.hadoop.hive.ql.processors.EncryptionProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.HiveCommand;
 
 import com.google.common.collect.ImmutableList;
 
@@ -110,16 +116,11 @@ public class QTestUtil {
   private static final String ENCRYPTED_WITH_256_BITS_KEY_DB_NAME = "encryptedwith256bitskeydb";
 
   // security property names
-  private static final String SECURITY_KEY_BIT_LENGTH_PROP_NAME =
-    "hadoop.security.key.default.bitlength";
-  private static final String SECURITY_KEY_CIPHER_NAME = "hadoop.security.key.default.cipher";
+  private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
 
   // keyNames used for encrypting the hdfs path
   private final String KEY_NAME_IN_128 = "k128";
   private final String KEY_NAME_IN_256 = "k256";
-
-  // hadoop cipher
-  private final String HADOOP_CIPHER_NAME = "AES/CTR/NoPadding";
 
   private static final Log LOG = LogFactory.getLog("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -265,13 +266,6 @@ public class QTestUtil {
     return null;
   }
 
-  private void initEncryptionRelatedConf() {
-    HadoopShims shims = ShimLoader.getHadoopShims();
-    // set up the java key provider for encrypted hdfs cluster
-    conf.set(shims.getHadoopConfNames().get("HADOOPSECURITYKEYPROVIDER"), getKeyProviderURI());
-    conf.set(SECURITY_KEY_CIPHER_NAME, HADOOP_CIPHER_NAME);
-  }
-
   public void initConf() throws Exception {
 
     String vectorizationEnabled = System.getProperty("test.vectorization.enabled");
@@ -365,12 +359,16 @@ public class QTestUtil {
       FileSystem fs;
 
       if (clusterType == MiniClusterType.encrypted) {
-        initEncryptionRelatedConf();
+        // Set the security key provider so that the MiniDFS cluster is initialized
+        // with encryption
+        conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
 
         dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
         fs = dfs.getFileSystem();
+
         // set up the java key provider for encrypted hdfs cluster
         hes = shims.createHdfsEncryptionShim(fs, conf);
+
         LOG.info("key provider is initialized");
       } else {
         dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
@@ -778,23 +776,14 @@ public class QTestUtil {
   }
 
   private void initEncryptionZone() throws IOException, NoSuchAlgorithmException, HiveException {
-    // current only aes/ctr/nopadding cipher is supported
-    conf.set(SECURITY_KEY_CIPHER_NAME, HADOOP_CIPHER_NAME);
-
-    // create encryption zone via a 128-bits key respectively for encrypted database 1
-    conf.set(SECURITY_KEY_BIT_LENGTH_PROP_NAME, "128");
-
-    hes.createKey(KEY_NAME_IN_128, conf);
+    hes.createKey(KEY_NAME_IN_128, 128);
     hes.createEncryptionZone(
       new Path(db.getDatabase(ENCRYPTED_WITH_128_BITS_KEY_DB_NAME).getLocationUri()),
       KEY_NAME_IN_128);
 
-    // create encryption zone via a 256-bits key respectively for encrypted database 2
-    conf.set(SECURITY_KEY_BIT_LENGTH_PROP_NAME, "256");
-
     // AES-256 can be used only if JCE is installed in your environment. Otherwise, any encryption
     // with this key will fail. Keys can be created, but when you try to encrypt something, fails.
-    hes.createKey(KEY_NAME_IN_256, conf);
+    hes.createKey(KEY_NAME_IN_256, 256);
     hes.createEncryptionZone(
       new Path(db.getDatabase(ENCRYPTED_WITH_256_BITS_KEY_DB_NAME).getLocationUri()),
       KEY_NAME_IN_256);
@@ -922,27 +911,121 @@ public class QTestUtil {
 
   private static final String CRLF = System.getProperty("line.separator");
   public int executeClient(String tname1, String tname2) {
-    String commands = getCommands(tname1) + CRLF + getCommands(tname2);
-    return cliDriver.processLine(commands);
+    List<String> commandList = new ArrayList<String>();
+
+    commandList.addAll(getCommands(tname1));
+    commandList.add(CRLF);
+    commandList.addAll(getCommands(tname2));
+
+    return executeClient(commandList);
   }
 
   public int executeClient(String tname) {
-    return cliDriver.processLine(getCommands(tname));
+    return executeClient(getCommands(tname));
   }
 
-  private String getCommands(String tname) {
-    String commands = qMap.get(tname);
-    StringBuilder newCommands = new StringBuilder(commands.length());
-    int lastMatchEnd = 0;
-    Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
-    while (commentMatcher.find()) {
-      newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
-      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
-      lastMatchEnd = commentMatcher.end();
+  public int executeClient(final List<String> commandList) {
+    int rc = 0;
+
+    for (String command : commandList) {
+      if (isCommandUsedForTesting(command)) {
+        rc = executeTestCommand(command);
+      } else {
+        rc = cliDriver.processLine(command);
+      }
+
+      if (rc != 0) {
+        break;
+      }
     }
-    newCommands.append(commands.substring(lastMatchEnd, commands.length()));
-    commands = newCommands.toString();
-    return commands;
+
+    return rc;
+  }
+
+  private int executeTestCommand(final String command) {
+    String commandName = command.split("\\s+")[0];
+    String commandArgs = command.substring(commandName.length());
+
+    if (commandArgs.endsWith(";")) {
+      commandArgs = StringUtils.chop(commandArgs);
+    }
+
+    try {
+      CommandProcessor proc = getTestCommand(commandName);
+      if (proc != null) {
+        CommandProcessorResponse response = proc.run(commandArgs.trim());
+
+        int rc = response.getResponseCode();
+        if (rc != 0) {
+          SessionState.get().out.println(response);
+        }
+
+        return rc;
+      } else {
+        throw new RuntimeException("Could not get CommandProcessor for command: " + commandName);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Could not execute test command: " + e.getMessage());
+    }
+  }
+
+  private CommandProcessor getTestCommand(final String commandName) {
+    HiveCommand testCommand = HiveCommand.find(new String[]{commandName}, HiveCommand.ONLY_FOR_TESTING);
+    if (testCommand == null) {
+      return null;
+    }
+
+    switch (testCommand) {
+      case CRYPTO:
+        if (hes == null) {
+          throw new RuntimeException("HDFS encryption is not initialized for testing.");
+        }
+
+        return new EncryptionProcessor(hes, conf);
+      default:
+        throw new IllegalArgumentException("Unknown test command: " + commandName);
+    }
+  }
+
+  private boolean isCommandUsedForTesting(final String command) {
+    String commandName = command.trim().split("\\s+")[0];
+    HiveCommand testCommand = HiveCommand.find(new String[]{commandName}, HiveCommand.ONLY_FOR_TESTING);
+    return testCommand != null;
+  }
+
+  private List<String> getCommands(final String testName) {
+    List<String> commandList = new ArrayList<String>();
+    String testCommands = qMap.get(testName);
+
+    String command = "";
+    for (String line : testCommands.split("\n")) {
+      line = line.trim();
+
+      if (StringUtils.isBlank(line) || isComment(line)) {
+        continue;
+      }
+
+      // Join multiple line commands into one line
+      if (StringUtils.endsWith(line, "\\")) {
+        command += " " + StringUtils.chop(line);
+        continue;
+      } else if (!StringUtils.endsWith(line, ";")) {
+        command += " " + line;
+        continue;
+      } else {
+        command += " " + line;
+      }
+
+      commandList.add(command.trim());
+      command = "";
+    }
+
+    return commandList;
+  }
+
+  private boolean isComment(final String line) {
+    String lineTrimmed = line.trim();
+    return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
   }
 
   public boolean shouldBeSkipped(String tname) {

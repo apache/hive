@@ -835,9 +835,20 @@ public interface HadoopShims {
     @VisibleForTesting
     public void createEncryptionZone(Path path, String keyName) throws IOException;
 
+    /**
+     * Creates an encryption key.
+     *
+     * @param keyName Name of the key
+     * @param bitLength Key encryption length in bits (128 or 256).
+     * @throws IOException If an error occurs while creating the encryption key
+     * @throws NoSuchAlgorithmException If cipher algorithm is invalid.
+     */
     @VisibleForTesting
-    public void createKey(String keyName, Configuration conf)
+    public void createKey(String keyName, int bitLength)
       throws IOException, NoSuchAlgorithmException;
+
+    @VisibleForTesting
+    public void deleteKey(String keyName) throws IOException;
   }
 
   /**
@@ -868,9 +879,14 @@ public interface HadoopShims {
     }
 
     @Override
-    public void createKey(String keyName, Configuration conf) {
+    public void createKey(String keyName, int bitLength) {
     /* not supported */
     }
+
+    @Override
+    public void deleteKey(String keyName) throws IOException {
+    /* not supported */
+    };
   }
 
   /**
