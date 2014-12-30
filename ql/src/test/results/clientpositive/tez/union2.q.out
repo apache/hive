@@ -31,10 +31,8 @@ STAGE PLANS:
                   alias: s1
                   Select Operator
                     Select Operator
-                      expressions: 1 (type: int)
-                      outputColumnNames: _col0
                       Group By Operator
-                        aggregations: count(_col0)
+                        aggregations: count(1)
                         mode: hash
                         outputColumnNames: _col0
                         Reduce Output Operator
@@ -46,10 +44,8 @@ STAGE PLANS:
                   alias: s1
                   Select Operator
                     Select Operator
-                      expressions: 1 (type: int)
-                      outputColumnNames: _col0
                       Group By Operator
-                        aggregations: count(_col0)
+                        aggregations: count(1)
                         mode: hash
                         outputColumnNames: _col0
                         Reduce Output Operator
