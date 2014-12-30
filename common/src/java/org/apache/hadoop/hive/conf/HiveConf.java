@@ -2477,12 +2477,6 @@ public class HiveConf extends Configuration {
     // Overlay the values of any system properties whose names appear in the list of ConfVars
     applySystemProperties();
 
-    if(this.get("hive.metastore.local", null) != null) {
-      l4j.warn("DEPRECATED: Configuration property hive.metastore.local no longer has any " +
-          "effect. Make sure to provide a valid value for hive.metastore.uris if you are " +
-          "connecting to a remote metastore.");
-    }
-
     if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
       this.get("hive.metastore.ds.retry.interval") != null) {
         l4j.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
