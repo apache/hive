@@ -25,9 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
-import org.apache.hadoop.hive.ql.session.SessionState;
-
 
 /**
  * IOContext basically contains the position information of the current
@@ -45,11 +42,8 @@ public class IOContext {
  };
 
   private static Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
-  public static Map<String, IOContext> getMap() {
-    return inputNameIOContextMap;
-  }
 
-  public static IOContext get() {
+  private static IOContext get() {
     return IOContext.threadLocal.get();
   }
 
@@ -107,27 +101,6 @@ public class IOContext {
     this.currentRow = 0;
     this.isBlockPointer = true;
     this.ioExceptions = false;
-  }
-
-  /**
-   * Copy all fields values from orig to dest, all existing fields in dest will be overwritten.
-   *
-   * @param dest the IOContext to copy to
-   * @param orig the IOContext to copy from
-   */
-  public static void copy(IOContext dest, IOContext orig) {
-    dest.currentBlockStart = orig.currentBlockStart;
-    dest.nextBlockStart = orig.nextBlockStart;
-    dest.currentRow = orig.currentRow;
-    dest.isBlockPointer = orig.isBlockPointer;
-    dest.ioExceptions = orig.ioExceptions;
-    dest.useSorted = orig.useSorted;
-    dest.isBinarySearching = orig.isBinarySearching;
-    dest.endBinarySearch = orig.endBinarySearch;
-    dest.comparison = orig.comparison;
-    dest.genericUDFClassName = orig.genericUDFClassName;
-    dest.ri = orig.ri;
-    dest.inputPath = orig.inputPath;
   }
 
   public long getCurrentBlockStart() {

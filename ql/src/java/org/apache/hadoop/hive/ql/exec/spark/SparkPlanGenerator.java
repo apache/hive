@@ -175,7 +175,8 @@ public class SparkPlanGenerator {
 
     JavaPairRDD<WritableComparable, Writable> hadoopRDD = sc.hadoopRDD(jobConf, ifClass,
         WritableComparable.class, Writable.class);
-    MapInput result = new MapInput(sparkPlan, hadoopRDD, cloneToWork.containsKey(mapWork));
+    // Caching is disabled for MapInput due to HIVE-8920
+    MapInput result = new MapInput(sparkPlan, hadoopRDD, false/*cloneToWork.containsKey(mapWork)*/);
     return result;
   }
 

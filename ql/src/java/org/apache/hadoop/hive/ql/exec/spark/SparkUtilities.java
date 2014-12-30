@@ -36,9 +36,6 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public class SparkUtilities {
 
-  // Used to save and retrieve IOContext for multi-insertion.
-  public static final String MAP_IO_CONTEXT = "MAP_IO_CONTEXT";
-
   public static HiveKey copyHiveKey(HiveKey key) {
     HiveKey copy = new HiveKey();
     copy.setDistKeyLength(key.getDistKeyLength());
