@@ -1692,7 +1692,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   static HashMap<String, String> getProps(ASTNode prop) {
-    HashMap<String, String> mapProp = new HashMap<String, String>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    HashMap<String, String> mapProp = new LinkedHashMap<String, String>();
     readProps(prop, mapProp);
     return mapProp;
   }
