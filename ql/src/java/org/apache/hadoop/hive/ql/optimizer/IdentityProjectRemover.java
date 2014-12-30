@@ -24,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterators;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -91,6 +94,11 @@ public class IdentityProjectRemover implements Transform {
         return null;
       }
       Operator<? extends OperatorDesc> parent = parents.get(0);
+      if (parent instanceof ReduceSinkOperator && Iterators.any(sel.getChildOperators().iterator(),
+          Predicates.instanceOf(ReduceSinkOperator.class))) {
+        // For RS-SEL-RS case. reducer operator in reducer task cannot be null in task compiler
+        return null;
+      }
       if(sel.isIdentitySelect()) {
         parent.removeChildAndAdoptItsChildren(sel);
         LOG.debug("Identity project remover optimization removed : " + sel);
