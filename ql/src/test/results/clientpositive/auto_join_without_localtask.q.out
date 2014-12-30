@@ -944,8 +944,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 RUN: Stage-10:CONDITIONAL
-RUN: Stage-14:MAPREDLOCAL
-RUN: Stage-9:MAPRED
+RUN: Stage-13:MAPREDLOCAL
+RUN: Stage-8:MAPRED
 RUN: Stage-7:CONDITIONAL
 RUN: Stage-12:MAPREDLOCAL
 RUN: Stage-6:MAPRED
@@ -1005,7 +1005,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 RUN: Stage-10:CONDITIONAL
-RUN: Stage-14:MAPREDLOCAL
+RUN: Stage-13:MAPREDLOCAL
 RUN: Stage-3:MAPRED
 RUN: Stage-7:CONDITIONAL
 RUN: Stage-12:MAPREDLOCAL
