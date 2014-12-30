@@ -1000,6 +1000,9 @@ public final class ObjectInspectorUtils {
   }
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
+    if (oi instanceof ConstantObjectInspector) {
+      return (ConstantObjectInspector) oi;  
+    }
     ObjectInspector writableOI = getStandardObjectInspector(oi, ObjectInspectorCopyOption.WRITABLE);
     Object writableValue =
       ObjectInspectorConverters.getConverter(oi, writableOI).convert(value);

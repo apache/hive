@@ -58,11 +58,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -167,11 +167,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -250,11 +250,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: length(key) (type: int), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: length(key) (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -324,11 +324,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: abs(length(key)) (type: int), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: abs(length(key)) (type: int)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -400,12 +400,12 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 3 (type: int), 1 (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col2)
-                keys: _col0 (type: string), _col1 (type: int)
+                aggregations: count(1)
+                keys: _col0 (type: string), 3 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -483,11 +483,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: value (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -564,11 +564,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -943,12 +943,12 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 3 (type: int), 1 (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col2)
-                keys: _col0 (type: string), _col1 (type: int)
+                aggregations: count(1)
+                keys: _col0 (type: string), 3 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1055,11 +1055,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 bucketGroup: true
                 keys: _col0 (type: string)
                 mode: hash
@@ -1137,11 +1137,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: value (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -1218,11 +1218,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col2)
+                aggregations: count(1)
                 bucketGroup: true
                 keys: _col0 (type: string), _col1 (type: string)
                 mode: hash
@@ -1352,11 +1352,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string)
+              outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col1)
+                aggregations: count(1)
                 bucketGroup: true
                 keys: _col0 (type: string)
                 mode: hash
@@ -1434,11 +1434,11 @@ STAGE PLANS:
             alias: clustergroupby
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: string), key (type: string), 1 (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: value (type: string), key (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(_col2)
+                aggregations: count(1)
                 keys: _col0 (type: string), _col1 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
