@@ -771,9 +771,14 @@ public class DagUtils {
     String hdfsDirPathStr = jarPathStr;
     Path hdfsDirPath = new Path(hdfsDirPathStr);
 
-    FileStatus fstatus = fs.getFileStatus(hdfsDirPath);
-    if (!fstatus.isDir()) {
-      throw new IOException(ErrorMsg.INVALID_DIR.format(hdfsDirPath.toString()));
+    try {
+      FileStatus fstatus = fs.getFileStatus(hdfsDirPath);
+      if (!fstatus.isDir()) {
+        throw new IOException(ErrorMsg.INVALID_DIR.format(hdfsDirPath.toString()));
+      }
+    } catch (FileNotFoundException e) {
+      // directory does not exist, create it
+      fs.mkdirs(hdfsDirPath);
     }
 
     Path retPath = new Path(hdfsDirPath.toString() + "/.hiveJars");
