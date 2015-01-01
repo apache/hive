@@ -303,7 +303,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
     smbMapJoinContext = new HashMap<SMBMapJoinOperator, QBJoinTree>();
-    topToTable = new HashMap<TableScanOperator, Table>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    topToTable = new LinkedHashMap<TableScanOperator, Table>();
     fsopToTable = new HashMap<FileSinkOperator, Table>();
     reduceSinkOperatorsAddedByEnforceBucketingSorting = new ArrayList<ReduceSinkOperator>();
     topToTableProps = new HashMap<TableScanOperator, Map<String, String>>();
