@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -61,9 +61,8 @@ public class CheckTableAccessHook implements ExecuteWithHookContext {
     Map<Operator<? extends OperatorDesc>, Map<String, List<String>>> operatorToTableAccessMap =
       tableAccessInfo.getOperatorToTableAccessMap();
 
-    // We need a new map to ensure output is always produced in the same order.
-    // This makes tests that use this hook deterministic.
-    Map<String, String> outputOrderedMap = new HashMap<String, String>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    Map<String, String> outputOrderedMap = new LinkedHashMap<String, String>();
 
     for (Map.Entry<Operator<? extends OperatorDesc>, Map<String, List<String>>> tableAccess:
         operatorToTableAccessMap.entrySet()) {

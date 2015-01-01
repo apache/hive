@@ -22,8 +22,8 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,20 +35,23 @@ public class ColumnAccessInfo {
   private final Map<String, Set<String>> tableToColumnAccessMap;
 
   public ColumnAccessInfo() {
-    tableToColumnAccessMap = new HashMap<String, Set<String>>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    tableToColumnAccessMap = new LinkedHashMap<String, Set<String>>();
   }
 
   public void add(String table, String col) {
     Set<String> tableColumns = tableToColumnAccessMap.get(table);
     if (tableColumns == null) {
-      tableColumns = new HashSet<String>();
+      // Must be deterministic order set for consistent q-test output across Java versions
+      tableColumns = new LinkedHashSet<String>();
       tableToColumnAccessMap.put(table, tableColumns);
     }
     tableColumns.add(col);
   }
 
   public Map<String, List<String>> getTableToColumnAccessMap() {
-    Map<String, List<String>> mapping = new HashMap<String, List<String>>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    Map<String, List<String>> mapping = new LinkedHashMap<String, List<String>>();
     for (Map.Entry<String, Set<String>> entry : tableToColumnAccessMap.entrySet()) {
       List<String> sortedCols = new ArrayList<String>(entry.getValue());
       Collections.sort(sortedCols);
