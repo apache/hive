@@ -780,6 +780,7 @@ public class Commands {
             logThread.start();
             hasResults = stmnt.execute(sql);
             logThread.interrupt();
+            logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
           }
         }
 
@@ -847,6 +848,7 @@ public class Commands {
               return;
             } catch (InterruptedException e) {
               beeLine.debug("Getting log thread is interrupted, since query is done!");
+              showRemainingLogsIfAny(hiveStatement);
               return;
             }
           }
