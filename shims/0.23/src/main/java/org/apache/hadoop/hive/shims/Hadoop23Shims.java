@@ -1020,16 +1020,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         throw new IOException("HDFS security key provider is not configured on your server.");
       }
 
-      if (keyProvider.getMetadata(keyName) != null) {
-        LOG.info("key '" + keyName + "' already exists");
-        return;
+      if (keyProvider.getMetadata(keyName) == null) {
+        final KeyProvider.Options options = new Options(this.conf);
+        options.setCipher(HDFS_SECURITY_DEFAULT_CIPHER);
+        options.setBitLength(bitLength);
+        keyProvider.createKey(keyName, options);
+        keyProvider.flush();
+      } else {
+        throw new IOException("key '" + keyName + "' already exists");
       }
-
-      final KeyProvider.Options options = new Options(this.conf);
-      options.setCipher(HDFS_SECURITY_DEFAULT_CIPHER);
-      options.setBitLength(bitLength);
-      keyProvider.createKey(keyName, options);
-      keyProvider.flush();
     }
 
     @Override
