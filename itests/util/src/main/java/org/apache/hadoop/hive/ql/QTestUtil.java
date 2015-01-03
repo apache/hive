@@ -111,16 +111,8 @@ public class QTestUtil {
 
   public static final String UTF_8 = "UTF-8";
 
-  // database names used for testing the encrypted databases
-  private static final String ENCRYPTED_WITH_128_BITS_KEY_DB_NAME = "encryptedwith128bitskeydb";
-  private static final String ENCRYPTED_WITH_256_BITS_KEY_DB_NAME = "encryptedwith256bitskeydb";
-
   // security property names
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
-
-  // keyNames used for encrypting the hdfs path
-  private final String KEY_NAME_IN_128 = "k128";
-  private final String KEY_NAME_IN_256 = "k256";
 
   private static final Log LOG = LogFactory.getLog("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -587,19 +579,6 @@ public class QTestUtil {
   }
 
   /**
-   * For the security type, we should reserve the encrypted databases for the test purpose
-   */
-  private boolean checkDBIfNeedToBePreserved(String dbName) {
-    if (clusterType == MiniClusterType.encrypted) {
-      return (DEFAULT_DATABASE_NAME.equals(dbName) ||
-        ENCRYPTED_WITH_128_BITS_KEY_DB_NAME.equals(dbName) ||
-        ENCRYPTED_WITH_256_BITS_KEY_DB_NAME.equals(dbName));
-    } else {
-      return DEFAULT_DATABASE_NAME.equals(dbName);
-    }
-  }
-
-  /**
    * Clear out any side effects of running tests
    */
   public void clearTestSideEffects() throws Exception {
@@ -607,11 +586,11 @@ public class QTestUtil {
       return;
     }
     // Delete any tables other than the source tables
-    // and any databases other than the default database or encrypted dbs in encryption mode.
+    // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
       SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
-        if (!checkDBIfNeedToBePreserved(dbName) || !srcTables.contains(tblName)) {
+        if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
           Table tblObj = db.getTable(tblName);
           // dropping index table can not be dropped directly. Dropping the base
           // table will automatically drop all its index table
@@ -629,7 +608,7 @@ public class QTestUtil {
           }
         }
       }
-      if (!checkDBIfNeedToBePreserved(dbName)) {
+      if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
         // Drop cascade, may need to drop functions
         db.dropDatabase(dbName, true, true, true);
       }
@@ -751,10 +730,6 @@ public class QTestUtil {
     cliDriver.processLine(initCommands);
 
     conf.setBoolean("hive.test.init.phase", false);
-
-    if (clusterType == MiniClusterType.encrypted) {
-      initEncryptionZone();
-    }
   }
 
   public void init() throws Exception {
@@ -773,20 +748,6 @@ public class QTestUtil {
     drv.init();
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(conf);
-  }
-
-  private void initEncryptionZone() throws IOException, NoSuchAlgorithmException, HiveException {
-    hes.createKey(KEY_NAME_IN_128, 128);
-    hes.createEncryptionZone(
-      new Path(db.getDatabase(ENCRYPTED_WITH_128_BITS_KEY_DB_NAME).getLocationUri()),
-      KEY_NAME_IN_128);
-
-    // AES-256 can be used only if JCE is installed in your environment. Otherwise, any encryption
-    // with this key will fail. Keys can be created, but when you try to encrypt something, fails.
-    hes.createKey(KEY_NAME_IN_256, 256);
-    hes.createEncryptionZone(
-      new Path(db.getDatabase(ENCRYPTED_WITH_256_BITS_KEY_DB_NAME).getLocationUri()),
-      KEY_NAME_IN_256);
   }
 
   public void init(String tname) throws Exception {

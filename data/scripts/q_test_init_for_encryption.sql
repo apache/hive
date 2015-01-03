@@ -1,7 +1,3 @@
-CREATE DATABASE encryptedWith128BitsKeyDB;
-
-CREATE DATABASE encryptedWith256BitsKeyDB;
-
 DROP TABLE IF EXISTS src;
 
 CREATE TABLE src(key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
