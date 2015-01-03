@@ -1,28 +1,36 @@
-PREHOOK: query: CREATE TABLE encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey(key STRING, value STRING)
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:encryptedwith128bitskeydb
-PREHOOK: Output: encryptedWith128BitsKeyDB@encryptedTableIn128BitsKey
-POSTHOOK: query: CREATE TABLE encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey(key STRING, value STRING)
+PREHOOK: Input: /user/hive/warehouse/default/encrypted_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_table
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:encryptedwith128bitskeydb
-POSTHOOK: Output: encryptedWith128BitsKeyDB@encryptedTableIn128BitsKey
-PREHOOK: query: INSERT OVERWRITE TABLE encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey SELECT * FROM src
+POSTHOOK: Input: /user/hive/warehouse/default/encrypted_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_table
+Encryption key created: 'key_128'
+Encryption zone created: '/user/hive/warehouse/default/encrypted_table' using key: 'key_128'
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: encryptedwith128bitskeydb@encryptedtablein128bitskey
-POSTHOOK: query: INSERT OVERWRITE TABLE encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey SELECT * FROM src
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: encryptedwith128bitskeydb@encryptedtablein128bitskey
-POSTHOOK: Lineage: encryptedtablein128bitskey.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: encryptedtablein128bitskey.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey
+POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM encrypted_table
 PREHOOK: type: QUERY
-PREHOOK: Input: encryptedwith128bitskeydb@encryptedtablein128bitskey
+PREHOOK: Input: default@encrypted_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey
+POSTHOOK: query: SELECT * FROM encrypted_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: encryptedwith128bitskeydb@encryptedtablein128bitskey
+POSTHOOK: Input: default@encrypted_table
 #### A masked pattern was here ####
 238	val_238
 86	val_86
@@ -523,10 +531,10 @@ POSTHOOK: Input: encryptedwith128bitskeydb@encryptedtablein128bitskey
 403	val_403
 400	val_400
 200	val_200
-97	val_97
-PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey t2 WHERE t1.key = t2.key
+97	val
+PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey t2 WHERE t1.key = t2.key
+POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -539,8 +547,7 @@ TOK_QUERY
             t1
          TOK_TABREF
             TOK_TABNAME
-               encryptedWith128BitsKeyDB
-               encryptedTableIn128BitsKey
+               encrypted_table
             t2
    TOK_INSERT
       TOK_DESTINATION
@@ -571,19 +578,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: key (type: string)
+                key expressions: UDFToDouble(key) (type: double)
                 sort order: +
-                Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
+                Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
                 tag: 1
-                value expressions: value (type: string)
+                value expressions: key (type: int), value (type: string)
                 auto parallelism: false
           TableScan
             alias: t1
@@ -591,63 +598,19 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: key is not null (type: boolean)
+              predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
-                key expressions: key (type: string)
+                key expressions: UDFToDouble(key) (type: double)
                 sort order: +
-                Map-reduce partition columns: key (type: string)
+                Map-reduce partition columns: UDFToDouble(key) (type: double)
                 Statistics: Num rows: 15 Data size: 3006 Basic stats: COMPLETE Column stats: NONE
                 tag: 0
-                value expressions: value (type: string)
+                value expressions: key (type: string), value (type: string)
                 auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: encryptedtablein128bitskey
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              COLUMN_STATS_ACCURATE true
-              bucket_count -1
-              columns key,value
-              columns.comments  
-              columns.types string:string
-#### A masked pattern was here ####
-              name encryptedwith128bitskeydb.encryptedtablein128bitskey
-              numFiles 1
-              numRows 500
-              rawDataSize 5312
-              serialization.ddl struct encryptedtablein128bitskey { string key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                COLUMN_STATS_ACCURATE true
-                bucket_count -1
-                columns key,value
-                columns.comments  
-                columns.types string:string
-#### A masked pattern was here ####
-                name encryptedwith128bitskeydb.encryptedtablein128bitskey
-                numFiles 1
-                numRows 500
-                rawDataSize 5312
-                serialization.ddl struct encryptedtablein128bitskey { string key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: encryptedwith128bitskeydb.encryptedtablein128bitskey
-            name: encryptedwith128bitskeydb.encryptedtablein128bitskey
 #### A masked pattern was here ####
           Partition
             base file name: src
@@ -692,40 +655,84 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+#### A masked pattern was here ####
+          Partition
+            base file name: encrypted_table
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns key,value
+              columns.comments  
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.encrypted_table
+              numFiles 0
+              numRows 0
+              rawDataSize 0
+              serialization.ddl struct encrypted_table { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns key,value
+                columns.comments  
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.encrypted_table
+                numFiles 0
+                numRows 0
+                rawDataSize 0
+                serialization.ddl struct encrypted_table { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.encrypted_table
+            name: default.encrypted_table
       Truncated Path -> Alias:
-        /encryptedwith128bitskeydb.db/encryptedtablein128bitskey [t2]
         /src [t1]
+#### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {KEY.reducesinkkey0} {VALUE._col0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           outputColumnNames: _col0, _col1, _col5, _col6
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 30 Data size: 3253 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             isSamplingPred: false
             predicate: (_col0 = _col5) (type: boolean)
-            Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 15 Data size: 1626 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string)
+              expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int), _col6 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 15 Data size: 1626 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 1626 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       columns _col0,_col1,_col2,_col3
-                      columns.types string:string:string:string
+                      columns.types string:string:int:string
                       escape.delim \
                       hive.serialization.extend.nesting.levels true
                       serialization.format 1
