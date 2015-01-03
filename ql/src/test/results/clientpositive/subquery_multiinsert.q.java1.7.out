@@ -1,4 +1,5 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 CREATE TABLE src_4(
   key STRING, 
@@ -8,6 +9,7 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_4
 POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 CREATE TABLE src_4(
   key STRING, 
@@ -526,13 +528,13 @@ STAGE DEPENDENCIES:
   Stage-17 has a backup stage: Stage-2
   Stage-13 depends on stages: Stage-17
   Stage-15 depends on stages: Stage-2, Stage-13
-  Stage-4 depends on stages: Stage-15
-  Stage-1 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-1
-  Stage-16 depends on stages: Stage-2, Stage-13
-  Stage-12 depends on stages: Stage-16
+  Stage-12 depends on stages: Stage-15
   Stage-0 depends on stages: Stage-12
   Stage-7 depends on stages: Stage-0
+  Stage-16 depends on stages: Stage-2, Stage-13
+  Stage-4 depends on stages: Stage-16
+  Stage-1 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-1
   Stage-2
 
 STAGE PLANS:
@@ -628,6 +630,70 @@ STAGE PLANS:
   Stage: Stage-15
     Map Reduce Local Work
       Alias -> Map Local Tables:
+        sq_1:a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        sq_1:a 
+          TableScan
+            alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((key > '9') and value is not null) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 key (type: string), value (type: string)
+                      1 _col0 (type: string), _col1 (type: string)
+
+  Stage: Stage-12
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Left Semi Join 0 to 1
+              keys:
+                0 key (type: string), value (type: string)
+                1 _col0 (type: string), _col1 (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.src_4
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_4
+
+  Stage: Stage-7
+    Stats-Aggr Operator
+
+  Stage: Stage-16
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
         sq_2:s1 
           Fetch Operator
             limit: -1
@@ -699,70 +765,6 @@ STAGE PLANS:
               name: default.src_5
 
   Stage: Stage-5
-    Stats-Aggr Operator
-
-  Stage: Stage-16
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        sq_1:a 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        sq_1:a 
-          TableScan
-            alias: a
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((key > '9') and value is not null) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
-                  HashTable Sink Operator
-                    keys:
-                      0 key (type: string), value (type: string)
-                      1 _col0 (type: string), _col1 (type: string)
-
-  Stage: Stage-12
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Map Join Operator
-              condition map:
-                   Left Semi Join 0 to 1
-              keys:
-                0 key (type: string), value (type: string)
-                1 _col0 (type: string), _col1 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src_4
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_4
-
-  Stage: Stage-7
     Stats-Aggr Operator
 
   Stage: Stage-2
@@ -845,12 +847,12 @@ RUN: Stage-17:MAPREDLOCAL
 RUN: Stage-13:MAPRED
 RUN: Stage-15:MAPREDLOCAL
 RUN: Stage-16:MAPREDLOCAL
-RUN: Stage-4:MAPRED
 RUN: Stage-12:MAPRED
-RUN: Stage-1:MOVE
+RUN: Stage-4:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-5:STATS
+RUN: Stage-1:MOVE
 RUN: Stage-7:STATS
+RUN: Stage-5:STATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4
