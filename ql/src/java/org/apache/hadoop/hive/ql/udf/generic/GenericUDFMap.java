@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -40,7 +41,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + "Creates a map with the given key/value pairs ")
 public class GenericUDFMap extends GenericUDF {
   private transient Converter[] converters;
-  HashMap<Object, Object> ret = new HashMap<Object, Object>();
+
+  // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
+  LinkedHashMap<Object, Object> ret = new LinkedHashMap<Object, Object>();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -82,17 +85,10 @@ public class GenericUDFMap extends GenericUDF {
       }
     }
 
-    ObjectInspector keyOI = keyOIResolver.get();
-    ObjectInspector valueOI = valueOIResolver.get();
-
-    if (keyOI == null) {
-      keyOI = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
-    }
-    if (valueOI == null) {
-      valueOI = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
-    }
+    ObjectInspector keyOI =
+        keyOIResolver.get(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    ObjectInspector valueOI =
+        valueOIResolver.get(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
 
     converters = new Converter[arguments.length];
 

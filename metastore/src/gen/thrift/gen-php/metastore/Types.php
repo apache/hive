@@ -12890,4 +12890,8 @@ $GLOBALS['hive_metastore_CONSTANTS']['FILE_OUTPUT_FORMAT'] = "file.outputformat"
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_STORAGE'] = "storage_handler";
 
+$GLOBALS['hive_metastore_CONSTANTS']['TABLE_IS_TRANSACTIONAL'] = "transactional";
+
+$GLOBALS['hive_metastore_CONSTANTS']['TABLE_NO_AUTO_COMPACT'] = "no_auto_compaction";
+
 

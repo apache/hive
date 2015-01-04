@@ -1,0 +1,179 @@
+PREHOOK: query: -- Verify that nullable fields properly work
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
+CREATE TABLE test_serializer(string1 STRING,
+                             int1 INT,
+                             tinyint1 TINYINT,
+                             smallint1 SMALLINT,
+                             bigint1 BIGINT,
+                             boolean1 BOOLEAN,
+                             float1 FLOAT,
+                             double1 DOUBLE,
+                             list1 ARRAY<STRING>,
+                             map1 MAP<STRING,INT>,
+                             struct1 STRUCT<sint:INT,sboolean:BOOLEAN,sstring:STRING>,
+                             enum1 STRING,
+                             nullableint INT,
+                             bytes1 BINARY,
+                             fixed1 BINARY)
+ ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
+ STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_serializer
+POSTHOOK: query: -- Verify that nullable fields properly work
+
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
+CREATE TABLE test_serializer(string1 STRING,
+                             int1 INT,
+                             tinyint1 TINYINT,
+                             smallint1 SMALLINT,
+                             bigint1 BIGINT,
+                             boolean1 BOOLEAN,
+                             float1 FLOAT,
+                             double1 DOUBLE,
+                             list1 ARRAY<STRING>,
+                             map1 MAP<STRING,INT>,
+                             struct1 STRUCT<sint:INT,sboolean:BOOLEAN,sstring:STRING>,
+                             enum1 STRING,
+                             nullableint INT,
+                             bytes1 BINARY,
+                             fixed1 BINARY)
+ ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
+ STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_serializer
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_serializer
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_serializer
+PREHOOK: query: CREATE TABLE as_avro
+  ROW FORMAT
+  SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+  STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+  TBLPROPERTIES (
+    'avro.schema.literal'='{
+      "namespace": "com.howdy",
+      "name": "some_schema",
+      "type": "record",
+      "fields": [
+        { "name": "string1", "type": ["null", "string"] },
+        { "name": "int1", "type": ["null", "int"] },
+        { "name": "tinyint1", "type": ["null", "int"] },
+        { "name": "smallint1", "type": ["null", "int"] },
+        { "name": "bigint1", "type": ["null", "long"] },
+        { "name": "boolean1", "type": ["null", "boolean"] },
+        { "name": "float1", "type": ["null", "float"] },
+        { "name": "double1", "type": ["null", "double"] },
+        { "name": "list1", "type": ["null", {"type": "array", "items": "string"}] },
+        { "name": "map1", "type": ["null", {"type": "map", "values": "int"}] },
+        { "name": "struct1", "type": ["null", {"type": "record", "name": "struct1_name", "fields": [
+          { "name": "sInt", "type": "int" },
+          { "name": "sBoolean", "type": "boolean" },
+          { "name": "sString", "type": "string" }
+        ]}] },
+        { "name": "enum1", "type": ["null", {"type": "enum", "name": "enum1_values", "symbols": ["BLUE", "RED", "GREEN"]}] },
+        { "name": "nullableint", "type": ["null", "int"] },
+        { "name": "bytes1", "type": ["null", "bytes"] },
+        { "name": "fixed1", "type": ["null", {"type": "fixed", "name": "threebytes", "size": 3}] }
+      ]
+    }'
+  )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@as_avro
+POSTHOOK: query: CREATE TABLE as_avro
+  ROW FORMAT
+  SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+  STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+  TBLPROPERTIES (
+    'avro.schema.literal'='{
+      "namespace": "com.howdy",
+      "name": "some_schema",
+      "type": "record",
+      "fields": [
+        { "name": "string1", "type": ["null", "string"] },
+        { "name": "int1", "type": ["null", "int"] },
+        { "name": "tinyint1", "type": ["null", "int"] },
+        { "name": "smallint1", "type": ["null", "int"] },
+        { "name": "bigint1", "type": ["null", "long"] },
+        { "name": "boolean1", "type": ["null", "boolean"] },
+        { "name": "float1", "type": ["null", "float"] },
+        { "name": "double1", "type": ["null", "double"] },
+        { "name": "list1", "type": ["null", {"type": "array", "items": "string"}] },
+        { "name": "map1", "type": ["null", {"type": "map", "values": "int"}] },
+        { "name": "struct1", "type": ["null", {"type": "record", "name": "struct1_name", "fields": [
+          { "name": "sInt", "type": "int" },
+          { "name": "sBoolean", "type": "boolean" },
+          { "name": "sString", "type": "string" }
+        ]}] },
+        { "name": "enum1", "type": ["null", {"type": "enum", "name": "enum1_values", "symbols": ["BLUE", "RED", "GREEN"]}] },
+        { "name": "nullableint", "type": ["null", "int"] },
+        { "name": "bytes1", "type": ["null", "bytes"] },
+        { "name": "fixed1", "type": ["null", {"type": "fixed", "name": "threebytes", "size": 3}] }
+      ]
+    }'
+  )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@as_avro
+PREHOOK: query: INSERT OVERWRITE TABLE as_avro SELECT * FROM test_serializer
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_serializer
+PREHOOK: Output: default@as_avro
+POSTHOOK: query: INSERT OVERWRITE TABLE as_avro SELECT * FROM test_serializer
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_serializer
+POSTHOOK: Output: default@as_avro
+POSTHOOK: Lineage: as_avro.bigint1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: as_avro.boolean1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:binary, comment:null), ]
+POSTHOOK: Lineage: as_avro.double1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: as_avro.enum1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:enum1, type:string, comment:null), ]
+POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:binary, comment:null), ]
+POSTHOOK: Lineage: as_avro.float1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: as_avro.int1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: as_avro.list1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:list1, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: as_avro.map1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:map1, type:map<string,int>, comment:null), ]
+POSTHOOK: Lineage: as_avro.nullableint SIMPLE [(test_serializer)test_serializer.FieldSchema(name:nullableint, type:int, comment:null), ]
+POSTHOOK: Lineage: as_avro.smallint1 EXPRESSION [(test_serializer)test_serializer.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: as_avro.string1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: as_avro.struct1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:struct1, type:struct<sint:int,sboolean:boolean,sstring:string>, comment:null), ]
+POSTHOOK: Lineage: as_avro.tinyint1 EXPRESSION [(test_serializer)test_serializer.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+PREHOOK: query: SELECT * FROM as_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@as_avro
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM as_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@as_avro
+#### A masked pattern was here ####
+why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+another record	98	4	101	9999999	false	99.89	9.0E-8	["beta"]	{"Earth":101}	{"sint":1134,"sboolean":false,"sstring":"wazzup"}	RED	NULL		ef
+third record	45	5	102	999999999	true	89.99	9.0E-14	["alpha","gamma"]	{"Earth":237,"Bob":723}	{"sint":102,"sboolean":false,"sstring":"BNL"}	GREEN	NULL		hi
+NULL	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	NULL	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	NULL	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	NULL	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	NULL	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	NULL	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		NULL

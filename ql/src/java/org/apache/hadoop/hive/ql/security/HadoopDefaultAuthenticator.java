@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
@@ -49,7 +50,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
     this.conf = conf;
     UserGroupInformation ugi = null;
     try {
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      ugi = Utils.getUGI();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -59,7 +60,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
           "Can not initialize HadoopDefaultAuthenticator.");
     }
 
-    this.userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    this.userName = ugi.getShortUserName();
     if (ugi.getGroupNames() != null) {
       this.groupNames = Arrays.asList(ugi.getGroupNames());
     }

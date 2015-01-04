@@ -51,6 +51,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
@@ -105,6 +106,7 @@ public class TestJdbcDriver2 {
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
     Class.forName(driverName);
     Connection con1 = getConnection("default");
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE.varname, "" + true);
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -626,6 +628,12 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public final void testSelectAllFromView() throws Exception {
+    doTestSelectAll(viewName, -1, -1); // tests not setting maxRows (return all)
+    doTestSelectAll(viewName, 0, -1); // tests setting maxRows to 0 (return all)
+  }
+
+  @Test
   public final void testSelectAllPartioned() throws Exception {
     doTestSelectAll(partitionedTableName, -1, -1); // tests not setting maxRows
     // (return all)
@@ -920,17 +928,20 @@ public class TestJdbcDriver2 {
     assertEquals(
         "Unexpected column count", expectedColCount, meta.getColumnCount());
 
-    String colQualifier = ((tableName != null) && !tableName.isEmpty()) ? tableName.toLowerCase() + "."  : "";
     boolean moreRow = res.next();
     while (moreRow) {
       try {
         i++;
-        assertEquals(res.getInt(1), res.getInt(colQualifier + "under_col"));
-        assertEquals(res.getString(1), res.getString(colQualifier + "under_col"));
-        assertEquals(res.getString(2), res.getString(colQualifier + "value"));
+        assertEquals(res.getInt(1), res.getInt(tableName + ".under_col"));
+        assertEquals(res.getInt(1), res.getInt("under_col"));
+        assertEquals(res.getString(1), res.getString(tableName + ".under_col"));
+        assertEquals(res.getString(1), res.getString("under_col"));
+        assertEquals(res.getString(2), res.getString(tableName + ".value"));
+        assertEquals(res.getString(2), res.getString("value"));
         if (isPartitionTable) {
           assertEquals(res.getString(3), partitionedColumnValue);
-          assertEquals(res.getString(3), res.getString(colQualifier + partitionedColumnName));
+          assertEquals(res.getString(3), res.getString(partitionedColumnName));
+          assertEquals(res.getString(3), res.getString(tableName + "."+ partitionedColumnName));
         }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
@@ -1846,7 +1857,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "_c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");

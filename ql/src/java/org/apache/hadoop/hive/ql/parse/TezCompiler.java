@@ -150,6 +150,7 @@ public class TezCompiler extends TaskCompiler {
           LOG.info("Found cycle in operator plan...");
           cycleFree = false;
           removeEventOperator(component);
+          break;
         }
       }
       LOG.info("Cycle free: " + cycleFree);
@@ -227,7 +228,7 @@ public class TezCompiler extends TaskCompiler {
     for (Operator<?> child : children) {
       if (!indexes.containsKey(child)) {
         connect(child, index, nodes, indexes, lowLinks, components);
-        lowLinks.put(child, Math.min(lowLinks.get(o), lowLinks.get(child)));
+        lowLinks.put(o, Math.min(lowLinks.get(o), lowLinks.get(child)));
       } else if (nodes.contains(child)) {
         lowLinks.put(o, Math.min(lowLinks.get(o), indexes.get(child)));
       }

@@ -33,6 +33,6 @@ public interface HashTableLoader {
 
   void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp);
 
-  void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
-      throws HiveException;
+  void load(MapJoinTableContainer[] mapJoinTables,
+      MapJoinTableContainerSerDe[] mapJoinTableSerdes, long memUsage) throws HiveException;
 }

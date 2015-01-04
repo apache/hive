@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -61,9 +61,8 @@ public class CheckColumnAccessHook implements ExecuteWithHookContext {
     Map<String, List<String>> tableToColumnAccessMap =
       columnAccessInfo.getTableToColumnAccessMap();
 
-    // We need a new map to ensure output is always produced in the same order.
-    // This makes tests that use this hook deterministic.
-    Map<String, String> outputOrderedMap = new HashMap<String, String>();
+    // Must be deterministic order map for consistent test output across Java versions
+    Map<String, String> outputOrderedMap = new LinkedHashMap<String, String>();
 
     for (Map.Entry<String, List<String>> tableAccess : tableToColumnAccessMap.entrySet()) {
       StringBuilder perTableInfo = new StringBuilder();

@@ -39,4 +39,4 @@ SELECT map_keys(map("a", 1, "b", 2, "c", 3)) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-["b","a","c"]
+["a","b","c"]

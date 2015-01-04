@@ -68,6 +68,8 @@ public class TestTypeInfoToSchema {
       serdeConstants.VOID_TYPE_NAME);
   private static final TypeInfo DATE = TypeInfoFactory.getPrimitiveTypeInfo(
       serdeConstants.DATE_TYPE_NAME);
+  private static final TypeInfo TIMESTAMP =
+    TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
   private static final int PRECISION = 4;
   private static final int SCALE = 2;
   private static final TypeInfo DECIMAL = TypeInfoFactory.getPrimitiveTypeInfo(
@@ -252,6 +254,17 @@ public class TestTypeInfoToSchema {
 
     Assert.assertEquals("Test for date in avro schema failed",
         expectedSchema, getAvroSchemaString(DATE));
+  }
+
+  @Test
+  public void createAvroTimestampSchema() {
+    final String specificSchema = "{" +
+      "\"type\":\"long\"," +
+      "\"logicalType\":\"timestamp-millis\"}";
+    String expectedSchema = genSchema(specificSchema);
+
+    Assert.assertEquals("Test for timestamp in avro schema failed",
+      expectedSchema, getAvroSchemaString(TIMESTAMP));
   }
 
   @Test

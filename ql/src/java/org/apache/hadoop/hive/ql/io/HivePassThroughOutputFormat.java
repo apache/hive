@@ -21,80 +21,35 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  *  This pass through class is used to wrap OutputFormat implementations such that new OutputFormats not derived from
  *  HiveOutputFormat gets through the checker
  */
+public class HivePassThroughOutputFormat<K, V> implements HiveOutputFormat<K, V>{
 
-public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutputFormat<K, V>{
+  private final OutputFormat<?, ?> actualOutputFormat;
 
-  private OutputFormat<? super WritableComparable<?>, ? super Writable> actualOutputFormat;
-  private String actualOutputFormatClass = "";
-  private Configuration conf;
-  private boolean initialized;
-  public static final String HIVE_PASSTHROUGH_OF_CLASSNAME =
-                                  "org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat";
-
-  public static final String HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY =
-                                 "hive.passthrough.storagehandler.of";
-
-  public HivePassThroughOutputFormat() {
-    //construct this class through ReflectionUtils from FileSinkOperator
-    this.actualOutputFormat = null;
-    this.initialized = false;
-  }
-
-  private void createActualOF() throws IOException {
-    Class<? extends OutputFormat> cls;
-    try {
-      int e;
-      if (actualOutputFormatClass != null)
-       {
-        cls =
-           (Class<? extends OutputFormat>) Class.forName(actualOutputFormatClass, true,
-                Utilities.getSessionSpecifiedClassLoader());
-      } else {
-        throw new RuntimeException("Null pointer detected in actualOutputFormatClass");
-      }
-    } catch (ClassNotFoundException e) {
-      throw new IOException(e);
-    }
-    OutputFormat<? super WritableComparable<?>, ? super Writable> actualOF =
-         ReflectionUtils.newInstance(cls, this.getConf());
-    this.actualOutputFormat = actualOF;
+  public HivePassThroughOutputFormat(OutputFormat<?, ?> outputFormat) {
+    actualOutputFormat = outputFormat;
   }
 
   @Override
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
-    if (this.initialized == false) {
-      createActualOF();
-      this.initialized = true;
-    }
-   this.actualOutputFormat.checkOutputSpecs(ignored, job);
+    actualOutputFormat.checkOutputSpecs(ignored, job);
   }
 
   @Override
   public org.apache.hadoop.mapred.RecordWriter<K, V> getRecordWriter(FileSystem ignored,
        JobConf job, String name, Progressable progress) throws IOException {
-    if (this.initialized == false) {
-      createActualOF();
-      this.initialized = true;
-    }
-    return (RecordWriter<K, V>) this.actualOutputFormat.getRecordWriter(ignored,
+    return (RecordWriter<K, V>) actualOutputFormat.getRecordWriter(ignored,
                  job, name, progress);
   }
 
@@ -102,31 +57,12 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
   public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
-    if (this.initialized == false) {
-      createActualOF();
-    }
-    if (this.actualOutputFormat instanceof HiveOutputFormat) {
-      return ((HiveOutputFormat<K, V>) this.actualOutputFormat).getHiveRecordWriter(jc,
+    if (actualOutputFormat instanceof HiveOutputFormat) {
+      return ((HiveOutputFormat<K, V>) actualOutputFormat).getHiveRecordWriter(jc,
            finalOutPath, valueClass, isCompressed, tableProperties, progress);
     }
-    else {
-      FileSystem fs = finalOutPath.getFileSystem(jc);
-      HivePassThroughRecordWriter hivepassthroughrecordwriter = new HivePassThroughRecordWriter(
-              this.actualOutputFormat.getRecordWriter(fs, jc, null, progress));
-      return hivepassthroughrecordwriter;
-    }
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(Configuration config) {
-    if (config.get(HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
-      actualOutputFormatClass = config.get(HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY);
-    }
-    this.conf = config;
+    FileSystem fs = finalOutPath.getFileSystem(jc);
+    RecordWriter<?, ?> recordWriter = actualOutputFormat.getRecordWriter(fs, jc, null, progress);
+    return new HivePassThroughRecordWriter(recordWriter);
   }
 }

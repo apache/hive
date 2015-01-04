@@ -30,6 +30,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests for the compactor Cleaner thread
@@ -285,12 +286,12 @@ public class TestCleaner extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     LockResponse res = txnHandler.lock(req);
 
-    MetaStoreThread.BooleanPointer looped = new MetaStoreThread.BooleanPointer();
-    looped.boolVal = false;
+    AtomicBoolean looped = new AtomicBoolean();
+    looped.set(false);
     startCleaner(looped);
 
     // Make sure the compactor has a chance to run once
-    while (!looped.boolVal) {
+    while (!looped.get()) {
       Thread.currentThread().sleep(100);
     }
 
@@ -310,9 +311,9 @@ public class TestCleaner extends CompactorTest {
 
     // Unlock the previous lock
     txnHandler.unlock(new UnlockRequest(res.getLockid()));
-    looped.boolVal = false;
+    looped.set(false);
 
-    while (!looped.boolVal) {
+    while (!looped.get()) {
       Thread.currentThread().sleep(100);
     }
     stopThread();
@@ -356,12 +357,12 @@ public class TestCleaner extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     LockResponse res = txnHandler.lock(req);
 
-    MetaStoreThread.BooleanPointer looped = new MetaStoreThread.BooleanPointer();
-    looped.boolVal = false;
+    AtomicBoolean looped = new AtomicBoolean();
+    looped.set(false);
     startCleaner(looped);
 
     // Make sure the compactor has a chance to run once
-    while (!looped.boolVal) {
+    while (!looped.get()) {
       Thread.currentThread().sleep(100);
     }
 
@@ -383,9 +384,9 @@ public class TestCleaner extends CompactorTest {
 
     // Unlock the previous lock
     txnHandler.unlock(new UnlockRequest(res.getLockid()));
-    looped.boolVal = false;
+    looped.set(false);
 
-    while (!looped.boolVal) {
+    while (!looped.get()) {
       Thread.currentThread().sleep(100);
     }
     stopThread();

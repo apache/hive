@@ -109,6 +109,7 @@ TOK_DATE;
 TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
+TOK_TIMESTAMPLITERAL;
 TOK_STRING;
 TOK_CHAR;
 TOK_VARCHAR;
@@ -340,6 +341,8 @@ TOK_VIRTUAL_TABLE;
 TOK_VIRTUAL_TABREF;
 TOK_ANONYMOUS;
 TOK_COL_NAME;
+TOK_URI_TYPE;
+TOK_SERVER_TYPE;
 }
 
 
@@ -1040,16 +1043,16 @@ alterStatementSuffixRename[boolean table]
 alterStatementSuffixAddCol
 @init { pushMsg("add column statement", state); }
 @after { popMsg(state); }
-    : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
-    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList)
-    ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList)
+    : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN restrictOrCascade?
+    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
+    ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
     ;
 
 alterStatementSuffixRenameCol
 @init { pushMsg("rename column name", state); }
 @after { popMsg(state); }
-    : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
-    ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition? restrictOrCascade?
+    ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterStatementChangeColPosition? restrictOrCascade?)
     ;
 
 alterStatementSuffixUpdateStatsCol
@@ -1313,9 +1316,9 @@ descPartTypeExpr
 descStatement
 @init { pushMsg("describe statement", state); }
 @after { popMsg(state); }
-    : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY)? (parttype=descPartTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
+    : (KW_DESCRIBE|KW_DESC) (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
+    | (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY)? (parttype=descPartTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
-    | (KW_DESCRIBE|KW_DESC) (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;
 
 
@@ -1485,11 +1488,15 @@ privilegeObject
 privObject
     : (KW_DATABASE|KW_SCHEMA) identifier -> ^(TOK_DB_TYPE identifier)
     | KW_TABLE? tableName partitionSpec? -> ^(TOK_TABLE_TYPE tableName partitionSpec?)
+    | KW_URI (path=StringLiteral) ->  ^(TOK_URI_TYPE $path)
+    | KW_SERVER identifier -> ^(TOK_SERVER_TYPE identifier)
     ;
 
 privObjectCols
     : (KW_DATABASE|KW_SCHEMA) identifier -> ^(TOK_DB_TYPE identifier)
     | KW_TABLE? tableName (LPAREN cols=columnNameList RPAREN)? partitionSpec? -> ^(TOK_TABLE_TYPE tableName $cols? partitionSpec?)
+    | KW_URI (path=StringLiteral) ->  ^(TOK_URI_TYPE $path)
+    | KW_SERVER identifier -> ^(TOK_SERVER_TYPE identifier)
     ;
 
 privilegeList

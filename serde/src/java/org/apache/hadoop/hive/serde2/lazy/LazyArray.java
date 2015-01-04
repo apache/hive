@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyListObjectInspector;
-import org.apache.hadoop.io.Text;
 
 /**
  * LazyArray stores an array of Lazy Objects.
@@ -176,22 +175,20 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
    */
   private Object uncheckedGetElement(int index) {
     if (elementInited[index]) {
-      return arrayElements[index] == null ? null : arrayElements[index].getObject();
+      return arrayElements[index].getObject();
     }
     elementInited[index] = true;
 
-    Text nullSequence = oi.getNullSequence();
-
-    int elementLength = startPosition[index + 1] - startPosition[index] - 1;
-    if (elementLength == nullSequence.getLength()
-        && 0 == LazyUtils
-        .compare(bytes.getData(), startPosition[index], elementLength,
-        nullSequence.getBytes(), 0, nullSequence.getLength())) {
-      return arrayElements[index] = null;
+    int elementStart = startPosition[index];
+    int elementLength = startPosition[index + 1] - elementStart - 1;
+    if (arrayElements[index] == null) {
+      arrayElements[index] = LazyFactory.createLazyObject(oi.getListElementObjectInspector());
     }
-    arrayElements[index] = LazyFactory
-        .createLazyObject(oi.getListElementObjectInspector());
-    arrayElements[index].init(bytes, startPosition[index], elementLength);
+    if (isNull(oi.getNullSequence(), bytes, elementStart, elementLength)) {
+      arrayElements[index].setNull();
+    } else {
+      arrayElements[index].init(bytes, elementStart, elementLength);
+    }
     return arrayElements[index].getObject();
   }
 

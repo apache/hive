@@ -1,0 +1,297 @@
+PREHOOK: query: -- 18. SubQueries Not Exists
+-- distinct, corr
+select * 
+from src_cbo b 
+where not exists 
+  (select distinct a.key 
+  from src_cbo a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- 18. SubQueries Not Exists
+-- distinct, corr
+select * 
+from src_cbo b 
+where not exists 
+  (select distinct a.key 
+  from src_cbo a 
+  where b.value = a.value and a.value > 'val_2'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+150	val_150
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+190	val_190
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+2	val_2
+PREHOOK: query: -- no agg, corr, having
+select * 
+from src_cbo b 
+group by key, value
+having not exists 
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_12'
+  )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- no agg, corr, having
+select * 
+from src_cbo b 
+group by key, value
+having not exists 
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_12'
+  )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+0	val_0
+10	val_10
+100	val_100
+103	val_103
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+119	val_119
+12	val_12
+PREHOOK: query: -- 19. SubQueries Exists
+-- view test
+create view cv1 as 
+select * 
+from src_cbo b 
+where exists
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_cbo
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cv1
+POSTHOOK: query: -- 19. SubQueries Exists
+-- view test
+create view cv1 as 
+select * 
+from src_cbo b 
+where exists
+  (select a.key 
+  from src_cbo a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_cbo
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cv1
+PREHOOK: query: select * from cv1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cv1
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cv1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- sq in from
+select * 
+from (select * 
+      from src_cbo b 
+      where exists 
+          (select a.key 
+          from src_cbo a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- sq in from
+select * 
+from (select * 
+      from src_cbo b 
+      where exists 
+          (select a.key 
+          from src_cbo a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- sq in from, having
+select *
+from (select b.key, count(*) 
+  from src_cbo b 
+  group by b.key
+  having exists 
+    (select a.key 
+    from src_cbo a 
+    where a.key = b.key and a.value > 'val_9'
+    )
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+POSTHOOK: query: -- sq in from, having
+select *
+from (select b.key, count(*) 
+  from src_cbo b 
+  group by b.key
+  having exists 
+    (select a.key 
+    from src_cbo a 
+    where a.key = b.key and a.value > 'val_9'
+    )
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_cbo
+#### A masked pattern was here ####
+90	3
+92	1
+95	2
+96	1
+97	2
+98	2

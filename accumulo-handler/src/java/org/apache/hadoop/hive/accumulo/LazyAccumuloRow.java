@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.accumulo;
 
 import java.util.ArrayList;
@@ -69,47 +85,48 @@ public class LazyAccumuloRow extends LazyStruct {
    * split pairs by delimiter.
    */
   private Object uncheckedGetField(int id) {
-    if (!getFieldInited()[id]) {
-      ByteArrayRef ref;
-      ColumnMapping columnMapping = columnMappings.get(id);
+    if (getFieldInited()[id]) {
+      return getFields()[id].getObject();
+    }
+    getFieldInited()[id] = true;
 
-      if (columnMapping instanceof HiveAccumuloMapColumnMapping) {
-        HiveAccumuloMapColumnMapping mapColumnMapping = (HiveAccumuloMapColumnMapping) columnMapping;
+    ColumnMapping columnMapping = columnMappings.get(id);
 
-        LazyAccumuloMap map = (LazyAccumuloMap) getFields()[id];
-        map.init(row, mapColumnMapping);
+    LazyObjectBase field = getFields()[id];
+
+    if (columnMapping instanceof HiveAccumuloMapColumnMapping) {
+      HiveAccumuloMapColumnMapping mapColumnMapping = (HiveAccumuloMapColumnMapping) columnMapping;
+
+      LazyAccumuloMap map = (LazyAccumuloMap) field;
+      map.init(row, mapColumnMapping);
+    } else {
+      byte[] value;
+      if (columnMapping instanceof HiveAccumuloRowIdColumnMapping) {
+        // Use the rowID directly
+        value = row.getRowId().getBytes();
+      } else if (columnMapping instanceof HiveAccumuloColumnMapping) {
+        HiveAccumuloColumnMapping accumuloColumnMapping = (HiveAccumuloColumnMapping) columnMapping;
+
+        // Use the colfam and colqual to get the value
+        value = row.getValue(
+            new Text(accumuloColumnMapping.getColumnFamilyBytes()),
+            new Text(accumuloColumnMapping.getColumnQualifierBytes()));
       } else {
-        if (columnMapping instanceof HiveAccumuloRowIdColumnMapping) {
-          // Use the rowID directly
-          ref = new ByteArrayRef();
-          ref.setData(row.getRowId().getBytes());
-        } else if (columnMapping instanceof HiveAccumuloColumnMapping) {
-          HiveAccumuloColumnMapping accumuloColumnMapping = (HiveAccumuloColumnMapping) columnMapping;
-
-          // Use the colfam and colqual to get the value
-          byte[] val = row.getValue(new Text(accumuloColumnMapping.getColumnFamily()), new Text(
-              accumuloColumnMapping.getColumnQualifier()));
-          if (val == null) {
-            return null;
-          } else {
-            ref = new ByteArrayRef();
-            ref.setData(val);
-          }
-        } else {
-          log.error("Could not process ColumnMapping of type " + columnMapping.getClass()
-              + " at offset " + id + " in column mapping: " + columnMapping.getMappingSpec());
-          throw new IllegalArgumentException("Cannot process ColumnMapping of type "
-              + columnMapping.getClass());
-        }
-
-        getFields()[id].init(ref, 0, ref.getData().length);
+        log.error("Could not process ColumnMapping of type " + columnMapping.getClass()
+            + " at offset " + id + " in column mapping: " + columnMapping.getMappingSpec());
+        throw new IllegalArgumentException("Cannot process ColumnMapping of type "
+            + columnMapping.getClass());
       }
-
-      // HIVE-3179 only init the field when it isn't null
-      getFieldInited()[id] = true;
+      if (value == null || isNull(oi.getNullSequence(), value, 0, value.length)) {
+        field.setNull();
+      } else {
+        ByteArrayRef ref = new ByteArrayRef();
+        ref.setData(value);
+        field.init(ref, 0, value.length);
+      }
     }
 
-    return getFields()[id].getObject();
+    return field.getObject();
   }
 
   @Override

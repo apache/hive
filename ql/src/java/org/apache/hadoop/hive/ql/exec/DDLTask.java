@@ -172,6 +172,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -741,8 +742,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Collections.sort(entries);
     StringBuilder sb = new StringBuilder();
     for(String entry : entries){
-      sb.append(entry);
-      sb.append((char)terminator);
+      appendNonNull(sb, entry, true);
     }
     writeToFile(sb.toString(), resFile);
   }
@@ -1298,7 +1298,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // ARCHIVE_INTERMEDIATE_DIR_SUFFIX that's the same level as the partition,
     // if it does not already exist. If it does exist, we assume the dir is good
     // to use as the move operation that created it is atomic.
-    HadoopShims shim = ShimLoader.getHadoopShims();
     if (!pathExists(intermediateArchivedDir) &&
         !pathExists(intermediateOriginalDir)) {
 
@@ -1320,7 +1319,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             tbl.getTableName(), partSpecInfo.getName());
         jobname = Utilities.abbreviate(jobname, maxJobNameLen - 6);
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname);
-        ret = shim.createHadoopArchive(conf, originalDir, tmpPath, archiveName);
+        HadoopArchives har = new HadoopArchives(conf);
+        List<String> args = new ArrayList<String>();
+
+        args.add("-archiveName");
+        args.add(archiveName);
+        args.add("-p");
+        args.add(originalDir.toString());
+        args.add(tmpPath.toString());
+
+        ret = ToolRunner.run(har, args.toArray(new String[0]));;
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -1381,8 +1389,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       for(Partition p: partitions) {
         URI originalPartitionUri = ArchiveUtils.addSlash(p.getDataLocation().toUri());
-        URI test = p.getDataLocation().toUri();
-        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
+        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri);
         StringBuilder authority = new StringBuilder();
         if(harPartitionDir.getUserInfo() != null) {
           authority.append(harPartitionDir.getUserInfo()).append("@");
@@ -1415,7 +1422,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int unarchive(Hive db, AlterTableSimpleDesc simpleDesc)
-      throws HiveException {
+      throws HiveException, URISyntaxException {
 
     Table tbl = db.getTable(simpleDesc.getTableName());
 
@@ -1490,8 +1497,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     URI archiveUri = archivePath.toUri();
     ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(conf,
         archiveUri, originalUri);
-    HadoopShims shim = ShimLoader.getHadoopShims();
-    URI sourceUri = harHelper.getHarUri(originalUri, shim);
+    URI sourceUri = harHelper.getHarUri(originalUri);
     Path sourceDir = new Path(sourceUri.getScheme(), sourceUri.getAuthority(), sourceUri.getPath());
 
     if(!pathExists(intermediateArchivedDir) && !pathExists(archivePath)) {
@@ -1842,6 +1848,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private static final String[] DELIMITER_PREFIXES = new String[] {
+      "FIELDS TERMINATED BY",
+      "COLLECTION ITEMS TERMINATED BY",
+      "MAP KEYS TERMINATED BY",
+      "LINES TERMINATED BY",
+      "NULL DEFINED AS"
+  };
+
   /**
    * Write a statement of how to create a table to a file.
    *
@@ -1983,80 +1997,65 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       // Row format (SerDe)
-      String tbl_row_format = "";
+      StringBuilder tbl_row_format = new StringBuilder();
       StorageDescriptor sd = tbl.getTTable().getSd();
       SerDeInfo serdeInfo = sd.getSerdeInfo();
-      tbl_row_format += "ROW FORMAT";
+      tbl_row_format.append("ROW FORMAT");
       if (tbl.getStorageHandler() == null) {
-        if (serdeInfo.getParametersSize() > 1) {
+        Map<String, String> serdeParams = serdeInfo.getParameters();
+        String[] delimiters = new String[] {
+            serdeParams.remove(serdeConstants.FIELD_DELIM),
+            serdeParams.remove(serdeConstants.COLLECTION_DELIM),
+            serdeParams.remove(serdeConstants.MAPKEY_DELIM),
+            serdeParams.remove(serdeConstants.LINE_DELIM),
+            serdeParams.remove(serdeConstants.SERIALIZATION_NULL_FORMAT)
+        };
+        serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
+        if (containsNonNull(delimiters)) {
           // There is a "serialization.format" property by default,
           // even with a delimited row format.
           // But our result will only cover the following four delimiters.
-          tbl_row_format += " DELIMITED \n";
-          Map<String, String> delims = serdeInfo.getParameters();
+          tbl_row_format.append(" DELIMITED \n");
+
           // Warn:
           // If the four delimiters all exist in a CREATE TABLE query,
           // this following order needs to be strictly followed,
           // or the query will fail with a ParseException.
-          if (delims.containsKey(serdeConstants.FIELD_DELIM)) {
-            tbl_row_format += "  FIELDS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.FIELD_DELIM))) + "' \n";
+          for (int i = 0; i < DELIMITER_PREFIXES.length; i++) {
+            if (delimiters[i] != null) {
+              tbl_row_format.append("  ").append(DELIMITER_PREFIXES[i]).append(" '");
+              tbl_row_format.append(escapeHiveCommand(StringEscapeUtils.escapeJava(delimiters[i])));
+              tbl_row_format.append("' \n");
+            }
           }
-          if (delims.containsKey(serdeConstants.COLLECTION_DELIM)) {
-            tbl_row_format += "  COLLECTION ITEMS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.COLLECTION_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.MAPKEY_DELIM)) {
-            tbl_row_format += "  MAP KEYS TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.MAPKEY_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.LINE_DELIM)) {
-            tbl_row_format += "  LINES TERMINATED BY '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.LINE_DELIM))) + "' \n";
-          }
-          if (delims.containsKey(serdeConstants.SERIALIZATION_NULL_FORMAT)) {
-            tbl_row_format += "  NULL DEFINED AS '" +
-                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                    serdeConstants.SERIALIZATION_NULL_FORMAT))) + "' \n";
-          }
+        } else {
+          tbl_row_format.append(" SERDE \n  '" +
+              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
         }
-        else {
-          tbl_row_format += " SERDE \n  '" +
-              escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n";
+        if (!serdeParams.isEmpty()) {
+          appendSerdeParams(tbl_row_format, serdeParams).append(" \n");
         }
-        tbl_row_format += "STORED AS INPUTFORMAT \n  '" +
-            escapeHiveCommand(sd.getInputFormat()) + "' \n";
-        tbl_row_format += "OUTPUTFORMAT \n  '" +
-            escapeHiveCommand(sd.getOutputFormat()) + "'";
-      }
-      else {
+        tbl_row_format.append("STORED AS INPUTFORMAT \n  '" +
+            escapeHiveCommand(sd.getInputFormat()) + "' \n");
+        tbl_row_format.append("OUTPUTFORMAT \n  '" +
+            escapeHiveCommand(sd.getOutputFormat()) + "'");
+      } else {
         duplicateProps.add(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
-        tbl_row_format += " SERDE \n  '" +
-            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n";
-        tbl_row_format += "STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n";
+        tbl_row_format.append(" SERDE \n  '" +
+            escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n");
+        tbl_row_format.append("STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n");
         // SerDe Properties
         if (serdeInfo.getParametersSize() > 0) {
-          tbl_row_format += "WITH SERDEPROPERTIES ( \n";
-          List<String> serdeCols = new ArrayList<String>();
-          for (Map.Entry<String, String> entry : serdeInfo.getParameters().entrySet()) {
-            serdeCols.add("  '" + entry.getKey() + "'='"
-                + escapeHiveCommand(StringEscapeUtils.escapeJava(entry.getValue())) + "'");
-          }
-          tbl_row_format += StringUtils.join(serdeCols, ", \n");
-          tbl_row_format += ")";
+          appendSerdeParams(tbl_row_format, serdeInfo.getParameters());
         }
       }
       String tbl_location = "  '" + escapeHiveCommand(sd.getLocation()) + "'";
 
       // Table properties
       String tbl_properties = "";
-      Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
-      if (properties.size() > 0) {
+      if (!tbl.getParameters().isEmpty()) {
+        Map<String, String> properties = new TreeMap<String, String>(tbl.getParameters());
         List<String> realProps = new ArrayList<String>();
         for (String key : properties.keySet()) {
           if (properties.get(key) != null && !duplicateProps.contains(key)) {
@@ -2096,6 +2095,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  private boolean containsNonNull(String[] values) {
+    for (String value : values) {
+      if (value != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private StringBuilder appendSerdeParams(StringBuilder builder, Map<String, String> serdeParam) {
+    serdeParam = new TreeMap<String, String>(serdeParam);
+    builder.append("WITH SERDEPROPERTIES ( \n");
+    List<String> serdeCols = new ArrayList<String>();
+    for (Entry<String, String> entry : serdeParam.entrySet()) {
+      serdeCols.add("  '" + entry.getKey() + "'='"
+          + escapeHiveCommand(StringEscapeUtils.escapeJava(entry.getValue())) + "'");
+    }
+    builder.append(StringUtils.join(serdeCols, ", \n")).append(')');
+    return builder;
   }
 
   /**
@@ -2887,6 +2907,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (descDatabase.isExt()) {
         params = database.getParameters();
       }
+
+      // If this is a q-test, let's order the params map (lexicographically) by
+      // key. This is to get consistent param ordering between Java7 and Java8.
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
+          params != null) {
+        params = new TreeMap<String, String>(params);
+      }
+
       String location = database.getLocationUri();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
         location = "location/in/test";
@@ -3282,7 +3310,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     List<Partition> allPartitions = null;
     if (alterTbl.getPartSpec() != null) {
-      Map<String, String> partSpec = alterTbl.getPartSpec(); 
+      Map<String, String> partSpec = alterTbl.getPartSpec();
       if (DDLSemanticAnalyzer.isFullSpec(tbl, partSpec)) {
         allPartitions = new ArrayList<Partition>();
         Partition part = db.getPartition(tbl, partSpec, false);
@@ -3322,7 +3350,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl);
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade());
       } else {
         db.alterPartitions(tbl.getTableName(), allPartitions);
       }

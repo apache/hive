@@ -110,16 +110,11 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object getStructFieldData(Object data, StructField fieldRef) {
+  public Object getStructFieldData(Object data, StructField f) {
     if (data == null) {
       return null;
     }
 
-    if (!(fieldRef instanceof MyField)) {
-      throw new IllegalArgumentException("fieldRef has to be of MyField");
-    }
-
-    MyField f = (MyField) fieldRef;
     int fieldID = f.getFieldID();
 
     if (LOG.isDebugEnabled()) {
@@ -189,7 +184,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
       }
 
       // convert to a lazy object and return
-      return toLazyObject(field, fieldRef.getFieldObjectInspector());
+      return toLazyObject(field, f.getFieldObjectInspector());
     }
   }
 
@@ -464,13 +459,13 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
     }
 
     StandardUnion standardUnion = (StandardUnion) obj;
+    LazyUnionObjectInspector lazyUnionOI = (LazyUnionObjectInspector) objectInspector;
 
     // Grab the tag and the field
     byte tag = standardUnion.getTag();
     Object field = standardUnion.getObject();
 
-    ObjectInspector fieldOI =
-        ((LazyUnionObjectInspector) objectInspector).getObjectInspectors().get(tag);
+    ObjectInspector fieldOI = lazyUnionOI.getObjectInspectors().get(tag);
 
     // convert to lazy object
     Object convertedObj = null;
@@ -483,12 +478,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
       return null;
     }
 
-    LazyUnion lazyUnion = (LazyUnion) LazyFactory.createLazyObject(objectInspector);
-
-    lazyUnion.setField(convertedObj);
-    lazyUnion.setTag(tag);
-
-    return lazyUnion;
+    return new LazyUnion(lazyUnionOI, tag, convertedObj);
   }
 
   /**

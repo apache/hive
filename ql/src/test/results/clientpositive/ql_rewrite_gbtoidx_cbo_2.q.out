@@ -1,0 +1,3971 @@
+PREHOOK: query: DROP TABLE IF EXISTS lineitem_ix
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS lineitem_ix
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP INDEX IF EXISTS lineitem_ix_L_ORDERKEY_idx on lineitem_ix
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX IF EXISTS lineitem_ix_L_ORDERKEY_idx on lineitem_ix
+POSTHOOK: type: DROPINDEX
+PREHOOK: query: DROP INDEX IF EXISTS lineitem_ix_L_PARTKEY_idx on lineitem_ix
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX IF EXISTS lineitem_ix_L_PARTKEY_idx on lineitem_ix
+POSTHOOK: type: DROPINDEX
+PREHOOK: query: CREATE TABLE lineitem_ix (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      DOUBLE,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DOUBLE,
+                                L_RETURNFLAG    STRING,
+                                L_LINESTATUS    STRING,
+                                l_shipdate      STRING,
+                                L_COMMITDATE    STRING,
+                                L_RECEIPTDATE   STRING,
+                                L_SHIPINSTRUCT  STRING,
+                                L_SHIPMODE      STRING,
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem_ix
+POSTHOOK: query: CREATE TABLE lineitem_ix (L_ORDERKEY      INT,
+                                L_PARTKEY       INT,
+                                L_SUPPKEY       INT,
+                                L_LINENUMBER    INT,
+                                L_QUANTITY      DOUBLE,
+                                L_EXTENDEDPRICE DOUBLE,
+                                L_DISCOUNT      DOUBLE,
+                                L_TAX           DOUBLE,
+                                L_RETURNFLAG    STRING,
+                                L_LINESTATUS    STRING,
+                                l_shipdate      STRING,
+                                L_COMMITDATE    STRING,
+                                L_RECEIPTDATE   STRING,
+                                L_SHIPINSTRUCT  STRING,
+                                L_SHIPMODE      STRING,
+                                L_COMMENT       STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem_ix
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_ix
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lineitem_ix
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_ix
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lineitem_ix
+PREHOOK: query: CREATE INDEX lineitem_ix_L_ORDERKEY_idx ON TABLE lineitem_ix(L_ORDERKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_ORDERKEY)")
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@lineitem_ix
+POSTHOOK: query: CREATE INDEX lineitem_ix_L_ORDERKEY_idx ON TABLE lineitem_ix(L_ORDERKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_ORDERKEY)")
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: query: ALTER INDEX lineitem_ix_L_ORDERKEY_idx ON lineitem_ix REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@lineitem_ix
+PREHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: query: ALTER INDEX lineitem_ix_L_ORDERKEY_idx ON lineitem_ix REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_orderkey_idx__._bucketname SIMPLE [(lineitem_ix)lineitem_ix.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_orderkey_idx__._count_of_l_orderkey EXPRESSION [(lineitem_ix)lineitem_ix.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_orderkey_idx__._offsets EXPRESSION [(lineitem_ix)lineitem_ix.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_orderkey_idx__.l_orderkey SIMPLE [(lineitem_ix)lineitem_ix.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+PREHOOK: query: CREATE INDEX lineitem_ix_L_PARTKEY_idx ON TABLE lineitem_ix(L_PARTKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_PARTKEY)")
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@lineitem_ix
+POSTHOOK: query: CREATE INDEX lineitem_ix_L_PARTKEY_idx ON TABLE lineitem_ix(L_PARTKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_PARTKEY)")
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_partkey_idx__
+PREHOOK: query: ALTER INDEX lineitem_ix_L_PARTKEY_idx ON lineitem_ix REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@lineitem_ix
+PREHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_partkey_idx__
+POSTHOOK: query: ALTER INDEX lineitem_ix_L_PARTKEY_idx ON lineitem_ix REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Output: default@default__lineitem_ix_lineitem_ix_l_partkey_idx__
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_partkey_idx__._bucketname SIMPLE [(lineitem_ix)lineitem_ix.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_partkey_idx__._count_of_l_partkey EXPRESSION [(lineitem_ix)lineitem_ix.FieldSchema(name:l_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_partkey_idx__._offsets EXPRESSION [(lineitem_ix)lineitem_ix.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__lineitem_ix_lineitem_ix_l_partkey_idx__.l_partkey SIMPLE [(lineitem_ix)lineitem_ix.FieldSchema(name:l_partkey, type:int, comment:null), ]
+PREHOOK: query: explain
+select count(1)
+from lineitem_ix
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1)
+from lineitem_ix
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 0 Data size: 12099 Basic stats: PARTIAL Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 0 Data size: 12099 Basic stats: PARTIAL Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1)
+from lineitem_ix
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1)
+from lineitem_ix
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+100
+PREHOOK: query: explain
+select count(L_ORDERKEY)
+from lineitem_ix
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(L_ORDERKEY)
+from lineitem_ix
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+              outputColumnNames: _col0, _count_of_l_orderkey
+              Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_count_of_l_orderkey)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(L_ORDERKEY)
+from lineitem_ix
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select count(L_ORDERKEY)
+from lineitem_ix
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+100
+PREHOOK: query: explain select L_ORDERKEY+L_PARTKEY as keysum,
+count(L_ORDERKEY), count(L_PARTKEY)
+from lineitem_ix
+group by L_ORDERKEY, L_PARTKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select L_ORDERKEY+L_PARTKEY as keysum,
+count(L_ORDERKEY), count(L_PARTKEY)
+from lineitem_ix
+group by L_ORDERKEY, L_PARTKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), l_partkey (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0), count(_col1)
+                keys: _col0 (type: int), _col1 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint), _col3 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0), count(VALUE._col1)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: (_col0 + _col1) (type: int), _col2 (type: bigint), _col3 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY+L_PARTKEY as keysum,
+count(L_ORDERKEY), count(L_PARTKEY)
+from lineitem_ix
+group by L_ORDERKEY, L_PARTKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY+L_PARTKEY as keysum,
+count(L_ORDERKEY), count(L_PARTKEY)
+from lineitem_ix
+group by L_ORDERKEY, L_PARTKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+2133	1	1
+15636	1	1
+24028	1	1
+63701	1	1
+67311	1	1
+155191	1	1
+106172	1	1
+4300	1	1
+19039	1	1
+29383	1	1
+62146	1	1
+128452	1	1
+183098	1	1
+88039	1	1
+37536	1	1
+108575	1	1
+123932	1	1
+139642	1	1
+79258	1	1
+94787	1	1
+145250	1	1
+151901	1	1
+157245	1	1
+163080	1	1
+182059	1	1
+2775	1	1
+11647	1	1
+44193	1	1
+82736	1	1
+85843	1	1
+197953	1	1
+33951	1	1
+60552	1	1
+61369	1	1
+137502	1	1
+88396	1	1
+89448	1	1
+169578	1	1
+485	1	1
+30797	1	1
+85210	1	1
+119952	1	1
+120931	1	1
+161975	1	1
+119803	1	1
+12940	1	1
+22667	1	1
+126819	1	1
+175877	1	1
+2359	1	1
+20629	1	1
+54558	1	1
+67870	1	1
+94407	1	1
+186621	1	1
+86015	1	1
+1453	1	1
+59759	1	1
+73880	1	1
+115184	1	1
+173555	1	1
+20260	1	1
+21703	1	1
+40680	1	1
+87581	1	1
+173667	1	1
+178373	1	1
+7136	1	1
+35048	1	1
+82826	1	1
+94796	1	1
+102629	1	1
+139315	1	1
+175248	1	1
+18573	1	1
+37571	1	1
+92139	1	1
+104249	1	1
+115278	1	1
+137336	1	1
+37201	1	1
+45804	1	1
+55725	1	1
+64198	1	1
+179879	1	1
+196226	1	1
+34503	1	1
+62002	1	1
+65987	1	1
+96716	1	1
+103326	1	1
+195706	1	1
+123172	1	1
+135486	1	1
+49665	1	1
+77796	1	1
+119574	1	1
+40314	1	1
+44804	1	1
+109841	1	1
+PREHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY)
+from  lineitem_ix
+where L_ORDERKEY = 7
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY)
+from  lineitem_ix
+where L_ORDERKEY = 7
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey = 7) (type: boolean)
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 7 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col0)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(L_ORDERKEY)
+from  lineitem_ix
+where L_ORDERKEY = 7
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(L_ORDERKEY)
+from  lineitem_ix
+where L_ORDERKEY = 7
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+7	7
+PREHOOK: query: explain
+select L_ORDERKEY, count(1)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(1)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(1)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(1)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+7	7
+32	6
+33	4
+34	3
+35	6
+36	1
+37	3
+38	1
+39	6
+64	1
+65	3
+66	2
+67	6
+68	7
+69	6
+70	6
+71	6
+96	2
+97	3
+98	3
+PREHOOK: query: explain
+select count(L_ORDERKEY+1)
+from lineitem_ix
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(L_ORDERKEY+1)
+from lineitem_ix
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (l_orderkey + 1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(L_ORDERKEY+1)
+from lineitem_ix
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select count(L_ORDERKEY+1)
+from lineitem_ix
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+100
+PREHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY+1)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY+1)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), (l_orderkey + 1) (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(L_ORDERKEY+1)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(L_ORDERKEY+1)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+7	7
+32	6
+33	4
+34	3
+35	6
+36	1
+37	3
+38	1
+39	6
+64	1
+65	3
+66	2
+67	6
+68	7
+69	6
+70	6
+71	6
+96	2
+97	3
+98	3
+PREHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), (((l_orderkey + 1) + l_orderkey) + 2) (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+7	7
+32	6
+33	4
+34	3
+35	6
+36	1
+37	3
+38	1
+39	6
+64	1
+65	3
+66	2
+67	6
+68	7
+69	6
+70	6
+71	6
+96	2
+97	3
+98	3
+PREHOOK: query: explain
+select L_ORDERKEY, count(1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), ((1 + l_orderkey) + 2) (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(1+L_ORDERKEY+2)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+7	7
+32	6
+33	4
+34	3
+35	6
+36	1
+37	3
+38	1
+39	6
+64	1
+65	3
+66	2
+67	6
+68	7
+69	6
+70	6
+71	6
+96	2
+97	3
+98	3
+PREHOOK: query: explain
+select L_ORDERKEY as a, count(1) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY as a, count(1) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY as a, count(1) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY as a, count(1) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+PREHOOK: query: explain
+select L_ORDERKEY, count(keysum), sum(keysum)
+from
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(keysum), sum(keysum)
+from
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), (l_orderkey + l_partkey) (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1), sum(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0), sum(VALUE._col1)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(keysum), sum(keysum)
+from
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(keysum), sum(keysum)
+from
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6	328000
+2	1	106172
+3	6	426418
+4	1	88039
+5	3	270043
+6	1	139642
+7	7	973580
+32	6	425147
+33	4	293374
+34	3	347422
+35	6	519350
+36	1	119803
+37	3	162426
+38	1	175877
+39	6	426444
+64	1	86015
+65	3	135092
+66	2	288739
+67	6	522264
+68	7	636998
+69	6	505146
+70	6	579033
+71	6	558240
+96	2	258658
+97	3	247035
+98	3	194959
+PREHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0), sum(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0), sum(VALUE._col1)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
+from lineitem_ix
+group by L_ORDERKEY
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
+from lineitem_ix
+group by L_ORDERKEY
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6	6
+2	1	2
+3	6	18
+4	1	4
+5	3	15
+6	1	6
+7	7	49
+32	6	192
+33	4	132
+34	3	102
+35	6	210
+36	1	36
+37	3	111
+38	1	38
+39	6	234
+64	1	64
+65	3	195
+66	2	132
+67	6	402
+68	7	476
+69	6	414
+70	6	420
+71	6	426
+96	2	192
+97	3	291
+98	3	294
+PREHOOK: query: explain
+select colA, count(colA)
+from (select L_ORDERKEY as colA from lineitem_ix) tabA
+group by colA
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select colA, count(colA)
+from (select L_ORDERKEY as colA from lineitem_ix) tabA
+group by colA
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0:$hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+              outputColumnNames: _col0, _count_of_l_orderkey
+              Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_count_of_l_orderkey)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select colA, count(colA)
+from (select L_ORDERKEY as colA from lineitem_ix) tabA
+group by colA
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select colA, count(colA)
+from (select L_ORDERKEY as colA from lineitem_ix) tabA
+group by colA
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	6
+2	1
+3	6
+4	1
+5	3
+6	1
+7	7
+32	6
+33	4
+34	3
+35	6
+36	1
+37	3
+38	1
+39	6
+64	1
+65	3
+66	2
+67	6
+68	7
+69	6
+70	6
+71	6
+96	2
+97	3
+98	3
+PREHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (l_orderkey + l_partkey) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1512 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 756 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+485	1
+1453	1
+2133	1
+2359	1
+2775	1
+4300	1
+7136	1
+11647	1
+12940	1
+15636	1
+18573	1
+19039	1
+20260	1
+20629	1
+21703	1
+22667	1
+24028	1
+29383	1
+30797	1
+33951	1
+34503	1
+35048	1
+37201	1
+37536	1
+37571	1
+40314	1
+40680	1
+44193	1
+44804	1
+45804	1
+49665	1
+54558	1
+55725	1
+59759	1
+60552	1
+61369	1
+62002	1
+62146	1
+63701	1
+64198	1
+65987	1
+67311	1
+67870	1
+73880	1
+77796	1
+79258	1
+82736	1
+82826	1
+85210	1
+85843	1
+86015	1
+87581	1
+88039	1
+88396	1
+89448	1
+92139	1
+94407	1
+94787	1
+94796	1
+96716	1
+102629	1
+103326	1
+104249	1
+106172	1
+108575	1
+109841	1
+115184	1
+115278	1
+119574	1
+119803	1
+119952	1
+120931	1
+123172	1
+123932	1
+126819	1
+128452	1
+135486	1
+137336	1
+137502	1
+139315	1
+139642	1
+145250	1
+151901	1
+155191	1
+157245	1
+161975	1
+163080	1
+169578	1
+173555	1
+173667	1
+175248	1
+175877	1
+178373	1
+179879	1
+182059	1
+183098	1
+186621	1
+195706	1
+196226	1
+197953	1
+PREHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (l_orderkey + 1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+2	6
+3	1
+4	6
+5	1
+6	3
+7	1
+8	7
+33	6
+34	4
+35	3
+36	6
+37	1
+38	3
+39	1
+40	6
+65	1
+66	3
+67	2
+68	6
+69	7
+70	6
+71	6
+72	6
+97	2
+98	3
+99	3
+PREHOOK: query: explain
+select keysum, count(1)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select keysum, count(1)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (l_orderkey + 1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select keysum, count(1)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select keysum, count(1)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+group by keysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+2	6
+3	1
+4	6
+5	1
+6	3
+7	1
+8	7
+33	6
+34	4
+35	3
+36	6
+37	1
+38	3
+39	1
+40	6
+65	1
+66	3
+67	2
+68	6
+69	7
+70	6
+71	6
+72	6
+97	2
+98	3
+99	3
+PREHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey = 7) (type: boolean)
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 8 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col0)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select keysum, count(keysum)
+from
+(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+8	7
+PREHOOK: query: explain
+select ckeysum, count(ckeysum)
+from
+(select keysum, count(keysum) as ckeysum
+from 
+	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum) tabB
+group by ckeysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select ckeysum, count(ckeysum)
+from
+(select keysum, count(keysum) as ckeysum
+from 
+	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum) tabB
+group by ckeysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey = 7) (type: boolean)
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 8 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col0)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: count(_col0)
+              keys: _col0 (type: bigint)
+              mode: hash
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: bigint)
+              Statistics: Num rows: 756 Data size: 3024 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 378 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 378 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 378 Data size: 1512 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ckeysum, count(ckeysum)
+from
+(select keysum, count(keysum) as ckeysum
+from 
+	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum) tabB
+group by ckeysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select ckeysum, count(ckeysum)
+from
+(select keysum, count(keysum) as ckeysum
+from 
+	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+group by keysum) tabB
+group by ckeysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+7	1
+PREHOOK: query: explain
+select keysum, count(keysum) as ckeysum
+from
+(select L_ORDERKEY, count(L_ORDERKEY) as keysum
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY)tabA
+group by keysum
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select keysum, count(keysum) as ckeysum
+from
+(select L_ORDERKEY, count(L_ORDERKEY) as keysum
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY)tabA
+group by keysum
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0:$hdt$_0:$hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+                outputColumnNames: _col0, _count_of_l_orderkey
+                Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_l_orderkey)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: count(_col0)
+              keys: _col0 (type: bigint)
+              mode: hash
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: bigint)
+              Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select keysum, count(keysum) as ckeysum
+from
+(select L_ORDERKEY, count(L_ORDERKEY) as keysum
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY)tabA
+group by keysum
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select keysum, count(keysum) as ckeysum
+from
+(select L_ORDERKEY, count(L_ORDERKEY) as keysum
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY)tabA
+group by keysum
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	3
+3	1
+6	2
+PREHOOK: query: DROP INDEX IF EXISTS src_key_idx on src
+PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: DROP INDEX IF EXISTS src_key_idx on src
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
+PREHOOK: query: CREATE INDEX src_key_idx ON TABLE src(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: CREATE INDEX src_key_idx ON TABLE src(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src_key_idx__
+PREHOOK: query: ALTER INDEX src_key_idx ON src REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@src
+PREHOOK: Output: default@default__src_src_key_idx__
+POSTHOOK: query: ALTER INDEX src_key_idx ON src REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src_key_idx__
+POSTHOOK: Lineage: default__src_src_key_idx__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src_key_idx__._count_of_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src_key_idx__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src_key_idx__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain
+select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: taba:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+                outputColumnNames: l_orderkey, _count_of_l_orderkey
+                Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_l_orderkey)
+                  keys: l_orderkey (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: _col1 is not null (type: boolean)
+            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: bigint)
+              Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int)
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: bigint)
+              Statistics: Num rows: 154 Data size: 11793 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: bigint)
+            1 _col1 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 169 Data size: 12972 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 169 Data size: 12972 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 169 Data size: 12972 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: tabb:default.default__src_src_key_idx__
+            Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), _count_of_key (type: bigint)
+              outputColumnNames: key, _count_of_key
+              Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_count_of_key)
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 154 Data size: 11793 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: _col1 is not null (type: boolean)
+            Statistics: Num rows: 154 Data size: 11793 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@default__src_src_key_idx__
+PREHOOK: Input: default@lineitem_ix
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@default__src_src_key_idx__
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+6	1	490	1
+6	1	287	1
+6	1	286	1
+6	1	285	1
+6	1	284	1
+6	1	283	1
+6	1	114	1
+6	1	487	1
+6	1	485	1
+6	1	28	1
+6	1	484	1
+6	1	181	1
+6	1	275	1
+6	1	274	1
+6	1	183	1
+6	1	483	1
+6	1	27	1
+6	1	266	1
+6	1	482	1
+6	1	263	1
+6	1	262	1
+6	1	260	1
+6	1	481	1
+6	1	258	1
+6	1	257	1
+6	1	116	1
+6	1	479	1
+6	1	252	1
+6	1	249	1
+6	1	248	1
+6	1	247	1
+6	1	244	1
+6	1	92	1
+6	1	241	1
+6	1	477	1
+6	1	475	1
+6	1	472	1
+6	1	470	1
+6	1	235	1
+6	1	47	1
+6	1	186	1
+6	1	126	1
+6	1	228	1
+6	1	226	1
+6	1	131	1
+6	1	467	1
+6	1	222	1
+6	1	133	1
+6	1	82	1
+6	1	218	1
+6	1	80	1
+6	1	460	1
+6	1	214	1
+6	1	8	1
+6	1	78	1
+6	1	189	1
+6	1	457	1
+6	1	455	1
+6	1	136	1
+6	1	202	1
+6	1	201	1
+6	1	453	1
+6	1	20	1
+6	1	2	1
+6	1	19	1
+6	1	452	1
+6	1	196	1
+6	1	449	1
+6	1	194	1
+6	1	190	1
+6	1	192	1
+6	1	448	1
+6	1	446	1
+6	1	444	1
+6	1	443	1
+6	1	44	1
+6	1	77	1
+6	1	143	1
+6	1	437	1
+6	1	436	1
+6	1	435	1
+6	1	432	1
+6	1	145	1
+6	1	150	1
+6	1	43	1
+6	1	10	1
+6	1	427	1
+6	1	74	1
+6	1	421	1
+6	1	9	1
+6	1	419	1
+6	1	418	1
+6	1	153	1
+6	1	105	1
+6	1	69	1
+6	1	411	1
+6	1	41	1
+6	1	155	1
+6	1	407	1
+6	1	156	1
+6	1	87	1
+6	1	157	1
+6	1	402	1
+6	1	158	1
+6	1	400	1
+6	1	4	1
+6	1	66	1
+6	1	65	1
+6	1	160	1
+6	1	64	1
+6	1	394	1
+6	1	393	1
+6	1	392	1
+6	1	389	1
+6	1	386	1
+6	1	162	1
+6	1	86	1
+6	1	379	1
+6	1	378	1
+6	1	377	1
+6	1	375	1
+6	1	374	1
+6	1	373	1
+6	1	57	1
+6	1	163	1
+6	1	368	1
+6	1	54	1
+6	1	366	1
+6	1	365	1
+6	1	364	1
+6	1	362	1
+6	1	360	1
+6	1	356	1
+6	1	53	1
+6	1	351	1
+6	1	166	1
+6	1	168	1
+6	1	345	1
+6	1	85	1
+6	1	11	1
+6	1	341	1
+6	1	34	1
+6	1	339	1
+6	1	338	1
+6	1	336	1
+6	1	335	1
+6	1	111	1
+6	1	332	1
+6	1	497	1
+6	1	33	1
+6	1	17	1
+6	1	496	1
+6	1	323	1
+6	1	495	1
+6	1	494	1
+6	1	170	1
+6	1	493	1
+6	1	177	1
+6	1	315	1
+6	1	178	1
+6	1	310	1
+6	1	96	1
+6	1	308	1
+6	1	491	1
+6	1	306	1
+6	1	305	1
+6	1	302	1
+6	1	30	1
+6	1	180	1
+6	1	296	1
+6	1	292	1
+6	1	291	1
+6	1	289	1
+4	1	490	1
+4	1	287	1
+4	1	286	1
+4	1	285	1
+4	1	284	1
+4	1	283	1
+4	1	114	1
+4	1	487	1
+4	1	485	1
+4	1	28	1
+4	1	484	1
+4	1	181	1
+4	1	275	1
+4	1	274	1
+4	1	183	1
+4	1	483	1
+4	1	27	1
+4	1	266	1
+4	1	482	1
+4	1	263	1
+4	1	262	1
+4	1	260	1
+4	1	481	1
+4	1	258	1
+4	1	257	1
+4	1	116	1
+4	1	479	1
+4	1	252	1
+4	1	249	1
+4	1	248	1
+4	1	247	1
+4	1	244	1
+4	1	92	1
+4	1	241	1
+4	1	477	1
+4	1	475	1
+4	1	472	1
+4	1	470	1
+4	1	235	1
+4	1	47	1
+4	1	186	1
+4	1	126	1
+4	1	228	1
+4	1	226	1
+4	1	131	1
+4	1	467	1
+4	1	222	1
+4	1	133	1
+4	1	82	1
+4	1	218	1
+4	1	80	1
+4	1	460	1
+4	1	214	1
+4	1	8	1
+4	1	78	1
+4	1	189	1
+4	1	457	1
+4	1	455	1
+4	1	136	1
+4	1	202	1
+4	1	201	1
+4	1	453	1
+4	1	20	1
+4	1	2	1
+4	1	19	1
+4	1	452	1
+4	1	196	1
+4	1	449	1
+4	1	194	1
+4	1	190	1
+4	1	192	1
+4	1	448	1
+4	1	446	1
+4	1	444	1
+4	1	443	1
+4	1	44	1
+4	1	77	1
+4	1	143	1
+4	1	437	1
+4	1	436	1
+4	1	435	1
+4	1	432	1
+4	1	145	1
+4	1	150	1
+4	1	43	1
+4	1	10	1
+4	1	427	1
+4	1	74	1
+4	1	421	1
+4	1	9	1
+4	1	419	1
+4	1	418	1
+4	1	153	1
+4	1	105	1
+4	1	69	1
+4	1	411	1
+4	1	41	1
+4	1	155	1
+4	1	407	1
+4	1	156	1
+4	1	87	1
+4	1	157	1
+4	1	402	1
+4	1	158	1
+4	1	400	1
+4	1	4	1
+4	1	66	1
+4	1	65	1
+4	1	160	1
+4	1	64	1
+4	1	394	1
+4	1	393	1
+4	1	392	1
+4	1	389	1
+4	1	386	1
+4	1	162	1
+4	1	86	1
+4	1	379	1
+4	1	378	1
+4	1	377	1
+4	1	375	1
+4	1	374	1
+4	1	373	1
+4	1	57	1
+4	1	163	1
+4	1	368	1
+4	1	54	1
+4	1	366	1
+4	1	365	1
+4	1	364	1
+4	1	362	1
+4	1	360	1
+4	1	356	1
+4	1	53	1
+4	1	351	1
+4	1	166	1
+4	1	168	1
+4	1	345	1
+4	1	85	1
+4	1	11	1
+4	1	341	1
+4	1	34	1
+4	1	339	1
+4	1	338	1
+4	1	336	1
+4	1	335	1
+4	1	111	1
+4	1	332	1
+4	1	497	1
+4	1	33	1
+4	1	17	1
+4	1	496	1
+4	1	323	1
+4	1	495	1
+4	1	494	1
+4	1	170	1
+4	1	493	1
+4	1	177	1
+4	1	315	1
+4	1	178	1
+4	1	310	1
+4	1	96	1
+4	1	308	1
+4	1	491	1
+4	1	306	1
+4	1	305	1
+4	1	302	1
+4	1	30	1
+4	1	180	1
+4	1	296	1
+4	1	292	1
+4	1	291	1
+4	1	289	1
+2	1	490	1
+2	1	287	1
+2	1	286	1
+2	1	285	1
+2	1	284	1
+2	1	283	1
+2	1	114	1
+2	1	487	1
+2	1	485	1
+2	1	28	1
+2	1	484	1
+2	1	181	1
+2	1	275	1
+2	1	274	1
+2	1	183	1
+2	1	483	1
+2	1	27	1
+2	1	266	1
+2	1	482	1
+2	1	263	1
+2	1	262	1
+2	1	260	1
+2	1	481	1
+2	1	258	1
+2	1	257	1
+2	1	116	1
+2	1	479	1
+2	1	252	1
+2	1	249	1
+2	1	248	1
+2	1	247	1
+2	1	244	1
+2	1	92	1
+2	1	241	1
+2	1	477	1
+2	1	475	1
+2	1	472	1
+2	1	470	1
+2	1	235	1
+2	1	47	1
+2	1	186	1
+2	1	126	1
+2	1	228	1
+2	1	226	1
+2	1	131	1
+2	1	467	1
+2	1	222	1
+2	1	133	1
+2	1	82	1
+2	1	218	1
+2	1	80	1
+2	1	460	1
+2	1	214	1
+2	1	8	1
+2	1	78	1
+2	1	189	1
+2	1	457	1
+2	1	455	1
+2	1	136	1
+2	1	202	1
+2	1	201	1
+2	1	453	1
+2	1	20	1
+2	1	2	1
+2	1	19	1
+2	1	452	1
+2	1	196	1
+2	1	449	1
+2	1	194	1
+2	1	190	1
+2	1	192	1
+2	1	448	1
+2	1	446	1
+2	1	444	1
+2	1	443	1
+2	1	44	1
+2	1	77	1
+2	1	143	1
+2	1	437	1
+2	1	436	1
+2	1	435	1
+2	1	432	1
+2	1	145	1
+2	1	150	1
+2	1	43	1
+2	1	10	1
+2	1	427	1
+2	1	74	1
+2	1	421	1
+2	1	9	1
+2	1	419	1
+2	1	418	1
+2	1	153	1
+2	1	105	1
+2	1	69	1
+2	1	411	1
+2	1	41	1
+2	1	155	1
+2	1	407	1
+2	1	156	1
+2	1	87	1
+2	1	157	1
+2	1	402	1
+2	1	158	1
+2	1	400	1
+2	1	4	1
+2	1	66	1
+2	1	65	1
+2	1	160	1
+2	1	64	1
+2	1	394	1
+2	1	393	1
+2	1	392	1
+2	1	389	1
+2	1	386	1
+2	1	162	1
+2	1	86	1
+2	1	379	1
+2	1	378	1
+2	1	377	1
+2	1	375	1
+2	1	374	1
+2	1	373	1
+2	1	57	1
+2	1	163	1
+2	1	368	1
+2	1	54	1
+2	1	366	1
+2	1	365	1
+2	1	364	1
+2	1	362	1
+2	1	360	1
+2	1	356	1
+2	1	53	1
+2	1	351	1
+2	1	166	1
+2	1	168	1
+2	1	345	1
+2	1	85	1
+2	1	11	1
+2	1	341	1
+2	1	34	1
+2	1	339	1
+2	1	338	1
+2	1	336	1
+2	1	335	1
+2	1	111	1
+2	1	332	1
+2	1	497	1
+2	1	33	1
+2	1	17	1
+2	1	496	1
+2	1	323	1
+2	1	495	1
+2	1	494	1
+2	1	170	1
+2	1	493	1
+2	1	177	1
+2	1	315	1
+2	1	178	1
+2	1	310	1
+2	1	96	1
+2	1	308	1
+2	1	491	1
+2	1	306	1
+2	1	305	1
+2	1	302	1
+2	1	30	1
+2	1	180	1
+2	1	296	1
+2	1	292	1
+2	1	291	1
+2	1	289	1
+5	3	498	3
+5	3	369	3
+5	3	384	3
+5	3	396	3
+5	3	403	3
+5	3	409	3
+5	3	417	3
+5	3	5	3
+5	3	430	3
+5	3	70	3
+5	3	119	3
+5	3	0	3
+5	3	431	3
+5	3	438	3
+5	3	480	3
+5	3	193	3
+5	3	199	3
+5	3	208	3
+5	3	187	3
+5	3	273	3
+5	3	298	3
+5	3	454	3
+5	3	311	3
+5	3	316	3
+5	3	466	3
+5	3	90	3
+5	3	128	3
+5	3	318	3
+5	3	327	3
+5	3	167	3
+5	3	35	3
+PREHOOK: query: explain
+select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b and tabB.a < '2')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select tabA.a, tabA.b, tabB.a, tabB.b
+from
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b and tabB.a < '2')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: taba:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+                outputColumnNames: l_orderkey, _count_of_l_orderkey
+                Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_l_orderkey)
+                  keys: l_orderkey (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: _col1 is not null (type: boolean)
+            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: bigint)
+              Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: int)
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: bigint)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: bigint)
+              Statistics: Num rows: 51 Data size: 3905 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: bigint)
+            1 _col1 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 56 Data size: 4295 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 56 Data size: 4295 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 56 Data size: 4295 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: tabb:default.default__src_src_key_idx__
+            Statistics: Num rows: 309 Data size: 23663 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key < '2') (type: boolean)
+              Statistics: Num rows: 103 Data size: 7887 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string), _count_of_key (type: bigint)
+                outputColumnNames: key, _count_of_key
+                Statistics: Num rows: 103 Data size: 7887 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_key)
+                  keys: key (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 103 Data size: 7887 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 103 Data size: 7887 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 51 Data size: 3905 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: _col1 is not null (type: boolean)
+            Statistics: Num rows: 51 Data size: 3905 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select tabA.a, tabA.b, tabB.a, tabB.b
+from 
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b and tabB.a < '2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@default__src_src_key_idx__
+PREHOOK: Input: default@lineitem_ix
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select tabA.a, tabA.b, tabB.a, tabB.b
+from 
+(select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY) tabA
+join
+(select key as a, count(key) as b
+from src
+group by key
+) tabB
+on (tabA.b=tabB.b and tabB.a < '2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@default__src_src_key_idx__
+POSTHOOK: Input: default@lineitem_ix
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+6	1	156	1
+6	1	155	1
+6	1	153	1
+6	1	186	1
+6	1	150	1
+6	1	183	1
+6	1	181	1
+6	1	180	1
+6	1	145	1
+6	1	143	1
+6	1	111	1
+6	1	11	1
+6	1	136	1
+6	1	178	1
+6	1	133	1
+6	1	131	1
+6	1	177	1
+6	1	194	1
+6	1	126	1
+6	1	192	1
+6	1	105	1
+6	1	190	1
+6	1	19	1
+6	1	170	1
+6	1	116	1
+6	1	17	1
+6	1	10	1
+6	1	168	1
+6	1	189	1
+6	1	166	1
+6	1	196	1
+6	1	114	1
+6	1	163	1
+6	1	162	1
+6	1	160	1
+6	1	158	1
+6	1	157	1
+4	1	156	1
+4	1	155	1
+4	1	153	1
+4	1	186	1
+4	1	150	1
+4	1	183	1
+4	1	181	1
+4	1	180	1
+4	1	145	1
+4	1	143	1
+4	1	111	1
+4	1	11	1
+4	1	136	1
+4	1	178	1
+4	1	133	1
+4	1	131	1
+4	1	177	1
+4	1	194	1
+4	1	126	1
+4	1	192	1
+4	1	105	1
+4	1	190	1
+4	1	19	1
+4	1	170	1
+4	1	116	1
+4	1	17	1
+4	1	10	1
+4	1	168	1
+4	1	189	1
+4	1	166	1
+4	1	196	1
+4	1	114	1
+4	1	163	1
+4	1	162	1
+4	1	160	1
+4	1	158	1
+4	1	157	1
+2	1	156	1
+2	1	155	1
+2	1	153	1
+2	1	186	1
+2	1	150	1
+2	1	183	1
+2	1	181	1
+2	1	180	1
+2	1	145	1
+2	1	143	1
+2	1	111	1
+2	1	11	1
+2	1	136	1
+2	1	178	1
+2	1	133	1
+2	1	131	1
+2	1	177	1
+2	1	194	1
+2	1	126	1
+2	1	192	1
+2	1	105	1
+2	1	190	1
+2	1	19	1
+2	1	170	1
+2	1	116	1
+2	1	17	1
+2	1	10	1
+2	1	168	1
+2	1	189	1
+2	1	166	1
+2	1	196	1
+2	1	114	1
+2	1	163	1
+2	1	162	1
+2	1	160	1
+2	1	158	1
+2	1	157	1
+5	3	199	3
+5	3	193	3
+5	3	187	3
+5	3	167	3
+5	3	128	3
+5	3	119	3
+5	3	0	3
+PREHOOK: query: EXPLAIN
+select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), (l_orderkey + 1) (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                keys: _col0 (type: int), _col1 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+7
+32
+33
+34
+35
+36
+37
+38
+39
+64
+65
+66
+67
+68
+69
+70
+71
+96
+97
+98
+PREHOOK: query: EXPLAIN
+select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: l_orderkey (type: int), (l_orderkey + 1) (type: int), _count_of_l_orderkey (type: bigint)
+              outputColumnNames: _col0, _col1, _count_of_l_orderkey
+              Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_count_of_l_orderkey)
+                keys: _col0 (type: int), _col1 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	2	6
+2	3	1
+3	4	6
+4	5	1
+5	6	3
+6	7	1
+7	8	7
+32	33	6
+33	34	4
+34	35	3
+35	36	6
+36	37	1
+37	38	3
+38	39	1
+39	40	6
+64	65	1
+65	66	3
+66	67	2
+67	68	6
+68	69	7
+69	70	6
+70	71	6
+71	72	6
+96	97	2
+97	98	3
+98	99	3
+PREHOOK: query: EXPLAIN
+select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (l_orderkey + 2) (type: int), l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+              outputColumnNames: _col0, _col1, _count_of_l_orderkey
+              Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_count_of_l_orderkey)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 13 Data size: 1302 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+3	6
+4	1
+5	6
+6	1
+7	3
+8	1
+9	7
+34	6
+35	4
+36	3
+37	6
+38	1
+39	3
+40	1
+41	6
+66	1
+67	3
+68	2
+69	6
+70	7
+71	6
+72	6
+73	6
+98	2
+99	3
+100	3
+PREHOOK: query: --with cbo on, the following query can use idx
+
+explain
+select b, count(b) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by b
+PREHOOK: type: QUERY
+POSTHOOK: query: --with cbo on, the following query can use idx
+
+explain
+select b, count(b) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by b
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+            Statistics: Num rows: 26 Data size: 2604 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int), _count_of_l_orderkey (type: bigint)
+                outputColumnNames: _col0, _count_of_l_orderkey
+                Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_l_orderkey)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 8 Data size: 801 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Union
+              Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: bigint)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+          TableScan
+            Union
+              Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: bigint)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 20 Data size: 1829 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: bigint)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 10 Data size: 914 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 10 Data size: 914 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 10 Data size: 914 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: $hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:$hdt$_0:default.default__lineitem_ix_lineitem_ix_l_partkey_idx__
+            Statistics: Num rows: 100 Data size: 8937 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_partkey < 10) (type: boolean)
+              Statistics: Num rows: 33 Data size: 2949 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_partkey (type: int), _count_of_l_partkey (type: bigint)
+                outputColumnNames: _col0, _count_of_l_partkey
+                Statistics: Num rows: 33 Data size: 2949 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_count_of_l_partkey)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 33 Data size: 2949 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 33 Data size: 2949 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 16 Data size: 1429 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 16 Data size: 1429 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select b, count(b) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix 
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+PREHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_partkey_idx__
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select b, count(b) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix 
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_orderkey_idx__
+POSTHOOK: Input: default@default__lineitem_ix_lineitem_ix_l_partkey_idx__
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	3
+3	1
+6	2
+PREHOOK: query: --with cbo on, the following query can not use idx because AggFunc is empty here
+
+explain
+select a, count(a) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b 
+from lineitem_ix
+where L_ORDERKEY < 7 
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by a
+PREHOOK: type: QUERY
+POSTHOOK: query: --with cbo on, the following query can not use idx because AggFunc is empty here
+
+explain
+select a, count(a) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b 
+from lineitem_ix
+where L_ORDERKEY < 7 
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_orderkey < 7) (type: boolean)
+              Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_orderkey (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Union
+              Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+          TableScan
+            Union
+              Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1008 Data size: 4032 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (l_partkey < 10) (type: boolean)
+              Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: l_partkey (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1008 Data size: 4033 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 504 Data size: 2016 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a, count(a) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix 
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select a, count(a) as ckeysum
+from
+(
+select L_ORDERKEY as a, count(L_ORDERKEY) as b
+from lineitem_ix
+where L_ORDERKEY < 7
+group by L_ORDERKEY
+union all
+select L_PARTKEY as a, count(L_PARTKEY) as b
+from lineitem_ix 
+where L_PARTKEY < 10
+group by L_PARTKEY
+) tabA
+group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	1
+2	1
+3	1
+4	1
+5	1
+6	1
+PREHOOK: query: explain
+select a, count(a)
+from (
+select case L_ORDERKEY when null then 1 else 1 END as a
+from lineitem_ix)tab
+group by a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select a, count(a)
+from (
+select case L_ORDERKEY when null then 1 else 1 END as a
+from lineitem_ix)tab
+group by a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: lineitem_ix
+            Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: CASE (l_orderkey) WHEN (null) THEN (1) ELSE (1) END (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col0)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3024 Data size: 12099 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1512 Data size: 6049 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a, count(a)
+from (
+select case L_ORDERKEY when null then 1 else 1 END as a
+from lineitem_ix)tab
+group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+POSTHOOK: query: select a, count(a)
+from (
+select case L_ORDERKEY when null then 1 else 1 END as a
+from lineitem_ix)tab
+group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_ix
+#### A masked pattern was here ####
+1	100

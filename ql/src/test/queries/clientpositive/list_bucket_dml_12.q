@@ -7,6 +7,7 @@ set hive.merge.mapredfiles=false;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 -- test where the skewed values are more than 1 say columns no. 2 and 4 in a table with 5 columns
 create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 

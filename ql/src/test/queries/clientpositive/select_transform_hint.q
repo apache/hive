@@ -1,3 +1,5 @@
+set hive.entity.capture.transform=true;
+
 EXPLAIN
 SELECT /*+MAPJOIN(a)*/ 
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)

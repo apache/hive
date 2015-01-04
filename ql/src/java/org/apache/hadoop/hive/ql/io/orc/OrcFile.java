@@ -97,6 +97,26 @@ public final class OrcFile {
     }
   }
 
+  /**
+   * Records the version of the writer in terms of which bugs have been fixed.
+   * For bugs in the writer, but the old readers already read the new data
+   * correctly, bump this version instead of the Version.
+   */
+  public static enum WriterVersion {
+    ORIGINAL(0),
+      HIVE_8732(1); // corrupted stripe/file maximum column statistics
+
+    private final int id;
+
+    public int getId() {
+      return id;
+    }
+
+    private WriterVersion(int id) {
+      this.id = id;
+    }
+  }
+
   public static enum EncodingStrategy {
     SPEED, COMPRESSION;
   }

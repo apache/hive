@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <packaging.minimizeJar>false</packaging.minimizeJar>
   </properties>
 
   <dependencies>
@@ -127,6 +128,12 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>dist</id>
+      <properties>
+        <packaging.minimizeJar>true</packaging.minimizeJar>
+      </properties>
+    </profile>
   </profiles>
 
 
@@ -143,7 +150,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <minimizeJar>true</minimizeJar>
+              <minimizeJar>${packaging.minimizeJar}</minimizeJar>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>${hive.jdbc.driver.classifier}</shadedClassifierName>
               <filters>
@@ -155,7 +162,7 @@
                   </includes>
                 </filter>
                 <filter>
-                  <artifact>org.apache.hive.shims:hive-shims-common-secure</artifact>
+                  <artifact>org.apache.hive.shims:hive-shims-common</artifact>
                   <includes>
                     <include>org/apache/hadoop/hive/thrift/*</include>
                     <include>org/apache/hadoop/hive/thrift/client/*</include>
@@ -165,6 +172,12 @@
                   <artifact>org.apache.hive.shims:hive-shims-0.23</artifact>
                   <includes>
                     <include>org/apache/hadoop/hive/thrift/*</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>commons-logging:commons-logging</artifact>
+                  <includes>
+                    <include>**</include>
                   </includes>
                 </filter>
                 <filter>

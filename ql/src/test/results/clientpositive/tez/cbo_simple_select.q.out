@@ -1,0 +1,745 @@
+PREHOOK: query: -- 1. Test Select + TS
+select * from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 1. Test Select + TS
+select * from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+PREHOOK: query: select * from cbo_t1 as cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cbo_t1 as cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+PREHOOK: query: select * from cbo_t1 as cbo_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cbo_t1 as cbo_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+PREHOOK: query: select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+ 1	1	25.0
+ 1	1	25.0
+ 1 	1	25.0
+ 1 	1	25.0
+1 	1	25.0
+1 	1	25.0
+1	1	25.0
+1	1	25.0
+NULL	NULL	NULL
+NULL	NULL	NULL
+PREHOOK: query: -- 2. Test Select + TS + FIL
+select * from cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2. Test Select + TS + FIL
+select * from cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+ 1	1	25.0
+ 1	1	25.0
+ 1 	1	25.0
+ 1 	1	25.0
+1 	1	25.0
+1 	1	25.0
+1	1	25.0
+1	1	25.0
+PREHOOK: query: -- 3 Test Select + Select + TS + FIL
+select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3 Test Select + Select + TS + FIL
+select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+ 1	1	25.0
+ 1	1	25.0
+ 1 	1	25.0
+ 1 	1	25.0
+1 	1	25.0
+1 	1	25.0
+1	1	25.0
+1	1	25.0
+PREHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1 where cbo_t1.c_int >= 0 and y+c_int >= 0 or x <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1 where cbo_t1.c_int >= 0 and y+c_int >= 0 or x <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+ 1	1	25.0
+ 1	1	25.0
+ 1 	1	25.0
+ 1 	1	25.0
+1 	1	25.0
+1 	1	25.0
+1	1	25.0
+1	1	25.0
+PREHOOK: query: select cbo_t1.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t1.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+PREHOOK: query: select cbo_t2.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t2 where cbo_t2.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t2.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t2 where cbo_t2.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+PREHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1  where cbo_t1.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from cbo_t1 as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t2 where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+1	1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1	 1	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+ 1 	 1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1 	1 	1	1.0	true	2014
+1	1	1	1.0	false	2014
+1	1	1	1.0	false	2014
+PREHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1 where cbo_t1.c_int >= 0 and y+c_int >= 0 or x <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select cbo_t2.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1 as cbo_t2  where cbo_t2.c_int >= 0 and c_float+c_int >= 0 or c_float <= 100) as cbo_t1 where cbo_t1.c_int >= 0 and y+c_int >= 0 or x <= 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+1	1	25.0
+ 1	1	25.0
+ 1	1	25.0
+ 1 	1	25.0
+ 1 	1	25.0
+1 	1	25.0
+1 	1	25.0
+1	1	25.0
+1	1	25.0
+PREHOOK: query: select cbo_t1.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t1.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+PREHOOK: query: select cbo_t2.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t2 where cbo_t2.c_int >= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: select cbo_t2.c_int+c_float as x , c_int as c_int, (((c_int+c_float)*10)+5) as y from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t2 where cbo_t2.c_int >= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+2.0	1	25.0
+PREHOOK: query: -- 13. null expr in select list
+select null from cbo_t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: -- 13. null expr in select list
+select null from cbo_t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: -- 14. unary operator
+select key from cbo_t1 where c_int = -6  or c_int = +6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 14. unary operator
+select key from cbo_t1 where c_int = -6  or c_int = +6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+PREHOOK: query: -- 15. query referencing only partition columns
+select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- 15. query referencing only partition columns
+select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+400

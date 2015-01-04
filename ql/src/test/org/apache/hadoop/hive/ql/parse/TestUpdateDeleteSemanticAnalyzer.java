@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -267,7 +268,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     // I have to create the tables here (rather than in setup()) because I need the Hive
     // connection, which is conviently created by the semantic analyzer.
     Map<String, String> params = new HashMap<String, String>(1);
-    params.put(SemanticAnalyzer.ACID_TABLE_PROPERTY, "true");
+    params.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
     db.createTable("T", Arrays.asList("a", "b"), null, OrcInputFormat.class,
         OrcOutputFormat.class, 2, Arrays.asList("a"), params);
     db.createTable("U", Arrays.asList("a", "b"), Arrays.asList("ds"), OrcInputFormat.class,

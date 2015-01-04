@@ -87,7 +87,6 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
-    JobTrackerState state;
     switch (clusterStatus.getJobTrackerState()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
@@ -515,6 +514,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context) {
+    return context.getJobConf();
+  }
+
+  @Override
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException {
     boolean origDisableHDFSCache =
         conf.getBoolean("fs." + uri.getScheme() + ".impl.disable.cache", false);
@@ -527,6 +531,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public void getMergedCredentials(JobConf jobConf) throws IOException {
+    throw new IOException("Merging of credentials not supported in this version of hadoop");
+  }
+
+  @Override
+  public void mergeCredentials(JobConf dest, JobConf src) throws IOException {
     throw new IOException("Merging of credentials not supported in this version of hadoop");
   }
 

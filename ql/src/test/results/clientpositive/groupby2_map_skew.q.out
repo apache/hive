@@ -27,12 +27,12 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(DISTINCT substr(value, 5)), sum(substr(value, 5))
-                keys: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                aggregations: count(DISTINCT _col1), sum(_col1)
+                keys: _col0 (type: string), _col1 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

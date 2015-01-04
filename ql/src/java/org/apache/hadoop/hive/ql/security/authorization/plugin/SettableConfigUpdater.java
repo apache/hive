@@ -44,7 +44,7 @@ public class SettableConfigUpdater {
     String whiteListParamsStr = hiveConf
         .getVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST);
 
-    if(whiteListParamsStr == null && whiteListParamsStr.trim().isEmpty()) {
+    if(whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       throw new HiveAuthzPluginException("Configuration parameter "
           + ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname
           + " is not iniatialized.");

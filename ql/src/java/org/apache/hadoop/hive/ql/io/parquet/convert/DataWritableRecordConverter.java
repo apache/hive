@@ -13,11 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.ArrayWritable;
-
 import parquet.io.api.GroupConverter;
 import parquet.io.api.RecordMaterializer;
 import parquet.schema.GroupType;
@@ -29,10 +25,10 @@ import parquet.schema.GroupType;
  */
 public class DataWritableRecordConverter extends RecordMaterializer<ArrayWritable> {
 
-  private final DataWritableGroupConverter root;
+  private final HiveStructConverter root;
 
   public DataWritableRecordConverter(final GroupType requestedSchema, final GroupType tableSchema) {
-    this.root = new DataWritableGroupConverter(requestedSchema, tableSchema);
+    this.root = new HiveStructConverter(requestedSchema, tableSchema);
   }
 
   @Override

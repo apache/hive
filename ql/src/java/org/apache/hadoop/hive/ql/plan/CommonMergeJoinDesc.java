@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Map;
-
-import org.apache.hadoop.hive.ql.exec.Operator;
 
 @Explain(displayName = "Merge Join Operator")
 public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {

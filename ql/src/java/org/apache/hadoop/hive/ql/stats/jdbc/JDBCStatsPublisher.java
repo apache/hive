@@ -139,7 +139,10 @@ public class JDBCStatsPublisher implements StatsPublisher {
           + " stats: " + JDBCStatsUtils.getSupportedStatistics());
       return false;
     }
-    LOG.info("Stats publishing for key " + fileID);
+    JDBCStatsUtils.validateRowId(fileID);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Stats publishing for key " + fileID);
+    }
 
     Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
       @Override
@@ -277,14 +280,36 @@ public class JDBCStatsPublisher implements StatsPublisher {
         stmt = conn.createStatement();
         stmt.setQueryTimeout(timeout);
 
+        // TODO: why is this not done using Hive db scripts?
         // Check if the table exists
         DatabaseMetaData dbm = conn.getMetaData();
-        rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
+        String tableName = JDBCStatsUtils.getStatTableName();
+        rs = dbm.getTables(null, null, tableName, null);
         boolean tblExists = rs.next();
         if (!tblExists) { // Table does not exist, create it
           String createTable = JDBCStatsUtils.getCreate("");
-          stmt.executeUpdate(createTable);          
-        }      
+          stmt.executeUpdate(createTable);
+        } else {
+          // Upgrade column name to allow for longer paths.
+          String idColName = JDBCStatsUtils.getIdColumnName();
+          int colSize = -1;
+          try {
+            rs.close();
+            rs = dbm.getColumns(null, null, tableName, idColName);
+            if (rs.next()) {
+              colSize = rs.getInt("COLUMN_SIZE");
+              if (colSize < JDBCStatsSetupConstants.ID_COLUMN_VARCHAR_SIZE) {
+                String alterTable = JDBCStatsUtils.getAlterIdColumn();
+                  stmt.executeUpdate(alterTable);
+              }
+            } else {
+              LOG.warn("Failed to update " + idColName + " - column not found");
+            }
+          } catch (Throwable t) {
+            LOG.warn("Failed to update " + idColName + " (size "
+                + (colSize == -1 ? "unknown" : colSize) + ")", t);
+          }
+        }
       }
     } catch (Exception e) {
       LOG.error("Error during JDBC initialization. ", e);

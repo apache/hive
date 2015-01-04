@@ -243,6 +243,32 @@ public class TestInitiator extends CompactorTest {
   }
 
   @Test
+  public void noCompactWhenNoCompactSetLowerCase() throws Exception {
+    Map<String, String> parameters = new HashMap<String, String>(1);
+    parameters.put("no_auto_compaction", "true");
+    Table t = newTable("default", "ncwncs", false, parameters);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 10);
+
+    for (int i = 0; i < 11; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename("ncwncs");
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      LockResponse res = txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(0, rsp.getCompactsSize());
+  }
+
+  @Test
   public void noCompactWhenCompactAlreadyScheduled() throws Exception {
     Table t = newTable("default", "ncwcas", false);
 

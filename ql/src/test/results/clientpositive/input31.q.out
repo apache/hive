@@ -90,7 +90,7 @@ select count(1) from srcbucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tst_dest31
-POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION []
 PREHOOK: query: select * from tst_dest31
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest31

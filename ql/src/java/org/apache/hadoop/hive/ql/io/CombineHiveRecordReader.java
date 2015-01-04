@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.CombineHiveInputSplit;
-import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -31,6 +30,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
 /**
  * CombineHiveRecordReader.
@@ -44,8 +44,9 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
   public CombineHiveRecordReader(InputSplit split, Configuration conf,
       Reporter reporter, Integer partition) throws IOException {
     super((JobConf)conf);
-    CombineHiveInputSplit hsplit = new CombineHiveInputSplit(jobConf,
-        (InputSplitShim) split);
+    CombineHiveInputSplit hsplit = split instanceof CombineHiveInputSplit ?
+        (CombineHiveInputSplit) split :
+        new CombineHiveInputSplit(jobConf, (CombineFileSplit) split);
     String inputFormatClassName = hsplit.inputFormatClassName();
     Class inputFormatClass = null;
     try {
@@ -72,14 +73,17 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     recordReader.close();
   }
 
+  @Override
   public K createKey() {
     return (K) recordReader.createKey();
   }
 
+  @Override
   public V createValue() {
     return (V) recordReader.createValue();
   }
 
+  @Override
   public long getPos() throws IOException {
     return recordReader.getPos();
   }

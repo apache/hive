@@ -75,8 +75,7 @@ public class HiveSchemaConverter {
       } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
         return new PrimitiveType(repetition, PrimitiveTypeName.BOOLEAN, name);
       } else if (typeInfo.equals(TypeInfoFactory.binaryTypeInfo)) {
-        // TODO : binaryTypeInfo is a byte array. Need to map it
-        throw new UnsupportedOperationException("Binary type not implemented");
+        return new PrimitiveType(repetition, PrimitiveTypeName.BINARY, name);
       } else if (typeInfo.equals(TypeInfoFactory.timestampTypeInfo)) {
         return new PrimitiveType(repetition, PrimitiveTypeName.INT96, name);
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {

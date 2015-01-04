@@ -54,7 +54,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     ALTERPARTITIONPROTECTMODE("alter partition protect mode"), ALTERLOCATION("alter location"),
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
-    ALTERPARTITION("alter partition"), COMPACT("compact");
+    ALTERPARTITION("alter partition"), COMPACT("compact"),
+    TRUNCATE("truncate"), MERGEFILES("merge files");
+    ;
 
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }
@@ -112,6 +114,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   Table table;
   boolean isDropIfExists = false;
   boolean isTurnOffSorting = false;
+  boolean isCascade = false;
 
   public AlterTableDesc() {
   }
@@ -127,8 +130,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newType
    */
   public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
-      String oldColName, String newColName,
-      String newType, String newComment, boolean first, String afterCol) {
+      String oldColName, String newColName, String newType, String newComment,
+      boolean first, String afterCol, boolean isCascade) {
     super();
     oldName = tblName;
     this.partSpec = partSpec;
@@ -139,6 +142,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.first = first;
     this.afterCol = afterCol;
     op = AlterTableTypes.RENAMECOLUMN;
+    this.isCascade = isCascade;
   }
 
   /**
@@ -161,11 +165,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new columns to be added
    */
   public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
-      AlterTableTypes alterType) {
+      AlterTableTypes alterType, boolean isCascade) {
     op = alterType;
     oldName = name;
     this.newCols = new ArrayList<FieldSchema>(newCols);
     this.partSpec = partSpec;
+    this.isCascade = isCascade;
   }
 
   /**
@@ -718,6 +723,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public boolean getIsDropIfExists() {
     return isDropIfExists;
+  }
+
+  /**
+   * @return isCascade
+   */
+  public boolean getIsCascade() {
+    return isCascade;
   }
 
   public static boolean doesAlterTableTypeSupportPartialPartitionSpec(AlterTableTypes type) {

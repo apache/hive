@@ -1,0 +1,1228 @@
+PREHOOK: query: -- single level partition, sorted dynamic partition disabled
+drop table acid
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- single level partition, sorted dynamic partition disabled
+drop table acid
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid
+POSTHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid
+PREHOOK: query: insert into table acid partition(ds)  select key,value,ds from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@acid
+POSTHOOK: query: insert into table acid partition(ds)  select key,value,ds from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-09
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1000
+PREHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), ds (type: string)
+                outputColumnNames: _col0, _col1, _col3
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col3 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds in ('2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1000
+PREHOOK: query: -- single level partition, sorted dynamic partition enabled
+drop table acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid
+PREHOOK: Output: default@acid
+POSTHOOK: query: -- single level partition, sorted dynamic partition enabled
+drop table acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid
+POSTHOOK: Output: default@acid
+PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid
+POSTHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid
+PREHOOK: query: insert into table acid partition(ds)  select key,value,ds from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@acid
+POSTHOOK: query: insert into table acid partition(ds)  select key,value,ds from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-09
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1000
+PREHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), ds (type: string)
+                outputColumnNames: _col0, _col1, _col3
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col3 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds in ('2008-04-08')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds in ('2008-04-08')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1001
+PREHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Output: default@acid@ds=2008-04-08
+POSTHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Output: default@acid@ds=2008-04-08
+PREHOOK: query: select count(*) from acid where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+#### A masked pattern was here ####
+1000
+PREHOOK: query: -- 2 level partition, sorted dynamic partition disabled
+drop table acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid
+PREHOOK: Output: default@acid
+POSTHOOK: query: -- 2 level partition, sorted dynamic partition disabled
+drop table acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid
+POSTHOOK: Output: default@acid
+PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid
+POSTHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid
+PREHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@acid
+POSTHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500
+PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string), 11 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), hr (type: int)
+                outputColumnNames: _col0, _col1, _col4
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col4 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string), VALUE._col3 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+1001
+PREHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500
+PREHOOK: query: -- 2 level partition, sorted dynamic partition enabled
+drop table acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid
+PREHOOK: Output: default@acid
+POSTHOOK: query: -- 2 level partition, sorted dynamic partition enabled
+drop table acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid
+POSTHOOK: Output: default@acid
+PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid
+POSTHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid
+PREHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@acid
+POSTHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500
+PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string)
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string), 11 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), hr (type: int)
+                outputColumnNames: _col0, _col1, _col4
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col4 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), 'bar' (type: string), '2008-04-08' (type: string), VALUE._col3 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+1001
+PREHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500
+PREHOOK: query: -- 2 level partition, sorted dynamic partition enabled, constant propagation disabled
+drop table acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid
+PREHOOK: Output: default@acid
+POSTHOOK: query: -- 2 level partition, sorted dynamic partition enabled, constant propagation disabled
+drop table acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid
+POSTHOOK: Output: default@acid
+PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid
+POSTHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid
+PREHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@acid
+POSTHOOK: query: insert into table acid partition(ds,hr)  select * from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500
+PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__5
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__5
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), value (type: string), ds (type: string), hr (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+501
+PREHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid
+            Filter Operator
+              predicate: (value = 'bar') (type: boolean)
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), value (type: string), ds (type: string), hr (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                  sort order: +
+                  Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                name: default.acid
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 
+            hr 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.acid
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: query: update acid set key = 'foo' where value = 'bar' and ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=12
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr>=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+1001
+PREHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: query: delete from acid where key = 'foo' and ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
+PREHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid where ds='2008-04-08' and hr=11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+500

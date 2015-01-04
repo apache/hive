@@ -367,20 +367,8 @@ public class ExpressionTree {
             partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder);
         return;
       }
-
-      String keyEqual = FileUtils.escapePathName(keyName) + "=";
-      String valString = "partitionName.substring(";
-      String indexOfKeyStr = "";
-      if (partitionColumnIndex != 0) {
-        keyEqual = "/" + keyEqual;
-        indexOfKeyStr = "partitionName.indexOf(\"" + keyEqual + "\") + ";
-        valString += indexOfKeyStr;
-      }
-      valString += keyEqual.length();
-      if (partitionColumnIndex != (partitionColumnCount - 1)) {
-        valString += ", partitionName.concat(\"/\").indexOf(\"/\", " + indexOfKeyStr + keyEqual.length() + ")";
-      }
-      valString += ")";
+      //get the value for a partition key form MPartition.values (PARTITION_KEY_VALUES)
+      String valString = "values.get(" + partitionColumnIndex + ")";
 
       if (operator == Operator.LIKE) {
         if (isReverseOrder) {
@@ -458,7 +446,7 @@ public class ExpressionTree {
       // columns have been excluded above, so it will either compare w/string or fail.
       Object val = value;
       if (value instanceof Date) {
-        val = HiveMetaStore.PARTITION_DATE_FORMAT.format((Date)value);
+        val = HiveMetaStore.PARTITION_DATE_FORMAT.get().format((Date)value);
       }
       boolean isStringValue = val instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {

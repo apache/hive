@@ -24,6 +24,7 @@ import javax.naming.directory.InitialDirContext;
 import javax.security.sasl.AuthenticationException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.service.ServiceUtils;
 
 public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
 
@@ -45,10 +46,11 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     env.put(Context.PROVIDER_URL, ldapURL);
 
-    //  If the domain is supplied, then append it. LDAP providers like Active Directory
-    // use a fully qualified user name like foo@bar.com.
-    if (ldapDomain != null) {
-      user = user + "@" + ldapDomain;
+    // If the domain is available in the config, then append it unless domain is
+    // already part of the username. LDAP providers like Active Directory use a
+    // fully qualified user name like foo@bar.com.
+    if (!hasDomain(user) && ldapDomain != null) {
+      user  = user + "@" + ldapDomain;
     }
 
     // setup the security principal
@@ -71,4 +73,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     }
   }
 
+  private boolean hasDomain(String userName) {
+    return (ServiceUtils.indexOfDomainMatch(userName) > 0);
+  }
 }

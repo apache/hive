@@ -42,16 +42,6 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
   }
 
   protected T data;
-  protected boolean isNull = false;
-
-  /**
-   * Returns the primitive object represented by this LazyObject. This is useful
-   * because it can make sure we have "null" for null objects.
-   */
-  @Override
-  public Object getObject() {
-    return isNull ? null : this;
-  }
 
   public T getWritableObject() {
     return isNull ? null : data;

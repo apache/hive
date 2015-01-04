@@ -25,7 +25,8 @@ beeline () {
   superCsvJarPath=`ls ${HIVE_LIB}/super-csv-*.jar`
   jlineJarPath=`ls ${HIVE_LIB}/jline-*.jar`
   jdbcStandaloneJarPath=`ls ${HIVE_LIB}/hive-jdbc-*-standalone.jar`
-  export HADOOP_CLASSPATH=${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}:${jdbcStandaloneJarPath}
+  export HADOOP_CLASSPATH=${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}:${jdbcStandaloneJarPath}
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configuration=beeline-log4j.properties "
 
   exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS "$@"
 }

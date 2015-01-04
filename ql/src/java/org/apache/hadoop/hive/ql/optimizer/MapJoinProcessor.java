@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -312,16 +313,12 @@ public class MapJoinProcessor implements Transform {
     // outer join cannot be performed on a table which is being cached
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
-    Byte[] tagOrder = desc.getTagOrder();
 
     if (!noCheckOuterJoin) {
       if (checkMapJoin(mapJoinPos, condns) < 0) {
         throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
       }
     }
-
-    RowResolver outputRS = opParseCtxMap.get(op).getRowResolver();
-    Map<Byte, List<ExprNodeDesc>> keyExprMap = new HashMap<Byte, List<ExprNodeDesc>>();
 
     // Walk over all the sources (which are guaranteed to be reduce sink
     // operators).
@@ -1029,19 +1026,7 @@ public class MapJoinProcessor implements Transform {
 
   }
 
-  public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
-    JoinDesc desc = op.getConf();
-    JoinCondDesc[] condns = desc.getConds();
-    Byte[] tagOrder = desc.getTagOrder();
-
-    // outer join cannot be performed on a table which is being cached
-    if (!noCheckOuterJoin) {
-      if (checkMapJoin(mapJoinPos, condns) < 0) {
-        throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
-      }
-    }
+  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(QBJoinTree joinTree, JoinOperator op) {
 
     // Walk over all the sources (which are guaranteed to be reduce sink
     // operators).
@@ -1066,10 +1051,39 @@ public class MapJoinProcessor implements Transform {
       pos++;
     }
 
+    // get the join keys from old parent ReduceSink operators
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = new HashMap<Byte, List<ExprNodeDesc>>();
+
+    for (pos = 0; pos < op.getParentOperators().size(); pos++) {
+      ReduceSinkOperator inputRS = oldReduceSinkParentOps.get(pos);
+      List<ExprNodeDesc> keyCols = inputRS.getConf().getKeyCols();
+      keyExprMap.put(pos, keyCols);
+    }
+
+    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(oldReduceSinkParentOps, keyExprMap);
+  }
+
+  public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
+      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
+      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
+    JoinDesc desc = op.getConf();
+    JoinCondDesc[] condns = desc.getConds();
+    Byte[] tagOrder = desc.getTagOrder();
+
+    // outer join cannot be performed on a table which is being cached
+    if (!noCheckOuterJoin) {
+      if (checkMapJoin(mapJoinPos, condns) < 0) {
+        throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
+      }
+    }
+
     Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
     List<ColumnInfo> schema = new ArrayList<ColumnInfo>(op.getSchema().getSignature());
     Map<Byte, List<ExprNodeDesc>> valueExprs = op.getConf().getExprs();
     Map<Byte, List<ExprNodeDesc>> newValueExprs = new HashMap<Byte, List<ExprNodeDesc>>();
+
+    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair = getKeys(joinTree, op);
+    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getFirst();
     for (Map.Entry<Byte, List<ExprNodeDesc>> entry : valueExprs.entrySet()) {
       byte tag = entry.getKey();
       Operator<?> terminal = oldReduceSinkParentOps.get(tag);
@@ -1095,15 +1109,13 @@ public class MapJoinProcessor implements Transform {
     Map<Byte, int[]> valueIndices = new HashMap<Byte, int[]>();
 
     // get the join keys from old parent ReduceSink operators
-    Map<Byte, List<ExprNodeDesc>> keyExprMap = new HashMap<Byte, List<ExprNodeDesc>>();
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getSecond();
 
     // construct valueTableDescs and valueFilteredTableDescs
     List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
     List<TableDesc> valueFilteredTableDescs = new ArrayList<TableDesc>();
     int[][] filterMap = desc.getFilterMap();
-    for (pos = 0; pos < op.getParentOperators().size(); pos++) {
-      ReduceSinkOperator inputRS = oldReduceSinkParentOps.get(pos);
-      List<ExprNodeDesc> keyCols = inputRS.getConf().getKeyCols();
+    for (byte pos = 0; pos < op.getParentOperators().size(); pos++) {
       List<ExprNodeDesc> valueCols = newValueExprs.get(pos);
       if (pos != mapJoinPos) {
         // remove values in key exprs for value table schema
@@ -1113,7 +1125,7 @@ public class MapJoinProcessor implements Transform {
         List<ExprNodeDesc> valueColsInValueExpr = new ArrayList<ExprNodeDesc>();
         for (int i = 0; i < valueIndex.length; i++) {
           ExprNodeDesc expr = valueCols.get(i);
-          int kindex = ExprNodeDescUtils.indexOf(expr, keyCols);
+          int kindex = ExprNodeDescUtils.indexOf(expr, keyExprMap.get(pos));
           if (kindex >= 0) {
             valueIndex[i] = kindex;
           } else {
@@ -1145,8 +1157,6 @@ public class MapJoinProcessor implements Transform {
 
       valueTableDescs.add(valueTableDesc);
       valueFilteredTableDescs.add(valueFilteredTableDesc);
-
-      keyExprMap.put(pos, keyCols);
     }
 
     Map<Byte, List<ExprNodeDesc>> filters = desc.getFilters();

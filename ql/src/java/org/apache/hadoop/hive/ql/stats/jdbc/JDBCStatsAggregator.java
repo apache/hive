@@ -134,6 +134,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
       }
     };
 
+    JDBCStatsUtils.validateRowId(fileID);
     String keyPrefix = Utilities.escapeSqlLike(fileID) + "%";
     for (int failures = 0;; failures++) {
       try {
@@ -147,7 +148,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
         if (result.next()) {
           retval = result.getLong(1);
         } else {
-          LOG.warn("Warning. Nothing published. Nothing aggregated.");
+          LOG.warn("Nothing published. Nothing aggregated.");
           return null;
         }
         return Long.toString(retval);
@@ -217,6 +218,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
     };
     try {
 
+      JDBCStatsUtils.validateRowId(rowID);
       String keyPrefix = Utilities.escapeSqlLike(rowID) + "%";
 
       PreparedStatement delStmt = Utilities.prepareWithRetry(conn,

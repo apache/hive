@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Map;
  * add non-null entries to the Map.
  */
 public class MapBuilder {
-    private Map<String, Object> map = new HashMap<String, Object>();
+    private Map<String, Object> map = new LinkedHashMap<String, Object>();
 
     private MapBuilder() {}
 

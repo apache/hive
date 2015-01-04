@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -244,7 +246,9 @@ public class SimpleFetchOptimizer implements Transform {
   }
 
   private boolean checkExpression(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeColumnDesc) {
+    if (expr instanceof ExprNodeConstantDesc ||
+        expr instanceof ExprNodeNullDesc||
+        expr instanceof ExprNodeColumnDesc) {
       return true;
     }
 
@@ -266,7 +270,7 @@ public class SimpleFetchOptimizer implements Transform {
     private final Table table;
     private final SplitSample splitSample;
     private final PrunedPartitionList partsList;
-    private final HashSet<ReadEntity> inputs = new HashSet<ReadEntity>();
+    private final LinkedHashSet<ReadEntity> inputs = new LinkedHashSet<ReadEntity>();
     private final boolean onlyPruningFilter;
 
     // source table scan

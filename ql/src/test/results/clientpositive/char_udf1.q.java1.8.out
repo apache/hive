@@ -1,0 +1,457 @@
+PREHOOK: query: drop table char_udf_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_udf_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table char_udf_1 (c1 string, c2 string, c3 char(10), c4 char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_udf_1
+POSTHOOK: query: create table char_udf_1 (c1 string, c2 string, c3 char(10), c4 char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@char_udf_1
+PREHOOK: query: insert overwrite table char_udf_1
+  select key, value, key, value from src where key = '238' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@char_udf_1
+POSTHOOK: query: insert overwrite table char_udf_1
+  select key, value, key, value from src where key = '238' limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@char_udf_1
+POSTHOOK: Lineage: char_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+-- UDFs with char support
+select 
+  concat(c1, c2),
+  concat(c3, c4),
+  concat(c1, c2) = concat(c3, c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+
+-- UDFs with char support
+select 
+  concat(c1, c2),
+  concat(c3, c4),
+  concat(c1, c2) = concat(c3, c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+238val_238	238val_238                    	true
+PREHOOK: query: select
+  upper(c2),
+  upper(c4),
+  upper(c2) = upper(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  upper(c2),
+  upper(c4),
+  upper(c2) = upper(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+VAL_238	VAL_238             	true
+PREHOOK: query: select
+  lower(c2),
+  lower(c4),
+  lower(c2) = lower(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  lower(c2),
+  lower(c4),
+  lower(c2) = lower(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238             	true
+PREHOOK: query: -- Scalar UDFs
+select
+  ascii(c2),
+  ascii(c4),
+  ascii(c2) = ascii(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Scalar UDFs
+select
+  ascii(c2),
+  ascii(c4),
+  ascii(c2) = ascii(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+118	118	true
+PREHOOK: query: select 
+  concat_ws('|', c1, c2),
+  concat_ws('|', c3, c4),
+  concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+  concat_ws('|', c1, c2),
+  concat_ws('|', c3, c4),
+  concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+238|val_238	238|val_238	true
+PREHOOK: query: select
+  decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
+  decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
+  decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
+  decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
+  decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238	true
+PREHOOK: query: select
+  instr(c2, '_'),
+  instr(c4, '_'),
+  instr(c2, '_') = instr(c4, '_')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  instr(c2, '_'),
+  instr(c4, '_'),
+  instr(c2, '_') = instr(c4, '_')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+4	4	true
+PREHOOK: query: select
+  length(c2),
+  length(c4),
+  length(c2) = length(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  length(c2),
+  length(c4),
+  length(c2) = length(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+7	7	true
+PREHOOK: query: select
+  locate('a', 'abcdabcd', 3),
+  locate(cast('a' as char(1)), cast('abcdabcd' as char(10)), 3),
+  locate('a', 'abcdabcd', 3) = locate(cast('a' as char(1)), cast('abcdabcd' as char(10)), 3)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  locate('a', 'abcdabcd', 3),
+  locate(cast('a' as char(1)), cast('abcdabcd' as char(10)), 3),
+  locate('a', 'abcdabcd', 3) = locate(cast('a' as char(1)), cast('abcdabcd' as char(10)), 3)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+5	5	true
+PREHOOK: query: select
+  lpad(c2, 15, ' '),
+  lpad(c4, 15, ' '),
+  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  lpad(c2, 15, ' '),
+  lpad(c4, 15, ' '),
+  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+        val_238	        val_238	true
+PREHOOK: query: select
+  ltrim(c2),
+  ltrim(c4),
+  ltrim(c2) = ltrim(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  ltrim(c2),
+  ltrim(c4),
+  ltrim(c2) = ltrim(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238	true
+PREHOOK: query: select
+  regexp(c2, 'val'),
+  regexp(c4, 'val'),
+  regexp(c2, 'val') = regexp(c4, 'val')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  regexp(c2, 'val'),
+  regexp(c4, 'val'),
+  regexp(c2, 'val') = regexp(c4, 'val')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+true	true	true
+PREHOOK: query: select
+  regexp_extract(c2, 'val_([0-9]+)', 1),
+  regexp_extract(c4, 'val_([0-9]+)', 1),
+  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  regexp_extract(c2, 'val_([0-9]+)', 1),
+  regexp_extract(c4, 'val_([0-9]+)', 1),
+  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+238	238	true
+PREHOOK: query: select
+  regexp_replace(c2, 'val', 'replaced'),
+  regexp_replace(c4, 'val', 'replaced'),
+  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  regexp_replace(c2, 'val', 'replaced'),
+  regexp_replace(c4, 'val', 'replaced'),
+  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+replaced_238	replaced_238	true
+PREHOOK: query: select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+832_lav	832_lav	true
+PREHOOK: query: select
+  rpad(c2, 15, ' '),
+  rpad(c4, 15, ' '),
+  rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  rpad(c2, 15, ' '),
+  rpad(c4, 15, ' '),
+  rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238        	val_238        	true
+PREHOOK: query: select
+  rtrim(c2),
+  rtrim(c4),
+  rtrim(c2) = rtrim(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  rtrim(c2),
+  rtrim(c4),
+  rtrim(c2) = rtrim(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238	true
+PREHOOK: query: select
+  sentences('See spot run.  See jane run.'),
+  sentences(cast('See spot run.  See jane run.' as char(50)))
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  sentences('See spot run.  See jane run.'),
+  sentences(cast('See spot run.  See jane run.' as char(50)))
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+[["See","spot","run"],["See","jane","run"]]	[["See","spot","run"],["See","jane","run"]]
+PREHOOK: query: select
+  split(c2, '_'),
+  split(c4, '_')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  split(c2, '_'),
+  split(c4, '_')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+["val","238"]	["val","238"]
+PREHOOK: query: select 
+  str_to_map('a:1,b:2,c:3',',',':'),
+  str_to_map(cast('a:1,b:2,c:3' as char(20)),',',':')
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+  str_to_map('a:1,b:2,c:3',',',':'),
+  str_to_map(cast('a:1,b:2,c:3' as char(20)),',',':')
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+{"a":"1","b":"2","c":"3"}	{"a":"1","b":"2","c":"3"}
+PREHOOK: query: select
+  substr(c2, 1, 3),
+  substr(c4, 1, 3),
+  substr(c2, 1, 3) = substr(c4, 1, 3)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  substr(c2, 1, 3),
+  substr(c4, 1, 3),
+  substr(c2, 1, 3) = substr(c4, 1, 3)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val	val	true
+PREHOOK: query: select
+  trim(c2),
+  trim(c4),
+  trim(c2) = trim(c4)
+from char_udf_1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  trim(c2),
+  trim(c4),
+  trim(c2) = trim(c4)
+from char_udf_1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238	true
+PREHOOK: query: -- Aggregate Functions
+select
+  compute_stats(c2, 16),
+  compute_stats(c4, 16)
+from char_udf_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Aggregate Functions
+select
+  compute_stats(c2, 16),
+  compute_stats(c4, 16)
+from char_udf_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1}	{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1}
+PREHOOK: query: select
+  min(c2),
+  min(c4)
+from char_udf_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  min(c2),
+  min(c4)
+from char_udf_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238             
+PREHOOK: query: select
+  max(c2),
+  max(c4)
+from char_udf_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  max(c2),
+  max(c4)
+from char_udf_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_udf_1
+#### A masked pattern was here ####
+val_238	val_238             
+PREHOOK: query: drop table char_udf_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_udf_1
+PREHOOK: Output: default@char_udf_1
+POSTHOOK: query: drop table char_udf_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_udf_1
+POSTHOOK: Output: default@char_udf_1

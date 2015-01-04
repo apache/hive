@@ -45,6 +45,8 @@ import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.fusesource.jansi.Ansi;
 
+import com.google.common.base.Preconditions;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -60,7 +62,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import jline.Terminal;
+import jline.TerminalFactory;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -130,6 +132,11 @@ public class TezJobMonitor {
         }
       }
     });
+  }
+
+  public static void initShutdownHook() {
+    Preconditions.checkNotNull(shutdownList,
+        "Shutdown hook was not properly initialized");
   }
 
   public TezJobMonitor() {
@@ -225,7 +232,7 @@ public class TezJobMonitor {
    * @return - width of terminal
    */
   public int getTerminalWidth() {
-    return Terminal.getTerminal().getTerminalWidth();
+    return TerminalFactory.get().getWidth();
   }
 
   /**
@@ -290,6 +297,7 @@ public class TezJobMonitor {
             break;
           case INITING:
             console.printInfo("Status: Initializing");
+            startTime = System.currentTimeMillis();
             break;
           case RUNNING:
             if (!running) {
@@ -302,7 +310,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             } else {
               lastReport = printStatus(progressMap, lastReport, console);
             }
@@ -311,7 +319,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, false, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             } else {
               lastReport = printStatus(progressMap, lastReport, console);
             }
@@ -336,7 +344,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             }
             console.printInfo("Status: Killed");
             running = false;
@@ -348,7 +356,7 @@ public class TezJobMonitor {
             if (inPlaceEligible) {
               printStatusInPlace(progressMap, startTime, true, dagClient);
               // log the progress report to log file as well
-              console.logInfo(getReport(progressMap));
+              lastReport = logStatus(progressMap, lastReport, console);
             }
             console.printError("Status: Failed");
             running = false;
@@ -694,7 +702,16 @@ public class TezJobMonitor {
     float percent = total == 0 ? 0.0f : (float) complete / (float) total;
     // lets use the remaining space in column 1 as progress bar
     int spaceRemaining = COLUMN_1_WIDTH - s.length() - 1;
-    String result = s + " ";
+    String trimmedVName = s;
+
+    // if the vertex name is longer than column 1 width, trim it down
+    // "Tez Merge File Work" will become "Tez Merge File.."
+    if (s != null && s.length() > COLUMN_1_WIDTH) {
+      trimmedVName = s.substring(0, COLUMN_1_WIDTH - 1);
+      trimmedVName = trimmedVName + "..";
+    }
+
+    String result = trimmedVName + " ";
     int toFill = (int) (spaceRemaining * percent);
     for (int i = 0; i < toFill; i++) {
       result += ".";
@@ -736,6 +753,15 @@ public class TezJobMonitor {
     String report = getReport(progressMap);
     if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + printInterval) {
       console.printInfo(report);
+      lastPrintTime = System.currentTimeMillis();
+    }
+    return report;
+  }
+
+  private String logStatus(Map<String, Progress> progressMap, String lastReport, LogHelper console) {
+    String report = getReport(progressMap);
+    if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + printInterval) {
+      console.logInfo(report);
       lastPrintTime = System.currentTimeMillis();
     }
     return report;

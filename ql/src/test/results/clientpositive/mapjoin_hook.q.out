@@ -16,7 +16,7 @@ PREHOOK: Output: default@dest1
 RUN: Stage-4:MAPREDLOCAL
 RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-2:STATS
+RUN: Stage-3:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 PREHOOK: type: QUERY

@@ -20,10 +20,14 @@ package org.apache.hive.service.cli.session;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -41,6 +45,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private String delegationTokenStr = null;
   private Hive sessionHive = null;
   private HiveSession proxySession = null;
+  static final Log LOG = LogFactory.getLog(HiveSessionImplwithUGI.class);
 
   public HiveSessionImplwithUGI(TProtocolVersion protocol, String username, String password,
       HiveConf hiveConf, String ipAddress, String delegationToken) throws HiveSQLException {
@@ -62,14 +67,15 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (owner == null) {
       throw new HiveSQLException("No username provided for impersonation");
     }
-    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       try {
-        sessionUgi = ShimLoader.getHadoopShims().createProxyUser(owner);
+        sessionUgi = UserGroupInformation.createProxyUser(
+            owner, UserGroupInformation.getLoginUser());
       } catch (IOException e) {
         throw new HiveSQLException("Couldn't setup proxy user", e);
       }
     } else {
-      sessionUgi = ShimLoader.getHadoopShims().createRemoteUser(owner, null);
+      sessionUgi = UserGroupInformation.createRemoteUser(owner);
     }
   }
 
@@ -98,8 +104,10 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   public void close() throws HiveSQLException {
     try {
     acquire(true);
-    ShimLoader.getHadoopShims().closeAllForUGI(sessionUgi);
+    FileSystem.closeAllForUGI(sessionUgi);
     cancelDelegationToken();
+    } catch (IOException ioe) {
+      LOG.error("Could not clean up file-system handles for UGI: " + sessionUgi, ioe);
     } finally {
       release(true);
       super.close();
@@ -118,7 +126,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (delegationTokenStr != null) {
       getHiveConf().set("hive.metastore.token.signature", HS2TOKEN);
       try {
-        ShimLoader.getHadoopShims().setTokenStr(sessionUgi, delegationTokenStr, HS2TOKEN);
+        Utils.setTokenStr(sessionUgi, delegationTokenStr, HS2TOKEN);
       } catch (IOException e) {
         throw new HiveSQLException("Couldn't setup delegation token in the ugi", e);
       }

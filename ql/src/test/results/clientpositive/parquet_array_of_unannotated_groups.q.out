@@ -1,0 +1,45 @@
+PREHOOK: query: -- this test creates a Parquet table from a structure with an unannotated
+-- repeated structure of (x,y) structs
+
+CREATE TABLE parquet_array_of_unannotated_groups (
+    list_of_points ARRAY<STRUCT<x: FLOAT, y: FLOAT>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_of_unannotated_groups
+POSTHOOK: query: -- this test creates a Parquet table from a structure with an unannotated
+-- repeated structure of (x,y) structs
+
+CREATE TABLE parquet_array_of_unannotated_groups (
+    list_of_points ARRAY<STRUCT<x: FLOAT, y: FLOAT>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_of_unannotated_groups
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/UnannotatedListOfGroups.parquet'
+OVERWRITE INTO TABLE parquet_array_of_unannotated_groups
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_array_of_unannotated_groups
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/UnannotatedListOfGroups.parquet'
+OVERWRITE INTO TABLE parquet_array_of_unannotated_groups
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_array_of_unannotated_groups
+PREHOOK: query: SELECT * FROM parquet_array_of_unannotated_groups
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_of_unannotated_groups
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_array_of_unannotated_groups
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_of_unannotated_groups
+#### A masked pattern was here ####
+[{"x":1.0,"y":1.0},{"x":2.0,"y":2.0}]
+PREHOOK: query: DROP TABLE parquet_array_of_unannotated_groups
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_array_of_unannotated_groups
+PREHOOK: Output: default@parquet_array_of_unannotated_groups
+POSTHOOK: query: DROP TABLE parquet_array_of_unannotated_groups
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_array_of_unannotated_groups
+POSTHOOK: Output: default@parquet_array_of_unannotated_groups

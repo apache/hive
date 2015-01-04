@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizatio
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.junit.After;
@@ -90,7 +91,7 @@ public class StorageBasedMetastoreTestBase {
     clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
 
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(clientHiveConf);
+    ugi = Utils.getUGI();
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf, null);

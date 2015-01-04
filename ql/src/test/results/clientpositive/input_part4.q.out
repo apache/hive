@@ -16,7 +16,7 @@ STAGE PLANS:
           alias: x
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
-            predicate: ((ds = '2008-04-08') and (hr = 15)) (type: boolean)
+            predicate: ((ds = '2008-04-08') and (UDFToDouble(hr) = 15.0)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), '15' (type: string)

@@ -1,20 +1,3 @@
-DROP TABLE part;
-
--- data setup
-CREATE TEMPORARY TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-);
-
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
-
 drop table over10k;
 
 create temporary table over10k(

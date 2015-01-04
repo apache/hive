@@ -109,6 +109,10 @@ public class HiveSQLException extends SQLException {
     }
   }
 
+  /**
+   * Converts current object to a {@link TStatus} object
+   * @return	a {@link TStatus} object
+   */
   public TStatus toTStatus() {
     // TODO: convert sqlState, etc.
     TStatus tStatus = new TStatus(TStatusCode.ERROR_STATUS);
@@ -119,6 +123,11 @@ public class HiveSQLException extends SQLException {
     return tStatus;
   }
 
+  /**
+   * Converts the specified {@link Exception} object into a {@link TStatus} object
+   * @param e	a {@link Exception} object
+   * @return	a {@link TStatus} object
+   */
   public static TStatus toTStatus(Exception e) {
     if (e instanceof HiveSQLException) {
       return ((HiveSQLException)e).toTStatus();
@@ -129,11 +138,18 @@ public class HiveSQLException extends SQLException {
     return tStatus;
   }
 
+  /**
+   * Converts a {@link Throwable} object into a flattened list of texts including its stack trace
+   * and the stack traces of the nested causes.
+   * @param ex  a {@link Throwable} object
+   * @return    a flattened list of texts including the {@link Throwable} object's stack trace
+   *            and the stack traces of the nested causes.
+   */
   public static List<String> toString(Throwable ex) {
     return toString(ex, null);
   }
 
-  static List<String> toString(Throwable cause, StackTraceElement[] parent) {
+  private static List<String> toString(Throwable cause, StackTraceElement[] parent) {
     StackTraceElement[] trace = cause.getStackTrace();
     int m = trace.length - 1;
     if (parent != null) {
@@ -150,7 +166,7 @@ public class HiveSQLException extends SQLException {
     return detail;
   }
 
-  static List<String> enroll(Throwable ex, StackTraceElement[] trace, int max) {
+  private static List<String> enroll(Throwable ex, StackTraceElement[] trace, int max) {
     List<String> details = new ArrayList<String>();
     StringBuilder builder = new StringBuilder();
     builder.append('*').append(ex.getClass().getName()).append(':');
@@ -169,11 +185,18 @@ public class HiveSQLException extends SQLException {
     return details;
   }
 
+  /**
+   * Converts a flattened list of texts including the stack trace and the stack
+   * traces of the nested causes into a {@link Throwable} object.
+   * @param details a flattened list of texts including the stack trace and the stack
+   *                traces of the nested causes
+   * @return        a {@link Throwable} object
+   */
   public static Throwable toCause(List<String> details) {
     return toStackTrace(details, null, 0);
   }
 
-  static Throwable toStackTrace(List<String> details, StackTraceElement[] parent, int index) {
+  private static Throwable toStackTrace(List<String> details, StackTraceElement[] parent, int index) {
     String detail = details.get(index++);
     if (!detail.startsWith("*")) {
       return null;  // should not be happened. ignore remaining

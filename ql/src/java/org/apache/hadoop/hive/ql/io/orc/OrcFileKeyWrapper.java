@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.WritableComparable;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.io.WritableComparable;
 
 /**
  * Key for OrcFileMergeMapper task. Contains orc file related information that
@@ -38,14 +37,14 @@ public class OrcFileKeyWrapper implements WritableComparable<OrcFileKeyWrapper> 
   protected long compressBufferSize;
   protected List<OrcProto.Type> types;
   protected int rowIndexStride;
-  protected List<Integer> versionList;
+  protected OrcFile.Version version;
 
-  public List<Integer> getVersionList() {
-    return versionList;
+  public OrcFile.Version getVersion() {
+    return version;
   }
 
-  public void setVersionList(List<Integer> versionList) {
-    this.versionList = versionList;
+  public void setVersion(OrcFile.Version version) {
+    this.version = version;
   }
 
   public int getRowIndexStride() {

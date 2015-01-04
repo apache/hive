@@ -18,12 +18,17 @@
 
 package org.apache.hive.service.cli.operation;
 import java.io.CharArrayWriter;
+import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
 import org.apache.log4j.WriterAppender;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
+
+import com.google.common.base.Joiner;
 
 /**
  * An Appender to divert logs from individual threads to the LogObject they belong to.
@@ -33,20 +38,29 @@ public class LogDivertAppender extends WriterAppender {
   private final OperationManager operationManager;
 
   /**
-   * A log filter that exclude messages coming from the logger with the given name.
-   * We apply this filter on the Loggers used by the log diversion stuff, so that
+   * A log filter that filters messages coming from the logger with the given names.
+   * It be used as a white list filter or a black list filter.
+   * We apply black list filter on the Loggers used by the log diversion stuff, so that
    * they don't generate more logs for themselves when they process logs.
+   * White list filter is used for less verbose log collection
    */
-  private static class NameExclusionFilter extends Filter {
-    private String excludeLoggerName = null;
+  private static class NameFilter extends Filter {
+    private final Pattern namePattern;
+    private final boolean excludeMatches;
 
-    public NameExclusionFilter(String excludeLoggerName) {
-      this.excludeLoggerName = excludeLoggerName;
+    public NameFilter(boolean isExclusionFilter, String [] loggerNames) {
+      this.excludeMatches = isExclusionFilter;
+      String matchRegex = Joiner.on("|").join(loggerNames);
+      this.namePattern = Pattern.compile(matchRegex);
     }
 
     @Override
     public int decide(LoggingEvent ev) {
-      if (ev.getLoggerName().equals(excludeLoggerName)) {
+      boolean isMatch = namePattern.matcher(ev.getLoggerName()).matches();
+      if (excludeMatches == isMatch) {
+        // Deny if this is black-list filter (excludeMatches = true) and it
+        // matched
+        // or if this is whitelist filter and it didn't match
         return Filter.DENY;
       }
       return Filter.NEUTRAL;
@@ -56,21 +70,29 @@ public class LogDivertAppender extends WriterAppender {
   /** This is where the log message will go to */
   private final CharArrayWriter writer = new CharArrayWriter();
 
-  public LogDivertAppender(Layout layout, OperationManager operationManager) {
+  public LogDivertAppender(Layout layout, OperationManager operationManager, boolean isVerbose) {
     setLayout(layout);
     setWriter(writer);
     setName("LogDivertAppender");
     this.operationManager = operationManager;
 
-    // Filter out messages coming from log processing classes, or we'll run an infinite loop.
-    addFilter(new NameExclusionFilter(LOG.getName()));
-    addFilter(new NameExclusionFilter(OperationLog.class.getName()));
-    addFilter(new NameExclusionFilter(OperationManager.class.getName()));
+    if (isVerbose) {
+      // Filter out messages coming from log processing classes, or we'll run an
+      // infinite loop.
+      String[] exclLoggerNames = { LOG.getName(), OperationLog.class.getName(),
+          OperationManager.class.getName() };
+      addFilter(new NameFilter(true, exclLoggerNames));
+    } else {
+      // in non verbose mode, show only select logger messages
+      String[] inclLoggerNames = { "org.apache.hadoop.mapreduce.JobSubmitter",
+          "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName() };
+      addFilter(new NameFilter(false, inclLoggerNames));
+    }
   }
 
   /**
-   * Overrides WriterAppender.subAppend(), which does the real logging.
-   * No need to worry about concurrency since log4j calls this synchronously.
+   * Overrides WriterAppender.subAppend(), which does the real logging. No need
+   * to worry about concurrency since log4j calls this synchronously.
    */
   @Override
   protected void subAppend(LoggingEvent event) {

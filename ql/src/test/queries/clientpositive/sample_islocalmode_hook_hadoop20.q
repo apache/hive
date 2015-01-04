@@ -8,7 +8,7 @@ set mapred.min.split.size.per.rack=300;
 set hive.exec.mode.local.auto=true;
 set hive.merge.smallfiles.avgsize=1;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size

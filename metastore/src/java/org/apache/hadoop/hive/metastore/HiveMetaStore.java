@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -191,6 +192,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
@@ -199,7 +201,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -228,11 +230,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static boolean isMetaStoreRemote = false;
 
   /** A fixed date format to be used for hive partition column values. */
-  public static final DateFormat PARTITION_DATE_FORMAT;
-  static {
-    PARTITION_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    PARTITION_DATE_FORMAT.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-  }
+  public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
+       new ThreadLocal<DateFormat>() {
+    @Override
+    protected DateFormat initialValue() {
+      DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      return val;
+    };
+  };
 
   /**
    * default port on which to start the Hive server
@@ -325,7 +331,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       UserGroupInformation ugi;
       try {
-        ugi = ShimLoader.getHadoopShims().getUGIForConf(getConf());
+        ugi = Utils.getUGI();
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -3256,13 +3262,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Table newTable)
         throws InvalidOperationException, MetaException {
       // Do not set an environment context.
-      alter_table_with_environment_context(dbname, name, newTable, null);
+      alter_table_core(dbname,name, newTable, null, false);
+    }
+
+    @Override
+    public void alter_table_with_cascade(final String dbname, final String name,
+        final Table newTable, final boolean cascade)
+        throws InvalidOperationException, MetaException {
+      // Do not set an environment context.
+      alter_table_core(dbname,name, newTable, null, cascade);
     }
 
     @Override
     public void alter_table_with_environment_context(final String dbname,
         final String name, final Table newTable,
         final EnvironmentContext envContext)
+        throws InvalidOperationException, MetaException {
+      alter_table_core(dbname, name, newTable, envContext, false);
+    }
+
+    private void alter_table_core(final String dbname, final String name, final Table newTable,
+        final EnvironmentContext envContext, final boolean cascade)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": db=" + dbname + " tbl=" + name
           + " newtbl=" + newTable.getTableName());
@@ -3278,7 +3298,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         Table oldt = get_table_core(dbname, name);
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
-        alterHandler.alterTable(getMS(), wh, dbname, name, newTable);
+        alterHandler.alterTable(getMS(), wh, dbname, name, newTable, cascade);
         success = true;
 
         for (MetaStoreEventListener listener : listeners) {
@@ -5720,7 +5740,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       Lock startLock = new ReentrantLock();
       Condition startCondition = startLock.newCondition();
-      MetaStoreThread.BooleanPointer startedServing = new MetaStoreThread.BooleanPointer();
+      AtomicBoolean startedServing = new AtomicBoolean();
       startMetaStoreThreads(conf, startLock, startCondition, startedServing);
       startMetaStore(cli.port, ShimLoader.getHadoopThriftAuthBridge(), conf, startLock,
           startCondition, startedServing);
@@ -5767,7 +5787,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       HiveConf conf, Lock startLock, Condition startCondition,
-      MetaStoreThread.BooleanPointer startedServing) throws Throwable {
+      AtomicBoolean startedServing) throws Throwable {
     try {
       isMetaStoreRemote = true;
       // Server will create new threads up to max as necessary. After an idle
@@ -5824,8 +5844,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TBinaryProtocol.Factory())
-          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
+          .protocolFactory(new TCompactProtocol.Factory())
+          .inputProtocolFactory(
+              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 
@@ -5851,7 +5872,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   private static void signalOtherThreadsToStart(final TServer server, final Lock startLock,
                                                 final Condition startCondition,
-                                                final MetaStoreThread.BooleanPointer startedServing) {
+                                                final AtomicBoolean startedServing) {
     // A simple thread to wait until the server has started and then signal the other threads to
     // begin
     Thread t = new Thread() {
@@ -5866,7 +5887,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } while (!server.isServing());
         startLock.lock();
         try {
-          startedServing.boolVal = true;
+          startedServing.set(true);
           startCondition.signalAll();
         } finally {
           startLock.unlock();
@@ -5882,7 +5903,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   private static void startMetaStoreThreads(final HiveConf conf, final Lock startLock,
                                             final Condition startCondition, final
-                                            MetaStoreThread.BooleanPointer startedServing) {
+                                            AtomicBoolean startedServing) {
     // A thread is spun up to start these other threads.  That's because we can't start them
     // until after the TServer has started, but once TServer.serve is called we aren't given back
     // control.
@@ -5900,7 +5921,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
-          while (!startedServing.boolVal) startCondition.await();
+          while (!startedServing.get()) startCondition.await();
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
@@ -5960,7 +5981,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setHiveConf(conf);
     thread.setThreadId(nextThreadId++);
-    thread.init(new MetaStoreThread.BooleanPointer(), new MetaStoreThread.BooleanPointer());
+    thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
   }
 }

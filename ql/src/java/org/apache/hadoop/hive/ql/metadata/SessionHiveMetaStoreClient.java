@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
@@ -205,6 +223,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Try underlying client
     return super.tableExists(databaseName, tableName);
+  }
+
+  @Override
+  public void alter_table(String dbname, String tbl_name, org.apache.hadoop.hive.metastore.api.Table new_tbl,
+      boolean cascade) throws InvalidOperationException, MetaException, TException {
+    org.apache.hadoop.hive.metastore.api.Table old_tbl = getTempTable(dbname, tbl_name);
+    if (old_tbl != null) {
+      //actually temp table does not support partitions, cascade is not applicable here
+      alterTempTable(dbname, tbl_name, old_tbl, new_tbl, null);
+      return;
+    }
+    super.alter_table(dbname, tbl_name, new_tbl, cascade);
   }
 
   @Override

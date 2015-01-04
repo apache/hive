@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -329,7 +328,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       taskId = Utilities.getTaskId(hconf);
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
-      hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+      hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, conf.getTableInfo());
       isCompressed = conf.getCompressed();
       parent = Utilities.toTempPath(conf.getDirName());
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
@@ -337,6 +336,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
+
+      if (isLogInfoEnabled) {
+        LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat +
+            (isCompressed ? " with compression" : ""));
+      }
 
       // Timeout is chosen to make sure that even if one iteration takes more than
       // half of the script.timeout but less than script.timeout, we will still
@@ -1046,26 +1050,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
     if (hiveOutputFormat == null) {
+      Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), job);
       try {
-        if (getConf().getTableInfo().getJobProperties() != null) {
-             //Setting only for Storage Handler
-             if (getConf().getTableInfo().getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
-                 job.set(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,getConf().getTableInfo().getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY));
-                 hiveOutputFormat = ReflectionUtils.newInstance(conf.getTableInfo().getOutputFileFormatClass(),job);
-           }
-          else {
-                 hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
-          }
-        }
-        else {
-              hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
-        }
+        hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(job, getConf().getTableInfo());
       } catch (Exception ex) {
         throw new IOException(ex);
       }
     }
-    Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), job);
-
     if (conf.getTableInfo().isNonNative()) {
       //check the ouput specs only if it is a storage handler (native tables's outputformats does
       //not set the job's output properties correctly)
@@ -1135,7 +1126,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       String postfix=null;
       if (taskIndependent) {
         // key = "database.table/SP/DP/"LB/
-        prefix = conf.getTableInfo().getTableName();
+        // Hive store lowercase table name in metastore, and Counters is character case sensitive, so we
+        // use lowercase table name as prefix here, as StatsTask get table name from metastore to fetch counter.
+        prefix = conf.getTableInfo().getTableName().toLowerCase();
       } else {
         // key = "prefix/SP/DP/"LB/taskID/
         prefix = conf.getStatsAggPrefix();

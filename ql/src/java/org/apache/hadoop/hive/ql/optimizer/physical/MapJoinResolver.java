@@ -200,8 +200,9 @@ public class MapJoinResolver implements PhysicalPlanResolver {
                   .getResolverCtx();
               HashMap<Task<? extends Serializable>, Set<String>> taskToAliases = context.getTaskToAliases();
               // to avoid concurrent modify the hashmap
+              // Must be deterministic order map for consistent q-test output across Java versions
               HashMap<Task<? extends Serializable>, Set<String>> newTaskToAliases =
-                  new HashMap<Task<? extends Serializable>, Set<String>>();
+                  new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
               // reset the resolver
               for (Map.Entry<Task<? extends Serializable>, Set<String>> entry : taskToAliases.entrySet()) {
                 Task<? extends Serializable> task = entry.getKey();

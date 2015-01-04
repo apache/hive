@@ -49,10 +49,35 @@ public interface AlterHandler extends Configurable {
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
-   *           thrown if there is any other erro
+   *           thrown if there is any other error
    */
   public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newTable) throws InvalidOperationException,
+      MetaException;
+
+  /**
+   * handles alter table, the changes could be cascaded to partitions if applicable
+   *
+   * @param msdb
+   *          object to get metadata
+   * @param wh
+   *          Hive Warehouse where table data is stored
+   * @param dbname
+   *          database of the table being altered
+   * @param name
+   *          original name of the table being altered. same as
+   *          <i>newTable.tableName</i> if alter op is not a rename.
+   * @param newTable
+   *          new table object
+   * @param cascade
+   *          if the changes will be cascaded to its partitions if applicable
+   * @throws InvalidOperationException
+   *           thrown if the newTable object is invalid
+   * @throws MetaException
+   *           thrown if there is any other error
+   */
+  public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
+      String name, Table newTable, boolean cascade) throws InvalidOperationException,
       MetaException;
 
   /**

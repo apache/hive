@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,6 +29,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -39,11 +42,13 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * merges SEL-SEL or FIL-FIL into single operator
@@ -129,8 +134,8 @@ public class NonBlockingOpDeDupProc implements Transform {
       pSEL.removeChildAndAdoptItsChildren(cSEL);
       cSEL.setParentOperators(null);
       cSEL.setChildOperators(null);
+      fixContextReferences(cSEL, pSEL);
       cSEL = null;
-
       return null;
     }
 
@@ -172,6 +177,25 @@ public class NonBlockingOpDeDupProc implements Transform {
         }
       }
       return true;
+    }
+  }
+
+  /**
+   * Change existing references in the context to point from child to parent operator.
+   * @param cSEL child operator (to be removed, and merged into parent)
+   * @param pSEL parent operator
+   */
+  private void fixContextReferences(SelectOperator cSEL, SelectOperator pSEL) {
+    Collection<QBJoinTree> qbJoinTrees = new ArrayList<QBJoinTree>();
+    qbJoinTrees.addAll(pctx.getJoinContext().values());
+    qbJoinTrees.addAll(pctx.getMapJoinContext().values());
+    for (QBJoinTree qbJoinTree : qbJoinTrees) {
+      Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo = qbJoinTree.getAliasToOpInfo();
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToOpInfo.entrySet()) {
+        if (entry.getValue() == cSEL) {
+          aliasToOpInfo.put(entry.getKey(), pSEL);
+        }
+      }
     }
   }
 

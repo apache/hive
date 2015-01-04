@@ -66,7 +66,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.StreamPrinter;
 
@@ -237,8 +239,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       //Set HADOOP_USER_NAME env variable for child process, so that
       // it also runs with hadoop permissions for the user the job is running as
       // This will be used by hadoop only in unsecure(/non kerberos) mode
-      HadoopShims shim = ShimLoader.getHadoopShims();
-      String endUserName = shim.getShortUserName(shim.getUGIForConf(job));
+      String endUserName = Utils.getUGI().getShortUserName();
       LOG.debug("setting HADOOP_USER_NAME\t" + endUserName);
       variables.put("HADOOP_USER_NAME", endUserName);
 
@@ -265,8 +266,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       }
 
 
-      if(ShimLoader.getHadoopShims().isSecurityEnabled() &&
-          ShimLoader.getHadoopShims().isLoginKeytabBased()) {
+      if(UserGroupInformation.isSecurityEnabled() &&
+           UserGroupInformation.isLoginKeytabBased()) {
         //If kerberos security is enabled, and HS2 doAs is enabled,
         // then additional params need to be set so that the command is run as
         // intended user

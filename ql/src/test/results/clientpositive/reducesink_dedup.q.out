@@ -1,37 +1,3 @@
-PREHOOK: query: DROP TABLE part
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE part
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@part
-POSTHOOK: query: -- data setup
-CREATE TABLE part( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part
 PREHOOK: query: select p_name 
 from (select p_name from part distribute by 1 sort by 1) p 
 distribute by 1 sort by 1
@@ -44,3 +10,29 @@ distribute by 1 sort by 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+almond azure blanched chiffon midnight
+almond aquamarine dodger light gainsboro
+almond antique sky peru orange
+almond antique medium spring khaki
+almond antique blue firebrick mint
+almond azure aquamarine papaya violet
+almond aquamarine yellow dodger mint
+almond aquamarine floral ivory bisque
+almond antique violet mint lemon
+almond antique gainsboro frosted violet
+almond antique olive coral navajo
+almond antique misty red olive
+almond antique metallic orange dim
+almond antique forest lavender goldenrod
+almond antique chartreuse khaki white
+almond aquamarine sandy cyan gainsboro
+almond aquamarine rose maroon antique
+almond aquamarine midnight light salmon
+almond antique violet turquoise frosted
+almond antique violet chocolate turquoise
+almond aquamarine pink moccasin thistle
+almond aquamarine burnished black steel
+almond antique salmon chartreuse burlywood
+almond antique chartreuse lavender yellow
+almond antique burnished rose metallic
+almond antique burnished rose metallic

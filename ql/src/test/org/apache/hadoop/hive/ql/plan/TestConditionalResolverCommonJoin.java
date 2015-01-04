@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 public class TestConditionalResolverCommonJoin {
@@ -52,8 +53,9 @@ public class TestConditionalResolverCommonJoin {
     task2.setId("alias3");
 
     // joins alias1, alias2, alias3 (alias1 was not eligible for big pos)
+    // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new HashMap<Task<? extends Serializable>, Set<String>>();
+        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     taskToAliases.put(task1, new HashSet<String>(Arrays.asList("alias2")));
     taskToAliases.put(task2, new HashSet<String>(Arrays.asList("alias3")));
 

@@ -7,7 +7,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 admin
-
 PREHOOK: query: create role r1
 PREHOOK: type: CREATEROLE
 POSTHOOK: query: create role r1
@@ -21,7 +20,6 @@ PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
-
 PREHOOK: query: drop role r1
 PREHOOK: type: DROPROLE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current user : hive_admin_user is not allowed to drop role. User has to belong to ADMIN role and have it as current role, for this action.

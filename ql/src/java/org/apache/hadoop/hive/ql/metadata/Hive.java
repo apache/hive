@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -117,6 +118,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Sets;
+
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -445,6 +447,11 @@ public class Hive {
    */
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
+    alterTable(tblName, newTbl, false);
+  }
+
+  public void alterTable(String tblName, Table newTbl, boolean cascade)
+      throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     try {
       // Remove the DDL_TIME so it gets refreshed
@@ -452,7 +459,7 @@ public class Hive {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       newTbl.checkValidity();
-      getMSC().alter_table(names[0], names[1], newTbl.getTTable());
+      getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
@@ -751,8 +758,9 @@ public class Hive {
         throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
       }
 
-      org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().deepCopy();
-      SerDeInfo serdeInfo = storageDescriptor.getSerdeInfo();
+      SerDeInfo serdeInfo = new SerDeInfo();
+      serdeInfo.setName(indexTblName);
+
       if(serde != null) {
         serdeInfo.setSerializationLib(serde);
       } else {
@@ -765,6 +773,7 @@ public class Hive {
         }
       }
 
+      serdeInfo.setParameters(new HashMap<String, String>());
       if (fieldDelim != null) {
         serdeInfo.getParameters().put(FIELD_DELIM, fieldDelim);
         serdeInfo.getParameters().put(SERIALIZATION_FORMAT, fieldDelim);
@@ -791,18 +800,8 @@ public class Hive {
         }
       }
 
-      storageDescriptor.setLocation(null);
-      if (location != null) {
-        storageDescriptor.setLocation(location);
-      }
-      storageDescriptor.setInputFormat(inputFormat);
-      storageDescriptor.setOutputFormat(outputFormat);
-
-      Map<String, String> params = new HashMap<String,String>();
-
       List<FieldSchema> indexTblCols = new ArrayList<FieldSchema>();
       List<Order> sortCols = new ArrayList<Order>();
-      storageDescriptor.setBucketCols(null);
       int k = 0;
       Table metaBaseTbl = new Table(baseTbl);
       for (int i = 0; i < metaBaseTbl.getCols().size(); i++) {
@@ -817,9 +816,6 @@ public class Hive {
         throw new RuntimeException(
             "Check the index columns, they should appear in the table being indexed.");
       }
-
-      storageDescriptor.setCols(indexTblCols);
-      storageDescriptor.setSortCols(sortCols);
 
       int time = (int) (System.currentTimeMillis() / 1000);
       org.apache.hadoop.hive.metastore.api.Table tt = null;
@@ -854,8 +850,21 @@ public class Hive {
 
       String tdname = Utilities.getDatabaseName(tableName);
       String ttname = Utilities.getTableName(tableName);
+
+      StorageDescriptor indexSd = new StorageDescriptor(
+          indexTblCols,
+          location,
+          inputFormat,
+          outputFormat,
+          false/*compressed - not used*/,
+          -1/*numBuckets - default is -1 when the table has no buckets*/,
+          serdeInfo,
+          null/*bucketCols*/,
+          sortCols,
+          null/*parameters*/);
+
       Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, indexTblName,
-          storageDescriptor, params, deferredRebuild);
+          indexSd, new HashMap<String,String>(), deferredRebuild);
       if (indexComment != null) {
         indexDesc.getParameters().put("comment", indexComment);
       }
@@ -1735,31 +1744,34 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (tpart == null) {
           LOG.debug("creating partition for table " + tbl.getTableName()
                     + " with partition spec : " + partSpec);
-          tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+          try {
+            tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+          } catch (AlreadyExistsException aee) {
+            LOG.debug("Caught already exists exception, trying to alter partition instead");
+            tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+              tbl.getTableName(), pvals, getUserName(), getGroupNames());
+            alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+          } catch (Exception e) {
+            if (CheckJDOException.isJDODataStoreException(e)) {
+              // Using utility method above, so that JDODataStoreException doesn't
+              // have to be used here. This helps avoid adding jdo dependency for
+              // hcatalog client uses
+              LOG.debug("Caught JDO exception, trying to alter partition instead");
+              tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+                tbl.getTableName(), pvals, getUserName(), getGroupNames());
+              if (tpart == null) {
+                // This means the exception was caused by something other than a race condition
+                // in creating the partition, since the partition still doesn't exist.
+                throw e;
+              }
+              alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+            } else {
+              throw e;
+            }
+          }
         }
         else {
-          LOG.debug("altering partition for table " + tbl.getTableName()
-                    + " with partition spec : " + partSpec);
-          if (inheritTableSpecs) {
-            tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
-            tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
-            tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
-            tpart.getSd().getSerdeInfo().setParameters(
-                tbl.getTTable().getSd().getSerdeInfo().getParameters());
-            tpart.getSd().setBucketCols(tbl.getBucketCols());
-            tpart.getSd().setNumBuckets(tbl.getNumBuckets());
-            tpart.getSd().setSortCols(tbl.getSortCols());
-          }
-          if (partPath == null || partPath.trim().equals("")) {
-            throw new HiveException("new partition path should not be null or empty.");
-          }
-          tpart.getSd().setLocation(partPath);
-          tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
-          String fullName = tbl.getTableName();
-          if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
-            fullName = tbl.getDbName() + "." + tbl.getTableName();
-          }
-          alterPartition(fullName, new Partition(tbl, tpart));
+          alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
         }
       }
       if (tpart == null) {
@@ -1770,6 +1782,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
     return new Partition(tbl, tpart);
+  }
+
+  private void alterPartitionSpec(Table tbl,
+                                  Map<String, String> partSpec,
+                                  org.apache.hadoop.hive.metastore.api.Partition tpart,
+                                  boolean inheritTableSpecs,
+                                  String partPath) throws HiveException, InvalidOperationException {
+    LOG.debug("altering partition for table " + tbl.getTableName() + " with partition spec : "
+        + partSpec);
+    if (inheritTableSpecs) {
+      tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
+      tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
+      tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+      tpart.getSd().getSerdeInfo().setParameters(
+          tbl.getTTable().getSd().getSerdeInfo().getParameters());
+      tpart.getSd().setBucketCols(tbl.getBucketCols());
+      tpart.getSd().setNumBuckets(tbl.getNumBuckets());
+      tpart.getSd().setSortCols(tbl.getSortCols());
+    }
+    if (partPath == null || partPath.trim().equals("")) {
+      throw new HiveException("new partition path should not be null or empty.");
+    }
+    tpart.getSd().setLocation(partPath);
+    tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
+    String fullName = tbl.getTableName();
+    if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
+      fullName = tbl.getDbName() + "." + tbl.getTableName();
+    }
+    alterPartition(fullName, new Partition(tbl, tpart));
   }
 
   public boolean dropPartition(String tblName, List<String> part_vals, boolean deleteData)

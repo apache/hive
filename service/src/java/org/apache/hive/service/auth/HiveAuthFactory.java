@@ -37,7 +37,9 @@ import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
@@ -100,8 +102,7 @@ public class HiveAuthFactory {
       if (authTypeStr == null) {
         authTypeStr = AuthTypes.NONE.getAuthName();
       }
-      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())
-          && ShimLoader.getHadoopShims().isSecureShimImpl()) {
+      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
         saslServer = ShimLoader.getHadoopThriftAuthBridge()
           .createServer(conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
                         conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
@@ -180,7 +181,7 @@ public class HiveAuthFactory {
     if (principal.isEmpty() || keyTabFile.isEmpty()) {
       throw new IOException("HiveServer2 Kerberos principal or keytab is not correctly configured");
     } else {
-      ShimLoader.getHadoopShims().loginUserFromKeytab(principal, keyTabFile);
+      UserGroupInformation.loginUserFromKeytab(SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keyTabFile);
     }
   }
 
@@ -192,7 +193,7 @@ public class HiveAuthFactory {
     if (principal.isEmpty() || keyTabFile.isEmpty()) {
       throw new IOException("HiveServer2 SPNEGO principal or keytab is not correctly configured");
     } else {
-      return ShimLoader.getHadoopShims().loginUserFromKeytabAndReturnUGI(principal, keyTabFile);
+      return UserGroupInformation.loginUserFromKeytabAndReturnUGI(SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keyTabFile);
     }
   }
 
@@ -218,6 +219,7 @@ public class HiveAuthFactory {
     throws TTransportException {
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
+      // Wildcard bind
       serverAddress = new InetSocketAddress(portNum);
     } else {
       serverAddress = new InetSocketAddress(hiveHost, portNum);
@@ -226,25 +228,26 @@ public class HiveAuthFactory {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-    String keyStorePassWord,  List<String> sslVersionBlacklist)
-      throws TTransportException, UnknownHostException {
+      String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
+      UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
-      new TSSLTransportFactory.TSSLTransportParameters();
+        new TSSLTransportFactory.TSSLTransportParameters();
     params.setKeyStore(keyStorePath, keyStorePassWord);
-
-    InetAddress serverAddress;
+    InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
-      serverAddress = InetAddress.getLocalHost();
+      // Wildcard bind
+      serverAddress = new InetSocketAddress(portNum);
     } else {
-      serverAddress = InetAddress.getByName(hiveHost);
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
     }
-    TServerSocket thriftServerSocket = TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress, params);
+    TServerSocket thriftServerSocket =
+        TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress.getAddress(), params);
     if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
       List<String> sslVersionBlacklistLocal = new ArrayList<String>();
       for (String sslVersion : sslVersionBlacklist) {
         sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
       }
-      SSLServerSocket sslServerSocket = (SSLServerSocket)thriftServerSocket.getServerSocket();
+      SSLServerSocket sslServerSocket = (SSLServerSocket) thriftServerSocket.getServerSocket();
       List<String> enabledProtocols = new ArrayList<String>();
       for (String protocol : sslServerSocket.getEnabledProtocols()) {
         if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
@@ -254,7 +257,8 @@ public class HiveAuthFactory {
         }
       }
       sslServerSocket.setEnabledProtocols(enabledProtocols.toArray(new String[0]));
-      LOG.info("SSL Server Socket Enabled Protocols: " + Arrays.toString(sslServerSocket.getEnabledProtocols()));
+      LOG.info("SSL Server Socket Enabled Protocols: "
+          + Arrays.toString(sslServerSocket.getEnabledProtocols()));
     }
     return thriftServerSocket;
   }
@@ -325,16 +329,17 @@ public class HiveAuthFactory {
     HiveConf hiveConf) throws HiveSQLException {
     try {
       UserGroupInformation sessionUgi;
-      if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+      if (UserGroupInformation.isSecurityEnabled()) {
         KerberosNameShim kerbName = ShimLoader.getHadoopShims().getKerberosNameShim(realUser);
-        String shortPrincipalName = kerbName.getServiceName();
-        sessionUgi = ShimLoader.getHadoopShims().createProxyUser(shortPrincipalName);
+        sessionUgi = UserGroupInformation.createProxyUser(
+            kerbName.getServiceName(), UserGroupInformation.getLoginUser());
       } else {
-        sessionUgi = ShimLoader.getHadoopShims().createRemoteUser(realUser, null);
+        sessionUgi = UserGroupInformation.createRemoteUser(realUser);
       }
       if (!proxyUser.equalsIgnoreCase(realUser)) {
-        ShimLoader.getHadoopShims().
-          authorizeProxyAccess(proxyUser, sessionUgi, ipAddress, hiveConf);
+        ProxyUsers.refreshSuperUserGroupsConfiguration(hiveConf);
+        ProxyUsers.authorize(UserGroupInformation.createProxyUser(proxyUser, sessionUgi),
+            ipAddress, hiveConf);
       }
     } catch (IOException e) {
       throw new HiveSQLException(

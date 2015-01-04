@@ -18,8 +18,9 @@
 
 package org.apache.hive.service.cli.operation;
 
-import java.util.Enumeration;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,17 +30,28 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.AbstractService;
-import org.apache.hive.service.cli.*;
+import org.apache.hive.service.cli.FetchOrientation;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
+import org.apache.hive.service.cli.RowSet;
+import org.apache.hive.service.cli.RowSetFactory;
+import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.log4j.*;
+import org.apache.log4j.Appender;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 /**
  * OperationManager.
  *
  */
 public class OperationManager extends AbstractService {
-  private static final String DEFAULT_LAYOUT_PATTERN = "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n";
   private final Log LOG = LogFactory.getLog(OperationManager.class.getName());
 
   private HiveConf hiveConf;
@@ -54,7 +66,8 @@ public class OperationManager extends AbstractService {
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
-      initOperationLogCapture();
+      boolean isVerbose = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_VERBOSE);
+      initOperationLogCapture(isVerbose);
     } else {
       LOG.debug("Operation level logging is turned off");
     }
@@ -73,7 +86,7 @@ public class OperationManager extends AbstractService {
     super.stop();
   }
 
-  private void initOperationLogCapture() {
+  private void initOperationLogCapture(boolean isVerbose) {
     // There should be a ConsoleAppender. Copy its Layout.
     Logger root = Logger.getRootLogger();
     Layout layout = null;
@@ -87,13 +100,19 @@ public class OperationManager extends AbstractService {
       }
     }
 
-    if (layout == null) {
-      layout = new PatternLayout(DEFAULT_LAYOUT_PATTERN);
-      LOG.info("Cannot find a Layout from a ConsoleAppender. Using default Layout pattern.");
-    }
+    final String VERBOSE_PATTERN = "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n";
+    final String NONVERBOSE_PATTERN = "%-5p : %m%n";
 
+    if (isVerbose) {
+      if (layout == null) {
+        layout = new PatternLayout(VERBOSE_PATTERN);
+        LOG.info("Cannot find a Layout from a ConsoleAppender. Using default Layout pattern.");
+      }
+    } else {
+      layout = new PatternLayout(NONVERBOSE_PATTERN);
+    }
     // Register another Appender (with the same layout) that talks to us.
-    Appender ap = new LogDivertAppender(layout, this);
+    Appender ap = new LogDivertAppender(layout, this, isVerbose);
     root.addAppender(ap);
   }
 
@@ -241,7 +260,13 @@ public class OperationManager extends AbstractService {
     }
 
     // read logs
-    List<String> logs = operationLog.readOperationLog(orientation, maxRows);
+    List<String> logs;
+    try {
+      logs = operationLog.readOperationLog(isFetchFirst(orientation), maxRows);
+    } catch (SQLException e) {
+      throw new HiveSQLException(e.getMessage(), e.getCause());
+    }
+
 
     // convert logs to RowSet
     TableSchema tableSchema = new TableSchema(getLogSchema());
@@ -251,6 +276,15 @@ public class OperationManager extends AbstractService {
     }
 
     return rowSet;
+  }
+
+  private boolean isFetchFirst(FetchOrientation fetchOrientation) {
+    //TODO: Since OperationLog is moved to package o.a.h.h.ql.session,
+    // we may add a Enum there and map FetchOrientation to it.
+    if (fetchOrientation.equals(FetchOrientation.FETCH_FIRST)) {
+      return true;
+    }
+    return false;
   }
 
   private Schema getLogSchema() {

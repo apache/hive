@@ -40,7 +40,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestGenericUDFOPDivide extends TestGenericUDFOPNumeric {
+public class TestGenericUDFOPDivide extends AbstractTestGenericUDFOPNumeric {
 
   @Test
   public void testByteDivideShort() throws HiveException {
@@ -187,7 +187,7 @@ public class TestGenericUDFOPDivide extends TestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(11, 7), oi.getTypeInfo());
     HiveDecimalWritable res = (HiveDecimalWritable) udf.evaluate(args);
-    Assert.assertEquals(HiveDecimal.create("0.0617100"), res.getHiveDecimal());
+    Assert.assertEquals(HiveDecimal.create("0.06171"), res.getHiveDecimal());
   }
 
   @Test

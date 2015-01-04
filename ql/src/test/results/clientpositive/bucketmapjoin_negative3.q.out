@@ -217,9 +217,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -246,9 +243,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -297,7 +291,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -317,7 +311,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -412,9 +406,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -441,9 +432,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -492,7 +480,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -512,7 +500,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -604,9 +592,6 @@ STAGE PLANS:
               predicate: UDFToDouble(key) is not null (type: boolean)
               Statistics: Num rows: 11 Data size: 2200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 (key + key) (type: double)
                   1 UDFToDouble(key) (type: double)
@@ -626,9 +611,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 (key + key) (type: double)
                   1 UDFToDouble(key) (type: double)
@@ -676,7 +658,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -696,7 +678,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -791,9 +773,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -813,9 +792,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -863,7 +839,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -883,7 +859,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -978,9 +954,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1000,9 +973,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1050,7 +1020,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -1070,7 +1040,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -1165,9 +1135,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1187,9 +1154,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1237,7 +1201,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test1
@@ -1257,7 +1221,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test1
@@ -1352,9 +1316,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1374,9 +1335,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1424,7 +1382,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -1444,7 +1402,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -1539,9 +1497,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1561,9 +1516,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1611,7 +1563,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name value
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test2
@@ -1631,7 +1583,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name value
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test2
@@ -1726,9 +1678,6 @@ STAGE PLANS:
               predicate: (key is not null and value is not null) (type: boolean)
               Statistics: Num rows: 6 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1748,9 +1697,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
@@ -1798,7 +1744,7 @@ STAGE PLANS:
               bucket_count 3
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
               name default.test3
@@ -1818,7 +1764,7 @@ STAGE PLANS:
                 bucket_count 3
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.test3

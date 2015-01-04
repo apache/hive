@@ -191,13 +191,13 @@ TOK_QUERY
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-1 depends on stages: Stage-9
-  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-9
@@ -217,7 +217,7 @@ STAGE PLANS:
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
@@ -239,7 +239,7 @@ STAGE PLANS:
                       bucket_count 4
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
@@ -263,9 +263,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 28 Data size: 2958 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -292,9 +289,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -319,7 +313,7 @@ STAGE PLANS:
                         properties:
                           bucket_count -1
                           columns key,value1,value2
-                          columns.comments   
+                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -349,7 +343,7 @@ STAGE PLANS:
               bucket_count 2
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_2
@@ -371,7 +365,7 @@ STAGE PLANS:
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part_2
@@ -387,10 +381,10 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /srcbucket_mapjoin_part_2/ds=2008-04-08 [a]
 
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
@@ -407,7 +401,7 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -418,11 +412,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -438,7 +432,7 @@ STAGE PLANS:
                   properties:
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -462,7 +456,7 @@ STAGE PLANS:
             properties:
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -477,7 +471,76 @@ STAGE PLANS:
               properties:
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
+                columns.types string:string:string
+#### A masked pattern was here ####
+                name default.bucketmapjoin_tmp_result
+                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.bucketmapjoin_tmp_result
+            name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value1,value2
+                    columns.comments 
+                    columns.types string:string:string
+#### A masked pattern was here ####
+                    name default.bucketmapjoin_tmp_result
+                    serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.bucketmapjoin_tmp_result
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10001
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value1,value2
+              columns.comments 
+              columns.types string:string:string
+#### A masked pattern was here ####
+              name default.bucketmapjoin_tmp_result
+              serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value1,value2
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -492,75 +555,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-6
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            GatherStats: false
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-#### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    columns key,value1,value2
-                    columns.comments   
-                    columns.types string:string:string
-#### A masked pattern was here ####
-                    name default.bucketmapjoin_tmp_result
-                    serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.bucketmapjoin_tmp_result
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -ext-10001
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              bucket_count -1
-              columns key,value1,value2
-              columns.comments   
-              columns.types string:string:string
-#### A masked pattern was here ####
-              name default.bucketmapjoin_tmp_result
-              serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,value1,value2
-                columns.comments   
-                columns.types string:string:string
-#### A masked pattern was here ####
-                name default.bucketmapjoin_tmp_result
-                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucketmapjoin_tmp_result
-            name: default.bucketmapjoin_tmp_result
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -750,13 +744,13 @@ TOK_QUERY
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-1 depends on stages: Stage-9
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
-  Stage-3
+  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-9
@@ -776,7 +770,7 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
-                    columns.comments  
+                    columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part_2
@@ -798,7 +792,7 @@ STAGE PLANS:
                       bucket_count 2
                       bucket_field_name key
                       columns key,value
-                      columns.comments  
+                      columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
@@ -822,9 +816,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 15 Data size: 1583 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -851,9 +842,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {value}
                 keys:
                   0 key (type: int)
                   1 key (type: int)
@@ -879,7 +867,7 @@ STAGE PLANS:
                           COLUMN_STATS_ACCURATE true
                           bucket_count -1
                           columns key,value1,value2
-                          columns.comments   
+                          columns.comments 
                           columns.types string:string:string
 #### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
@@ -913,7 +901,7 @@ STAGE PLANS:
               bucket_count 4
               bucket_field_name key
               columns key,value
-              columns.comments  
+              columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part
@@ -935,7 +923,7 @@ STAGE PLANS:
                 bucket_count 4
                 bucket_field_name key
                 columns key,value
-                columns.comments  
+                columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part
@@ -951,10 +939,10 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /srcbucket_mapjoin_part/ds=2008-04-08 [b]
 
-  Stage: Stage-7
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
@@ -972,7 +960,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -987,11 +975,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1008,7 +996,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value1,value2
-                    columns.comments   
+                    columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
@@ -1037,7 +1025,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value1,value2
-              columns.comments   
+              columns.comments 
               columns.types string:string:string
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
@@ -1057,91 +1045,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
-                columns.comments   
-                columns.types string:string:string
-#### A masked pattern was here ####
-                name default.bucketmapjoin_tmp_result
-                numFiles 1
-                numRows 564
-                rawDataSize 10503
-                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 11067
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucketmapjoin_tmp_result
-            name: default.bucketmapjoin_tmp_result
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            GatherStats: false
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-#### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE true
-                    bucket_count -1
-                    columns key,value1,value2
-                    columns.comments   
-                    columns.types string:string:string
-#### A masked pattern was here ####
-                    name default.bucketmapjoin_tmp_result
-                    numFiles 1
-                    numRows 564
-                    rawDataSize 10503
-                    serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 11067
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.bucketmapjoin_tmp_result
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -ext-10001
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              COLUMN_STATS_ACCURATE true
-              bucket_count -1
-              columns key,value1,value2
-              columns.comments   
-              columns.types string:string:string
-#### A masked pattern was here ####
-              name default.bucketmapjoin_tmp_result
-              numFiles 1
-              numRows 564
-              rawDataSize 10503
-              serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 11067
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                COLUMN_STATS_ACCURATE true
-                bucket_count -1
-                columns key,value1,value2
-                columns.comments   
+                columns.comments 
                 columns.types string:string:string
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
@@ -1160,6 +1064,90 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value1,value2
+                    columns.comments 
+                    columns.types string:string:string
+#### A masked pattern was here ####
+                    name default.bucketmapjoin_tmp_result
+                    numFiles 1
+                    numRows 564
+                    rawDataSize 10503
+                    serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 11067
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.bucketmapjoin_tmp_result
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10001
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns key,value1,value2
+              columns.comments 
+              columns.types string:string:string
+#### A masked pattern was here ####
+              name default.bucketmapjoin_tmp_result
+              numFiles 1
+              numRows 564
+              rawDataSize 10503
+              serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 11067
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns key,value1,value2
+                columns.comments 
+                columns.types string:string:string
+#### A masked pattern was here ####
+                name default.bucketmapjoin_tmp_result
+                numFiles 1
+                numRows 564
+                rawDataSize 10503
+                serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 11067
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.bucketmapjoin_tmp_result
+            name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true

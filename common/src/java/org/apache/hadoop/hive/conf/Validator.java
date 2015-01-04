@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.conf;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,10 @@ public interface Validator {
       for (String value : values) {
         expected.add(caseSensitive ? value : value.toLowerCase());
       }
+    }
+
+    public Set<String> getExpected() {
+      return new HashSet<String>(expected);
     }
 
     @Override
