@@ -204,7 +204,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -1806,7 +1806,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HiveConf conf = SessionState.get().getConf();
     try {
       FileSystem fs = path.getFileSystem(conf);
-      UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      UserGroupInformation ugi = Utils.getUGI();
       FileStatus status = fs.getFileStatus(path);
 
       // We just check for writing permissions. If it fails with AccessControException, then it

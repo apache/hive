@@ -142,11 +142,8 @@ public class QTestUtil {
   private CliDriver cliDriver;
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
-<<<<<<< .working
   private HadoopShims.HdfsEncryptionShim hes = null;
   private boolean miniMr = false;
-=======
->>>>>>> .merge-right.r1649268
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private boolean isSessionStateStarted = false;
