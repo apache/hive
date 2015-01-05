@@ -209,7 +209,7 @@ public final class ObjectInspectorConverters {
    *           can contain non-settable fields only if inputOI equals outputOI and equalsCheck is
    *           true.
    */
-  private static ObjectInspector getConvertedOI(
+  public static ObjectInspector getConvertedOI(
       ObjectInspector inputOI,
       ObjectInspector outputOI,
       Map<ObjectInspector, Boolean> oiSettableProperties,
