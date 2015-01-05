@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -99,8 +100,8 @@ public class FetchWork implements Serializable {
 
   public void initializeForFetch() {
     if (source == null) {
-      sink = new ListSinkOperator();
-      sink.setConf(new ListSinkDesc(serializationNullFormat));
+      ListSinkDesc desc = new ListSinkDesc(serializationNullFormat);
+      sink = (ListSinkOperator) OperatorFactory.get(desc);
       source = sink;
     }
   }

@@ -21,8 +21,3 @@ SELECT src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3
 
 -- HIVE-4295
 SELECT BLOCK__OFFSET__INSIDE__FILE, src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
-
--- cp knob is removed, hardly convincible
--- set hive.optimize.cp=false;
--- SELECT src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
--- SELECT BLOCK__OFFSET__INSIDE__FILE, src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;

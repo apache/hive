@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -118,6 +119,8 @@ public final class OperatorFactory {
         OrcFileMergeOperator.class));
     opvec.add(new OpTuple<CommonMergeJoinDesc>(CommonMergeJoinDesc.class,
         CommonMergeJoinOperator.class));
+    opvec.add(new OpTuple<ListSinkDesc>(ListSinkDesc.class,
+        ListSinkOperator.class));
   }
 
   static {

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,12 +33,16 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -158,7 +163,7 @@ public class SimpleFetchOptimizer implements Transform {
   // all we can handle is LimitOperator, FilterOperator SelectOperator and final FS
   //
   // for non-aggressive mode (minimal)
-  // 1. samping is not allowed
+  // 1. sampling is not allowed
   // 2. for partitioned table, all filters should be targeted to partition column
   // 3. SelectOperator should use only simple cast/column access
   private FetchData checkTree(boolean aggressive, ParseContext pctx, String alias,
@@ -171,53 +176,52 @@ public class SimpleFetchOptimizer implements Transform {
     if (!aggressive && qb.hasTableSample(alias)) {
       return null;
     }
-
     Table table = pctx.getTopToTable().get(ts);
     if (table == null) {
       return null;
     }
     ReadEntity parent = PlanUtils.getParentViewInfo(alias, pctx.getViewAliasToInput());
     if (!table.isPartitioned()) {
-      return checkOperators(new FetchData(parent, table, splitSample), ts, aggressive, false);
+      FetchData fetch = new FetchData(ts, parent, table, splitSample);
+      return checkOperators(fetch, aggressive, false);
     }
 
     boolean bypassFilter = false;
     if (HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEOPTPPD)) {
       ExprNodeDesc pruner = pctx.getOpToPartPruner().get(ts);
-      bypassFilter = PartitionPruner.onlyContainsPartnCols(table, pruner);
-    }
-    if (aggressive || bypassFilter) {
-      PrunedPartitionList pruned = pctx.getPrunedPartitions(alias, ts);
-      if (aggressive || !pruned.hasUnknownPartitions()) {
-        bypassFilter &= !pruned.hasUnknownPartitions();
-        return checkOperators(new FetchData(parent, table, pruned, splitSample, bypassFilter), ts,
-            aggressive, bypassFilter);
+      if (PartitionPruner.onlyContainsPartnCols(table, pruner)) {
+        bypassFilter = !pctx.getPrunedPartitions(alias, ts).hasUnknownPartitions();
       }
     }
-    return null;
+    if (!aggressive && !bypassFilter) {
+      return null;
+    }
+    PrunedPartitionList partitions = pctx.getPrunedPartitions(alias, ts);
+    FetchData fetch = new FetchData(ts, parent, table, partitions, splitSample, bypassFilter);
+    return checkOperators(fetch, aggressive, bypassFilter);
   }
 
-  private FetchData checkOperators(FetchData fetch, TableScanOperator ts, boolean aggressive,
-      boolean bypassFilter) {
+  private FetchData checkOperators(FetchData fetch, boolean aggressive, boolean bypassFilter) {
+    if (aggressive) {
+      return isConvertible(fetch) ? fetch : null;
+    }
+    return checkOperators(fetch, fetch.scanOp, bypassFilter);
+  }
+
+  private FetchData checkOperators(FetchData fetch, TableScanOperator ts, boolean bypassFilter) {
     if (ts.getChildOperators().size() != 1) {
       return null;
     }
     Operator<?> op = ts.getChildOperators().get(0);
     for (; ; op = op.getChildOperators().get(0)) {
       if (op instanceof SelectOperator) {
-        if (!aggressive) {
-          if (!checkExpressions((SelectOperator) op)) {
-            break;
-          }
+        if (!checkExpressions((SelectOperator) op)) {
+          return null;
         }
         continue;
       }
 
-      if (aggressive) {
-        if (!(op instanceof LimitOperator || op instanceof FilterOperator)) {
-          break;
-        }
-      } else if (!(op instanceof LimitOperator || (op instanceof FilterOperator && bypassFilter))) {
+      if (!(op instanceof LimitOperator || (op instanceof FilterOperator && bypassFilter))) {
         break;
       }
 
@@ -227,7 +231,6 @@ public class SimpleFetchOptimizer implements Transform {
     }
 
     if (op instanceof FileSinkOperator) {
-      fetch.scanOp = ts;
       fetch.fileSink = op;
       return fetch;
     }
@@ -237,6 +240,9 @@ public class SimpleFetchOptimizer implements Transform {
 
   private boolean checkExpressions(SelectOperator op) {
     SelectDesc desc = op.getConf();
+    if (desc.isSelectStar() || desc.isSelStarNoCompute()) {
+      return true;
+    }
     for (ExprNodeDesc expr : desc.getColList()) {
       if (!checkExpression(expr)) {
         return false;
@@ -264,22 +270,53 @@ public class SimpleFetchOptimizer implements Transform {
     return false;
   }
 
+  private boolean isConvertible(FetchData fetch) {
+    return isConvertible(fetch, fetch.scanOp, new HashSet<Operator<?>>());
+  }
+
+  private boolean isConvertible(FetchData fetch, Operator<?> operator, Set<Operator<?>> traversed) {
+    if (operator instanceof ReduceSinkOperator || operator instanceof CommonJoinOperator
+        || operator instanceof ScriptOperator) {
+      return false;
+    }
+    if (!traversed.add(operator)) {
+      return true;
+    }
+    if (operator.getNumChild() == 0) {
+      if (operator instanceof FileSinkOperator) {
+        fetch.fileSink = operator;
+        return true;
+      }
+      return false;
+    }
+    for (Operator<?> child : operator.getChildOperators()) {
+      if (!traversed.containsAll(child.getParentOperators())){
+        continue;
+      }
+      if (!isConvertible(fetch, child, traversed)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private class FetchData {
 
+    // source table scan
+    private final TableScanOperator scanOp;
     private final ReadEntity parent;
+
     private final Table table;
     private final SplitSample splitSample;
     private final PrunedPartitionList partsList;
-    private final LinkedHashSet<ReadEntity> inputs = new LinkedHashSet<ReadEntity>();
+    private final Set<ReadEntity> inputs = new LinkedHashSet<ReadEntity>();
     private final boolean onlyPruningFilter;
-
-    // source table scan
-    private TableScanOperator scanOp;
 
     // this is always non-null when conversion is completed
     private Operator<?> fileSink;
 
-    private FetchData(ReadEntity parent, Table table, SplitSample splitSample) {
+    private FetchData(TableScanOperator scanOp, ReadEntity parent, Table table, SplitSample splitSample) {
+      this.scanOp = scanOp;
       this.parent = parent;
       this.table = table;
       this.partsList = null;
@@ -287,8 +324,9 @@ public class SimpleFetchOptimizer implements Transform {
       this.onlyPruningFilter = false;
     }
 
-    private FetchData(ReadEntity parent, Table table, PrunedPartitionList partsList,
+    private FetchData(TableScanOperator scanOp, ReadEntity parent, Table table, PrunedPartitionList partsList,
         SplitSample splitSample, boolean bypassFilter) {
+      this.scanOp = scanOp;
       this.parent = parent;
       this.table = table;
       this.partsList = partsList;
@@ -306,7 +344,7 @@ public class SimpleFetchOptimizer implements Transform {
     private FetchWork convertToWork() throws HiveException {
       inputs.clear();
       if (!table.isPartitioned()) {
-        inputs.add(new ReadEntity(table, parent, parent == null));
+        inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
         FetchWork work = new FetchWork(table.getPath(), Utilities.getTableDesc(table));
         PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
         work.setSplitSample(splitSample);
@@ -399,8 +437,8 @@ public class SimpleFetchOptimizer implements Transform {
   }
 
   public static ListSinkOperator replaceFSwithLS(Operator<?> fileSink, String nullFormat) {
-    ListSinkOperator sink = new ListSinkOperator();
-    sink.setConf(new ListSinkDesc(nullFormat));
+    ListSinkDesc desc = new ListSinkDesc(nullFormat);
+    ListSinkOperator sink = (ListSinkOperator) OperatorFactory.get(desc);
 
     sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
     Operator<? extends OperatorDesc> parent = fileSink.getParentOperators().get(0);
