@@ -5,48 +5,51 @@ set hive.enforce.bucketing=true;
 -- SORT_QUERY_RESULTS
 
 -- init
-drop table IF EXISTS encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey;
+drop table IF EXISTS encryptedTable;
 drop table IF EXISTS unencryptedTable;
 
-create table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey(key string,
-    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
+create table encryptedTable(key string,
+    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
+    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true');
+CRYPTO CREATE_KEY --keyName key_1 --bitLength 128;
+CRYPTO CREATE_ZONE --keyName key_1 --path /build/ql/test/data/warehouse/encryptedTable;
 
 create table unencryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
 -- insert encrypted table from values
-explain extended insert into table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey partition
+explain extended insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),
     ('502', 'val_502');
 
-insert into table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey partition
+insert into table encryptedTable partition
     (ds='today') values
     ('501', 'val_501'),
     ('502', 'val_502');
 
-select * from encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey order by key;
+select * from encryptedTable order by key;
 
 -- insert encrypted table from unencrypted source
 explain extended from src
-insert into table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey partition
+insert into table encryptedTable partition
     (ds='yesterday')
     select * limit 2;
 
 from src
-insert into table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey partition
+insert into table encryptedTable partition
     (ds='yesterday')
     select * limit 2;
 
-select * from encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey order by key;
+select * from encryptedTable order by key;
 
 -- insert unencrypted table from encrypted source
-explain extended from encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey
+explain extended from encryptedTable
 insert into table unencryptedTable partition
     (ds='today')
     select key, value;
 
-from encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey
+from encryptedTable
 insert into table unencryptedTable partition
     (ds='today')
     select key, value;
@@ -54,5 +57,6 @@ insert into table unencryptedTable partition
 select * from unencryptedTable order by key;
 
 -- clean up
-drop table encryptedWith128BitsKeyDB.encryptedTableIn128BitsKey;
+drop table encryptedTable;
+CRYPTO DELETE_KEY --keyName key_1;
 drop table unencryptedTable;
