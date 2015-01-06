@@ -40,7 +40,6 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.RuntimeException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,7 +78,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -113,6 +111,7 @@ public class QTestUtil {
 
   // security property names
   private static final String SECURITY_KEY_PROVIDER_URI_NAME = "dfs.encryption.key.provider.uri";
+  private static final String CRLF = System.getProperty("line.separator");
 
   private static final Log LOG = LogFactory.getLog("QTestUtil");
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -914,25 +913,20 @@ public class QTestUtil {
     }
   }
 
-  private static final String CRLF = System.getProperty("line.separator");
   public int executeClient(String tname1, String tname2) {
-    List<String> commandList = new ArrayList<String>();
-
-    commandList.addAll(getCommands(tname1));
-    commandList.add(CRLF);
-    commandList.addAll(getCommands(tname2));
-
-    return executeClient(commandList);
+    String commands = getCommand(tname1) + CRLF + getCommand(tname2);
+    return executeClientInternal(commands);
   }
 
   public int executeClient(String tname) {
-    return executeClient(getCommands(tname));
+    return executeClientInternal(getCommand(tname));
   }
 
-  public int executeClient(final List<String> commandList) {
+  private int executeClientInternal(String commands) {
+    String [] cmds = commands.split(";");
     int rc = 0;
 
-    for (String command : commandList) {
+    for (String command : cmds) {
       if (isCommandUsedForTesting(command)) {
         rc = executeTestCommand(command);
       } else {
@@ -998,34 +992,19 @@ public class QTestUtil {
     return testCommand != null;
   }
 
-  private List<String> getCommands(final String testName) {
-    List<String> commandList = new ArrayList<String>();
-    String testCommands = qMap.get(testName);
-
-    String command = "";
-    for (String line : testCommands.split("\n")) {
-      line = line.trim();
-
-      if (StringUtils.isBlank(line) || isComment(line)) {
-        continue;
-      }
-
-      // Join multiple line commands into one line
-      if (StringUtils.endsWith(line, "\\")) {
-        command += " " + StringUtils.chop(line);
-        continue;
-      } else if (!StringUtils.endsWith(line, ";")) {
-        command += " " + line;
-        continue;
-      } else {
-        command += " " + line;
-      }
-
-      commandList.add(command.trim());
-      command = "";
+  private String getCommand(String tname) {
+    String commands = qMap.get(tname);
+    StringBuilder newCommands = new StringBuilder(commands.length());
+    int lastMatchEnd = 0;
+    Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    while (commentMatcher.find()) {
+      newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
+      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
+      lastMatchEnd = commentMatcher.end();
     }
-
-    return commandList;
+    newCommands.append(commands.substring(lastMatchEnd, commands.length()));
+    commands = newCommands.toString();
+    return commands;
   }
 
   private boolean isComment(final String line) {
