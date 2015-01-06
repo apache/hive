@@ -278,9 +278,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_6
-Table:default@t2
-Keys:key
 Table:default@t1
+Keys:key
+Table:default@t2
 Keys:key
 
 1	11	1	1
@@ -297,9 +297,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_6
-Table:default@t2
-Keys:key,val
 Table:default@t1
+Keys:key,val
+Table:default@t2
 Keys:key,val
 
 PREHOOK: query: -- map join
@@ -311,9 +311,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_6
-Table:default@t2
-Keys:key
 Table:default@t1
+Keys:key
+Table:default@t2
 Keys:key
 
 1	11	1	1
@@ -331,9 +331,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_6
-Table:default@t2
-Keys:key
 Table:default@t1
+Keys:key
+Table:default@t2
 Keys:key
 
 PREHOOK: query: -- subqueries
@@ -352,9 +352,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_10
-Table:default@t2
-Keys:val
 Table:default@t1
+Keys:val
+Table:default@t2
 Keys:val
 
 PREHOOK: query: SELECT *
@@ -370,9 +370,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_8
-Table:default@t2
-Keys:val
 Table:default@t1
+Keys:val
+Table:default@t2
 Keys:val
 
 PREHOOK: query: -- with column aliases in subqueries
@@ -391,9 +391,9 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_10
-Table:default@t2
-Keys:val
 Table:default@t1
+Keys:val
+Table:default@t2
 Keys:val
 
 PREHOOK: query: -- with constants in subqueries
@@ -412,10 +412,10 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_8
-Table:default@t2
-Keys:key
 Table:default@t1
 Keys:val,key
+Table:default@t2
+Keys:key
 
 PREHOOK: query: -- multiple levels of constants in subqueries
 SELECT *
@@ -436,10 +436,10 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_9
-Table:default@t2
-Keys:val,key
 Table:default@t1
 Keys:key
+Table:default@t2
+Keys:val,key
 
 PREHOOK: query: -- no mapping on functions
 SELECT *
@@ -473,10 +473,10 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_8
-Table:default@t2
-Keys:key
 Table:default@t1
 Keys:val,key
+Table:default@t2
+Keys:key
 
 PREHOOK: query: -- join followed by union
 SELECT * 
@@ -503,15 +503,15 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
+Operator:JOIN_8
+Table:default@t1
+Keys:val,key
+Table:default@t2
+Keys:key
+
 Operator:GBY_16
 Table:default@t3
 Keys:val
-
-Operator:JOIN_8
-Table:default@t2
-Keys:key
-Table:default@t1
-Keys:val,key
 
 11.0	1
 12.0	1
@@ -542,8 +542,8 @@ PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
 Operator:JOIN_8
-Table:default@t2
-Keys:key
 Table:default@t1
 Keys:val,key
+Table:default@t2
+Keys:key
 
