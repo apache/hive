@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -254,7 +255,7 @@ class HiveClientCache {
 
     private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException, LoginException {
       this.metaStoreURIs = hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS);
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+      ugi = Utils.getUGI();
       this.hiveConf = hiveConf;
       this.threadId = threadId;
     }

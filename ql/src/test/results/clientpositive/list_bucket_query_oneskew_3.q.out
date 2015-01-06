@@ -291,7 +291,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
-              columns.comments   
+              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -313,7 +313,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y,z
-                columns.comments   
+                columns.comments 
                 columns.types int:string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -337,7 +337,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
-              columns.comments   
+              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -359,7 +359,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y,z
-                columns.comments   
+                columns.comments 
                 columns.types int:string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -383,7 +383,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
-              columns.comments   
+              columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
@@ -405,7 +405,7 @@ STAGE PLANS:
                 EXTERNAL TRUE
                 bucket_count -1
                 columns x,y,z
-                columns.comments   
+                columns.comments 
                 columns.types int:string:string
 #### A masked pattern was here ####
                 name default.fact_daily
@@ -419,9 +419,9 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
-        /fact_tz/ds=1/x=238 [fact_daily]
-        /fact_tz/ds=1/x=484 [fact_daily]
+        /fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=238 [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
 
   Stage: Stage-0
     Fetch Operator

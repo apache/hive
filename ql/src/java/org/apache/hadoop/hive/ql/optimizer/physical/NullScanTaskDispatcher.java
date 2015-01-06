@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -100,31 +102,51 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
     return paths;
   }
-
-  private void processAlias(MapWork work, String alias) {
-    List<String> paths = getPathsForAlias(work, alias);
-    if (paths.isEmpty()) {
-      // partitioned table which don't select any partitions
-      // there are no paths to replace with fakePath
-      return;
+  
+  private void processAlias(MapWork work, String path, ArrayList<String> aliasesAffected,
+      ArrayList<String> aliases) {
+    // the aliases that are allowed to map to a null scan.
+    ArrayList<String> allowed = new ArrayList<String>();
+    for (String alias : aliasesAffected) {
+      if (aliases.contains(alias)) {
+        allowed.add(alias);
+      }
     }
-    work.setUseOneNullRowInputFormat(true);
-
-    // Change the alias partition desc
-    PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
-    changePartitionToMetadataOnly(aliasPartn);
-
-
-    for (String path : paths) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+    if (allowed.size() > 0) {
+      work.setUseOneNullRowInputFormat(true);
+      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
       PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
       Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
-          + newPartition.getTableName()
-          + encode(newPartition.getPartSpec()));
-      work.getPathToPartitionInfo().remove(path);
+          + newPartition.getTableName() + encode(newPartition.getPartSpec()));
       work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
-      ArrayList<String> aliases = work.getPathToAliases().remove(path);
-      work.getPathToAliases().put(fakePath.getName(), aliases);
+      work.getPathToAliases().put(fakePath.getName(), new ArrayList<String>(allowed));
+      aliasesAffected.removeAll(allowed);
+      if (aliasesAffected.isEmpty()) {
+        work.getPathToAliases().remove(path);
+        work.getPathToPartitionInfo().remove(path);
+      }
+    }
+  }
+
+  private void processAlias(MapWork work, HashSet<TableScanOperator> tableScans) {
+    ArrayList<String> aliases = new ArrayList<String>();
+    for (TableScanOperator tso : tableScans) {
+      // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
+      // getAliasToWork()
+      String alias = getAliasForTableScanOperator(work, tso);
+      aliases.add(alias);
+      tso.getConf().setIsMetadataOnly(true);
+    }
+    // group path alias according to work
+    LinkedHashMap<String, ArrayList<String>> candidates = new LinkedHashMap<String, ArrayList<String>>();
+    for (String path : work.getPaths()) {
+      ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
+      if (aliasesAffected != null && aliasesAffected.size() > 0) {
+        candidates.put(path, aliasesAffected);
+      }
+    }
+    for (Entry<String, ArrayList<String>> entry : candidates.entrySet()) {
+      processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }
 
@@ -177,16 +199,8 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
       LOG.info(String.format("Found %d null table scans",
           walkerCtx.getMetadataOnlyTableScans().size()));
-      Iterator<TableScanOperator> iterator
-        = walkerCtx.getMetadataOnlyTableScans().iterator();
-
-      while (iterator.hasNext()) {
-        TableScanOperator tso = iterator.next();
-        tso.getConf().setIsMetadataOnly(true);
-        String alias = getAliasForTableScanOperator(mapWork, tso);
-        LOG.info("Null table scan for " + alias);
-        processAlias(mapWork, alias);
-      }
+      if (walkerCtx.getMetadataOnlyTableScans().size() > 0)
+        processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
     }
     return null;
   }

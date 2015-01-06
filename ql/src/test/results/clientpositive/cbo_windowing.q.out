@@ -171,6 +171,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
+NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
 1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
 1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
 1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
@@ -189,8 +191,6 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1	1	2	1.0	12.0	1.0	2.0	1.0	1.0
 1	1	1	1.0	1.0	1.0	1.0	1.0	1.0
 1	1	2	1.0	2.0	1.0	2.0	1.0	1.0
-NULL	NULL	0	NULL	0.0	NULL	NULL	NULL	NULL
-NULL	NULL	0	NULL	0.0	NULL	NULL	NULL	NULL
 PREHOOK: query: select i, a, h, b, c, d, e, f, g, a as x, a +1 as y from (select max(c_int) over (partition by key order by value range UNBOUNDED PRECEDING) a, min(c_int) over (partition by key order by value range current row) b, count(c_int) over(partition by key order by value range 1 PRECEDING) c, avg(value) over (partition by key order by value range between unbounded preceding and unbounded following) d, sum(value) over (partition by key order by value range between unbounded preceding and current row) e, avg(c_float) over (partition by key order by value range between 1 preceding and unbounded following) f, sum(c_float) over (partition by key order by value range between 1 preceding and current row) g, max(c_float) over (partition by key order by value range between 1 preceding and unbounded following) h, min(c_float) over (partition by key order by value range between 1 preceding and 1 following) i from cbo_t1) cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
@@ -201,6 +201,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
+NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
 1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
 1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
 1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
@@ -219,8 +221,6 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1.0	1	1.0	1	12	1.0	12.0	1.0	12.0	1	2
 1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
 1.0	1	1.0	1	2	1.0	2.0	1.0	2.0	1	2
-NULL	NULL	NULL	NULL	0	NULL	0.0	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	0	NULL	0.0	NULL	NULL	NULL	NULL
 PREHOOK: query: select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1

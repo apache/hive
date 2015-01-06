@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyUnionObjectInspector;
-import org.apache.hadoop.io.Text;
 
 /**
  * LazyObject for storing a union. The field of a union can be primitive or
@@ -52,11 +51,6 @@ public class LazyUnion extends LazyNonPrimitive<LazyUnionObjectInspector> {
   private boolean fieldInited = false;
 
   /**
-   * Whether the tag has been set or not
-   * */
-  private boolean tagSet = false;
-
-  /**
    * Whether the field has been set or not
    * */
   private boolean fieldSet = false;
@@ -66,6 +60,14 @@ public class LazyUnion extends LazyNonPrimitive<LazyUnionObjectInspector> {
    */
   public LazyUnion(LazyUnionObjectInspector oi) {
     super(oi);
+  }
+
+  // exceptional use case for avro
+  public LazyUnion(LazyUnionObjectInspector oi, byte tag, Object field) {
+    super(oi);
+    this.field = field;
+    this.tag = tag;
+    fieldSet = true;
   }
 
   /**
@@ -133,19 +135,20 @@ public class LazyUnion extends LazyNonPrimitive<LazyUnionObjectInspector> {
    */
   @SuppressWarnings("rawtypes")
   private Object uncheckedGetField() {
-    Text nullSequence = oi.getNullSequence();
-    int fieldLength = start + length - startPosition;
-    if (fieldLength != 0 && fieldLength == nullSequence.getLength() &&
-        LazyUtils.compare(bytes.getData(), startPosition, fieldLength,
-        nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
-      return null;
+    LazyObject field = (LazyObject) this.field;
+    if (fieldInited) {
+      return field.getObject();
     }
+    fieldInited = true;
 
-    if (!fieldInited) {
-      fieldInited = true;
-      ((LazyObject) field).init(bytes, startPosition, fieldLength);
+    int fieldStart = startPosition;
+    int fieldLength = start + length - startPosition;
+    if (isNull(oi.getNullSequence(), bytes, fieldStart, fieldLength)) {
+      field.setNull();
+    } else {
+      field.init(bytes, fieldStart, fieldLength);
     }
-    return ((LazyObject) field).getObject();
+    return field.getObject();
   }
 
   /**
@@ -170,7 +173,7 @@ public class LazyUnion extends LazyNonPrimitive<LazyUnionObjectInspector> {
    * @return The tag byte
    */
   public byte getTag() {
-    if (tagSet) {
+    if (fieldSet) {
       return tag;
     }
 
@@ -178,25 +181,5 @@ public class LazyUnion extends LazyNonPrimitive<LazyUnionObjectInspector> {
       parse();
     }
     return tag;
-  }
-
-  /**
-   * Set the field of the union
-   *
-   * @param field the field to be set
-   * */
-  public void setField(Object field) {
-    this.field = field;
-    fieldSet = true;
-  }
-
-  /**
-   * Set the tag for the union
-   *
-   * @param tag the tag to be set
-   * */
-  public void setTag(byte tag) {
-    this.tag = tag;
-    tagSet = true;
   }
 }

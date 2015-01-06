@@ -62,8 +62,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -128,9 +130,7 @@ public class TypeCheckProcFactory {
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.getExpression(expr);
     if (colInfo != null) {
-      desc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
-          .getInternalName(), colInfo.getTabAlias(), colInfo
-          .getIsVirtualCol());
+      desc = new ExprNodeColumnDesc(colInfo);
       ASTNode source = input.getExpressionSource(expr);
       if (source != null) {
         ctx.getUnparseTranslator().addCopyTranslation(expr, source);
@@ -513,9 +513,7 @@ public class TypeCheckProcFactory {
             return null;
           }
           // It's a column.
-          return new ExprNodeColumnDesc(colInfo.getType(), colInfo
-              .getInternalName(), colInfo.getTabAlias(), colInfo
-              .getIsVirtualCol());
+          return toExprNodeDesc(colInfo);
         } else {
           // It's a table alias.
           // We will process that later in DOT.
@@ -547,16 +545,26 @@ public class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          ExprNodeColumnDesc exprNodColDesc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
-              .getInternalName(), colInfo.getTabAlias(), colInfo
-              .getIsVirtualCol());
-          exprNodColDesc.setSkewedCol(colInfo.isSkewedCol());
-          return exprNodColDesc;
+          return toExprNodeDesc(colInfo);
         }
       }
 
     }
 
+  }
+
+  private static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
+    ObjectInspector inspector = colInfo.getObjectInspector();
+    if (inspector instanceof ConstantObjectInspector && 
+        inspector instanceof PrimitiveObjectInspector) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
+      Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+      return new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
+    }
+    // non-constant or non-primitive constants
+    ExprNodeColumnDesc column = new ExprNodeColumnDesc(colInfo);
+    column.setSkewedCol(colInfo.isSkewedCol());
+    return column;
   }
 
   /**
@@ -690,7 +698,12 @@ public class TypeCheckProcFactory {
     static ExprNodeDesc getFuncExprNodeDescWithUdfData(String udfName, TypeInfo typeInfo,
         ExprNodeDesc... children) throws UDFArgumentException {
 
-      FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
+      FunctionInfo fi;
+      try {
+        fi = FunctionRegistry.getFunctionInfo(udfName);
+      } catch (SemanticException e) {
+        throw new UDFArgumentException(e);
+      }
       if (fi == null) {
         throw new UDFArgumentException(udfName + " not found.");
       }
@@ -974,7 +987,7 @@ public class TypeCheckProcFactory {
       return false;
     }
 
-    protected ExprNodeColumnDesc processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
+    protected ExprNodeDesc processQualifiedColRef(TypeCheckCtx ctx, ASTNode expr,
         Object... nodeOutputs) throws SemanticException {
       RowResolver input = ctx.getInputRR();
       String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0)
@@ -988,8 +1001,7 @@ public class TypeCheckProcFactory {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
         return null;
       }
-      return new ExprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
-          colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+      return toExprNodeDesc(colInfo);
     }
 
     @Override
@@ -1075,16 +1087,14 @@ public class TypeCheckProcFactory {
           for (Map.Entry<String, ColumnInfo> colMap : columns.entrySet()) {
             ColumnInfo colInfo = colMap.getValue();
             if (!colInfo.getIsVirtualCol()) {
-              columnList.addColumn(new ExprNodeColumnDesc(colInfo.getType(),
-                  colInfo.getInternalName(), colInfo.getTabAlias(), false));
+              columnList.addColumn(toExprNodeDesc(colInfo));
             }
           }
         } else {
           // all columns (select *, for example)
           for (ColumnInfo colInfo : input.getColumnInfos()) {
             if (!colInfo.getIsVirtualCol()) {
-              columnList.addColumn(new ExprNodeColumnDesc(colInfo.getType(),
-                  colInfo.getInternalName(), colInfo.getTabAlias(), false));
+              columnList.addColumn(toExprNodeDesc(colInfo));
             }
           }
         }
@@ -1118,12 +1128,11 @@ public class TypeCheckProcFactory {
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
-      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(expr
-          .getChildCount()
-          - childrenBegin);
+      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(
+          expr.getChildCount() - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
         if (nodeOutputs[ci] instanceof ExprNodeColumnListDesc) {
-          children.addAll(((ExprNodeColumnListDesc)nodeOutputs[ci]).getChildren());
+          children.addAll(((ExprNodeColumnListDesc) nodeOutputs[ci]).getChildren());
         } else {
           children.add((ExprNodeDesc) nodeOutputs[ci]);
         }
@@ -1138,8 +1147,7 @@ public class TypeCheckProcFactory {
         RowResolver input = ctx.getInputRR();
         for (ColumnInfo colInfo : input.getColumnInfos()) {
           if (!colInfo.getIsVirtualCol()) {
-            children.add(new ExprNodeColumnDesc(colInfo.getType(),
-                colInfo.getInternalName(), colInfo.getTabAlias(), false));
+            children.add(toExprNodeDesc(colInfo));
           }
         }
       }

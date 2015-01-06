@@ -435,7 +435,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
                 Reporter.class);
         construct.setAccessible(true);
         newContext = (org.apache.hadoop.mapred.TaskAttemptContext) construct.newInstance(
-                new JobConf(conf), taskId, (Reporter) progressable);
+                new JobConf(conf), taskId, progressable);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -453,7 +453,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public org.apache.hadoop.mapred.JobContext createJobContext(org.apache.hadoop.mapred.JobConf conf,
                                                                 org.apache.hadoop.mapreduce.JobID jobId, Progressable progressable) {
       return new org.apache.hadoop.mapred.JobContextImpl(
-              new JobConf(conf), jobId, (org.apache.hadoop.mapred.Reporter) progressable);
+              new JobConf(conf), jobId, progressable);
     }
 
     @Override
@@ -609,8 +609,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   public class Hadoop23FileStatus implements HdfsFileStatus {
-    private FileStatus fileStatus;
-    private AclStatus aclStatus;
+    private final FileStatus fileStatus;
+    private final AclStatus aclStatus;
     public Hadoop23FileStatus(FileStatus fileStatus, AclStatus aclStatus) {
       this.fileStatus = fileStatus;
       this.aclStatus = aclStatus;
@@ -678,7 +678,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
       throws FileNotFoundException, IOException {
       return new RemoteIterator<LocatedFileStatus>() {
-        private RemoteIterator<LocatedFileStatus> stats =
+        private final RemoteIterator<LocatedFileStatus> stats =
             ProxyFileSystem23.super.listLocatedStatus(
                 ProxyFileSystem23.super.swizzleParamPath(f));
 
@@ -711,7 +711,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
             accessMethod.invoke(fs, underlyingFsPath, action);
         } else {
           // If the FS has no access() method, we can try DefaultFileAccess ..
-          UserGroupInformation ugi = getUGIForConf(getConf());
           DefaultFileAccess.checkFileAccess(fs, underlyingFsStatus, action);
         }
       } catch (AccessControlException err) {
@@ -771,6 +770,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
+  }
+
+  @Override
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context) {
+    return context.getJobConf();
   }
 
   @Override
@@ -895,28 +899,33 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   public class KerberosNameShim implements HadoopShimsSecure.KerberosNameShim {
 
-    private KerberosName kerberosName;
+    private final KerberosName kerberosName;
 
     public KerberosNameShim(String name) {
       kerberosName = new KerberosName(name);
     }
 
+    @Override
     public String getDefaultRealm() {
       return kerberosName.getDefaultRealm();
     }
 
+    @Override
     public String getServiceName() {
       return kerberosName.getServiceName();
     }
 
+    @Override
     public String getHostName() {
       return kerberosName.getHostName();
     }
 
+    @Override
     public String getRealm() {
       return kerberosName.getRealm();
     }
 
+    @Override
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
     }

@@ -54,7 +54,7 @@ public class TestQBSubQuery {
   @Before
   public void setup() throws SemanticException {
     pd = new ParseDriver();
-    sA = new SemanticAnalyzer(conf);
+    sA = new CalcitePlanner(conf);
   }
 
   ASTNode parse(String query) throws ParseException {

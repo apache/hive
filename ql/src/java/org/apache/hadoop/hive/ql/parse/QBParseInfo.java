@@ -466,10 +466,12 @@ public class QBParseInfo {
     return true;
   }
 
+  // for fast check of possible existence of RS (will be checked again in SimpleFetchOptimizer)
   public boolean isSimpleSelectQuery() {
-    if (isSubQ || joinExpr != null || !destToOrderby.isEmpty() || !destToSortby.isEmpty()
+    if (joinExpr != null || !destToOrderby.isEmpty() || !destToSortby.isEmpty()
         || !destToGroupby.isEmpty() || !destToClusterby.isEmpty() || !destToDistributeby.isEmpty()
-        || !aliasToLateralViews.isEmpty() || !destToLateralView.isEmpty()) {
+        || !destRollups.isEmpty() || !destCubes.isEmpty() || !destGroupingSets.isEmpty()
+        || !destToHaving.isEmpty()) {
       return false;
     }
 
@@ -491,6 +493,7 @@ public class QBParseInfo {
       }
     }
 
+    // exclude insert queries
     for (ASTNode v : nameToDest.values()) {
       if (!(v.getChild(0).getType() == HiveParser.TOK_TMP_FILE)) {
         return false;

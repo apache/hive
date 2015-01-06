@@ -114,4 +114,10 @@ public class QBExpr {
     }
   }
 
+  public boolean isSimpleSelectQuery() {
+    if (qb != null) {
+      return qb.isSimpleSelectQuery();
+    }
+    return qbexpr1.isSimpleSelectQuery() && qbexpr2.isSimpleSelectQuery();
+  }
 }

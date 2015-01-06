@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
+import org.apache.hadoop.hive.shims.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class TestStorageBasedMetastoreAuthorizationDrops extends StorageBasedMet
     // Hadoop FS ACLs do not work with LocalFileSystem, so set up MiniDFS.
     HiveConf conf = super.createHiveConf();
 
-    String currentUserName = ShimLoader.getHadoopShims().getUGIForConf(conf).getShortUserName();
+    String currentUserName = Utils.getUGI().getShortUserName();
     conf.set("hadoop.proxyuser." + currentUserName + ".groups", "*");
     conf.set("hadoop.proxyuser." + currentUserName + ".hosts", "*");
     dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);

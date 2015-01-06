@@ -1,10 +1,10 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_Tmp
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
@@ -759,7 +759,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
-              columns.comments default default
+              columns.comments 'default','default'
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
@@ -779,7 +779,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
-                columns.comments default default
+                columns.comments 'default','default'
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src

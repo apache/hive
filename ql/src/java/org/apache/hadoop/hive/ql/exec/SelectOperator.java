@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -133,20 +134,59 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
    * @return if it is an identity select operator or not
    */
   public boolean isIdentitySelect() {
-    //Safety check
+    // Safety check
     if(this.getNumParent() != 1) {
       return false;
     }
 
-    //Select *
-    if(this.getConf().isSelStarNoCompute() ||
-        this.getConf().isSelectStar()) {
+    if(conf.isSelStarNoCompute()) {
       return true;
     }
 
-    //Check whether the have the same schema
-    if(!OperatorUtils.sameRowSchema(this, this.getParentOperators().get(0))) {
+    // Check whether the have the same schema
+    RowSchema orig = this.getSchema();
+    RowSchema dest = this.getParentOperators().get(0).getSchema();
+    if(orig.getSignature() == null && dest.getSignature() == null) {
+      return true;
+    }
+    if((orig.getSignature() == null && dest.getSignature() != null) ||
+        (orig.getSignature() != null && dest.getSignature() == null) ) {
       return false;
+    }
+
+    if(orig.getSignature().size() != dest.getSignature().size() ||
+            orig.getSignature().size() != conf.getColList().size()) {
+      return false;
+    }
+
+    for(int i=0; i<orig.getSignature().size(); i++) {
+      ColumnInfo origColumn = orig.getSignature().get(i);
+      ColumnInfo destColumn = dest.getSignature().get(i);
+
+      if(origColumn == null && destColumn == null) {
+        continue;
+      }
+
+      if((origColumn == null && destColumn != null) ||
+          (origColumn != null && destColumn == null) ) {
+        return false;
+      }
+
+      if(!origColumn.equals(destColumn)) {
+        return false;
+      }
+
+      // Now we check if though the schemas are the same,
+      // the operator changes the order of columns in the
+      // output
+      if(!(conf.getColList().get(i) instanceof ExprNodeColumnDesc)) {
+        return false;
+      }
+      ExprNodeColumnDesc col = (ExprNodeColumnDesc) conf.getColList().get(i);
+      if(!col.getColumn().equals(origColumn.getInternalName())) {
+        return false;
+      }
+
     }
 
     return true;

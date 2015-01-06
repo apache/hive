@@ -171,10 +171,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100) and (key < 400)) and (time < 200000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time < 200000000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (((key > 100) and (key < 400)) and (time < 200000000000)) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time < 200000000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -220,10 +220,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100) and (key < 400)) and (time > 100000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time > 100000000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (((key > 100) and (key < 400)) and (time > 100000000000)) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time > 100000000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -271,10 +271,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100) and (key < 400)) and (time <= 100000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time <= 100000000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (((key > 100) and (key < 400)) and (time <= 100000000000)) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time <= 100000000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)
@@ -320,10 +320,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_table
-            filterExpr: (((key > 100) and (key < 400)) and (time >= 200000000000)) (type: boolean)
+            filterExpr: (((key > 100.0) and (key < 400.0)) and (time >= 200000000000)) (type: boolean)
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
-              predicate: (((key > 100) and (key < 400)) and (time >= 200000000000)) (type: boolean)
+              predicate: ((UDFToDouble(key) > 100.0) and ((UDFToDouble(key) < 400.0) and (time >= 200000000000))) (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), CAST( time AS TIMESTAMP) (type: timestamp)

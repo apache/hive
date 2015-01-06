@@ -29,7 +29,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
@@ -218,7 +217,7 @@ class HostExecutor {
     script.delete();
     mLogger.info(drone + " executing " + batch + " with " + command);
     RemoteCommandResult sshResult = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
-        drone.getHost(), drone.getInstance(), command).
+        drone.getHost(), drone.getInstance(), command, true).
         call();
     File batchLogDir = null;
     if(sshResult.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
@@ -346,7 +345,21 @@ class HostExecutor {
    * exits with a status code of 255 until all drones have been utilized, possibly
    * excluding the host from future use.
    */
+  ListenableFuture<SSHResult> execIgnoreAllErrors(final String cmd)
+      throws Exception {
+    return exec(cmd, false);
+  }
+  /**
+   * Execute command on at least one drone. The method will retry when the command
+   * exits with a status code of 255 until all drones have been utilized, possibly
+   * excluding the host from future use.
+   */
   ListenableFuture<SSHResult> exec(final String cmd)
+      throws Exception {
+    return exec(cmd, true);
+  }
+
+  private ListenableFuture<SSHResult> exec(final String cmd, final boolean reportErrors)
       throws Exception {
     return mExecutor.submit(new Callable<SSHResult>() {
       @Override
@@ -357,8 +370,8 @@ class HostExecutor {
           templateVariables.put("localDir", drone.getLocalDirectory());
           String command = Templates.getTemplateResult(cmd, templateVariables);
           SSHResult result = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
-              drone.getHost(), drone.getInstance(), command).call();
-          if(result.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
+              drone.getHost(), drone.getInstance(), command, reportErrors).call();
+          if(reportErrors && result.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
             mDrones.remove(drone); // return value not checked due to concurrent access
             mLogger.error("Aborting drone during exec " + command,
                 new AbortDroneException("Drone " + drone + " exited with "
@@ -388,7 +401,7 @@ class HostExecutor {
           templateVariables.put("localDir", drone.getLocalDirectory());
           String command = Templates.getTemplateResult(cmd, templateVariables);
           SSHResult result = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
-              drone.getHost(), drone.getInstance(), command).call();
+              drone.getHost(), drone.getInstance(), command, true).call();
           if(result.getExitCode() != Constants.EXIT_CODE_SUCCESS) {
             mDrones.remove(drone); // return value not checked due to concurrent access
             mLogger.error("Aborting drone during exec " + command,

@@ -67,7 +67,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
    */
   static volatile boolean isMetastoreTokenManagerInited;
 
-  private static class MyHadoopThriftAuthBridge20S extends HadoopThriftAuthBridge20S {
+  private static class MyHadoopThriftAuthBridge20S extends HadoopThriftAuthBridge {
     @Override
     public Server createServer(String keytabFile, String principalConf)
     throws TTransportException {
@@ -75,7 +75,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
       return new Server();
     }
 
-    static class Server extends HadoopThriftAuthBridge20S.Server {
+    static class Server extends HadoopThriftAuthBridge.Server {
       public Server() throws TTransportException {
         super();
       }
@@ -312,9 +312,9 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
     waitForMetastoreTokenInit();
 
-    HadoopThriftAuthBridge20S.Server.authenticationMethod
+    HadoopThriftAuthBridge.Server.authenticationMethod
                              .set(AuthenticationMethod.KERBEROS);
-    HadoopThriftAuthBridge20S.Server.remoteAddress.set(InetAddress.getLocalHost());
+    HadoopThriftAuthBridge.Server.remoteAddress.set(InetAddress.getLocalHost());
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
             realUgi.getShortUserName());

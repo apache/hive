@@ -101,9 +101,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0} {VALUE._col3}
+          keys:
+            0 foo_id (type: int)
+            1 foo_id (type: int)
           outputColumnNames: _col1, _col9, _col13
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           File Output Operator
@@ -139,9 +139,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col1} {VALUE._col12}
-            1 {VALUE._col0}
+          keys:
+            0 _col9 (type: int)
+            1 bar_id (type: int)
           outputColumnNames: _col1, _col13, _col22
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator

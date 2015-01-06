@@ -34,9 +34,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
@@ -45,6 +47,9 @@ import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  * CLIService.
@@ -79,10 +84,10 @@ public class CLIService extends CompositeService implements ICLIService {
     sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
-    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       try {
         HiveAuthFactory.loginFromKeytab(hiveConf);
-        this.serviceUGI = ShimLoader.getHadoopShims().getUGIForConf(hiveConf);
+        this.serviceUGI = Utils.getUGI();
       } catch (IOException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       } catch (LoginException e) {
@@ -104,7 +109,14 @@ public class CLIService extends CompositeService implements ICLIService {
         }
       }
     }
+    setupBlockedUdfs();
     super.init(hiveConf);
+  }
+
+  private void setupBlockedUdfs() {
+    FunctionRegistry.setupPermissionsForBuiltinUDFs(
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST),
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST));
   }
 
   public UserGroupInformation getServiceUGI() {

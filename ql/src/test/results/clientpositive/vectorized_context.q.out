@@ -97,12 +97,12 @@ JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.
 limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-4 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-4
+  Stage-7 is a root stage
+  Stage-5 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         household_demographics 
@@ -120,9 +120,6 @@ STAGE PLANS:
               predicate: hd_demo_sk is not null (type: boolean)
               Statistics: Num rows: 3038 Data size: 12152 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {_col2} {_col7}
-                  1 
                 keys:
                   0 _col1 (type: int)
                   1 hd_demo_sk (type: int)
@@ -134,14 +131,11 @@ STAGE PLANS:
               predicate: (ss_store_sk is not null and ss_hdemo_sk is not null) (type: boolean)
               Statistics: Num rows: 1519 Data size: 18186 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 {ss_hdemo_sk} {ss_net_profit}
-                  1 {s_city}
                 keys:
                   0 ss_store_sk (type: int)
                   1 s_store_sk (type: int)
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -153,9 +147,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {ss_hdemo_sk} {ss_net_profit}
-                  1 {s_city}
                 keys:
                   0 ss_store_sk (type: int)
                   1 s_store_sk (type: int)
@@ -164,9 +155,6 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col2} {_col7}
-                    1 
                   keys:
                     0 _col1 (type: int)
                     1 hd_demo_sk (type: int)

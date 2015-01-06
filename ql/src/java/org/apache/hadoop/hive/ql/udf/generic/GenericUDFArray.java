@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
@@ -59,11 +58,8 @@ public class GenericUDFArray extends GenericUDF {
 
     converters = new Converter[arguments.length];
 
-    ObjectInspector returnOI = returnOIResolver.get();
-    if (returnOI == null) {
-      returnOI = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
-    }
+    ObjectInspector returnOI =
+        returnOIResolver.get(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     for (int i = 0; i < arguments.length; i++) {
       converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
           returnOI);

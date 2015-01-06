@@ -38,6 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.lang.System;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,6 +118,7 @@ public class QTestUtil {
   private final Set<String> qSortQuerySet;
   private final Set<String> qHashQuerySet;
   private final Set<String> qSortNHashQuerySet;
+  private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>();
   private static MiniClusterType clusterType = MiniClusterType.none;
@@ -125,15 +127,14 @@ public class QTestUtil {
   protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
-  private FileSystem fs;
   protected final boolean overWrite;
   private CliDriver cliDriver;
   private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
-  private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
   private boolean isSessionStateStarted = false;
+  private static final String javaVersion = getJavaVersion();
 
   private final String initScript;
   private final String cleanupScript;
@@ -309,7 +310,6 @@ public class QTestUtil {
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);
-    this.miniMr = (clusterType == MiniClusterType.mr);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
@@ -317,6 +317,7 @@ public class QTestUtil {
     qSortQuerySet = new HashSet<String>();
     qHashQuerySet = new HashSet<String>();
     qSortNHashQuerySet = new HashSet<String>();
+    qJavaVersionSpecificOutput = new HashSet<String>();
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
@@ -412,6 +413,10 @@ public class QTestUtil {
     if(checkHadoopVersionExclude(qf.getName(), query)
       || checkOSExclude(qf.getName(), query)) {
       qSkipSet.add(qf.getName());
+    }
+
+    if (checkNeedJavaSpecificOutput(qf.getName(), query)) {
+      qJavaVersionSpecificOutput.add(qf.getName());
     }
 
     if (matches(SORT_BEFORE_DIFF, query)) {
@@ -526,6 +531,40 @@ public class QTestUtil {
     return false;
   }
 
+  private boolean checkNeedJavaSpecificOutput(String fileName, String query) {
+    Pattern pattern = Pattern.compile("-- JAVA_VERSION_SPECIFIC_OUTPUT");
+    Matcher matcher = pattern.matcher(query);
+    if (matcher.find()) {
+      System.out.println("Test is flagged to generate Java version specific " +
+          "output. Since we are using Java version " + javaVersion +
+          ", we will generated Java " + javaVersion + " specific " +
+          "output file for query file " + fileName);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Get formatted Java version to include minor version, but
+   * exclude patch level.
+   *
+   * @return Java version formatted as major_version.minor_version
+   */
+  private static String getJavaVersion() {
+    String version = System.getProperty("java.version");
+    if (version == null) {
+      throw new NullPointerException("No java version could be determined " +
+          "from system properties");
+    }
+
+    // "java version" system property is formatted
+    // major_version.minor_version.patch_level.
+    // Find second dot, instead of last dot, to be safe
+    int pos = version.indexOf('.');
+    pos = version.indexOf('.', pos + 1);
+    return version.substring(0, pos);
+  }
 
   /**
    * Clear out any side effects of running tests
@@ -651,17 +690,6 @@ public class QTestUtil {
     FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
 
-  private void runLoadCmd(String loadCmd) throws Exception {
-    int ecode = 0;
-    ecode = drv.run(loadCmd).getResponseCode();
-    drv.close();
-    if (ecode != 0) {
-      throw new Exception("load command: " + loadCmd
-          + " failed with exit code= " + ecode);
-    }
-    return;
-  }
-
   protected void runCreateTableCmd(String createTableCmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(createTableCmd).getResponseCode();
@@ -712,7 +740,6 @@ public class QTestUtil {
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
-    fs = FileSystem.get(conf);
     drv = new Driver(conf);
     drv.init();
     pd = new ParseDriver();
@@ -742,13 +769,14 @@ public class QTestUtil {
     assert ss != null;
     ss.in = System.in;
 
+    String outFileExtension = getOutFileExtension(tname);
     String stdoutName = null;
     if (outDir != null) {
       // TODO: why is this needed?
       File qf = new File(outDir, tname);
-      stdoutName = qf.getName().concat(".out");
+      stdoutName = qf.getName().concat(outFileExtension);
     } else {
-      stdoutName = tname + ".out";
+      stdoutName = tname + outFileExtension;
     }
 
     File outf = new File(logDir, stdoutName);
@@ -868,6 +896,15 @@ public class QTestUtil {
     return qSkipSet.contains(tname);
   }
 
+  private String getOutFileExtension(String fname) {
+    String outFileExtension = ".out";
+    if (qJavaVersionSpecificOutput.contains(fname)) {
+      outFileExtension = ".java" + javaVersion + ".out";
+    }
+
+    return outFileExtension;
+  }
+
   public void convertSequenceFileToTextFile() throws Exception {
     // Create an instance of hive in order to create the tables
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
@@ -888,12 +925,14 @@ public class QTestUtil {
 
   public int checkNegativeResults(String tname, Exception e) throws Exception {
 
+    String outFileExtension = getOutFileExtension(tname);
+
     File qf = new File(outDir, tname);
-    String expf = outPath(outDir.toString(), tname.concat(".out"));
+    String expf = outPath(outDir.toString(), tname.concat(outFileExtension));
 
     File outf = null;
     outf = new File(logDir);
-    outf = new File(outf, qf.getName().concat(".out"));
+    outf = new File(outf, qf.getName().concat(outFileExtension));
 
     FileWriter outfd = new FileWriter(outf);
     if (e instanceof ParseException) {
@@ -919,12 +958,14 @@ public class QTestUtil {
   public int checkParseResults(String tname, ASTNode tree) throws Exception {
 
     if (tree != null) {
+      String outFileExtension = getOutFileExtension(tname);
+
       File parseDir = new File(outDir, "parse");
-      String expf = outPath(parseDir.toString(), tname.concat(".out"));
+      String expf = outPath(parseDir.toString(), tname.concat(outFileExtension));
 
       File outf = null;
       outf = new File(logDir);
-      outf = new File(outf, tname.concat(".out"));
+      outf = new File(outf, tname.concat(outFileExtension));
 
       FileWriter outfd = new FileWriter(outf);
       outfd.write(tree.toStringTree());
@@ -1201,9 +1242,10 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     assert(qMap.containsKey(tname));
 
-    String outFileName = outPath(outDir, tname + ".out");
+    String outFileExtension = getOutFileExtension(tname);
+    String outFileName = outPath(outDir, tname + outFileExtension);
 
-    File f = new File(logDir, tname + ".out");
+    File f = new File(logDir, tname + outFileExtension);
 
     maskPatterns(planMask, f.getPath());
     int exitVal = executeDiffCommand(f.getPath(),
@@ -1565,11 +1607,11 @@ public class QTestUtil {
     qt[0].createSources();
     qt[0].clearTestSideEffects();
 
-    QTRunner[] qtRunners = new QTestUtil.QTRunner[qfiles.length];
+    QTRunner[] qtRunners = new QTRunner[qfiles.length];
     Thread[] qtThread = new Thread[qfiles.length];
 
     for (int i = 0; i < qfiles.length; i++) {
-      qtRunners[i] = new QTestUtil.QTRunner(qt[i], qfiles[i].getName());
+      qtRunners[i] = new QTRunner(qt[i], qfiles[i].getName());
       qtThread[i] = new Thread(qtRunners[i]);
     }
 

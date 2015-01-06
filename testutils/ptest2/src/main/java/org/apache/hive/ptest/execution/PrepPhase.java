@@ -65,6 +65,8 @@ public class PrepPhase extends Phase {
     Templates.writeTemplateResult("source-prep.vm", sourcePrepScript, getTemplateDefaults());
     execLocally("bash " + sourcePrepScript.getPath());
     logger.debug("Deleting " + sourcePrepScript + ": " + sourcePrepScript.delete());
+    execHostsIgnoreErrors("pkill -f java");
+    execHostsIgnoreErrors("pkill -9 -f java");
     elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
         TimeUnit.MILLISECONDS);
     logger.info("PERF: source prep took " + elapsedTime + " minutes");

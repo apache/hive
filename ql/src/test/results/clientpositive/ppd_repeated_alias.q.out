@@ -45,6 +45,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Reduce Output Operator
+              key expressions: foo (type: int)
+              sort order: +
+              Map-reduce partition columns: foo (type: int)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Reduce Output Operator
@@ -53,21 +61,13 @@ STAGE PLANS:
               Map-reduce partition columns: foo (type: int)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: bar (type: int)
-          TableScan
-            alias: a
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: foo (type: int)
-              sort order: +
-              Map-reduce partition columns: foo (type: int)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -116,6 +116,14 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            alias: a
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Reduce Output Operator
+              key expressions: foo (type: int)
+              sort order: +
+              Map-reduce partition columns: foo (type: int)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Reduce Output Operator
@@ -124,21 +132,13 @@ STAGE PLANS:
               Map-reduce partition columns: foo (type: int)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: bar (type: int)
-          TableScan
-            alias: a
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: foo (type: int)
-              sort order: +
-              Map-reduce partition columns: foo (type: int)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0} {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -187,17 +187,6 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Filter Operator
-              predicate: foo is not null (type: boolean)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Reduce Output Operator
-                key expressions: foo (type: int)
-                sort order: +
-                Map-reduce partition columns: foo (type: int)
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-          TableScan
             alias: a
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
             Filter Operator
@@ -208,13 +197,24 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: foo (type: int)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+          TableScan
+            alias: b
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Filter Operator
+              predicate: foo is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              Reduce Output Operator
+                key expressions: foo (type: int)
+                sort order: +
+                Map-reduce partition columns: foo (type: int)
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {KEY.reducesinkkey0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col6
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
@@ -235,7 +235,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[9][tables = [c, d]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[9][tables = [c, d]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
 explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
 PREHOOK: type: QUERY
@@ -243,14 +243,22 @@ POSTHOOK: query: -- Q4: here, the filter c.bar should be created under the first
 explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
+          TableScan
+            alias: c
+            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Reduce Output Operator
+              key expressions: foo (type: int)
+              sort order: +
+              Map-reduce partition columns: foo (type: int)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           TableScan
             alias: b
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -260,21 +268,13 @@ STAGE PLANS:
               Map-reduce partition columns: foo (type: int)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: bar (type: int)
-          TableScan
-            alias: c
-            Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Reduce Output Operator
-              key expressions: foo (type: int)
-              sort order: +
-              Map-reduce partition columns: foo (type: int)
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {KEY.reducesinkkey0}
-            1 {VALUE._col0}
+          keys:
+            0 foo (type: int)
+            1 foo (type: int)
           outputColumnNames: _col0, _col7
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator
@@ -291,9 +291,14 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              value expressions: _col0 (type: int)
           TableScan
             alias: d
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -301,18 +306,13 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: foo (type: int), bar (type: int)
-          TableScan
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
-          condition expressions:
-            0 {VALUE._col0}
-            1 {VALUE._col0} {VALUE._col1}
+          keys:
+            0 
+            1 
           outputColumnNames: _col0, _col3, _col4
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Filter Operator

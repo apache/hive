@@ -102,18 +102,14 @@ STAGE PLANS:
         TableScan
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: key (type: string), value (type: string)
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (unix_timestamp(_col0) > 10) (type: boolean)
+          Filter Operator
+            predicate: (unix_timestamp(key) > 10) (type: boolean)
+            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                ListSink
+              ListSink
 
 PREHOOK: query: explain select * from (select * from src) a where to_unix_timestamp(a.key) > 10
 PREHOOK: type: QUERY

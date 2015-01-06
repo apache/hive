@@ -23,19 +23,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -54,6 +48,7 @@ import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -73,8 +68,6 @@ import org.apache.hadoop.util.Progressable;
  * classpath.
  */
 public interface HadoopShims {
-
-  static final Log LOG = LogFactory.getLog(HadoopShims.class);
 
   /**
    * Constructs and Returns TaskAttempt Log Url
@@ -125,148 +118,6 @@ public interface HadoopShims {
 
   CombineFileInputFormatShim getCombineFileInputFormat();
 
-  String getInputFormatClassName();
-
-  int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
-      String archiveName) throws Exception;
-
-  public URI getHarUri(URI original, URI base, URI originalBase)
-      throws URISyntaxException;
-  /**
-   * Hive uses side effect files exclusively for it's output. It also manages
-   * the setup/cleanup/commit of output from the hive client. As a result it does
-   * not need support for the same inside the MR framework
-   *
-   * This routine sets the appropriate options related to bypass setup/cleanup/commit
-   * support in the MR framework, but does not set the OutputFormat class.
-   */
-  void prepareJobOutput(JobConf conf);
-
-  /**
-   * Used by TaskLogProcessor to Remove HTML quoting from a string
-   * @param item the string to unquote
-   * @return the unquoted string
-   *
-   */
-  public String unquoteHtmlChars(String item);
-
-
-
-  public void closeAllForUGI(UserGroupInformation ugi);
-
-  /**
-   * Get the UGI that the given job configuration will run as.
-   *
-   * In secure versions of Hadoop, this simply returns the current
-   * access control context's user, ignoring the configuration.
-   */
-  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
-
-  /**
-   * Used by metastore server to perform requested rpc in client context.
-   * @param <T>
-   * @param ugi
-   * @param pvea
-   * @throws IOException
-   * @throws InterruptedException
-   */
-  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
-  IOException, InterruptedException;
-
-  /**
-   * Once a delegation token is stored in a file, the location is specified
-   * for a child process that runs hadoop operations, using an environment
-   * variable .
-   * @return Return the name of environment variable used by hadoop to find
-   *  location of token file
-   */
-  public String getTokenFileLocEnvName();
-
-
-  /**
-   * Get delegation token from filesystem and write the token along with
-   * metastore tokens into a file
-   * @param conf
-   * @return Path of the file with token credential
-   * @throws IOException
-   */
-  public Path createDelegationTokenFile(final Configuration conf) throws IOException;
-
-
-  /**
-   * Used to creates UGI object for a remote user.
-   * @param userName remote User Name
-   * @param groupNames group names associated with remote user name
-   * @return UGI created for the remote user.
-   */
-  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames);
-
-  /**
-   * Get the short name corresponding to the subject in the passed UGI
-   *
-   * In secure versions of Hadoop, this returns the short name (after
-   * undergoing the translation in the kerberos name rule mapping).
-   * In unsecure versions of Hadoop, this returns the name of the subject
-   */
-  public String getShortUserName(UserGroupInformation ugi);
-
-  /**
-   * Return true if the Shim is based on Hadoop Security APIs.
-   */
-  public boolean isSecureShimImpl();
-
-  /**
-   * Return true if the hadoop configuration has security enabled
-   * @return
-   */
-  public boolean isSecurityEnabled();
-
-  /**
-   * Get the string form of the token given a token signature.
-   * The signature is used as the value of the "service" field in the token for lookup.
-   * Ref: AbstractDelegationTokenSelector in Hadoop. If there exists such a token
-   * in the token cache (credential store) of the job, the lookup returns that.
-   * This is relevant only when running against a "secure" hadoop release
-   * The method gets hold of the tokens if they are set up by hadoop - this should
-   * happen on the map/reduce tasks if the client added the tokens into hadoop's
-   * credential store in the front end during job submission. The method will
-   * select the hive delegation token among the set of tokens and return the string
-   * form of it
-   * @param tokenSignature
-   * @return the string form of the token found
-   * @throws IOException
-   */
-  public String getTokenStrForm(String tokenSignature) throws IOException;
-
-  /**
-   * Dynamically sets up the JAAS configuration that uses kerberos
-   * @param principal
-   * @param keyTabFile
-   * @throws IOException
-   */
-  public void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile)
-      throws IOException;
-
-  /**
-   * Add a delegation token to the given ugi
-   * @param ugi
-   * @param tokenStr
-   * @param tokenService
-   * @throws IOException
-   */
-  public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService)
-      throws IOException;
-
-  /**
-   * Add given service to the string format token
-   * @param tokenStr
-   * @param tokenService
-   * @return
-   * @throws IOException
-   */
-  public String addServiceToToken(String tokenStr, String tokenService)
-      throws IOException;
-
   enum JobTrackerState { INITIALIZING, RUNNING };
 
   /**
@@ -315,43 +166,6 @@ public interface HadoopShims {
    */
   public String getJobLauncherHttpAddress(Configuration conf);
 
-
-  /**
-   *  Perform kerberos login using the given principal and keytab
-   * @throws IOException
-   */
-  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException;
-
-  /**
-   *  Perform kerberos login using the given principal and keytab,
-   *  and return the UGI object
-   * @throws IOException
-   */
-  public UserGroupInformation loginUserFromKeytabAndReturnUGI(String principal,
-      String keytabFile) throws IOException;
-
-  /**
-   * Convert Kerberos principal name pattern to valid Kerberos principal names.
-   * @param principal (principal name pattern)
-   * @return
-   * @throws IOException
-   */
-  public String getResolvedPrincipal(String principal) throws IOException;
-
-  /**
-   * Perform kerberos re-login using the given principal and keytab, to renew
-   * the credentials
-   * @throws IOException
-   */
-  public void reLoginUserFromKeytab() throws IOException;
-
-  /***
-   * Check if the current UGI is keytab based
-   * @return
-   * @throws IOException
-   */
-  public boolean isLoginKeytabBased() throws IOException;
-
   /**
    * Move the directory/file to trash. In case of the symlinks or mount points, the file is
    * moved to the trashbin in the actual volume of the path p being deleted
@@ -392,20 +206,6 @@ public interface HadoopShims {
       throws IOException;
 
   /**
-   * Create the proxy ugi for the given userid
-   * @param userName
-   * @return
-   */
-  public UserGroupInformation createProxyUser(String userName) throws IOException;
-
-  /**
-   * Verify proxy access to given UGI for given user
-   * @param ugi
-   */
-  public void authorizeProxyAccess(String proxyUser, UserGroupInformation realUserUgi,
-      String ipAddress, Configuration conf) throws IOException;
-
-  /**
    * The method sets to set the partition file has a different signature between
    * hadoop versions.
    * @param jobConf
@@ -414,53 +214,6 @@ public interface HadoopShims {
   void setTotalOrderPartitionFile(JobConf jobConf, Path partition);
 
   Comparator<LongWritable> getLongComparator();
-
-  /**
-   * InputSplitShim.
-   *
-   */
-  public interface InputSplitShim extends InputSplit {
-    JobConf getJob();
-
-    @Override
-    long getLength();
-
-    /** Returns an array containing the startoffsets of the files in the split. */
-    long[] getStartOffsets();
-
-    /** Returns an array containing the lengths of the files in the split. */
-    long[] getLengths();
-
-    /** Returns the start offset of the i<sup>th</sup> Path. */
-    long getOffset(int i);
-
-    /** Returns the length of the i<sup>th</sup> Path. */
-    long getLength(int i);
-
-    /** Returns the number of Paths in the split. */
-    int getNumPaths();
-
-    /** Returns the i<sup>th</sup> Path. */
-    Path getPath(int i);
-
-    /** Returns all the Paths in the split. */
-    Path[] getPaths();
-
-    /** Returns all the Paths where this input-split resides. */
-    @Override
-    String[] getLocations() throws IOException;
-
-    void shrinkSplit(long length);
-
-    @Override
-    String toString();
-
-    @Override
-    void readFields(DataInput in) throws IOException;
-
-    @Override
-    void write(DataOutput out) throws IOException;
-  }
 
   /**
    * CombineFileInputFormatShim.
@@ -473,11 +226,11 @@ public interface HadoopShims {
 
     void createPool(JobConf conf, PathFilter... filters);
 
-    InputSplitShim[] getSplits(JobConf job, int numSplits) throws IOException;
+    CombineFileSplit[] getSplits(JobConf job, int numSplits) throws IOException;
 
-    InputSplitShim getInputSplitShim() throws IOException;
+    CombineFileSplit getInputSplitShim() throws IOException;
 
-    RecordReader getRecordReader(JobConf job, InputSplitShim split, Reporter reporter,
+    RecordReader getRecordReader(JobConf job, CombineFileSplit split, Reporter reporter,
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
@@ -707,6 +460,13 @@ public interface HadoopShims {
    * Get configuration from JobContext
    */
   public Configuration getConfiguration(JobContext context);
+
+  /**
+   * Get job conf from the old style JobContext.
+   * @param context job context
+   * @return job conf
+   */
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context);
 
   public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 

@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
@@ -30,8 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
@@ -54,7 +50,7 @@ import org.apache.hadoop.util.StringUtils;
 /**
  * ExecMapper is the generic Map class for Hive. Together with ExecReducer it is
  * the bridge between the map-reduce framework and the Hive operator pipeline at
- * execution time. It's main responsabilities are:
+ * execution time. It's main responsibilities are:
  *
  * - Load and setup the operator pipeline from XML
  * - Run the pipeline by transforming key value pairs to records and forwarding them to the operators
@@ -66,7 +62,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
-  private Map<String, FetchOperator> fetchOperators;
   private OutputCollector oc;
   private JobConf jc;
   private boolean abort = false;
@@ -74,7 +69,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   public static final Log l4j = LogFactory.getLog(ExecMapper.class);
   private static boolean done;
 
-  // used to log memory usage periodically
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
 
@@ -210,15 +204,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
         for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
           dummyOp.close(abort);
-        }
-      }
-
-      if (fetchOperators != null) {
-        MapredLocalWork localWork = mo.getConf().getMapRedLocalWork();
-        for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-          Operator<? extends OperatorDesc> forwardOp = localWork
-              .getAliasToWork().get(entry.getKey());
-          forwardOp.close(abort);
         }
       }
 

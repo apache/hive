@@ -116,6 +116,7 @@ import org.apache.thrift.TException;
 
 import com.google.common.collect.Sets;
 
+
 /**
  * This class has functions that implement meta data/DDL operations using calls
  * to the metastore.
@@ -443,6 +444,11 @@ public class Hive {
    */
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
+    alterTable(tblName, newTbl, false);
+  }
+
+  public void alterTable(String tblName, Table newTbl, boolean cascade)
+      throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(tblName);
     try {
       // Remove the DDL_TIME so it gets refreshed
@@ -450,7 +456,7 @@ public class Hive {
         newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       newTbl.checkValidity();
-      getMSC().alter_table(names[0], names[1], newTbl.getTTable());
+      getMSC().alter_table(names[0], names[1], newTbl.getTTable(), cascade);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
@@ -1735,31 +1741,34 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (tpart == null) {
           LOG.debug("creating partition for table " + tbl.getTableName()
                     + " with partition spec : " + partSpec);
-          tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+          try {
+            tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+          } catch (AlreadyExistsException aee) {
+            LOG.debug("Caught already exists exception, trying to alter partition instead");
+            tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+              tbl.getTableName(), pvals, getUserName(), getGroupNames());
+            alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+          } catch (Exception e) {
+            if (CheckJDOException.isJDODataStoreException(e)) {
+              // Using utility method above, so that JDODataStoreException doesn't
+              // have to be used here. This helps avoid adding jdo dependency for
+              // hcatalog client uses
+              LOG.debug("Caught JDO exception, trying to alter partition instead");
+              tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+                tbl.getTableName(), pvals, getUserName(), getGroupNames());
+              if (tpart == null) {
+                // This means the exception was caused by something other than a race condition
+                // in creating the partition, since the partition still doesn't exist.
+                throw e;
+              }
+              alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+            } else {
+              throw e;
+            }
+          }
         }
         else {
-          LOG.debug("altering partition for table " + tbl.getTableName()
-                    + " with partition spec : " + partSpec);
-          if (inheritTableSpecs) {
-            tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
-            tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
-            tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
-            tpart.getSd().getSerdeInfo().setParameters(
-                tbl.getTTable().getSd().getSerdeInfo().getParameters());
-            tpart.getSd().setBucketCols(tbl.getBucketCols());
-            tpart.getSd().setNumBuckets(tbl.getNumBuckets());
-            tpart.getSd().setSortCols(tbl.getSortCols());
-          }
-          if (partPath == null || partPath.trim().equals("")) {
-            throw new HiveException("new partition path should not be null or empty.");
-          }
-          tpart.getSd().setLocation(partPath);
-          tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
-          String fullName = tbl.getTableName();
-          if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
-            fullName = tbl.getDbName() + "." + tbl.getTableName();
-          }
-          alterPartition(fullName, new Partition(tbl, tpart));
+          alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
         }
       }
       if (tpart == null) {
@@ -1770,6 +1779,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
     return new Partition(tbl, tpart);
+  }
+
+  private void alterPartitionSpec(Table tbl,
+                                  Map<String, String> partSpec,
+                                  org.apache.hadoop.hive.metastore.api.Partition tpart,
+                                  boolean inheritTableSpecs,
+                                  String partPath) throws HiveException, InvalidOperationException {
+    LOG.debug("altering partition for table " + tbl.getTableName() + " with partition spec : "
+        + partSpec);
+    if (inheritTableSpecs) {
+      tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
+      tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
+      tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+      tpart.getSd().getSerdeInfo().setParameters(
+          tbl.getTTable().getSd().getSerdeInfo().getParameters());
+      tpart.getSd().setBucketCols(tbl.getBucketCols());
+      tpart.getSd().setNumBuckets(tbl.getNumBuckets());
+      tpart.getSd().setSortCols(tbl.getSortCols());
+    }
+    if (partPath == null || partPath.trim().equals("")) {
+      throw new HiveException("new partition path should not be null or empty.");
+    }
+    tpart.getSd().setLocation(partPath);
+    tpart.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK,"true");
+    String fullName = tbl.getTableName();
+    if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
+      fullName = tbl.getDbName() + "." + tbl.getTableName();
+    }
+    alterPartition(fullName, new Partition(tbl, tpart));
   }
 
   public boolean dropPartition(String tblName, List<String> part_vals, boolean deleteData)

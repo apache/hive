@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -261,11 +262,11 @@ public class Warehouse {
     }
     final UserGroupInformation ugi;
     try {
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      ugi = Utils.getUGI();
     } catch (LoginException le) {
       throw new IOException(le);
     }
-    String user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    String user = ugi.getShortUserName();
     //check whether owner can delete
     if (stat.getOwner().equals(user) &&
         stat.getPermission().getUserAction().implies(FsAction.WRITE)) {

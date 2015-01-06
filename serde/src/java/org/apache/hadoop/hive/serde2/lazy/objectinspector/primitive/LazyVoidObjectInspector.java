@@ -39,6 +39,6 @@ public class LazyVoidObjectInspector extends
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    throw new RuntimeException("Internal error: cannot create Void object.");
+    return null;
   }
 }

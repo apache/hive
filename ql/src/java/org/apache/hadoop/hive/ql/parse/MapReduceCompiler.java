@@ -280,10 +280,10 @@ public class MapReduceCompiler extends TaskCompiler {
 
     // generate map reduce plans
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
-
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
-        new HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
+        // Must be deterministic order map for consistent q-test output across Java versions
+        new LinkedHashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
         tempParseContext, mvTask, rootTasks,
         new LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx>(),
         inputs, outputs);

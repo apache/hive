@@ -181,7 +181,7 @@ public class TestExecDriver extends TestCase {
     }
   }
 
-  private FilterDesc getTestFilterDesc(String column) {
+  private FilterDesc getTestFilterDesc(String column) throws Exception {
     ArrayList<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
     children1.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
         column, "", false));
@@ -208,7 +208,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapPlan1(Table src) {
+  private void populateMapPlan1(Table src) throws Exception {
 
     Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapplan1.out"), Utilities.defaultTd, true));
@@ -219,7 +219,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapPlan2(Table src) {
+  private void populateMapPlan2(Table src) throws Exception {
 
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(new Path(tmpdir + File.separator
         + "mapplan2.out"), Utilities.defaultTd, false));
@@ -267,7 +267,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan2(Table src) throws SemanticException {
+  private void populateMapRedPlan2(Table src) throws Exception {
     ArrayList<String> outputColumns = new ArrayList<String>();
     for (int i = 0; i < 2; i++) {
       outputColumns.add("_col" + i);
@@ -423,7 +423,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan6(Table src) throws SemanticException {
+  private void populateMapRedPlan6(Table src) throws Exception {
 
     // map-side work
     ArrayList<String> outputColumns = new ArrayList<String>();

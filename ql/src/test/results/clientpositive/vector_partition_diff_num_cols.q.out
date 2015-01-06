@@ -1,0 +1,595 @@
+PREHOOK: query: create table inventory_txt
+(
+    inv_date_sk                int,
+    inv_item_sk                int,
+    inv_warehouse_sk           int,
+    inv_quantity_on_hand       int
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_txt
+POSTHOOK: query: create table inventory_txt
+(
+    inv_date_sk                int,
+    inv_item_sk                int,
+    inv_warehouse_sk           int,
+    inv_quantity_on_hand       int
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/inventory' OVERWRITE INTO TABLE inventory_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@inventory_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/inventory' OVERWRITE INTO TABLE inventory_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@inventory_txt
+PREHOOK: query: -- No column change case
+
+create table inventory_part_0(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_part_0
+POSTHOOK: query: -- No column change case
+
+create table inventory_part_0(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_part_0
+PREHOOK: query: insert into table inventory_part_0 partition(par='1') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_0@par=1
+POSTHOOK: query: insert into table inventory_part_0 partition(par='1') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_0@par=1
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=1).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=1).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=1).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=1).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: insert into table inventory_part_0 partition(par='2') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_0@par=2
+POSTHOOK: query: insert into table inventory_part_0 partition(par='2') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_0@par=2
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_0 PARTITION(par=2).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inventory_part_0
+            Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: inv_quantity_on_hand (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(inv_quantity_on_hand) from inventory_part_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_0
+PREHOOK: Input: default@inventory_part_0@par=1
+PREHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(inv_quantity_on_hand) from inventory_part_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_0
+POSTHOOK: Input: default@inventory_part_0@par=1
+POSTHOOK: Input: default@inventory_part_0@par=2
+#### A masked pattern was here ####
+105970
+PREHOOK: query: -- Additional column for 2nd partition...
+
+create table inventory_part_1(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_part_1
+POSTHOOK: query: -- Additional column for 2nd partition...
+
+create table inventory_part_1(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_part_1
+PREHOOK: query: insert into table inventory_part_1 partition(par='4cols') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_1@par=4cols
+POSTHOOK: query: insert into table inventory_part_1 partition(par='4cols') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_1@par=4cols
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=4cols).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=4cols).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=4cols).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=4cols).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: alter table inventory_part_1 add columns (fifthcol string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@inventory_part_1
+PREHOOK: Output: default@inventory_part_1
+POSTHOOK: query: alter table inventory_part_1 add columns (fifthcol string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@inventory_part_1
+POSTHOOK: Output: default@inventory_part_1
+PREHOOK: query: insert into table inventory_part_1 partition(par='5cols') select *, '5th' as fifthcol from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_1@par=5cols
+POSTHOOK: query: insert into table inventory_part_1 partition(par='5cols') select *, '5th' as fifthcol from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_1@par=5cols
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).fifthcol SIMPLE []
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_1 PARTITION(par=5cols).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inventory_part_1
+            Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: inv_quantity_on_hand (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(inv_quantity_on_hand) from inventory_part_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_part_1
+PREHOOK: Input: default@inventory_part_1@par=4cols
+PREHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(inv_quantity_on_hand) from inventory_part_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_part_1
+POSTHOOK: Input: default@inventory_part_1@par=4cols
+POSTHOOK: Input: default@inventory_part_1@par=5cols
+#### A masked pattern was here ####
+105970
+PREHOOK: query: -- Verify we do not vectorize when a partition column name is different.
+-- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
+
+create table inventory_part_2a(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_part_2a
+POSTHOOK: query: -- Verify we do not vectorize when a partition column name is different.
+-- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
+
+create table inventory_part_2a(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_part_2a
+PREHOOK: query: insert into table inventory_part_2a partition(par='1') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_2a@par=1
+POSTHOOK: query: insert into table inventory_part_2a partition(par='1') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_2a@par=1
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=1).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=1).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=1).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=1).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: insert into table inventory_part_2a partition(par='2') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_2a@par=2
+POSTHOOK: query: insert into table inventory_part_2a partition(par='2') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_2a@par=2
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=2).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=2).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=2).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2a PARTITION(par=2).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: alter table inventory_part_2a partition (par='2') change inv_item_sk other_name int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@inventory_part_2a
+PREHOOK: Output: default@inventory_part_2a@par=2
+POSTHOOK: query: alter table inventory_part_2a partition (par='2') change inv_item_sk other_name int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@inventory_part_2a
+POSTHOOK: Input: default@inventory_part_2a@par=2
+POSTHOOK: Output: default@inventory_part_2a@par=2
+PREHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_2a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_2a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inventory_part_2a
+            Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: inv_quantity_on_hand (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table inventory_part_2b(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par1 string, par2 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_part_2b
+POSTHOOK: query: create table inventory_part_2b(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par1 string, par2 int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_part_2b
+PREHOOK: query: insert into table inventory_part_2b partition(par1='1',par2=4) select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_2b@par1=1/par2=4
+POSTHOOK: query: insert into table inventory_part_2b partition(par1='1',par2=4) select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_2b@par1=1/par2=4
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=1,par2=4).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=1,par2=4).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=1,par2=4).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=1,par2=4).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: insert into table inventory_part_2b partition(par1='2',par2=3) select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_2b@par1=2/par2=3
+POSTHOOK: query: insert into table inventory_part_2b partition(par1='2',par2=3) select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_2b@par1=2/par2=3
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=2,par2=3).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=2,par2=3).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=2,par2=3).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_2b PARTITION(par1=2,par2=3).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: alter table inventory_part_2b partition (par1='2',par2=3) change inv_quantity_on_hand other_name int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@inventory_part_2b
+PREHOOK: Output: default@inventory_part_2b@par1=2/par2=3
+POSTHOOK: query: alter table inventory_part_2b partition (par1='2',par2=3) change inv_quantity_on_hand other_name int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@inventory_part_2b
+POSTHOOK: Input: default@inventory_part_2b@par1=2/par2=3
+POSTHOOK: Output: default@inventory_part_2b@par1=2/par2=3
+PREHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_2b
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_2b
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inventory_part_2b
+            Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: inv_quantity_on_hand (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- Verify we do not vectorize when a partition column type is different.
+-- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
+
+create table inventory_part_3(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inventory_part_3
+POSTHOOK: query: -- Verify we do not vectorize when a partition column type is different.
+-- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
+
+create table inventory_part_3(
+    inv_date_sk             int,
+    inv_item_sk             int,
+    inv_warehouse_sk        int,
+    inv_quantity_on_hand    int)
+partitioned by (par string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inventory_part_3
+PREHOOK: query: insert into table inventory_part_3 partition(par='1') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_3@par=1
+POSTHOOK: query: insert into table inventory_part_3 partition(par='1') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_3@par=1
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=1).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=1).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=1).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=1).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: insert into table inventory_part_3 partition(par='2') select * from inventory_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inventory_txt
+PREHOOK: Output: default@inventory_part_3@par=2
+POSTHOOK: query: insert into table inventory_part_3 partition(par='2') select * from inventory_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inventory_txt
+POSTHOOK: Output: default@inventory_part_3@par=2
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=2).inv_date_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=2).inv_item_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=2).inv_quantity_on_hand SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_quantity_on_hand, type:int, comment:null), ]
+POSTHOOK: Lineage: inventory_part_3 PARTITION(par=2).inv_warehouse_sk SIMPLE [(inventory_txt)inventory_txt.FieldSchema(name:inv_warehouse_sk, type:int, comment:null), ]
+PREHOOK: query: alter table inventory_part_3 partition (par='2') change inv_warehouse_sk inv_warehouse_sk bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@inventory_part_3
+PREHOOK: Output: default@inventory_part_3@par=2
+POSTHOOK: query: alter table inventory_part_3 partition (par='2') change inv_warehouse_sk inv_warehouse_sk bigint
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@inventory_part_3
+POSTHOOK: Input: default@inventory_part_3@par=2
+POSTHOOK: Output: default@inventory_part_3@par=2
+PREHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select sum(inv_quantity_on_hand) from inventory_part_3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: inventory_part_3
+            Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: inv_quantity_on_hand (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: sum(_col0)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

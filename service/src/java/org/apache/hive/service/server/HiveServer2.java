@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.CompositeService;
@@ -117,7 +119,7 @@ public class HiveServer2 extends CompositeService {
 
     @Override
     public List<ACL> getDefaultAcl() {
-      if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+      if (UserGroupInformation.isSecurityEnabled()) {
         // Read all to the world
         nodeAcls.addAll(Ids.READ_ACL_UNSAFE);
         // Create/Delete/Write/Admin to the authenticated user
@@ -197,7 +199,7 @@ public class HiveServer2 extends CompositeService {
    * @throws Exception
    */
   private void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
-    if (ShimLoader.getHadoopShims().isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
         throw new IOException("HiveServer2 Kerberos principal is empty");
@@ -207,7 +209,7 @@ public class HiveServer2 extends CompositeService {
         throw new IOException("HiveServer2 Kerberos keytab is empty");
       }
       // Install the JAAS Configuration for the runtime
-      ShimLoader.getHadoopShims().setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
+      Utils.setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
     }
   }
 

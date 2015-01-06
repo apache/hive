@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -212,8 +213,8 @@ public class TezSessionPoolManager {
     }
 
     try {
-      UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-      String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
+      UserGroupInformation ugi = Utils.getUGI();
+      String userName = ugi.getShortUserName();
       LOG.info("The current user: " + userName + ", session user: " + session.getUser());
       if (userName.equals(session.getUser()) == false) {
         LOG.info("Different users incoming: " + userName + " existing: " + session.getUser());

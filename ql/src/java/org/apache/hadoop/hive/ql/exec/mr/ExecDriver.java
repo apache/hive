@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
@@ -85,6 +86,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
@@ -227,7 +229,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       return 5;
     }
 
-    ShimLoader.getHadoopShims().prepareJobOutput(job);
+    HiveFileFormatUtils.prepareJobOutput(job);
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
 
@@ -276,9 +278,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         useSpeculativeExecReducers);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
-    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
-      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
-    }
 
     if (mWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
@@ -665,9 +664,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       conf.set("tmpfiles", files);
     }
 
-    if(ShimLoader.getHadoopShims().isSecurityEnabled()){
-      String hadoopAuthToken =
-          System.getenv(ShimLoader.getHadoopShims().getTokenFileLocEnvName());
+    if(UserGroupInformation.isSecurityEnabled()){
+      String hadoopAuthToken = UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION;
       if(hadoopAuthToken != null){
         conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
       }

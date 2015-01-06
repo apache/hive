@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -233,7 +234,7 @@ public class SessionState {
    * Whether we are in auto-commit state or not.  Currently we are always in auto-commit,
    * so there are not setters for this yet.
    */
-  private boolean txnAutoCommit = true;
+  private final boolean txnAutoCommit = true;
 
   /**
    * store the jars loaded last time
@@ -305,7 +306,8 @@ public class SessionState {
     this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
-    overriddenConfigurations = new HashMap<String, String>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
@@ -423,7 +425,7 @@ public class SessionState {
       // shared with SessionState, other parts of the code might update the config, but
       // Hive.get(HiveConf) would not recognize the case when it needs refreshing
       Hive.get(new HiveConf(startSs.conf)).getMSC();
-      UserGroupInformation sessionUGI = ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
+      UserGroupInformation sessionUGI = Utils.getUGI();
       FileSystem.get(startSs.conf);
 
       // Create scratch dirs for this session
@@ -651,7 +653,7 @@ public class SessionState {
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
             conf, authenticator, authzContextBuilder.build());
 
-        authorizerV2.applyAuthorizationConfigPolicy(conf); 
+        authorizerV2.applyAuthorizationConfigPolicy(conf);
       }
       // create the create table grants with new config
       createTableGrants = CreateTableAutomaticGrant.create(conf);
@@ -1199,7 +1201,8 @@ public class SessionState {
 
   public Map<String, String> getOverriddenConfigurations() {
     if (overriddenConfigurations == null) {
-      overriddenConfigurations = new HashMap<String, String>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      overriddenConfigurations = new LinkedHashMap<String, String>();
     }
     return overriddenConfigurations;
   }

@@ -22,7 +22,7 @@
  */
 package org.apache.hive.beeline;
 
-import jline.Completor;
+import jline.console.completer.Completer;
 
 import org.apache.hadoop.fs.shell.Command;
 
@@ -34,8 +34,15 @@ import org.apache.hadoop.fs.shell.Command;
 public class ReflectiveCommandHandler extends AbstractCommandHandler {
   private final BeeLine beeLine;
 
-  public ReflectiveCommandHandler(BeeLine beeLine, String[] cmds, Completor[] completor) {
-    super(beeLine, cmds, beeLine.loc("help-" + cmds[0]), completor);
+  /**
+   * @param beeLine
+   * @param cmds      'cmds' is an array of alternative names for the same command. And that the
+   *                  first one is always chosen for display purposes and to lookup help
+   *                  documentation from BeeLine.properties file.
+   * @param completer
+   */
+  public ReflectiveCommandHandler(BeeLine beeLine, String[] cmds, Completer[] completer) {
+    super(beeLine, cmds, beeLine.loc("help-" + cmds[0]), completer);
     this.beeLine = beeLine;
   }
 

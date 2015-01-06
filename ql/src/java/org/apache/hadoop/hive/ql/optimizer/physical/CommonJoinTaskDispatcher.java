@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -391,8 +392,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
+    // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new HashMap<Task<? extends Serializable>, Set<String>>();
+        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     HashMap<String, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 

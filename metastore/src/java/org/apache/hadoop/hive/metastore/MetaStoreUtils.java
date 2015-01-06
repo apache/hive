@@ -554,6 +554,26 @@ public class MetaStoreUtils {
     }
   }
 
+  static boolean isCascadeNeededInAlterTable(Table oldTable, Table newTable) {
+    List<FieldSchema> oldCols = oldTable.getSd().getCols();
+    List<FieldSchema> newCols = newTable.getSd().getCols();
+
+    //currently cascade only supports add/replace columns and
+    //changing column type/position/name/comments
+    if (oldCols.size() != newCols.size()) {
+      return true;
+    } else {
+      for (int i = 0; i < oldCols.size(); i++) {
+        FieldSchema oldCol = oldCols.get(i);
+        FieldSchema newCol = newCols.get(i);
+        if(!oldCol.equals(newCol)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /**
    * @return true if oldType and newType are compatible.
    * Two types are compatible if we have internal functions to cast one to another.

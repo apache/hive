@@ -1,1 +1,2 @@
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:src, columnName:key}. Use SHOW GRANT to get more details.
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:srcpart, columnName:key}. Use SHOW GRANT to get more details.

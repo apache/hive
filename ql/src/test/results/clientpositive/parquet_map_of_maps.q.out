@@ -1,0 +1,61 @@
+PREHOOK: query: -- this test reads and writes a parquet file with a map of maps
+
+CREATE TABLE parquet_map_of_maps (
+    map_of_maps MAP<STRING, MAP<STRING, INT>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_maps
+POSTHOOK: query: -- this test reads and writes a parquet file with a map of maps
+
+CREATE TABLE parquet_map_of_maps (
+    map_of_maps MAP<STRING, MAP<STRING, INT>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_maps
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/NestedMap.parquet'
+OVERWRITE INTO TABLE parquet_map_of_maps
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_map_of_maps
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/NestedMap.parquet'
+OVERWRITE INTO TABLE parquet_map_of_maps
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_map_of_maps
+PREHOOK: query: CREATE TABLE parquet_map_of_maps_copy STORED AS PARQUET AS SELECT * FROM parquet_map_of_maps
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@parquet_map_of_maps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_maps_copy
+POSTHOOK: query: CREATE TABLE parquet_map_of_maps_copy STORED AS PARQUET AS SELECT * FROM parquet_map_of_maps
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@parquet_map_of_maps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_maps_copy
+PREHOOK: query: SELECT * FROM parquet_map_of_maps_copy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_of_maps_copy
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_map_of_maps_copy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_of_maps_copy
+#### A masked pattern was here ####
+{"a":{"b":1},"b":{"a":-1,"b":-2}}
+PREHOOK: query: DROP TABLE parquet_map_of_maps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_map_of_maps
+PREHOOK: Output: default@parquet_map_of_maps
+POSTHOOK: query: DROP TABLE parquet_map_of_maps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_map_of_maps
+POSTHOOK: Output: default@parquet_map_of_maps
+PREHOOK: query: DROP TABLE parquet_map_of_maps_copy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_map_of_maps_copy
+PREHOOK: Output: default@parquet_map_of_maps_copy
+POSTHOOK: query: DROP TABLE parquet_map_of_maps_copy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_map_of_maps_copy
+POSTHOOK: Output: default@parquet_map_of_maps_copy

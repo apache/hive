@@ -28,8 +28,8 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	1 	1	1.0	true	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
-null	null	NULL	NULL	NULL	2014
-null	null	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
 PREHOOK: query: select * from cbo_t1 as cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
@@ -58,8 +58,8 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	1 	1	1.0	true	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
-null	null	NULL	NULL	NULL	2014
-null	null	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
 PREHOOK: query: select * from cbo_t1 as cbo_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
@@ -88,8 +88,8 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	1 	1	1.0	true	2014
 1	1	1	1.0	false	2014
 1	1	1	1.0	false	2014
-null	null	NULL	NULL	NULL	2014
-null	null	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
+NULL	NULL	NULL	NULL	NULL	2014
 PREHOOK: query: select cbo_t1.key as x, c_int as c_int, (((c_int+c_float)*10)+5) as y from cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
@@ -118,8 +118,8 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	1	25.0
 1	1	25.0
 1	1	25.0
-null	NULL	NULL
-null	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
 PREHOOK: query: -- 2. Test Select + TS + FIL
 select * from cbo_t1 where cbo_t1.c_int >= 0
 PREHOOK: type: QUERY

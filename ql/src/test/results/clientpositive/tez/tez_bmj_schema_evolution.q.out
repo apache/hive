@@ -78,11 +78,34 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
       Edges:
-        Map 2 <- Map 1 (CUSTOM_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Map 1 <- Map 3 (CUSTOM_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test
+                  Statistics: Num rows: 1000 Data size: 52312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 26156 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 key (type: int)
+                        1 key (type: int)
+                      outputColumnNames: _col0, _col1
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: test1
@@ -95,37 +118,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: test
-                  Statistics: Num rows: 1000 Data size: 52312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 26156 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {key} {value}
-                        1 
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        1 Map 1
-                      Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Statistics: Num rows: 550 Data size: 28771 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: string)
-        Reducer 3 
+        Reducer 2 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)

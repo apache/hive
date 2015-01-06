@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
@@ -136,9 +137,8 @@ public class TezSessionState {
     this.queueName = conf.get("tez.queue.name");
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    UserGroupInformation ugi;
-    ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
-    user = ShimLoader.getHadoopShims().getShortUserName(ugi);
+    UserGroupInformation ugi = Utils.getUGI();
+    user = ugi.getShortUserName();
     LOG.info("User of session id " + sessionId + " is " + user);
 
     // create the tez tmp dir

@@ -31,6 +31,7 @@ WHERE    (((cfloat < 3569)
               AND ((ctimestamp2 != 12)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 LIMIT 40;
 
 SELECT   cboolean1,
@@ -62,6 +63,7 @@ WHERE    (((cfloat < 3569)
               AND ((ctimestamp2 != 12)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 LIMIT 40;
 
 -- double compare timestamp
@@ -95,6 +97,7 @@ WHERE    (((cfloat < 3569)
               AND ((ctimestamp2 != -1.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 LIMIT 40;
 
 SELECT   cboolean1,
@@ -126,5 +129,6 @@ WHERE    (((cfloat < 3569)
               AND ((ctimestamp2 != -1.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 LIMIT 40;
 

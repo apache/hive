@@ -889,15 +889,22 @@ public final class ConstantPropagateProcFactory {
       rsDesc.setKeyCols(newKeyEpxrs);
 
       // partition columns
-      ArrayList<ExprNodeDesc> newPartExprs = new ArrayList<ExprNodeDesc>();
-      for (ExprNodeDesc desc : rsDesc.getPartitionCols()) {
-        ExprNodeDesc expr = foldExpr(desc, constants, cppCtx, op, 0, false);
-        if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeNullDesc) {
-          continue;
+      if (!rsDesc.getPartitionCols().isEmpty()) {
+        ArrayList<ExprNodeDesc> newPartExprs = new ArrayList<ExprNodeDesc>();
+        for (ExprNodeDesc desc : rsDesc.getPartitionCols()) {
+          ExprNodeDesc expr = foldExpr(desc, constants, cppCtx, op, 0, false);
+          if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeNullDesc) {
+            continue;
+          }
+          newPartExprs.add(expr);
         }
-        newPartExprs.add(expr);
+        if (newPartExprs.isEmpty()) {
+          // If all partition columns are removed because of constant, insert an extra column to avoid
+          // random partitioning.
+          newPartExprs.add(new ExprNodeConstantDesc(""));
+        }
+        rsDesc.setPartitionCols(newPartExprs);
       }
-      rsDesc.setPartitionCols(newPartExprs);
 
       // value columns
       ArrayList<ExprNodeDesc> newValExprs = new ArrayList<ExprNodeDesc>();

@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.Validator.RatioValidator;
 import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.conf.Validator.TimeValidator;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
@@ -375,9 +376,9 @@ public class HiveConf extends Configuration {
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
         "jdbc:derby:;databaseName=metastore_db;create=true",
         "JDBC connect string for a JDBC metastore"),
-    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1,
+    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 10,
         "The number of times to retry a HMSHandler call if there were a connection error."),
-    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "1000ms",
+    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", "2000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "The time between HMSHandler retry attempts on failure."),
     HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false,
         "Whether to force reloading of the HMSHandler configuration (including\n" +
@@ -674,7 +675,7 @@ public class HiveConf extends Configuration {
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
 
     // CBO related
-    HIVE_CBO_ENABLED("hive.cbo.enable", false, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -858,6 +859,11 @@ public class HiveConf extends Configuration {
     HIVE_RCFILE_COLUMN_NUMBER_CONF("hive.io.rcfile.column.number.conf", 0, ""),
     HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false, ""),
     HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304, ""),   // 4M
+
+    PARQUET_MEMORY_POOL_RATIO("parquet.memory.pool.ratio", 0.5f,
+        "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
+        "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
+        "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
 
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
@@ -1072,6 +1078,7 @@ public class HiveConf extends Configuration {
         "Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false."),
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
+    HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
     HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
@@ -1594,6 +1601,8 @@ public class HiveConf extends Configuration {
         "readable text) or \"json\" (for a json object)."),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@",
         "Separator used to construct names of tables and partitions. For example, dbname@tablename@partitionname"),
+    HIVE_CAPTURE_TRANSFORM_ENTITY("hive.entity.capture.transform", false,
+        "Compiler to capture transform URI referred in the query"),
     HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY("hive.display.partition.cols.separately", true,
         "In older Hive version (0.10 and earlier) no distinction was made between\n" +
         "partition columns or non-partition columns while displaying columns in describe\n" +
@@ -1660,6 +1669,13 @@ public class HiveConf extends Configuration {
         "Minimum number of Thrift worker threads"),
     HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500,
         "Maximum number of Thrift worker threads"),
+    HIVE_SERVER2_THRIFT_LOGIN_BEBACKOFF_SLOT_LENGTH(
+        "hive.server2.thrift.exponential.backoff.slot.length", "100ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Binary exponential backoff slot time for Thrift clients during login to HiveServer2,\n" +
+        "for retries until hitting Thrift client timeout"),
+    HIVE_SERVER2_THRIFT_LOGIN_TIMEOUT("hive.server2.thrift.login.timeout", "20s",
+        new TimeValidator(TimeUnit.SECONDS), "Timeout for Thrift clients during login to HiveServer2"),
     HIVE_SERVER2_THRIFT_WORKER_KEEPALIVE_TIME("hive.server2.thrift.worker.keepalive.time", "60s",
         new TimeValidator(TimeUnit.SECONDS),
         "Keepalive time (in seconds) for an idle worker thread. When the number of workers exceeds min workers, " +
@@ -1715,7 +1731,11 @@ public class HiveConf extends Configuration {
         "SPNego service principal would be used by HiveServer2 when Kerberos security is enabled\n" +
         "and HTTP transport mode is used.\n" +
         "This needs to be set only if SPNEGO is to be used in authentication."),
-    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null, "LDAP connection URL"),
+    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null,
+        "LDAP connection URL(s),\n" +
+         "this value could contain URLs to mutiple LDAP servers instances for HA,\n" +
+         "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
+         " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null, ""),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
@@ -1751,6 +1771,13 @@ public class HiveConf extends Configuration {
         "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
         "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
         "If set to false, all Hive jobs go to the 'hive' user's queue."),
+    HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
+        "Comma separated list of builtin udf names allowed in queries.\n" +
+        "An empty whitelist allows all builtin udfs to be executed. " +
+        " The udf black list takes precedence over udf white list"),
+    HIVE_SERVER2_BUILTIN_UDF_BLACKLIST("hive.server2.builtin.udf.blacklist", "",
+         "Comma separated list of udfs names. These udfs will not be allowed in queries." +
+         " The udf black list takes precedence over udf white list"),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
@@ -2040,6 +2067,10 @@ public class HiveConf extends Configuration {
 
     public boolean isType(String value) {
       return valType.isType(value);
+    }
+
+    public Validator getValidator() {
+      return validator;
     }
 
     public String validate(String value) {
@@ -2460,12 +2491,6 @@ public class HiveConf extends Configuration {
     // Overlay the values of any system properties whose names appear in the list of ConfVars
     applySystemProperties();
 
-    if(this.get("hive.metastore.local", null) != null) {
-      l4j.warn("DEPRECATED: Configuration property hive.metastore.local no longer has any " +
-          "effect. Make sure to provide a valid value for hive.metastore.uris if you are " +
-          "connecting to a remote metastore.");
-    }
-
     if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
       this.get("hive.metastore.ds.retry.interval") != null) {
         l4j.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
@@ -2754,8 +2779,7 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      UserGroupInformation ugi = ShimLoader.getHadoopShims()
-        .getUGIForConf(this);
+      UserGroupInformation ugi = Utils.getUGI();
       return ugi.getUserName();
     } catch (LoginException le) {
       throw new IOException(le);

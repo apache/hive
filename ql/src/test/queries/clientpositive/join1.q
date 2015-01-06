@@ -1,4 +1,7 @@
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE;
 
 EXPLAIN

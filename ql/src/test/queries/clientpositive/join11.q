@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM

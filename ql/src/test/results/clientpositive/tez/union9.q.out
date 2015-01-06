@@ -44,7 +44,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s1
                   Select Operator
                     Select Operator
                       Group By Operator
@@ -57,7 +57,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s3
+                  alias: s1
                   Select Operator
                     Select Operator
                       Group By Operator

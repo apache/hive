@@ -42,7 +42,7 @@ public class TestTezSessionPool {
 
     @Override
     public TezSessionState createSession(String sessionId) {
-      return new TestTezSessionState(sessionId);
+      return new SampleTezSessionState(sessionId);
     }
   }
 

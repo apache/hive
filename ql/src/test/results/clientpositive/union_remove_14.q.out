@@ -71,8 +71,8 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-6 depends on stages: Stage-8, Stage-9 , consists of Stage-3, Stage-2, Stage-4
+  Stage-1 is a root stage
+  Stage-6 depends on stages: Stage-1, Stage-9 , consists of Stage-3, Stage-2, Stage-4
   Stage-3
   Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
   Stage-2
@@ -82,7 +82,7 @@ STAGE DEPENDENCIES:
   Stage-9 depends on stages: Stage-10
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -155,9 +155,6 @@ STAGE PLANS:
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               HashTable Sink Operator
-                condition expressions:
-                  0 
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -174,9 +171,6 @@ STAGE PLANS:
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
-                condition expressions:
-                  0 {key}
-                  1 {val}
                 keys:
                   0 key (type: string)
                   1 key (type: string)
@@ -219,7 +213,7 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)a.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)a.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)b.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE

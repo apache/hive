@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
@@ -200,7 +201,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -229,11 +230,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static boolean isMetaStoreRemote = false;
 
   /** A fixed date format to be used for hive partition column values. */
-  public static final DateFormat PARTITION_DATE_FORMAT;
-  static {
-    PARTITION_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    PARTITION_DATE_FORMAT.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
-  }
+  public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
+       new ThreadLocal<DateFormat>() {
+    @Override
+    protected DateFormat initialValue() {
+      DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      return val;
+    };
+  };
 
   /**
    * default port on which to start the Hive server
@@ -326,7 +331,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       UserGroupInformation ugi;
       try {
-        ugi = ShimLoader.getHadoopShims().getUGIForConf(getConf());
+        ugi = Utils.getUGI();
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -3257,13 +3262,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Table newTable)
         throws InvalidOperationException, MetaException {
       // Do not set an environment context.
-      alter_table_with_environment_context(dbname, name, newTable, null);
+      alter_table_core(dbname,name, newTable, null, false);
+    }
+
+    @Override
+    public void alter_table_with_cascade(final String dbname, final String name,
+        final Table newTable, final boolean cascade)
+        throws InvalidOperationException, MetaException {
+      // Do not set an environment context.
+      alter_table_core(dbname,name, newTable, null, cascade);
     }
 
     @Override
     public void alter_table_with_environment_context(final String dbname,
         final String name, final Table newTable,
         final EnvironmentContext envContext)
+        throws InvalidOperationException, MetaException {
+      alter_table_core(dbname, name, newTable, envContext, false);
+    }
+
+    private void alter_table_core(final String dbname, final String name, final Table newTable,
+        final EnvironmentContext envContext, final boolean cascade)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": db=" + dbname + " tbl=" + name
           + " newtbl=" + newTable.getTableName());
@@ -3279,7 +3298,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         Table oldt = get_table_core(dbname, name);
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
-        alterHandler.alterTable(getMS(), wh, dbname, name, newTable);
+        alterHandler.alterTable(getMS(), wh, dbname, name, newTable, cascade);
         success = true;
 
         for (MetaStoreEventListener listener : listeners) {
@@ -5825,8 +5844,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TBinaryProtocol.Factory())
-          .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize))
+          .protocolFactory(new TCompactProtocol.Factory())
+          .inputProtocolFactory(
+              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 

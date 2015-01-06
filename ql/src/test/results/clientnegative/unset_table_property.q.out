@@ -29,4 +29,4 @@ totalSize	0
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
 ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
- The following property z does not exist in testtable
+ The following property x does not exist in testtable

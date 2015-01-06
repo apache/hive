@@ -1,0 +1,301 @@
+PREHOOK: query: create table str_str_orc (str1 string, str2 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@str_str_orc
+POSTHOOK: query: create table str_str_orc (str1 string, str2 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@str_str_orc
+PREHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@str_str_orc
+POSTHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@str_str_orc
+POSTHOOK: Lineage: str_str_orc.str1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: str_str_orc.str2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: str_str_orc
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(_col1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+X	0.02
+y	0.0
+PREHOOK: query: EXPLAIN
+SELECT COALESCE(str1, 0) as result
+from str_str_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT COALESCE(str1, 0) as result
+from str_str_orc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: str_str_orc
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: COALESCE(str1,0) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COALESCE(str1, 0) as result
+from str_str_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COALESCE(str1, 0) as result
+from str_str_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+0
+0
+1
+0
+PREHOOK: query: EXPLAIN
+SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: str_str_orc
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(_col1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
+from str_str_orc
+GROUP BY str2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+X	0.02
+y	0.0
+PREHOOK: query: EXPLAIN
+SELECT COALESCE(str1, 0) as result
+from str_str_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT COALESCE(str1, 0) as result
+from str_str_orc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: str_str_orc
+                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: COALESCE(str1,0) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COALESCE(str1, 0) as result
+from str_str_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COALESCE(str1, 0) as result
+from str_str_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
+0
+0
+1
+0

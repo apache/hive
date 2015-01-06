@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 create table abcd (a int, b int, c int, d int);
 LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd;
 

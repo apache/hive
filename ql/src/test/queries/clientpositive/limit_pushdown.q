@@ -14,8 +14,8 @@ select key,value from src order by key desc limit 20;
 select key,value from src order by key desc limit 20;
 
 explain
-select value, sum(key + 1) as sum from src group by value limit 20;
-select value, sum(key + 1) as sum from src group by value limit 20;
+select value, sum(key + 1) as sum from src group by value order by value limit 20;
+select value, sum(key + 1) as sum from src group by value order by value limit 20;
 
 -- deduped RS
 explain
@@ -28,13 +28,13 @@ select distinct(cdouble) from alltypesorc limit 20;
 select distinct(cdouble) from alltypesorc limit 20;
 
 explain
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
-select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
 
 -- multi distinct
 explain
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20;
-select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint limit 20;
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20;
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20;
 
 -- limit zero
 explain
@@ -57,8 +57,8 @@ on subq.key=subq2.key limit 4;
 set hive.map.aggr=false;
 -- map aggregation disabled
 explain
-select value, sum(key) as sum from src group by value limit 20;
-select value, sum(key) as sum from src group by value limit 20;
+select value, sum(key) as sum from src group by value order by value limit 20;
+select value, sum(key) as sum from src group by value order by value limit 20;
 
 set hive.limit.pushdown.memory.usage=0.00002f;
 

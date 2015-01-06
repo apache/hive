@@ -57,7 +57,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 86) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 'facebook.com' (type: string), '/path1/p.php' (type: string), 'k1=v1&k2=v2' (type: string), 'Ref1' (type: string), 'v2' (type: string), 'v1' (type: string), null (type: void), '/path1/p.php?k1=v1&k2=v2' (type: string), 'http' (type: string), null (type: void), 'facebook.com' (type: string)

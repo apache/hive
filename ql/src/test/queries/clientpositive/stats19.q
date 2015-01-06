@@ -17,7 +17,7 @@ set hive.stats.key.prefix.max.length=0;
 -- The stats key should be hashed since the max length is too small
 insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src;
 
-set hive.stats.key.prefix.max.length=250;
+set hive.stats.key.prefix.max.length=4000;
 
 -- The stats key should not be hashed since the max length is large enough
 insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src;
@@ -41,7 +41,7 @@ insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select 
 
 desc formatted stats_part partition (ds='2010-04-08', hr = '13');
 
-set hive.stats.key.prefix.max.length=250;
+set hive.stats.key.prefix.max.length=4000;
 
 -- The stats key should not be hashed since the max length is large enough
 insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src;
@@ -66,7 +66,7 @@ set hive.stats.key.prefix.max.length=0;
 -- The stats key should be hashed since the max length is too small
 insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src;
 
-set hive.stats.key.prefix.max.length=250;
+set hive.stats.key.prefix.max.length=4000;
 
 -- The stats key should not be hashed since the max length is large enough
 insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src;

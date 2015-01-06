@@ -125,12 +125,13 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -311,6 +312,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     alter_table(dbname, tbl_name, new_tbl, null);
   }
 
+  @Override
+  public void alter_table(String dbname, String tbl_name, Table new_tbl, boolean cascade)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_table_with_cascade(dbname, tbl_name, new_tbl, cascade);
+  }
+
   public void alter_table(String dbname, String tbl_name, Table new_tbl,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
     client.alter_table_with_environment_context(dbname, tbl_name, new_tbl, envContext);
@@ -336,7 +343,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
-    HadoopShims shim = ShimLoader.getHadoopShims();
     boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
     int clientSocketTimeout = (int) conf.getTimeVar(
@@ -360,7 +366,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               // submission.
               String tokenSig = conf.get("hive.metastore.token.signature");
               // tokenSig could be null
-              tokenStrForm = shim.getTokenStrForm(tokenSig);
+              tokenStrForm = Utils.getTokenStrForm(tokenSig);
               if(tokenStrForm != null) {
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
@@ -381,7 +387,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
             transport = new TFramedTransport(transport);
           }
 
-          client = new ThriftHiveMetastore.Client(new TBinaryProtocol(transport));
+          client = new ThriftHiveMetastore.Client(new TCompactProtocol(transport));
           try {
             transport.open();
             isConnected = true;
@@ -398,7 +404,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           if (isConnected && !useSasl && conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
             // Call set_ugi, only in unsecure mode.
             try {
-              UserGroupInformation ugi = shim.getUGIForConf(conf);
+              UserGroupInformation ugi = Utils.getUGI();
               client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
             } catch (LoginException e) {
               LOG.warn("Failed to do login. set_ugi() is not successful, " +
@@ -1202,7 +1208,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<String> listPartitionNames(String dbName, String tblName,
       short max) throws MetaException, TException {
-    return filterHook.filterPartitionNames(dbName, tblName, 
+    return filterHook.filterPartitionNames(dbName, tblName,
         client.get_partition_names(dbName, tblName, max));
   }
 
@@ -1210,7 +1216,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<String> listPartitionNames(String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
       throws MetaException, TException, NoSuchObjectException {
-    return filterHook.filterPartitionNames(db_name, tbl_name, 
+    return filterHook.filterPartitionNames(db_name, tbl_name,
         client.get_partition_names_ps(db_name, tbl_name, part_vals, max_parts));
   }
 

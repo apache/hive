@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,6 +42,13 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -109,10 +109,21 @@ public class GenTezWork implements NodeProcessor {
       // operator graph. There's typically two reasons for that: a) mux/demux
       // b) multi insert. Mux/Demux will hit the same leaf again, multi insert
       // will result into a vertex with multiple FS or RS operators.
+      if (context.childToWorkMap.containsKey(operator)) {
+        // if we've seen both root and child, we can bail.
 
-      // At this point we don't have to do anything special in this case. Just
-      // run through the regular paces w/o creating a new task.
-      work = context.rootToWorkMap.get(root);
+        // clear out the mapjoin set. we don't need it anymore.
+        context.currentMapJoinOperators.clear();
+
+        // clear out the union set. we don't need it anymore.
+        context.currentUnionOperators.clear();
+
+        return null;
+      } else {
+        // At this point we don't have to do anything special. Just
+        // run through the regular paces w/o creating a new task.
+        work = context.rootToWorkMap.get(root);
+      }
     } else {
       // create a new vertex
       if (context.preceedingWork == null) {
@@ -248,6 +259,16 @@ public class GenTezWork implements NodeProcessor {
       context.currentMapJoinOperators.clear();
     }
 
+    // This is where we cut the tree as described above. We also remember that
+    // we might have to connect parent work with this work later.
+    for (Operator<?> parent : new ArrayList<Operator<?>>(root.getParentOperators())) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Removing " + parent + " as parent from " + root);
+      }
+      context.leafOperatorToFollowingWork.put(parent, work);
+      root.removeParent(parent);
+    }
+
     if (!context.currentUnionOperators.isEmpty()) {
       // if there are union all operators we need to add the work to the set
       // of union operators.
@@ -275,21 +296,6 @@ public class GenTezWork implements NodeProcessor {
       context.currentUnionOperators.clear();
       context.workWithUnionOperators.add(work);
       work = unionWork;
-    }
-
-
-    // This is where we cut the tree as described above. We also remember that
-    // we might have to connect parent work with this work later.
-    boolean removeParents = false;
-    for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
-      removeParents = true;
-      context.leafOperatorToFollowingWork.put(parent, work);
-      LOG.debug("Removing " + parent + " as parent from " + root);
-    }
-    if (removeParents) {
-      for (Operator<?> parent : new ArrayList<Operator<?>>(root.getParentOperators())) {
-        root.removeParent(parent);
-      }
     }
 
     // We're scanning a tree from roots to leaf (this is not technically
@@ -338,8 +344,7 @@ public class GenTezWork implements NodeProcessor {
         } else if (followingWork instanceof UnionWork) {
           // this can only be possible if there is merge work followed by the union
           UnionWork unionWork = (UnionWork) followingWork;
-          int index = getMergeIndex(tezWork, unionWork, rs);
-          // guaranteed to be instance of MergeJoinWork if index is valid
+          int index = getFollowingWorkIndex(tezWork, unionWork, rs);
           BaseWork baseWork = tezWork.getChildren(unionWork).get(index);
           if (baseWork instanceof MergeJoinWork) {
             MergeJoinWork mergeJoinWork = (MergeJoinWork) baseWork;
@@ -347,8 +352,7 @@ public class GenTezWork implements NodeProcessor {
             followingWork = mergeJoinWork;
             rWork = (ReduceWork) mergeJoinWork.getMainWork();
           } else {
-            throw new SemanticException("Unknown work type found: "
-                + baseWork.getClass().getCanonicalName());
+            rWork = (ReduceWork) baseWork;
           }
         } else {
           rWork = (ReduceWork) followingWork;
@@ -392,23 +396,17 @@ public class GenTezWork implements NodeProcessor {
     return null;
   }
 
-  private int getMergeIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs) {
+  private int getFollowingWorkIndex(TezWork tezWork, UnionWork unionWork, ReduceSinkOperator rs) 
+      throws SemanticException {
     int index = 0;
     for (BaseWork baseWork : tezWork.getChildren(unionWork)) {
-      if (baseWork instanceof MergeJoinWork) {
-        MergeJoinWork mergeJoinWork = (MergeJoinWork) baseWork;
-        int tag = mergeJoinWork.getMergeJoinOperator().getTagForOperator(rs);
-        if (tag != -1) {
-          return index;
-        } else {
-          index++;
-        }
-      } else {
-        index++;
+      TezEdgeProperty edgeProperty = tezWork.getEdgeProperty(unionWork, baseWork);
+      if (edgeProperty.getEdgeType() != TezEdgeProperty.EdgeType.CONTAINS) {
+        return index;
       }
+      index++;
     }
-
-    return -1;
+    throw new SemanticException("Following work not found for the reduce sink: " + rs.getName());
   }
 
   @SuppressWarnings("unchecked")

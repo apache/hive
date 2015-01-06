@@ -17,14 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -42,6 +34,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 final public class OrcStruct implements Writable {
 
@@ -216,7 +216,7 @@ final public class OrcStruct implements Writable {
     @Override
     public StructField getStructFieldRef(String s) {
       for(StructField field: fields) {
-        if (field.getFieldName().equals(s)) {
+        if (field.getFieldName().equalsIgnoreCase(s)) {
           return field;
         }
       }
@@ -304,7 +304,7 @@ final public class OrcStruct implements Writable {
         for(int i = 0; i < fields.size(); ++i) {
           StructField left = other.get(i);
           StructField right = fields.get(i);
-          if (!(left.getFieldName().equals(right.getFieldName()) &&
+          if (!(left.getFieldName().equalsIgnoreCase(right.getFieldName()) &&
                 left.getFieldObjectInspector().equals
                     (right.getFieldObjectInspector()))) {
             return false;
@@ -346,17 +346,26 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getMapValueElement(Object map, Object key) {
+      if (map == null) {
+        return null;
+      }
       return ((Map) map).get(key);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Map<Object, Object> getMap(Object map) {
+      if (map == null) {
+        return null;
+      }
       return (Map) map;
     }
 
     @Override
     public int getMapSize(Object map) {
+      if (map == null) {
+        return -1;
+      }
       return ((Map) map).size();
     }
 
@@ -429,17 +438,26 @@ final public class OrcStruct implements Writable {
 
     @Override
     public Object getListElement(Object list, int i) {
+      if (list == null) {
+        return null;
+      }
       return ((List) list).get(i);
     }
 
     @Override
     public int getListLength(Object list) {
+      if (list == null) {
+        return -1;
+      }
       return ((List) list).size();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<?> getList(Object list) {
+      if (list == null) {
+        return null;
+      }
       return (List) list;
     }
 

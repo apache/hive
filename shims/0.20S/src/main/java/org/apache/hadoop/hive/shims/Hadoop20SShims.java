@@ -84,7 +84,6 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
-    JobTrackerState state;
     switch (clusterStatus.getJobTrackerState()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
@@ -509,6 +508,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
+  }
+
+  @Override
+  public JobConf getJobConf(org.apache.hadoop.mapred.JobContext context) {
+    return context.getJobConf();
   }
 
   @Override

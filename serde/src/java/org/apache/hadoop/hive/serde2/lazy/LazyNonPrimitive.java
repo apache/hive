@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Text;
 
 /**
  * LazyPrimitive stores a primitive Object in a LazyObject.
@@ -49,9 +50,7 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    if (bytes == null) {
-      throw new RuntimeException("bytes cannot be null!");
-    }
+    super.init(bytes, start, length);
     this.bytes = bytes;
     this.start = start;
     this.length = length;
@@ -59,9 +58,18 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends
     assert start + length <= bytes.getData().length;
   }
 
-  @Override
-  public Object getObject() {
-    return this;
+  protected final boolean isNull(
+      Text nullSequence, ByteArrayRef ref, int fieldByteBegin, int fieldLength) {
+    return ref == null || isNull(nullSequence, ref.getData(), fieldByteBegin, fieldLength);
+  }
+
+  protected final boolean isNull(
+      Text nullSequence, byte[] bytes, int fieldByteBegin, int fieldLength) {
+    // Test the length first so in most cases we avoid doing a byte[]
+    // comparison.
+    return fieldLength < 0 || (fieldLength == nullSequence.getLength() &&
+        LazyUtils.compare(bytes, fieldByteBegin, fieldLength,
+            nullSequence.getBytes(), 0, nullSequence.getLength()) == 0);
   }
 
   @Override

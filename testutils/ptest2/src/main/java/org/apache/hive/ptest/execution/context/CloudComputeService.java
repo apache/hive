@@ -20,6 +20,7 @@ package org.apache.hive.ptest.execution.context;
 
 import java.util.Collections;
 import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 import org.jclouds.Constants;
@@ -53,12 +54,13 @@ public class CloudComputeService {
   private final String mImageId;
   private final String mkeyPair;
   private final String mSecurityGroup;
+  private final Map<String, String> mUserMetadata;
   /**
    * JClouds requests on-demand instances when null
    */
   private final Float mMaxBid;
   public CloudComputeService(String apiKey, String accessKey, String instanceType, String groupName,
-      String imageId, String keyPair, String securityGroup, Float maxBid) {
+      String imageId, String keyPair, String securityGroup, Float maxBid, Map<String,String> userMetadata) {
     mInstanceType = instanceType;
     mGroupName = groupName;
     mImageId = imageId;
@@ -66,6 +68,7 @@ public class CloudComputeService {
     mSecurityGroup = securityGroup;
     mMaxBid = maxBid;
     mGroupTag = "group=" + mGroupName;
+    mUserMetadata = userMetadata;
     Properties overrides = new Properties();
     overrides.put(ComputeServiceProperties.POLL_INITIAL_PERIOD, String.valueOf(60L * 1000L));
     overrides.put(ComputeServiceProperties.POLL_MAX_PERIOD, String.valueOf(600L * 1000L));
@@ -84,7 +87,8 @@ public class CloudComputeService {
         .hardwareId(mInstanceType).imageId(mImageId).build();
     template.getOptions().as(AWSEC2TemplateOptions.class).keyPair(mkeyPair)
     .securityGroupIds(mSecurityGroup).blockOnPort(22, 60)
-    .spotPrice(mMaxBid).tags(Collections.singletonList(mGroupTag));
+    .spotPrice(mMaxBid).tags(Collections.singletonList(mGroupTag))
+    .userMetadata(mUserMetadata);
     result.addAll(mComputeService.createNodesInGroup(mGroupName, count, template));
     return result;
   }

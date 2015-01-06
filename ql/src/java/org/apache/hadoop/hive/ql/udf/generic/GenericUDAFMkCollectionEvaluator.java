@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -92,7 +92,7 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
       if (bufferType == BufferType.LIST){
         container = new ArrayList<Object>();
       } else if(bufferType == BufferType.SET){
-        container = new HashSet<Object>();
+        container = new LinkedHashSet<Object>();
       } else {
         throw new RuntimeException("Buffer type unknown");
       }

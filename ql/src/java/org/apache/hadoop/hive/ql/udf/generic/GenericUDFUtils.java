@@ -22,7 +22,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -191,7 +191,11 @@ public final class GenericUDFUtils {
      * Returns the ObjectInspector of the return value.
      */
     public ObjectInspector get() {
-      return returnObjectInspector;
+      return get(PrimitiveObjectInspectorFactory.javaVoidObjectInspector);
+    }
+
+    public ObjectInspector get(ObjectInspector defaultOI) {
+      return returnObjectInspector != null ? returnObjectInspector : defaultOI;
     }
 
     /**

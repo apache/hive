@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -154,7 +154,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     int keyValueSeparatorPosition = -1;
     int elementByteEnd = start;
     byte[] bytes = this.bytes.getData();
-    Set<Object> keySet = new HashSet<Object>();
+    Set<Object> keySet = new LinkedHashSet<Object>();
 
     // Go through all bytes in the byte[]
     while (elementByteEnd <= arrayByteEnd) {
@@ -248,8 +248,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
       }
       if (keyI.equals(key)) {
         // Got a match, return the value
-        LazyObject v = uncheckedGetValue(i);
-        return v == null ? v : v.getObject();
+        return uncheckedGetValue(i);
       }
     }
 
@@ -262,24 +261,23 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
    * @param index
    *          The index into the array starting from 0
    */
-  private LazyObject uncheckedGetValue(int index) {
+  private Object uncheckedGetValue(int index) {
     if (valueInited[index]) {
-      return valueObjects[index];
+      return valueObjects[index].getObject();
     }
     valueInited[index] = true;
     Text nullSequence = oi.getNullSequence();
     int valueIBegin = keyEnd[index] + 1;
     int valueILength = valueLength[index];
-    if (valueILength < 0
-        || ((valueILength == nullSequence.getLength()) && 0 == LazyUtils
-        .compare(bytes.getData(), valueIBegin, valueILength, nullSequence
-        .getBytes(), 0, nullSequence.getLength()))) {
-      return valueObjects[index] = null;
+    if (valueObjects[index] == null) {
+      valueObjects[index] = LazyFactory.createLazyObject(oi.getMapValueObjectInspector());
     }
-    valueObjects[index] = LazyFactory
-        .createLazyObject(oi.getMapValueObjectInspector());
-    valueObjects[index].init(bytes, valueIBegin, valueILength);
-    return valueObjects[index];
+    if (isNull(oi.getNullSequence(), bytes, valueIBegin, valueILength)) {
+      valueObjects[index].setNull();
+    } else {
+      valueObjects[index].init(bytes, valueIBegin, valueILength);
+    }
+    return valueObjects[index].getObject();
   }
 
   /**
@@ -292,20 +290,16 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     if (keyInited[index]) {
       return keyObjects[index];
     }
-    keyInited[index] = true;
-
-    Text nullSequence = oi.getNullSequence();
     int keyIBegin = keyStart[index];
     int keyILength = keyEnd[index] - keyStart[index];
-    if (keyILength < 0
-        || ((keyILength == nullSequence.getLength()) && 0 == LazyUtils.compare(
-        bytes.getData(), keyIBegin, keyILength, nullSequence.getBytes(), 0,
-        nullSequence.getLength()))) {
-      return keyObjects[index] = null;
+    if (isNull(oi.getNullSequence(), bytes, keyIBegin, keyILength)) {
+      return null;
     }
-    // Keys are always primitive
-    keyObjects[index] = LazyFactory
-        .createLazyPrimitiveClass((PrimitiveObjectInspector) oi.getMapKeyObjectInspector());
+    keyInited[index] = true;
+    if (keyObjects[index] == null) {
+      keyObjects[index] = LazyFactory.createLazyPrimitiveClass(
+          (PrimitiveObjectInspector) oi.getMapKeyObjectInspector());
+    }
     keyObjects[index].init(bytes, keyIBegin, keyILength);
     return keyObjects[index];
   }
@@ -341,9 +335,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
       Object key = lazyKey.getObject();
       // do not overwrite if there are duplicate keys
       if (key != null && !cachedMap.containsKey(key)) {
-        LazyObject lazyValue = uncheckedGetValue(i);
-        Object value = (lazyValue == null ? null : lazyValue.getObject());
-        cachedMap.put(key, value);
+        cachedMap.put(key, uncheckedGetValue(i));
       }
     }
     return cachedMap;

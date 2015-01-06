@@ -59,7 +59,7 @@ STAGE PLANS:
             alias: npe_test
             Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not (ds < 1970)) (type: boolean)
+              predicate: (not (UDFToDouble(ds) < 1970.0)) (type: boolean)
               Statistics: Num rows: 332 Data size: 3526 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string)
