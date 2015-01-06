@@ -1,1 +1,1 @@
-Parse Error: line 2:45 cannot recognize input near 'DISTINCT' 'substr' '(' in select expression
+Parse Error: line 2:45 cannot recognize input near 'DISTINCT' 'substr' '(' in selection target

@@ -78,11 +78,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -226,11 +226,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -360,11 +360,11 @@ STAGE PLANS:
                           1 Map 4
                         Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col1 (type: string), 1 (type: int)
-                          outputColumnNames: _col0, _col1
+                          expressions: _col1 (type: string)
+                          outputColumnNames: _col0
                           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
-                            aggregations: count(_col1)
+                            aggregations: count(1)
                             keys: _col0 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
@@ -535,22 +535,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -688,22 +684,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -837,11 +829,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -979,11 +971,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -1126,22 +1118,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1268,22 +1256,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1414,11 +1398,11 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col2 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col2)
+                    aggregations: count(1)
                     keys: _col0 (type: string), _col1 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
@@ -1546,11 +1530,11 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col2 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col2)
+                    aggregations: count(1)
                     keys: _col0 (type: string), _col1 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
@@ -1686,22 +1670,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1828,22 +1808,18 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string), 1 (type: int)
+                Group By Operator
+                  aggregations: count(1)
+                  keys: _col0 (type: string)
+                  mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col1)
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -1977,11 +1953,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -2119,11 +2095,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -2269,11 +2245,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -2411,11 +2387,11 @@ STAGE PLANS:
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -2562,11 +2538,11 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col2 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col2)
+                    aggregations: count(1)
                     keys: _col0 (type: string), _col1 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
@@ -2711,11 +2687,11 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col2 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col2)
+                    aggregations: count(1)
                     keys: _col0 (type: string), _col1 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
@@ -2861,11 +2837,11 @@ STAGE PLANS:
                 outputColumnNames: _col2
                 Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col2 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -3009,11 +2985,11 @@ STAGE PLANS:
                 outputColumnNames: _col2
                 Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), 1 (type: int)
-                  outputColumnNames: _col0, _col1
+                  expressions: _col2 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 137 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(_col1)
+                    aggregations: count(1)
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1

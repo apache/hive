@@ -30,16 +30,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class ExprNodeColumnListDesc extends ExprNodeDesc {
 
-  List<ExprNodeColumnDesc> columns = new ArrayList<ExprNodeColumnDesc>();
+  // column or constant
+  final List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
 
-  public void addColumn(ExprNodeColumnDesc column) {
+  public void addColumn(ExprNodeDesc column) {
     columns.add(column);
   }
 
   @Override
   public ExprNodeDesc clone() {
     ExprNodeColumnListDesc clone = new ExprNodeColumnListDesc();
-    clone.columns = new ArrayList<ExprNodeColumnDesc>(columns);
+    clone.columns.addAll(columns);
     return clone;
   }
 
@@ -73,11 +74,7 @@ public class ExprNodeColumnListDesc extends ExprNodeDesc {
 
   @Override
   public List<String> getCols() {
-    List<String> cols = new ArrayList<String>();
-    for (ExprNodeColumnDesc column : columns) {
-      cols.add(column.getColumn());
-    }
-    return cols;
+    throw new IllegalStateException();
   }
 
   @Override

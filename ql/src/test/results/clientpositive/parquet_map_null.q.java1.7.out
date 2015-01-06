@@ -1,8 +1,10 @@
 PREHOOK: query: -- This test attempts to write a parquet table from an avro table that contains map null values
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: -- This test attempts to write a parquet table from an avro table that contains map null values
+-- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table
 POSTHOOK: type: DROPTABLE

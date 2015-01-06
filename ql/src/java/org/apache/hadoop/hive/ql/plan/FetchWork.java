@@ -20,14 +20,16 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * FetchWork.
@@ -52,7 +54,7 @@ public class FetchWork implements Serializable {
   private SplitSample splitSample;
 
   private transient List<List<Object>> rowsComputedFromStats;
-  private transient ObjectInspector statRowOI;
+  private transient StructObjectInspector statRowOI;
 
   /**
    * Serialization Null Format for the serde used to fetch data.
@@ -62,12 +64,12 @@ public class FetchWork implements Serializable {
   public FetchWork() {
   }
 
-  public FetchWork(List<List<Object>> rowsComputedFromStats,ObjectInspector statRowOI) {
+  public FetchWork(List<List<Object>> rowsComputedFromStats, StructObjectInspector statRowOI) {
     this.rowsComputedFromStats = rowsComputedFromStats;
     this.statRowOI = statRowOI;
   }
 
-  public ObjectInspector getStatRowOI() {
+  public StructObjectInspector getStatRowOI() {
     return statRowOI;
   }
 
@@ -99,8 +101,8 @@ public class FetchWork implements Serializable {
 
   public void initializeForFetch() {
     if (source == null) {
-      sink = new ListSinkOperator();
-      sink.setConf(new ListSinkDesc(serializationNullFormat));
+      ListSinkDesc desc = new ListSinkDesc(serializationNullFormat);
+      sink = (ListSinkOperator) OperatorFactory.get(desc);
       source = sink;
     }
   }
@@ -171,6 +173,11 @@ public class FetchWork implements Serializable {
    */
   public ArrayList<PartitionDesc> getPartDesc() {
     return partDesc;
+  }
+
+  public List<Path> getPathLists() {
+    return isPartitioned() ? partDir == null ?
+        null : new ArrayList<Path>(partDir) : Arrays.asList(tblDir);
   }
 
   /**

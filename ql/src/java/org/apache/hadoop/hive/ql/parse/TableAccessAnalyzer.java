@@ -141,7 +141,8 @@ public class TableAccessAnalyzer {
         return null;
       }
 
-      Map<String, List<String>> tableToKeysMap = new HashMap<String, List<String>>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      Map<String, List<String>> tableToKeysMap = new LinkedHashMap<String, List<String>>();
       Table tbl = pGraphContext.getTopToTable().get(tso);
       tableToKeysMap.put(tbl.getCompleteName(), keyColNames);
       tableAccessCtx.addOperatorTableAccess(op, tableToKeysMap);
@@ -165,7 +166,8 @@ public class TableAccessAnalyzer {
         Object... nodeOutputs) {
       JoinOperator op = (JoinOperator)nd;
       TableAccessCtx tableAccessCtx = (TableAccessCtx)procCtx;
-      Map<String, List<String>> tableToKeysMap = new HashMap<String, List<String>>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      Map<String, List<String>> tableToKeysMap = new LinkedHashMap<String, List<String>>();
 
       List<Operator<? extends OperatorDesc>> parentOps = op.getParentOperators();
 

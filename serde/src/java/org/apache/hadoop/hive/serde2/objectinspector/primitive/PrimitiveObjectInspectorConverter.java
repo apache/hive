@@ -478,6 +478,9 @@ public class PrimitiveObjectInspectorConverter {
 
     @Override
     public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
       switch (inputOI.getPrimitiveCategory()) {
         case BOOLEAN:
           return outputOI.set(hc,
@@ -504,6 +507,9 @@ public class PrimitiveObjectInspectorConverter {
 
     @Override
     public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
       switch (inputOI.getPrimitiveCategory()) {
       case BOOLEAN:
         return outputOI.set(hc,

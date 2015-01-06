@@ -360,10 +360,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key,val
 
-Table:default@t1
+Table:default@t2
 Columns:key,val
 
 1	11	1	1
@@ -441,10 +441,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key
 
-Table:default@t1
+Table:default@t2
 Columns:key
 
 1
@@ -460,10 +460,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key,val
 
-Table:default@t1
+Table:default@t2
 Columns:key,val
 
 PREHOOK: query: -- Map join
@@ -474,10 +474,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key,val
 
-Table:default@t1
+Table:default@t2
 Columns:key,val
 
 1	11	1	1
@@ -556,10 +556,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key,val
 
-Table:default@t1
+Table:default@t2
 Columns:key,val
 
 PREHOOK: query: EXPLAIN
@@ -653,10 +653,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key,val
 
-Table:default@t1
+Table:default@t2
 Columns:key,val
 
 PREHOOK: query: -- Join followed by join
@@ -802,10 +802,10 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t1
 Columns:key
 
-Table:default@t1
+Table:default@t2
 Columns:key
 
 Table:default@t3

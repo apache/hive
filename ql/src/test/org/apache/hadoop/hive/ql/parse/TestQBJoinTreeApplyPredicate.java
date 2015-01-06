@@ -42,7 +42,7 @@ public class TestQBJoinTreeApplyPredicate {
 
   @Before
   public void setup() throws SemanticException {
-    sA = new SemanticAnalyzer(conf);
+    sA = new CalcitePlanner(conf);
   }
 
   static ASTNode constructIdentifier(String nm) {
