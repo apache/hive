@@ -313,14 +313,14 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
       } else if (currTask instanceof SparkTask) {
-	SparkWork sparkWork = (SparkWork) currTask.getWork();
-	for (BaseWork baseWork : sparkWork.getAllWork()) {
-	  if (baseWork instanceof MapWork) {
-	    convertMapWork((MapWork) baseWork, false);
-	  } else if (baseWork instanceof ReduceWork) {
-	    convertReduceWork((ReduceWork) baseWork);
-	  }
-	}
+        SparkWork sparkWork = (SparkWork) currTask.getWork();
+        for (BaseWork baseWork : sparkWork.getAllWork()) {
+          if (baseWork instanceof MapWork) {
+            convertMapWork((MapWork) baseWork, false);
+          } else if (baseWork instanceof ReduceWork) {
+            convertReduceWork((ReduceWork) baseWork);
+          }
+        }
       }
       return null;
     }
