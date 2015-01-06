@@ -66,6 +66,7 @@ import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.rules.JoinPushTransitivePredicatesRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule;
@@ -164,7 +165,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableList.Builder;
 
 public class CalcitePlanner extends SemanticAnalyzer {
-  private AtomicInteger     noColsMissingStats = new AtomicInteger(0);
+  private final AtomicInteger     noColsMissingStats = new AtomicInteger(0);
   private List<FieldSchema> topLevelFieldSchema;
   private SemanticException semanticException;
   private boolean           runCBO             = true;
@@ -187,6 +188,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
+  @Override
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     Operator sinkOp = null;
@@ -282,7 +284,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Can CBO handle the given AST?
-   * 
+   *
    * @param ast
    *          Top level AST
    * @param qb
@@ -290,7 +292,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @param cboCtx
    * @param semAnalyzer
    * @return boolean
-   * 
+   *
    *         Assumption:<br>
    *         If top level QB is query then everything below it must also be
    *         Query.
@@ -345,7 +347,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Checks whether Calcite can handle the query.
-   * 
+   *
    * @param queryProperties
    * @param conf
    * @param topLevelQB
@@ -354,7 +356,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *          Whether return value should be verbose in case of failure.
    * @return null if the query can be handled; non-null reason string if it
    *         cannot be.
-   * 
+   *
    *         Assumption:<br>
    *         1. If top level QB is query then everything below it must also be
    *         Query<br>
@@ -548,7 +550,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Get Optimized AST for the given QB tree in the semAnalyzer.
-   * 
+   *
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
@@ -572,7 +574,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /***
    * Unwraps Calcite Invocation exceptions coming meta data provider chain and
    * obtains the real cause.
-   * 
+   *
    * @param Exception
    */
   private void rethrowCalciteException(Exception e) throws SemanticException {
@@ -651,7 +653,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
-    private Map<String, PrunedPartitionList>              partitionCache;
+    private final Map<String, PrunedPartitionList>              partitionCache;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -706,6 +708,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoin.HIVE_JOIN_FACTORY,
           HiveProject.DEFAULT_PROJECT_FACTORY, HiveFilter.DEFAULT_FILTER_FACTORY));
 
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
+
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
@@ -736,7 +742,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Perform all optimizations before Join Ordering.
-     * 
+     *
      * @param basePlan
      *          original plan
      * @param mdProvider
@@ -754,7 +760,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           SemiJoinFilterTransposeRule.INSTANCE, SemiJoinProjectTransposeRule.INSTANCE);
 
       // 2. PPD
-      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          ReduceExpressionsRule.PROJECT_INSTANCE,
+          ReduceExpressionsRule.FILTER_INSTANCE,
+          ReduceExpressionsRule.JOIN_INSTANCE,
+          new HiveFilterProjectTransposeRule(
           Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
           HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
           HiveFilter.DEFAULT_FILTER_FACTORY),
@@ -787,7 +797,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Run the HEP Planner with the given rule set.
-     * 
+     *
      * @param basePlan
      * @param followPlanChanges
      * @param mdProvider
@@ -1057,7 +1067,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Generate Join Logical Plan Relnode by walking through the join AST.
-     * 
+     *
      * @param qb
      * @param aliasToRel
      *          Alias(Table/Relation alias) to RelNode; only read and not
@@ -1276,7 +1286,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         Map<String, RelNode> aliasToRel, boolean forHavingClause) throws SemanticException {
       /*
        * Handle Subquery predicates.
-       * 
+       *
        * Notes (8/22/14 hb): Why is this a copy of the code from {@link
        * #genFilterPlan} - for now we will support the same behavior as non CBO
        * route. - but plan to allow nested SubQueries(Restriction.9.m) and
@@ -1676,7 +1686,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Generate GB plan.
-     * 
+     *
      * @param qb
      * @param srcRel
      * @return TODO: 1. Grouping Sets (roll up..)
@@ -1788,7 +1798,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * Generate OB RelNode and input Select RelNode that should be used to
      * introduce top constraining Project. If Input select RelNode is not
      * present then don't introduce top constraining select.
-     * 
+     *
      * @param qb
      * @param srcRel
      * @param outermostOB
@@ -2198,7 +2208,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     /**
      * NOTE: there can only be one select caluse since we don't handle multi
      * destination insert.
-     * 
+     *
      * @throws SemanticException
      */
     private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel, RelNode starSrcRel)
