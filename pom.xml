@@ -43,7 +43,7 @@
     <module>jdbc</module>
     <module>metastore</module>
     <module>llap-client</module>
-    <module>llap</module>
+    <module>llap-server</module>
     <module>odbc</module>
     <module>ql</module>
     <module>serde</module>

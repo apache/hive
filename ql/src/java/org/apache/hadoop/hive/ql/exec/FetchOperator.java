@@ -203,8 +203,7 @@ public class FetchOperator implements Serializable {
     Class<? extends InputFormat> inputFormatClass, JobConf conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
-      return HiveInputFormat.wrapForLlap((InputFormat<WritableComparable, Writable>) ReflectionUtils
-          .newInstance(inputFormatClass, conf), conf);
+      return ReflectionUtils.newInstance(inputFormatClass, conf);
     }
     // TODO: why is this copy-pasted from HiveInputFormat?
     InputFormat format = inputFormats.get(inputFormatClass.getName());
@@ -217,7 +216,7 @@ public class FetchOperator implements Serializable {
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return HiveInputFormat.wrapForLlap(format, conf);
+    return format;
   }
 
   private StructObjectInspector getPartitionKeyOI(TableDesc tableDesc) throws Exception {

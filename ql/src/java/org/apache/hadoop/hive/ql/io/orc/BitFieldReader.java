@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.api.Vector.Type;
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 
@@ -128,48 +125,6 @@ class BitFieldReader {
       runLength += extraBits;
     }
     lastRunLength = runLength;
-  }
-
-  private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
-  int nextChunk(
-      ChunkWriter writer, BitFieldReader present, long rowsLeftToRead) throws IOException {
-    if (bitSize != 1) {
-      throw new AssertionError("Bit size should always be 1");
-    }
-    boolean mayHaveNulls = present != null;
-    NullsState nullState = mayHaveNulls ? NullsState.HAS_NULLS : NullsState.NO_NULLS;
-    int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
-    if (rowsLeftToWrite == 0) {
-      return 0; // Cannot write any rows into this writer.
-    }
-    long originalRowsLeft = rowsLeftToRead;
-    // Start the big loop to read rows until we run out of either input or space.
-    while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
-      int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
-      readNextRun(rowsToTransfer);
-      presentHelper.availLength = lastRunLength;
-      if (mayHaveNulls) {
-        LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
-        if (!presentHelper.isNullsRun) {
-          assert lastRunLength >= presentHelper.availLength;
-          lastRunLength -= presentHelper.availLength;
-        }
-      } else {
-        lastRunLength = 0;
-      }
-
-      assert rowsLeftToRead >= presentHelper.availLength;
-      if (presentHelper.isNullsRun) {
-        writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
-      } else {
-        writer.writeRepeatedLongs(lastRunValue ? 1 : 0, presentHelper.availLength,
-            presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : nullState);
-      }
-      rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
-      rowsLeftToRead -= presentHelper.availLength;
-    } // End of big loop.
-    writer.finishCurrentSegment();
-    return (int)(originalRowsLeft - rowsLeftToRead);
   }
 
   void nextVector(LongColumnVector previous, long previousLen) throws IOException {

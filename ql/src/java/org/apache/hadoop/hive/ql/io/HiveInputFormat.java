@@ -197,22 +197,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     this.job = job;
   }
 
-  public static InputFormat<WritableComparable, Writable> wrapForLlap(
-      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
-    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_ENABLED)) return inputFormat;
-    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
-        isVector = Utilities.isVectorMode(conf);
-    if (!isSupported || !isVector) {
-      LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
-      return inputFormat;
-    }
-    LOG.info("Wrapping " + inputFormat);
-    // TODO: we'd actually need a more specific template parameter for non-vectorized one...
-    //       no idea how this is going to work at this point.
-    InputFormat<NullWritable, Writable> inputToWrap = castInputFormat(inputFormat);
-    return castInputFormat(new LlapInputFormat<Writable>(inputToWrap, conf));
-  }
-
   @SuppressWarnings("unchecked")
   private static <T, U, V> InputFormat<T, V> castInputFormat(InputFormat<U, V> from) {
     // We assume that LlapWrappableInputFormatInterface has NullWritable as first parameter.
@@ -238,7 +222,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return wrapForLlap(instance, job);
+    return instance;
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,

@@ -73,10 +73,14 @@ public class DecimalColumnVector extends ColumnVector {
   }
 
   // Fill the all the vector entries with provided value
-  public void fill(Decimal128 value) {
+  public void fill(HiveDecimal value) {
     noNulls = true;
     isRepeating = true;
-    // TODO#: vector[0] = value;
+    if (vector[0] == null) {
+      vector[0] = new HiveDecimalWritable(value);
+    } else {
+      vector[0].set(value);
+    }
   }
 
   // Fill the column vector with nulls

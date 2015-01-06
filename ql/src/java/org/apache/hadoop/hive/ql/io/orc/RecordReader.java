@@ -19,8 +19,13 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
+import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+
 
 /**
  * A row-by-row iterator for ORC files.
@@ -78,17 +83,19 @@ public interface RecordReader {
   void seekToRow(long rowCount) throws IOException;
 
   /**
-   * TODO: change to interface rather than ctx obj?
-   * TODO: write javadoc.
-   * @return
+   * TODO: this API is subject to change; on one hand, external code should control the threading
+   *       aspects, with ORC method returning one EncodedColumn as it will; on the other, it's
+   *       more efficient for ORC to read stripe at once, apply RG-level sarg, etc., and thus
+   *       return many EncodedColumn-s.
+   *  TODO: assumes the reader is for one stripe, otherwise the signature makes no sense.
+   *        Also has no columns passed, because that is in ctor.
+   * @param colRgs Bitmasks of what RGs are to be read. Has # of elements equal to the number of
+   *               included columns; then each bitmask is rgCount bits long; 0 means "need to read"
+   * @param rgCount The length of bitmasks in colRgs.
+   * @param sarg Sarg to apply additional filtering to RGs.
+   * @param consumer Consumer to pass the results too.
+   * @param allocator Allocator to allocate memory.
    */
-  Object prepareColumnRead();
-
-  /**
-   * TODO: write javadoc.
-   * @param writer
-   * @return
-   */
-  boolean readNextColumnStripe(Object ctxObj, ChunkWriter writer)
-      throws IOException;
+  void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
+      Consumer<EncodedColumn<OrcBatchKey>> consumer, Allocator allocator);
 }

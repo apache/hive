@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 
 /**
@@ -63,6 +62,4 @@ interface IntegerReader {
    */
    void nextVector(LongColumnVector previous, long previousLen)
       throws IOException;
-
-   int nextChunk(ChunkWriter writer, BitFieldReader present, long rowsLeft) throws IOException;
 }

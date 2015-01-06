@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.api.Vector.Type;
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter;
-import org.apache.hadoop.hive.llap.chunk.ChunkWriter.NullsState;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
@@ -91,59 +88,6 @@ class RunLengthByteReader {
     }
     ++used;
     return result;
-  }
-
-
-  private final PresentStreamReadResult presentHelper = new PresentStreamReadResult();
-  public int nextChunk(
-      ChunkWriter writer, BitFieldReader present, long rowsLeftToRead) throws IOException {
-    boolean mayHaveNulls = present != null;
-    int rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
-    if (rowsLeftToWrite == 0) {
-      return 0; // Cannot write any rows into this writer.
-    }
-    long originalRowsLeft = rowsLeftToRead;
-    // Start the big loop to read rows until we run out of either input or space.
-    while (rowsLeftToRead > 0 && rowsLeftToWrite > 0) {
-      int rowsToTransfer = (int)Math.min(rowsLeftToRead, rowsLeftToWrite);
-      presentHelper.availLength = Math.min(peekNextAvailLength(), rowsToTransfer);
-      if (mayHaveNulls) {
-        LlapUtils.readPresentStream(presentHelper, present, rowsToTransfer);
-      }
-      assert presentHelper.availLength > 0;
-      assert rowsLeftToRead >= presentHelper.availLength;
-
-      if (presentHelper.isNullsRun) {
-        writer.writeNulls(presentHelper.availLength, presentHelper.isFollowedByOther);
-      } else {
-        NullsState nullsState = !mayHaveNulls ? NullsState.NO_NULLS :
-              (presentHelper.isFollowedByOther ? NullsState.NEXT_NULL : NullsState.HAS_NULLS);
-        if (repeat) {
-          writer.writeRepeatedLongs(literals[0], presentHelper.availLength, nullsState);
-        } else {
-          writer.writeLongs(literals, used, presentHelper.availLength, nullsState);
-        }
-        skipCurrentLiterals(presentHelper.availLength);
-      }
-      rowsLeftToWrite = writer.estimateValueCountThatFits(Type.LONG, mayHaveNulls);
-      rowsLeftToRead -= presentHelper.availLength;
-    } // End of big loop.
-    writer.finishCurrentSegment();
-    return (int)(originalRowsLeft - rowsLeftToRead);
-  }
-
-  private int peekNextAvailLength() throws IOException {
-    if (used == numLiterals) {
-      readValues(true);
-    }
-    return numLiterals - used;
-  }
-
-  private void skipCurrentLiterals(int valuesToSkip) {
-    if ((used + valuesToSkip) > numLiterals) {
-      throw new AssertionError("Skipping " + valuesToSkip + "; used " + used + "/" + numLiterals);
-    }
-    used += valuesToSkip;
   }
 
   void nextVector(LongColumnVector previous, long previousLen)
