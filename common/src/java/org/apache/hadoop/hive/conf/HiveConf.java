@@ -860,6 +860,11 @@ public class HiveConf extends Configuration {
     HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false, ""),
     HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304, ""),   // 4M
 
+    PARQUET_MEMORY_POOL_RATIO("parquet.memory.pool.ratio", 0.5f,
+        "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
+        "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
+        "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
+
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
