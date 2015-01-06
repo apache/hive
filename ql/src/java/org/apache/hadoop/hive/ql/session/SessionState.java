@@ -384,8 +384,10 @@ public class SessionState {
     if (hdfsEncryptionShim == null) {
       try {
         FileSystem fs = FileSystem.get(conf);
-        if (fs.getUri().getScheme().equals("hdfs")) {
+        if ("hdfs".equals(fs.getUri().getScheme())) {
           hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        } else {
+          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
         }
       } catch (Exception e) {
         throw new HiveException(e);

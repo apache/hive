@@ -1844,7 +1844,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           try {
             if (strongestPath == null) {
               strongestPath = tablePath;
-            } else if (tablePath.toUri().getScheme().equals("hdfs")
+            } else if ("hdfs".equals(tablePath.toUri().getScheme())
                 && isPathEncrypted(tablePath)
                 && comparePathKeyStrength(tablePath, strongestPath) > 0)
             {
@@ -1877,10 +1877,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Looks for the most encrypted table location (if there is one)
     tablePath = getStrongestEncryptedTablePath(qb);
-    if (tablePath != null) {
+    if (tablePath != null && isPathEncrypted(tablePath)) {
       // Only HDFS paths can be checked for encryption
-      if (tablePath.toUri().getScheme().equals("hdfs")) {
-        if (isPathReadOnly(tablePath) && isPathEncrypted(tablePath)) {
+      if ("hdfs".equals(tablePath.toUri().getScheme())) {
+        if (isPathReadOnly(tablePath)) {
           Path tmpPath = ctx.getMRTmpPath();
           if (comparePathKeyStrength(tablePath, tmpPath) < 0) {
             throw new HiveException("Read-only encrypted tables cannot be read " +
@@ -1889,6 +1889,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             stagingPath = tmpPath;
           }
         }
+      } else {
+        LOG.debug("Encryption is not applicable to table path " + tablePath.toString());
       }
 
       if (stagingPath == null) {
