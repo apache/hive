@@ -389,8 +389,11 @@ public class RexNodeConverter {
       }
       calciteLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
       break;
-    case BINARY:
     case VOID:
+      calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
+          cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);
+      break;
+    case BINARY:
     case UNKNOWN:
     default:
       throw new RuntimeException("UnSupported Literal");

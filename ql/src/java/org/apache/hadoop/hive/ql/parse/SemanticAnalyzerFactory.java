@@ -273,8 +273,12 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DELETE_FROM:
         return new UpdateDeleteSemanticAnalyzer(conf);
 
-      default:
-        return new SemanticAnalyzer(conf);
+      default: {
+        SemanticAnalyzer semAnalyzer = HiveConf
+            .getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED) ? new CalcitePlanner(conf)
+            : new SemanticAnalyzer(conf);
+        return semAnalyzer;
+      }
       }
     }
   }

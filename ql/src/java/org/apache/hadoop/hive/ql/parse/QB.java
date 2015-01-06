@@ -262,8 +262,15 @@ public class QB {
 
   // to find target for fetch task conversion optimizer (not allows subqueries)
   public boolean isSimpleSelectQuery() {
-    return qbp.isSimpleSelectQuery() && aliasToSubq.isEmpty() && !isCTAS() &&
-        !qbp.isAnalyzeCommand();
+    if (!qbp.isSimpleSelectQuery() || isCTAS() || qbp.isAnalyzeCommand()) {
+      return false;
+    }
+    for (QBExpr qbexpr : aliasToSubq.values()) {
+      if (!qbexpr.isSimpleSelectQuery()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public boolean hasTableSample(String alias) {

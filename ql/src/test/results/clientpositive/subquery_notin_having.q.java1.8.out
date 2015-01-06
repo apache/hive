@@ -1,5 +1,7 @@
 Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: -- non agg, non corr
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 explain
 select key, count(*) 
 from src 
@@ -10,6 +12,8 @@ having key not in
   )
 PREHOOK: type: QUERY
 POSTHOOK: query: -- non agg, non corr
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 explain
 select key, count(*) 
 from src 
@@ -350,7 +354,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col0 is null or _col2 is null) and ((_col1 - _col2) > 600.0)) (type: boolean)
+            predicate: (((_col1 - _col2) > 600.0) and (_col0 is null or _col2 is null)) (type: boolean)
             Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE

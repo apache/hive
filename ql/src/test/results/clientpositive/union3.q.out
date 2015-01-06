@@ -67,25 +67,21 @@ STAGE PLANS:
         Limit
           Number of rows: 1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-          Select Operator
-            expressions: 1 (type: int)
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: 1 (type: int)
               sort order: +
-              Map-reduce partition columns: _col0 (type: int)
+              Map-reduce partition columns: 1 (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator
@@ -177,25 +173,21 @@ STAGE PLANS:
         Limit
           Number of rows: 1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-          Select Operator
-            expressions: 2 (type: int)
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: 2 (type: int)
               sort order: +
-              Map-reduce partition columns: _col0 (type: int)
+              Map-reduce partition columns: 2 (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
       Reduce Operator Tree:
         Select Operator

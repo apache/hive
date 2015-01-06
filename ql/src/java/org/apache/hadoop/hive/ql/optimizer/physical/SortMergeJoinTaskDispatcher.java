@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -265,8 +266,9 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
+    // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new HashMap<Task<? extends Serializable>, Set<String>>();
+        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     // Note that pathToAlias will behave as if the original plan was a join plan
     HashMap<String, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
 

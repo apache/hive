@@ -310,7 +310,8 @@ public class SessionState {
     this.userName = userName;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
-    overriddenConfigurations = new HashMap<String, String>();
+    // Must be deterministic order map for consistent q-test output across Java versions
+    overriddenConfigurations = new LinkedHashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
@@ -1204,7 +1205,8 @@ public class SessionState {
 
   public Map<String, String> getOverriddenConfigurations() {
     if (overriddenConfigurations == null) {
-      overriddenConfigurations = new HashMap<String, String>();
+      // Must be deterministic order map for consistent q-test output across Java versions
+      overriddenConfigurations = new LinkedHashMap<String, String>();
     }
     return overriddenConfigurations;
   }

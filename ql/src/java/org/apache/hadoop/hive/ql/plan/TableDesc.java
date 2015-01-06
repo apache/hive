@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 
 /**
@@ -84,8 +85,17 @@ public class TableDesc implements Serializable, Cloneable {
    * Return a deserializer object corresponding to the tableDesc.
    */
   public Deserializer getDeserializer(Configuration conf) throws Exception {
-    Deserializer de = getDeserializerClass().newInstance();
-    SerDeUtils.initializeSerDe(de, conf, properties, null);
+    return getDeserializer(conf, false);
+  }
+
+  public Deserializer getDeserializer(Configuration conf, boolean ignoreError) throws Exception {
+    Deserializer de = ReflectionUtils.newInstance(
+        getDeserializerClass().asSubclass(Deserializer.class), conf);
+    if (ignoreError) {
+      SerDeUtils.initializeSerDeWithoutErrorCheck(de, conf, properties, null);
+    } else {
+      SerDeUtils.initializeSerDe(de, conf, properties, null);
+    }
     return de;
   }
 

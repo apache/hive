@@ -133,20 +133,20 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
   }
 
   // random sampling
-  public static FetchSampler createSampler(FetchWork work, HiveConf conf, JobConf job,
-      Operator<?> operator) {
+  public static FetchOperator createSampler(FetchWork work, HiveConf conf, JobConf job,
+      Operator<?> operator) throws HiveException {
     int sampleNum = conf.getIntVar(HiveConf.ConfVars.HIVESAMPLINGNUMBERFORORDERBY);
     float samplePercent = conf.getFloatVar(HiveConf.ConfVars.HIVESAMPLINGPERCENTFORORDERBY);
     if (samplePercent < 0.0 || samplePercent > 1.0) {
       throw new IllegalArgumentException("Percentile value must be within the range of 0 to 1.");
     }
-    FetchSampler sampler = new FetchSampler(work, job, operator);
+    RandomSampler sampler = new RandomSampler(work, job, operator);
     sampler.setSampleNum(sampleNum);
     sampler.setSamplePercent(samplePercent);
     return sampler;
   }
 
-  private static class FetchSampler extends FetchOperator {
+  private static class RandomSampler extends FetchOperator {
 
     private int sampleNum = 1000;
     private float samplePercent = 0.1f;
@@ -154,7 +154,8 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
 
     private int sampled;
 
-    public FetchSampler(FetchWork work, JobConf job, Operator<?> operator) {
+    public RandomSampler(FetchWork work, JobConf job, Operator<?> operator)
+        throws HiveException {
       super(work, job, operator, null);
     }
 
@@ -174,7 +175,7 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
       if (sampled < sampleNum) {
         return true;
       }
-      operator.flush();
+      flushRow();
       return false;
     }
 

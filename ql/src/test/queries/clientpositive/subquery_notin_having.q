@@ -1,4 +1,6 @@
 -- non agg, non corr
+-- JAVA_VERSION_SPECIFIC_OUTPUT
+
 explain
 select key, count(*) 
 from src 

@@ -19,7 +19,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -158,7 +159,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenQueryStr.append(" select ROW__ID");
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
-    Set<String> setRCols = new HashSet<String>();
+    // Must be deterministic order set for consistent q-test output across Java versions
+    Set<String> setRCols = new LinkedHashSet<String>();
     if (updating()) {
       // An update needs to select all of the columns, as we rewrite the entire row.  Also,
       // we need to figure out which columns we are going to replace.  We won't write the set
@@ -171,7 +173,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
       // Get the children of the set clause, each of which should be a column assignment
       List<? extends Node> assignments = setClause.getChildren();
-      setCols = new HashMap<String, ASTNode>(assignments.size());
+      // Must be deterministic order map for consistent q-test output across Java versions
+      setCols = new LinkedHashMap<String, ASTNode>(assignments.size());
       setColExprs = new HashMap<Integer, ASTNode>(assignments.size());
       for (Node a : assignments) {
         ASTNode assignment = (ASTNode)a;

@@ -125,9 +125,10 @@ selectItem
 @init { gParent.pushMsg("selection target", state); }
 @after { gParent.popMsg(state); }
     :
-    ( selectExpression
+    ( expression
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
-    ) -> ^(TOK_SELEXPR selectExpression identifier*)
+    ) -> ^(TOK_SELEXPR expression identifier*)
+    | tableAllColumns -> ^(TOK_SELEXPR tableAllColumns)
     ;
 
 trfmClause
