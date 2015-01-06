@@ -66,6 +66,7 @@ import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.rules.JoinPushTransitivePredicatesRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
@@ -712,6 +713,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
 
+      hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
 

@@ -232,7 +232,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:$hdt$_0:x]
+        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:$hdt$_0:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -262,11 +262,11 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:x 
+        $hdt$_1:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:x 
+        $hdt$_1:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -569,7 +569,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:$hdt$_0:x]
+        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:$hdt$_0:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
