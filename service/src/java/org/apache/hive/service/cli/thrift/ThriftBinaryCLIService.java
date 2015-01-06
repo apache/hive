@@ -58,12 +58,16 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       TTransportFactory transportFactory = hiveAuthFactory.getAuthTransFactory();
       TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
       TServerSocket serverSocket = null;
+      int socketTimeout =
+          (int) hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_TCP_SOCKET_BLOCKING_TIMEOUT,
+              TimeUnit.SECONDS);
+      boolean keepAlive = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TCP_SOCKET_KEEPALIVE);
       List<String> sslVersionBlacklist = new ArrayList<String>();
       for (String sslVersion : hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",")) {
         sslVersionBlacklist.add(sslVersion);
       }
       if (!hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL)) {
-        serverSocket = HiveAuthFactory.getServerSocket(hiveHost, portNum);
+        serverSocket = HiveAuthFactory.getServerSocket(hiveHost, portNum, socketTimeout, keepAlive);
       } else {
         String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH).trim();
         if (keyStorePath.isEmpty()) {
@@ -73,7 +77,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         String keyStorePassword = ShimLoader.getHadoopShims().getPassword(hiveConf,
             HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname);
         serverSocket = HiveAuthFactory.getServerSSLSocket(hiveHost, portNum, keyStorePath,
-            keyStorePassword, sslVersionBlacklist);
+            keyStorePassword, sslVersionBlacklist, socketTimeout, keepAlive);
       }
 
       // Server args

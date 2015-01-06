@@ -1617,7 +1617,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
 
-    // http (over thrift) transport settings
+    // Http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'http'."),
     HIVE_SERVER2_THRIFT_HTTP_PATH("hive.server2.thrift.http.path", "cliservice",
@@ -1634,7 +1634,12 @@ public class HiveConf extends Configuration {
         "Keepalive time for an idle http worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
 
-    // binary transport settings
+    // Binary (TCP) transport settings
+    HIVE_SERVER2_TCP_SOCKET_BLOCKING_TIMEOUT("hive.server2.tcp.socket.blocking.timeout", "0s",
+        new TimeValidator(TimeUnit.SECONDS),"Timeout (in seconds) on blocking socket operations (accept, read). " +
+        "0 means infinite timeout."),
+    HIVE_SERVER2_TCP_SOCKET_KEEPALIVE("hive.server2.tcp.socket.keepalive", true,
+        "Whether to send tcp socket keepalive probe"),
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000,
         "Port number of HiveServer2 Thrift interface when hive.server2.transport.mode is 'binary'."),
     HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth",
