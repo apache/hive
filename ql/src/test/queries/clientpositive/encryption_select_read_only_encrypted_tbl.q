@@ -11,3 +11,6 @@ LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table;
 dfs -chmod -R 555 /user/hive/warehouse/default/encrypted_table;
 
 SELECT count(*) FROM encrypted_table;
+
+drop table encrypted_table;
+CRYPTO DELETE_KEY --keyName key_128;

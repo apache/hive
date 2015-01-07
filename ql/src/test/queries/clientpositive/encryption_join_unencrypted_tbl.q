@@ -10,3 +10,6 @@ INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
 SELECT * FROM encrypted_table;
 
 EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key;
+
+drop table encrypted_table;
+CRYPTO DELETE_KEY --keyName key_128;
