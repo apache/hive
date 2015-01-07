@@ -996,7 +996,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public boolean isPathEncrypted(Path path) throws IOException {
-      return (hdfsAdmin.getEncryptionZoneForPath(path) != null);
+      Path fullPath;
+      if (path.isAbsolute()) {
+        fullPath = path;
+      } else {
+        fullPath = path.getFileSystem(conf).makeQualified(path);
+      }
+      return (hdfsAdmin.getEncryptionZoneForPath(fullPath) != null);
     }
 
     @Override
