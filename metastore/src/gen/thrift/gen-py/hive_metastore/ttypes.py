@@ -8143,6 +8143,341 @@ class ShowCompactResponse:
   def __ne__(self, other):
     return not (self == other)
 
+class NotificationEventRequest:
+  """
+  Attributes:
+   - lastEvent
+   - maxEvents
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'lastEvent', None, None, ), # 1
+    (2, TType.I32, 'maxEvents', None, None, ), # 2
+  )
+
+  def __init__(self, lastEvent=None, maxEvents=None,):
+    self.lastEvent = lastEvent
+    self.maxEvents = maxEvents
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.lastEvent = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.maxEvents = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('NotificationEventRequest')
+    if self.lastEvent is not None:
+      oprot.writeFieldBegin('lastEvent', TType.I64, 1)
+      oprot.writeI64(self.lastEvent)
+      oprot.writeFieldEnd()
+    if self.maxEvents is not None:
+      oprot.writeFieldBegin('maxEvents', TType.I32, 2)
+      oprot.writeI32(self.maxEvents)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.lastEvent is None:
+      raise TProtocol.TProtocolException(message='Required field lastEvent is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class NotificationEvent:
+  """
+  Attributes:
+   - eventId
+   - eventTime
+   - eventType
+   - dbName
+   - tableName
+   - message
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'eventId', None, None, ), # 1
+    (2, TType.I32, 'eventTime', None, None, ), # 2
+    (3, TType.STRING, 'eventType', None, None, ), # 3
+    (4, TType.STRING, 'dbName', None, None, ), # 4
+    (5, TType.STRING, 'tableName', None, None, ), # 5
+    (6, TType.STRING, 'message', None, None, ), # 6
+  )
+
+  def __init__(self, eventId=None, eventTime=None, eventType=None, dbName=None, tableName=None, message=None,):
+    self.eventId = eventId
+    self.eventTime = eventTime
+    self.eventType = eventType
+    self.dbName = dbName
+    self.tableName = tableName
+    self.message = message
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.eventId = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.eventTime = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.eventType = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.message = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('NotificationEvent')
+    if self.eventId is not None:
+      oprot.writeFieldBegin('eventId', TType.I64, 1)
+      oprot.writeI64(self.eventId)
+      oprot.writeFieldEnd()
+    if self.eventTime is not None:
+      oprot.writeFieldBegin('eventTime', TType.I32, 2)
+      oprot.writeI32(self.eventTime)
+      oprot.writeFieldEnd()
+    if self.eventType is not None:
+      oprot.writeFieldBegin('eventType', TType.STRING, 3)
+      oprot.writeString(self.eventType)
+      oprot.writeFieldEnd()
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 4)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 5)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
+    if self.message is not None:
+      oprot.writeFieldBegin('message', TType.STRING, 6)
+      oprot.writeString(self.message)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.eventId is None:
+      raise TProtocol.TProtocolException(message='Required field eventId is unset!')
+    if self.eventTime is None:
+      raise TProtocol.TProtocolException(message='Required field eventTime is unset!')
+    if self.eventType is None:
+      raise TProtocol.TProtocolException(message='Required field eventType is unset!')
+    if self.message is None:
+      raise TProtocol.TProtocolException(message='Required field message is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class NotificationEventResponse:
+  """
+  Attributes:
+   - events
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'events', (TType.STRUCT,(NotificationEvent, NotificationEvent.thrift_spec)), None, ), # 1
+  )
+
+  def __init__(self, events=None,):
+    self.events = events
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.events = []
+          (_etype437, _size434) = iprot.readListBegin()
+          for _i438 in xrange(_size434):
+            _elem439 = NotificationEvent()
+            _elem439.read(iprot)
+            self.events.append(_elem439)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('NotificationEventResponse')
+    if self.events is not None:
+      oprot.writeFieldBegin('events', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.events))
+      for iter440 in self.events:
+        iter440.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.events is None:
+      raise TProtocol.TProtocolException(message='Required field events is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class CurrentNotificationEventId:
+  """
+  Attributes:
+   - eventId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'eventId', None, None, ), # 1
+  )
+
+  def __init__(self, eventId=None,):
+    self.eventId = eventId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.eventId = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CurrentNotificationEventId')
+    if self.eventId is not None:
+      oprot.writeFieldBegin('eventId', TType.I64, 1)
+      oprot.writeI64(self.eventId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.eventId is None:
+      raise TProtocol.TProtocolException(message='Required field eventId is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class MetaException(TException):
   """
   Attributes:

@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -80,6 +81,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -107,6 +111,8 @@ import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
+import org.apache.hadoop.hive.metastore.model.MNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
@@ -6962,4 +6968,128 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return funcs;
   }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      long lastEvent = rqst.getLastEvent();
+      Query query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
+      query.declareParameters("java.lang.Long lastEvent");
+      query.setOrdering("eventId ascending");
+      Collection<MNotificationLog> events = (Collection)query.execute(lastEvent);
+      commited = commitTransaction();
+      if (events == null) {
+        return null;
+      }
+      Iterator<MNotificationLog> i = events.iterator();
+      NotificationEventResponse result = new NotificationEventResponse();
+      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
+      int numEvents = 0;
+      while (i.hasNext() && numEvents++ < maxEvents) {
+        result.addToEvents(translateDbToThrift(i.next()));
+      }
+      return result;
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+        return null;
+      }
+    }
+  }
+
+  @Override
+  public void addNotificationEvent(NotificationEvent entry) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MNotificationNextId.class);
+      Collection<MNotificationNextId> ids = (Collection) query.execute();
+      MNotificationNextId id = null;
+      boolean needToPersistId;
+      if (ids == null || ids.size() == 0) {
+        id = new MNotificationNextId(1L);
+        needToPersistId = true;
+      } else {
+        id = ids.iterator().next();
+        needToPersistId = false;
+      }
+      entry.setEventId(id.getNextEventId());
+      id.incrementEventId();
+      if (needToPersistId) pm.makePersistent(id);
+      pm.makePersistent(translateThriftToDb(entry));
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void cleanNotificationEvents(int olderThan) {
+    boolean commited = false;
+    try {
+      openTransaction();
+      long tmp = System.currentTimeMillis() / 1000 - olderThan;
+      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int)tmp;
+      Query query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld");
+      query.declareParameters("java.lang.Integer tooOld");
+      Collection<MNotificationLog> toBeRemoved = (Collection)query.execute(tooOld);
+      if (toBeRemoved != null && toBeRemoved.size() > 0) {
+        pm.deletePersistent(toBeRemoved);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() {
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MNotificationNextId.class);
+      Collection<MNotificationNextId> ids = (Collection)query.execute();
+      long id = 0;
+      if (ids != null && ids.size() > 0) {
+        id = ids.iterator().next().getNextEventId() - 1;
+      }
+      commited = commitTransaction();
+      return new CurrentNotificationEventId(id);
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MNotificationLog translateThriftToDb(NotificationEvent entry) {
+    MNotificationLog dbEntry = new MNotificationLog();
+    dbEntry.setEventId(entry.getEventId());
+    dbEntry.setEventTime(entry.getEventTime());
+    dbEntry.setEventType(entry.getEventType());
+    dbEntry.setDbName(entry.getDbName());
+    dbEntry.setTableName(entry.getTableName());
+    dbEntry.setMessage(entry.getMessage());
+    return dbEntry;
+  }
+
+  private NotificationEvent translateDbToThrift(MNotificationLog dbEvent) {
+    NotificationEvent event = new NotificationEvent();
+    event.setEventId(dbEvent.getEventId());
+    event.setEventTime(dbEvent.getEventTime());
+    event.setEventType(dbEvent.getEventType());
+    event.setDbName(dbEvent.getDbName());
+    event.setTableName(dbEvent.getTableName());
+    event.setMessage((dbEvent.getMessage()));
+    return event;
+  }
+
+
+
 }

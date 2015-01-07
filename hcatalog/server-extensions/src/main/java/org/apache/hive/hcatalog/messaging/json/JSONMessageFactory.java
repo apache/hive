@@ -19,13 +19,18 @@
 
 package org.apache.hive.hcatalog.messaging.json;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+// TODO, once HIVE-9175 is committed
+// import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
@@ -41,6 +46,9 @@ import java.util.*;
  * each message-type.
  */
 public class JSONMessageFactory extends MessageFactory {
+
+  private static final Log LOG = LogFactory.getLog(JSONMessageFactory.class.getName());
+
 
   private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();
 
@@ -62,31 +70,40 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public CreateDatabaseMessage buildCreateDatabaseMessage(Database db) {
     return new JSONCreateDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
-        System.currentTimeMillis() / 1000);
+        now());
   }
 
   @Override
   public DropDatabaseMessage buildDropDatabaseMessage(Database db) {
     return new JSONDropDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
-        System.currentTimeMillis() / 1000);
+        now());
   }
 
   @Override
   public CreateTableMessage buildCreateTableMessage(Table table) {
     return new JSONCreateTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), System.currentTimeMillis()/1000);
+        table.getTableName(), now());
   }
+
+  // TODO Once HIVE-9175 is committed
+  /*
+  @Override
+  public AlterTableMessage buildAlterTableMessage(Table before, Table after) {
+    return new JSONAlterTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, before.getDbName(),
+        before.getTableName(), now());
+  }
+  */
 
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
     return new JSONDropTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(), table.getTableName(),
-        System.currentTimeMillis()/1000);
+        now());
   }
 
   @Override
   public AddPartitionMessage buildAddPartitionMessage(Table table, List<Partition> partitions) {
     return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitions), System.currentTimeMillis()/1000);
+        table.getTableName(), getPartitionKeyValues(table, partitions), now());
   }
 
   @Override
@@ -100,8 +117,11 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
     return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
-        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
-        System.currentTimeMillis()/1000);
+        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)), now());
+  }
+
+  private long now() {
+    return System.currentTimeMillis() / 1000;
   }
 
   private static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {

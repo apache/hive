@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -94,6 +95,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -1421,7 +1425,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Partition getPartition(String db, String tableName, String partName)
       throws MetaException, TException, UnknownTableException, NoSuchObjectException {
-    return deepCopy(filterHook.filterPartition(client.get_partition_by_name(db, tableName, partName)));
+    return deepCopy(
+        filterHook.filterPartition(client.get_partition_by_name(db, tableName, partName)));
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName)
@@ -1827,6 +1832,31 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
+                                                       NotificationFilter filter) throws TException {
+    NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
+    rqst.setMaxEvents(maxEvents);
+    NotificationEventResponse rsp = client.getNextNotification(rqst);
+    LOG.debug("Got back " + rsp.getEventsSize() + " events");
+    if (filter == null) {
+      return rsp;
+    } else {
+      NotificationEventResponse filtered = new NotificationEventResponse();
+      if (rsp != null && rsp.getEvents() != null) {
+        for (NotificationEvent e : rsp.getEvents()) {
+          if (filter.accept(e)) filtered.addToEvents(e);
+        }
+      }
+      return filtered;
+    }
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+    return client.getCurrentNotificationEventId();
   }
 
   /**
