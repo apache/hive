@@ -118,8 +118,6 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     this.sparkCounters = sparkCounters;
   }
 
-  // TODO: expose job status?
-
   @SuppressWarnings("unchecked")
   void setSuccess(Object result) {
     promise.setSuccess((T) result);

@@ -54,6 +54,4 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
    */
   SparkCounters getSparkCounters();
 
-  // TODO: expose job status?
-
 }

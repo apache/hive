@@ -371,7 +371,6 @@ public class RemoteDriver {
 
     @Override
     public void onJobStart(SparkListenerJobStart jobStart) {
-      // TODO: are stage IDs unique? Otherwise this won't work.
       synchronized (stageToJobId) {
         for (int i = 0; i < jobStart.stageIds().length(); i++) {
           stageToJobId.put((Integer) jobStart.stageIds().apply(i), jobStart.jobId());
