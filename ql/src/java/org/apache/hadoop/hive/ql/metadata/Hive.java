@@ -2364,11 +2364,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
     URI srcfUri = srcf.toUri();
-    // If the source file is in the file schema, it can not be the subdirectory of a HDFS path
-    if (srcfUri != null && srcfUri.isAbsolute() && !srcfUri.getScheme().equals("hdfs")) {
-      return false;
-    } else {
+    // In query test, the ware house is using the local file system.
+    boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(fs.getConf(), ConfVars.HIVE_IN_TEST));
+    if (isInTest) {
       return FileUtils.isSubDir(srcf, destf, fs);
+    } else {
+      // If the source file is in the file schema, it can not be the subdirectory of a HDFS path
+      if (srcfUri != null && srcfUri.isAbsolute() && !srcfUri.getScheme().equals("hdfs")) {
+        return false;
+      } else {
+        return FileUtils.isSubDir(srcf, destf, fs);
+      }
     }
   }
 
