@@ -942,7 +942,7 @@ public class QTestUtil {
   }
 
   private int executeTestCommand(final String command) {
-    String commandName = command.split("\\s+")[0];
+    String commandName = command.trim().split("\\s+")[0];
     String commandArgs = command.substring(commandName.length());
 
     if (commandArgs.endsWith(";")) {
