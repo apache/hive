@@ -33,3 +33,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unencrypted_table
 #### A masked pattern was here ####
 500
+PREHOOK: query: drop table unencrypted_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unencrypted_table
+PREHOOK: Output: default@unencrypted_table
+POSTHOOK: query: drop table unencrypted_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unencrypted_table
+POSTHOOK: Output: default@unencrypted_table

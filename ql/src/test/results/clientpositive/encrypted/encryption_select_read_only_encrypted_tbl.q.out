@@ -17,7 +17,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
-Encryption zone created: '/user/hive/warehouse/default/encrypted_table' using key: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -35,3 +35,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
 #### A masked pattern was here ####
 500
+PREHOOK: query: drop table encrypted_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encrypted_table
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: drop table encrypted_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table

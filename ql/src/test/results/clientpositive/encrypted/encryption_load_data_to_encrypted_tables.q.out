@@ -4,16 +4,16 @@ POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-PREHOOK: Input: /user/hive/warehouse/encrypted_table
+#### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Input: /user/hive/warehouse/encrypted_table
+#### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key1'
-Encryption zone created: '/user/hive/warehouse/encrypted_table' using key: 'key1'
+Encryption zone created: '/build/ql/test/data/warehouse/encrypted_table' using key: 'key1'
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted_table
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -25,11 +25,11 @@ POSTHOOK: Output: default@encrypted_table
 PREHOOK: query: SELECT * FROM encrypted_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
 POSTHOOK: query: SELECT * FROM encrypted_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
 238	val_238
 86	val_86
 311	val_311
@@ -541,11 +541,11 @@ POSTHOOK: Output: default@encrypted_table
 PREHOOK: query: SELECT * FROM encrypted_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
 POSTHOOK: query: SELECT * FROM encrypted_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
 238	val_238
 86	val_86
 311	val_311

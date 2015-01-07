@@ -1,34 +1,52 @@
-PREHOOK: query: drop table IF EXISTS encryptedTable
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- init
+drop table IF EXISTS encryptedTable
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table IF EXISTS encryptedTable
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- init
+drop table IF EXISTS encryptedTable
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table IF EXISTS unencryptedTable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table IF EXISTS unencryptedTable
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table encryptedTable(value string) partitioned by (key string) clustered by (value) into 2 buckets stored as orc location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table encryptedTable(value string)
+    partitioned by (key string) clustered by (value) into 2 buckets stored as orc
+    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedTable
-POSTHOOK: query: create table encryptedTable(value string) partitioned by (key string) clustered by (value) into 2 buckets stored as orc location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: create table encryptedTable(value string)
+    partitioned by (key string) clustered by (value) into 2 buckets stored as orc
+    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encryptedTable
 Encryption key created: 'key_1'
 Encryption zone created: '/build/ql/test/data/warehouse/encryptedTable' using key: 'key_1'
-PREHOOK: query: create table unencryptedTable(value string) partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table unencryptedTable(value string)
+    partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@unencryptedTable
-POSTHOOK: query: create table unencryptedTable(value string) partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: create table unencryptedTable(value string)
+    partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencryptedTable
-PREHOOK: query: explain extended insert into table encryptedTable partition (key) values ('val_501', '501'), ('val_502', '502')
+PREHOOK: query: -- insert encrypted table from values
+explain extended insert into table encryptedTable partition (key) values
+    ('val_501', '501'),
+    ('val_502', '502')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended insert into table encryptedTable partition (key) values ('val_501', '501'), ('val_502', '502')
+POSTHOOK: query: -- insert encrypted table from values
+explain extended insert into table encryptedTable partition (key) values
+    ('val_501', '501'),
+    ('val_502', '502')
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -178,11 +196,15 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 
-PREHOOK: query: insert into table encryptedTable partition (key) values ('val_501', '501'), ('val_502', '502')
+PREHOOK: query: insert into table encryptedTable partition (key) values
+    ('val_501', '501'),
+    ('val_502', '502')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: insert into table encryptedTable partition (key) values ('val_501', '501'), ('val_502', '502')
+POSTHOOK: query: insert into table encryptedTable partition (key) values
+    ('val_501', '501'),
+    ('val_502', '502')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@encryptedtable@key=501
@@ -203,9 +225,15 @@ POSTHOOK: Input: default@encryptedtable@key=502
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 val_501	501
 val_502	502
-PREHOOK: query: explain extended from src insert into table encryptedTable partition (key) select value, key limit 2
+PREHOOK: query: -- insert encrypted table from unencrypted source
+explain extended from src
+insert into table encryptedTable partition (key)
+    select value, key limit 2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended from src insert into table encryptedTable partition (key) select value, key limit 2
+POSTHOOK: query: -- insert encrypted table from unencrypted source
+explain extended from src
+insert into table encryptedTable partition (key)
+    select value, key limit 2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -440,11 +468,15 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 
-PREHOOK: query: from src insert into table encryptedTable partition (key) select value, key limit 2
+PREHOOK: query: from src
+insert into table encryptedTable partition (key)
+    select value, key limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: from src insert into table encryptedTable partition (key) select value, key limit 2
+POSTHOOK: query: from src
+insert into table encryptedTable partition (key)
+    select value, key limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@encryptedtable@key=238
@@ -471,9 +503,15 @@ val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: explain extended from encryptedTable insert into table unencryptedTable partition (key) select value, key
+PREHOOK: query: -- insert unencrypted table from encrypted source
+explain extended from encryptedTable
+insert into table unencryptedTable partition (key)
+    select value, key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended from encryptedTable insert into table unencryptedTable partition (key) select value, key
+POSTHOOK: query: -- insert unencrypted table from encrypted source
+explain extended from encryptedTable
+insert into table unencryptedTable partition (key)
+    select value, key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -790,7 +828,9 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A PARTIAL masked pattern was here #### data/warehouse/unencryptedtable/.hive-staging
 
-PREHOOK: query: from encryptedTable insert into table unencryptedTable partition (key) select value, key
+PREHOOK: query: from encryptedTable
+insert into table unencryptedTable partition (key)
+    select value, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Input: default@encryptedtable@key=238
@@ -798,7 +838,9 @@ PREHOOK: Input: default@encryptedtable@key=501
 PREHOOK: Input: default@encryptedtable@key=502
 PREHOOK: Input: default@encryptedtable@key=86
 PREHOOK: Output: default@unencryptedtable
-POSTHOOK: query: from encryptedTable insert into table unencryptedTable partition (key) select value, key
+POSTHOOK: query: from encryptedTable
+insert into table unencryptedTable partition (key)
+    select value, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Input: default@encryptedtable@key=238
@@ -820,7 +862,7 @@ PREHOOK: Input: default@unencryptedtable@key=238
 PREHOOK: Input: default@unencryptedtable@key=501
 PREHOOK: Input: default@unencryptedtable@key=502
 PREHOOK: Input: default@unencryptedtable@key=86
-#### A PARTIAL masked pattern was here #### data/warehouse/unencryptedtable/.hive-staging
+#### A masked pattern was here ####
 POSTHOOK: query: select * from unencryptedTable order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unencryptedtable
@@ -828,16 +870,18 @@ POSTHOOK: Input: default@unencryptedtable@key=238
 POSTHOOK: Input: default@unencryptedtable@key=501
 POSTHOOK: Input: default@unencryptedtable@key=502
 POSTHOOK: Input: default@unencryptedtable@key=86
-#### A PARTIAL masked pattern was here #### data/warehouse/unencryptedtable/.hive-staging
+#### A masked pattern was here ####
 val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: drop table encryptedTable
+PREHOOK: query: -- clean up
+drop table encryptedTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: drop table encryptedTable
+POSTHOOK: query: -- clean up
+drop table encryptedTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Output: default@encryptedtable
