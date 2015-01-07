@@ -477,6 +477,9 @@ public class HiveConf extends Configuration {
     METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", "",
         "List of comma separated listeners for metastore events."),
     METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "", ""),
+    METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "time after which events will be removed from the database listener queue"),
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false,
         "Should the metastore do authorization checks against the underlying storage (usually hdfs) \n" +
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +

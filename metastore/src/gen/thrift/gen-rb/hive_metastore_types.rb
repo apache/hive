@@ -1986,6 +1986,89 @@ class ShowCompactResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class NotificationEventRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  LASTEVENT = 1
+  MAXEVENTS = 2
+
+  FIELDS = {
+    LASTEVENT => {:type => ::Thrift::Types::I64, :name => 'lastEvent'},
+    MAXEVENTS => {:type => ::Thrift::Types::I32, :name => 'maxEvents', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lastEvent is unset!') unless @lastEvent
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class NotificationEvent
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTID = 1
+  EVENTTIME = 2
+  EVENTTYPE = 3
+  DBNAME = 4
+  TABLENAME = 5
+  MESSAGE = 6
+
+  FIELDS = {
+    EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'},
+    EVENTTIME => {:type => ::Thrift::Types::I32, :name => 'eventTime'},
+    EVENTTYPE => {:type => ::Thrift::Types::STRING, :name => 'eventType'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventId is unset!') unless @eventId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventTime is unset!') unless @eventTime
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventType is unset!') unless @eventType
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field message is unset!') unless @message
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class NotificationEventResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTS = 1
+
+  FIELDS = {
+    EVENTS => {:type => ::Thrift::Types::LIST, :name => 'events', :element => {:type => ::Thrift::Types::STRUCT, :class => ::NotificationEvent}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field events is unset!') unless @events
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CurrentNotificationEventId
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTID = 1
+
+  FIELDS = {
+    EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventId is unset!') unless @eventId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

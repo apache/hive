@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -111,6 +112,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -5578,6 +5581,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = ret && update_partition_column_statistics(colStats);
       }
       return ret;
+    }
+
+    @Override
+    public NotificationEventResponse getNextNotification(NotificationEventRequest rqst)
+        throws TException {
+      RawStore ms = getMS();
+      return ms.getNextNotification(rqst);
+    }
+
+    @Override
+    public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+      RawStore ms = getMS();
+      return ms.getCurrentNotificationEventId();
     }
   }
 

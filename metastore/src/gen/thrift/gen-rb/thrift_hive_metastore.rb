@@ -1977,6 +1977,36 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
     end
 
+    def getNextNotification(rqst)
+      send_getNextNotification(rqst)
+      return recv_getNextNotification()
+    end
+
+    def send_getNextNotification(rqst)
+      send_message('getNextNotification', GetNextNotification_args, :rqst => rqst)
+    end
+
+    def recv_getNextNotification()
+      result = receive_message(GetNextNotification_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getNextNotification failed: unknown result')
+    end
+
+    def getCurrentNotificationEventId()
+      send_getCurrentNotificationEventId()
+      return recv_getCurrentNotificationEventId()
+    end
+
+    def send_getCurrentNotificationEventId()
+      send_message('getCurrentNotificationEventId', GetCurrentNotificationEventId_args)
+    end
+
+    def recv_getCurrentNotificationEventId()
+      result = receive_message(GetCurrentNotificationEventId_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getCurrentNotificationEventId failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3491,6 +3521,20 @@ module ThriftHiveMetastore
       result = Show_compact_result.new()
       result.success = @handler.show_compact(args.rqst)
       write_result(result, oprot, 'show_compact', seqid)
+    end
+
+    def process_getNextNotification(seqid, iprot, oprot)
+      args = read_args(iprot, GetNextNotification_args)
+      result = GetNextNotification_result.new()
+      result.success = @handler.getNextNotification(args.rqst)
+      write_result(result, oprot, 'getNextNotification', seqid)
+    end
+
+    def process_getCurrentNotificationEventId(seqid, iprot, oprot)
+      args = read_args(iprot, GetCurrentNotificationEventId_args)
+      result = GetCurrentNotificationEventId_result.new()
+      result.success = @handler.getCurrentNotificationEventId()
+      write_result(result, oprot, 'getCurrentNotificationEventId', seqid)
     end
 
   end
@@ -7971,6 +8015,69 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowCompactResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetNextNotification_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::NotificationEventRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetNextNotification_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEventResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetCurrentNotificationEventId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetCurrentNotificationEventId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CurrentNotificationEventId}
     }
 
     def struct_fields; FIELDS; end
