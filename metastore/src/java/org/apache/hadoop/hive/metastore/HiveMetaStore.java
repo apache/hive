@@ -204,7 +204,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -5814,6 +5816,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
       boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+      boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
@@ -5821,6 +5824,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       TProcessor processor;
       TTransportFactory transFactory;
+      final TProtocolFactory protocolFactory;
+      final TProtocolFactory inputProtoFactory;
+      if (useCompactProtocol) {
+        protocolFactory = new TCompactProtocol.Factory();
+        inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
+      } else {
+        protocolFactory = new TBinaryProtocol.Factory();
+        inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
+      }
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
@@ -5860,9 +5872,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TCompactProtocol.Factory())
-          .inputProtocolFactory(
-              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
+          .protocolFactory(protocolFactory)
+          .inputProtocolFactory(inputProtoFactory)
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 

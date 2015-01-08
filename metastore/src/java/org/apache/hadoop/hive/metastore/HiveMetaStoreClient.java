@@ -135,7 +135,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -349,6 +351,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     TTransportException tte = null;
     boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+    boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) conf.getTimeVar(
         ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -390,8 +393,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           } else if (useFramedTransport) {
             transport = new TFramedTransport(transport);
           }
-
-          client = new ThriftHiveMetastore.Client(new TCompactProtocol(transport));
+          final TProtocol protocol;
+          if (useCompactProtocol) {
+            protocol = new TCompactProtocol(transport);
+          } else {
+            protocol = new TBinaryProtocol(transport);
+          }
+          client = new ThriftHiveMetastore.Client(protocol);
           try {
             transport.open();
             isConnected = true;
