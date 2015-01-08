@@ -22,6 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -108,15 +110,16 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -161,9 +164,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableList.Builder;
 
 public class CalcitePlanner extends SemanticAnalyzer {
   private final AtomicInteger     noColsMissingStats = new AtomicInteger(0);
@@ -1521,7 +1524,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genGBRelNode(List<ExprNodeDesc> gbExprs, List<AggInfo> aggInfoLst,
-        RelNode srcRel) throws SemanticException {
+        List<Integer> groupSets, RelNode srcRel) throws SemanticException {
       ImmutableMap<String, Integer> posMap = this.relToHiveColNameCalcitePosMap.get(srcRel);
       RexNodeConverter converter = new RexNodeConverter(this.cluster, srcRel.getRowType(), posMap,
           0, false);
@@ -1553,15 +1556,43 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
 
+      // Grouping sets: we need to transform them into ImmutableBitSet
+      // objects for Calcite
+      List<ImmutableBitSet> transformedGroupSets = null;
+      if(groupSets != null && !groupSets.isEmpty()) {
+        Set<ImmutableBitSet> setTransformedGroupSets =
+                new HashSet<ImmutableBitSet>(groupSets.size());
+        for(int val: groupSets) {
+          setTransformedGroupSets.add(convert(val));
+        }
+        // Calcite expects the grouping sets sorted and without duplicates
+        transformedGroupSets = new ArrayList<ImmutableBitSet>(setTransformedGroupSets);
+        Collections.sort(transformedGroupSets, ImmutableBitSet.COMPARATOR);
+      }
+
       HiveRelNode aggregateRel = null;
       try {
         aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            gbInputRel, false, groupSet, null, aggregateCalls);
+            gbInputRel, (transformedGroupSets!=null ? true:false), groupSet,
+            transformedGroupSets, aggregateCalls);
       } catch (InvalidRelException e) {
         throw new SemanticException(e);
       }
 
       return aggregateRel;
+    }
+
+    private ImmutableBitSet convert(int value) {
+      BitSet bits = new BitSet();
+      int index = 0;
+      while (value != 0L) {
+        if (value % 2 != 0) {
+          bits.set(index);
+        }
+        ++index;
+        value = value >>> 1;
+      }
+      return ImmutableBitSet.FROM_BIT_SET.apply(bits);
     }
 
     private void addAlternateGByKeyMappings(ASTNode gByExpr, ColumnInfo colInfo,
@@ -1698,26 +1729,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
 
-      // 0. for GSets, Cube, Rollup, bail from Calcite path.
-      if (!qbp.getDestRollups().isEmpty() || !qbp.getDestGroupingSets().isEmpty()
-          || !qbp.getDestCubes().isEmpty()) {
-        String gbyClause = null;
-        HashMap<String, ASTNode> gbysMap = qbp.getDestToGroupBy();
-        if (gbysMap.size() == 1) {
-          ASTNode gbyAST = gbysMap.entrySet().iterator().next().getValue();
-          gbyClause = ctx.getTokenRewriteStream().toString(gbyAST.getTokenStartIndex(),
-              gbyAST.getTokenStopIndex());
-          gbyClause = "in '" + gbyClause + "'.";
-        } else {
-          gbyClause = ".";
-        }
-        String msg = String.format("Encountered Grouping Set/Cube/Rollup%s"
-            + " Currently we don't support Grouping Set/Cube/Rollup" + " clauses in CBO,"
-            + " turn off cbo for these queries.", gbyClause);
-        LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
-      }
-
       // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
@@ -1751,18 +1762,34 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 4. Construct aggregation function Info
+        // 4. GroupingSets, Cube, Rollup
+        int groupingColsSize = gbExprNDescLst.size();
+        List<Integer> groupingSets = null;
+        if (!qbp.getDestRollups().isEmpty()
+                || !qbp.getDestGroupingSets().isEmpty()
+                || !qbp.getDestCubes().isEmpty()) {
+          if (qbp.getDestRollups().contains(detsClauseName)) {
+            groupingSets = getGroupingSetsForRollup(grpByAstExprs.size());
+          } else if (qbp.getDestCubes().contains(detsClauseName)) {
+            groupingSets = getGroupingSetsForCube(grpByAstExprs.size());
+          } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
+            groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
+          }
+          groupingColsSize = groupingColsSize * 2;
+        }
+
+        // 5. Construct aggregation function Info
         ArrayList<AggInfo> aggregations = new ArrayList<AggInfo>();
         if (hasAggregationTrees) {
           assert (aggregationTrees != null);
           for (ASTNode value : aggregationTrees.values()) {
-            // 4.1 Determine type of UDAF
+            // 5.1 Determine type of UDAF
             // This is the GenericUDAF name
             String aggName = SemanticAnalyzer.unescapeIdentifier(value.getChild(0).getText());
             boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
             boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
 
-            // 4.2 Convert UDAF Params to ExprNodeDesc
+            // 5.2 Convert UDAF Params to ExprNodeDesc
             ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
             for (int i = 1; i < value.getChildCount(); i++) {
               ASTNode paraExpr = (ASTNode) value.getChild(i);
@@ -1779,18 +1806,62 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 aggParameters);
             AggInfo aInfo = new AggInfo(aggParameters, udaf.returnType, aggName, isDistinct);
             aggregations.add(aInfo);
-            String field = SemanticAnalyzer.getColumnInternalName(gbExprNDescLst.size()
-                + aggregations.size() - 1);
+            String field = getColumnInternalName(groupingColsSize + aggregations.size() - 1);
             outputColumnNames.add(field);
             groupByOutputRowResolver.putExpression(value, new ColumnInfo(field, aInfo.m_returnType,
                 "", false));
           }
         }
 
-        gbRel = genGBRelNode(gbExprNDescLst, aggregations, srcRel);
+        gbRel = genGBRelNode(gbExprNDescLst, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(gbRel,
             buildHiveToCalciteColumnMap(groupByOutputRowResolver, gbRel));
         this.relToHiveRR.put(gbRel, groupByOutputRowResolver);
+        
+        // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id.
+        // Further, we insert a project operator on top to remove the grouping
+        // boolean associated to each column in Calcite; this will avoid
+        // recalculating all column positions when we go back from Calcite to Hive
+        if(groupingSets != null && !groupingSets.isEmpty()) {
+          RowResolver selectOutputRowResolver = new RowResolver();
+          selectOutputRowResolver.setIsExprResolver(true);
+          RowResolver.add(selectOutputRowResolver, groupByOutputRowResolver);
+          outputColumnNames = new ArrayList<String>(outputColumnNames);
+
+          // 6.1 List of columns to keep from groupBy operator
+          List<RelDataTypeField> gbOutput = gbRel.getRowType().getFieldList();
+          List<RexNode> calciteColLst = new ArrayList<RexNode>();
+          for(RelDataTypeField gbOut: gbOutput) {
+            if(gbOut.getIndex() < gbExprNDescLst.size() ||
+                    gbOut.getIndex() >= gbExprNDescLst.size() * 2) {
+              calciteColLst.add(new RexInputRef(gbOut.getIndex(), gbOut.getType()));
+            }
+          }
+
+          // 6.2 Add column for grouping_id function
+          String field = getColumnInternalName(groupingColsSize + aggregations.size());
+          outputColumnNames.add(field);
+          selectOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+                  new ColumnInfo(
+                          field,
+                          TypeInfoFactory.stringTypeInfo,
+                          null,
+                          true));
+
+          // 6.3 Compute column for grouping_id function in Calcite
+          List<RexNode> identifierCols = new ArrayList<RexNode>();
+          for(int i = gbExprNDescLst.size(); i < gbExprNDescLst.size() * 2; i++) {
+            identifierCols.add(new RexInputRef(
+                    i, gbOutput.get(i).getType()));
+          }
+          final RexBuilder rexBuilder = cluster.getRexBuilder();
+          RexNode groupingID = rexBuilder.makeCall(HiveGroupingID.GROUPING__ID,
+                  identifierCols);
+          calciteColLst.add(groupingID);
+
+          // Create select
+          gbRel = this.genSelectRelNode(calciteColLst, selectOutputRowResolver, gbRel);
+        }
       }
 
       return gbRel;
