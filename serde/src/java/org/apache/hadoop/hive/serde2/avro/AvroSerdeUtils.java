@@ -97,7 +97,7 @@ public class AvroSerdeUtils {
    * @throws IOException if error while trying to read the schema from another location
    * @throws AvroSerdeException if unable to find a schema or pointer to it in the properties
    */
-  public static Schema determineSchemaOrThrowException(Properties properties)
+  public static Schema determineSchemaOrThrowException(Configuration conf, Properties properties)
           throws IOException, AvroSerdeException {
     String schemaString = properties.getProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName());
     if(schemaString != null && !schemaString.equals(SCHEMA_NONE))
@@ -109,7 +109,7 @@ public class AvroSerdeUtils {
       throw new AvroSerdeException(EXCEPTION_MESSAGE);
 
     try {
-      Schema s = getSchemaFromFS(schemaString, new Configuration());
+      Schema s = getSchemaFromFS(schemaString, conf);
       if (s == null) {
         //in case schema is not a file system
         return AvroSerdeUtils.getSchemaFor(new URL(schemaString).openStream());
