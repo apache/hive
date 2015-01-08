@@ -145,7 +145,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private Path createTargetPath(Path targetPath, FileSystem fs) throws IOException {
     Path deletePath = null;
     Path mkDirPath = targetPath.getParent();
-    if (mkDirPath != null & !fs.exists(mkDirPath)) {
+    if (mkDirPath != null && !fs.exists(mkDirPath)) {
       Path actualPath = mkDirPath;
       // targetPath path is /x/y/z/1/2/3 here /x/y/z is present in the file system
       // create the structure till /x/y/z/1/2 to work rename for multilevel directory
