@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.lang.StringBuffer;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -57,16 +56,16 @@ import com.google.common.base.Preconditions;
  * (normal, no scan, partial scan.) The plan at this point will be a single
  * table scan operator.
  *
- * TODO: cloned from tez ProcessAnalyzeTable. Need to make sure it fits to Spark.
+ * Cloned from Tez ProcessAnalyzeTable.
  */
 public class SparkProcessAnalyzeTable implements NodeProcessor {
-  private static final Log logger = LogFactory.getLog(SparkProcessAnalyzeTable.class.getName());
+  private static final Log LOGGER = LogFactory.getLog(SparkProcessAnalyzeTable.class.getName());
 
   // shared plan utils for spark
   private GenSparkUtils utils = null;
 
   /**
-   * Injecting the utils in the constructor facilitates testing
+   * Injecting the utils in the constructor facilitates testing.
    */
   public SparkProcessAnalyzeTable(GenSparkUtils utils) {
     this.utils = utils;
@@ -81,16 +80,18 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     TableScanOperator tableScan = (TableScanOperator) nd;
 
     ParseContext parseContext = context.parseContext;
+
+    @SuppressWarnings("rawtypes")
     Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
         .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
 
     if (parseInfo.isAnalyzeCommand()) {
-      Preconditions.checkArgument(tableScan.getChildOperators() == null ||
-        tableScan.getChildOperators().size() == 0,
-          "AssertionError: expected tableScan.getChildOperators() to be null, " +
-            "or tableScan.getChildOperators().size() to be 0");
+      Preconditions.checkArgument(tableScan.getChildOperators() == null
+        || tableScan.getChildOperators().size() == 0,
+        "AssertionError: expected tableScan.getChildOperators() to be null, "
+        + "or tableScan.getChildOperators().size() to be 0");
 
       String alias = null;
       for (String a: parseContext.getTopOps().keySet()) {
@@ -185,6 +186,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
 
     // partial scan task
     DriverContext driverCxt = new DriverContext();
+
+    @SuppressWarnings("unchecked")
     Task<PartialScanWork> partialScanTask = TaskFactory.get(scanWork, parseContext.getConf());
     partialScanTask.initialize(parseContext.getConf(), null, driverCxt);
     partialScanTask.setWork(scanWork);

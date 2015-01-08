@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -48,7 +49,7 @@ public interface JobContext {
     JavaFutureAction<T> job, SparkCounters sparkCounters, Set<Integer> cachedRDDIds);
 
   /**
-   * Return a map from client job Id to corresponding JavaFutureActions
+   * Return a map from client job Id to corresponding JavaFutureActions.
    */
   Map<String, List<JavaFutureAction<?>>> getMonitoredJobs();
 

@@ -33,8 +33,9 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 import com.google.common.base.Preconditions;
 
+@SuppressWarnings("rawtypes")
 public class SparkPlan {
-  private final String CLASS_NAME = SparkPlan.class.getName();
+  private static final String CLASS_NAME = SparkPlan.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   private final Set<SparkTran> rootTrans = new HashSet<SparkTran>();
@@ -43,7 +44,8 @@ public class SparkPlan {
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Set<Integer> cachedRDDIds = new HashSet<Integer>();
 
-  public JavaPairRDD<HiveKey, BytesWritable> generateGraph() throws IllegalStateException {
+  @SuppressWarnings("unchecked")
+  public JavaPairRDD<HiveKey, BytesWritable> generateGraph() {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_RDD_GRAPH);
     Map<SparkTran, JavaPairRDD<HiveKey, BytesWritable>> tranToOutputRDDMap
         = new HashMap<SparkTran, JavaPairRDD<HiveKey, BytesWritable>>();
@@ -98,7 +100,7 @@ public class SparkPlan {
   }
 
   /**
-   * This method returns a topologically sorted list of SparkTran
+   * This method returns a topologically sorted list of SparkTran.
    */
   private List<SparkTran> getAllTrans() {
     List<SparkTran> result = new LinkedList<SparkTran>();
@@ -135,7 +137,7 @@ public class SparkPlan {
    * @param parent
    * @param child
    */
-  public void connect(SparkTran parent, SparkTran child) throws IllegalStateException {
+  public void connect(SparkTran parent, SparkTran child) {
     if (getChildren(parent).contains(child)) {
       throw new IllegalStateException("Connection already exists");
     }
@@ -151,7 +153,7 @@ public class SparkPlan {
     invertedTransGraph.get(child).add(parent);
   }
 
-  public List<SparkTran> getParents(SparkTran tran) throws IllegalStateException {
+  public List<SparkTran> getParents(SparkTran tran) {
     if (!invertedTransGraph.containsKey(tran)) {
       return new ArrayList<SparkTran>();
     }
@@ -159,7 +161,7 @@ public class SparkPlan {
     return invertedTransGraph.get(tran);
   }
 
-  public List<SparkTran> getChildren(SparkTran tran) throws IllegalStateException {
+  public List<SparkTran> getChildren(SparkTran tran) {
     if (!transGraph.containsKey(tran)) {
       return new ArrayList<SparkTran>();
     }

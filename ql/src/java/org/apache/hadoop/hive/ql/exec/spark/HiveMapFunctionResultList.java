@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.mapred.Reporter;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -32,6 +31,7 @@ public class HiveMapFunctionResultList extends
   /**
    * Instantiate result set Iterable for Map function output.
    *
+   * @param conf Hive configuration.
    * @param inputIterator Input record iterator.
    * @param handler Initialized {@link SparkMapRecordHandler} instance.
    */

@@ -20,13 +20,12 @@ package org.apache.hive.spark.client;
 import java.io.IOException;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import org.apache.spark.SparkException;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.rpc.RpcServer;
+import org.apache.spark.SparkException;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 /**
  * Factory for SparkClient instances.

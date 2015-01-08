@@ -20,6 +20,7 @@ package org.apache.hive.spark.client;
 import java.util.Set;
 
 import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.api.java.JavaFutureAction;
 
 interface MonitorCallback {

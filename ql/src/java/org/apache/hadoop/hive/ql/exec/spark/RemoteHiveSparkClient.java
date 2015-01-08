@@ -64,10 +64,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static transient final Log LOG = LogFactory
+  protected static final transient Log LOG = LogFactory
     .getLog(RemoteHiveSparkClient.class);
 
-  private static transient final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
+  private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient SparkClient remoteClient;
   private transient SparkConf sparkConf;

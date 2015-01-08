@@ -34,12 +34,15 @@ public interface HiveSparkClient extends Serializable, Closeable {
    * @return SparkJobRef could be used to track spark job progress and metrics.
    * @throws Exception
    */
-  public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception;
-
-  public SparkConf getSparkConf();
+  SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception;
 
   /**
-   * Get the count of executors
+   * @return spark configuration
    */
-  public int getExecutorCount() throws Exception;
+  SparkConf getSparkConf();
+
+  /**
+   * @return the number of executors
+   */
+  int getExecutorCount() throws Exception;
 }

@@ -31,9 +31,10 @@ public class CounterStatsAggregatorSpark
 
   private SparkCounters sparkCounters;
 
+  @SuppressWarnings("rawtypes")
   @Override
   public boolean connect(Configuration hconf, Task sourceTask) {
-    SparkTask task = (SparkTask)sourceTask;
+    SparkTask task = (SparkTask) sourceTask;
     sparkCounters = task.getSparkCounters();
     if (sparkCounters == null) {
       return false;

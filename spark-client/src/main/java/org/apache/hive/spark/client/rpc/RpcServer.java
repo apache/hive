@@ -17,19 +17,6 @@
 
 package org.apache.hive.spark.client.rpc;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.security.SecureRandom;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
-
-import com.google.common.base.Optional;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,9 +31,22 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.SecureRandom;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * An RPC server. The server matches remote clients based on a secret that is generated on
@@ -173,7 +173,7 @@ public class RpcServer implements Closeable {
   public void close() {
     try {
       channel.close();
-      for (Iterator<ClientInfo> clients = pendingClients.iterator(); clients.hasNext(); ) {
+      for (Iterator<ClientInfo> clients = pendingClients.iterator(); clients.hasNext();) {
         ClientInfo client = clients.next();
         clients.remove();
         client.promise.cancel(true);
@@ -191,7 +191,7 @@ public class RpcServer implements Closeable {
     protected void handle(ChannelHandlerContext ctx, Rpc.Hello msg) {
       cancelTask.cancel(true);
 
-      for (Iterator<ClientInfo> clients = pendingClients.iterator(); clients.hasNext(); ) {
+      for (Iterator<ClientInfo> clients = pendingClients.iterator(); clients.hasNext();) {
         ClientInfo client = clients.next();
         if (client.secret.equals(msg.secret)) {
           rpc.replaceDispatcher(client.dispatcher);

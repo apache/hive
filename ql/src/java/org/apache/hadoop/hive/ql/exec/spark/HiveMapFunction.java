@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.io.BytesWritable;
+
 import scala.Tuple2;
 
 import java.util.Iterator;
@@ -35,6 +36,7 @@ public class HiveMapFunction extends HivePairFlatMapFunction<
     super(jobConfBuffer, sparkReporter);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Iterable<Tuple2<HiveKey, BytesWritable>>
   call(Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
@@ -50,7 +52,6 @@ public class HiveMapFunction extends HivePairFlatMapFunction<
     }
 
     HiveMapFunctionResultList result = new HiveMapFunctionResultList(jobConf, it, mapRecordHandler);
-    //TODO we need to implement a Spark specified Reporter to collect stats, refer to HIVE-7709.
     mapRecordHandler.init(jobConf, result, sparkReporter);
 
     return result;

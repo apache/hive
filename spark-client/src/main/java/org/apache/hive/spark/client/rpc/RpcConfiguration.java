@@ -38,37 +38,37 @@ public final class RpcConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(RpcConfiguration.class);
 
   /** Connection timeout for RPC clients. */
-  public final static String CONNECT_TIMEOUT_MS_KEY = "hive.spark.client.connect.timeout.ms";
-  private final static int CONNECT_TIMEOUT_MS_DEFAULT = 1000;
+  public static final String CONNECT_TIMEOUT_MS_KEY = "hive.spark.client.connect.timeout.ms";
+  private static final int CONNECT_TIMEOUT_MS_DEFAULT = 1000;
 
   /**
-   * How long the server should wait for clients to connect back after they're registered. Also
-   * used to time out the client waiting for the server to reply to its "hello" message.
+   * How long the server should wait for clients to connect back after they're
+   * registered. Also used to time out the client waiting for the server to
+   * reply to its "hello" message.
    */
-  public final static String SERVER_CONNECT_TIMEOUT_MS_KEY =
-      "hive.spark.client.server.connect.timeout.ms";
-  private final static long SERVER_CONNECT_TIMEOUT_MS_DEFAULT = 10000L;
+  public static final String SERVER_CONNECT_TIMEOUT_MS_KEY = "hive.spark.client.server.connect.timeout.ms";
+  private static final long SERVER_CONNECT_TIMEOUT_MS_DEFAULT = 10000L;
 
   /**
-   * Number of bits of randomness in the generated client secrets. Rounded down to the nearest
-   * multiple of 8.
+   * Number of bits of randomness in the generated client secrets. Rounded down
+   * to the nearest multiple of 8.
    */
-  public final static String SECRET_RANDOM_BITS_KEY = "hive.spark.client.secret.bits";
-  private final static int SECRET_RANDOM_BITS_DEFAULT = 256;
+  public static final String SECRET_RANDOM_BITS_KEY = "hive.spark.client.secret.bits";
+  private static final int SECRET_RANDOM_BITS_DEFAULT = 256;
 
   /** Hostname or IP address to advertise for the server. */
-  public final static String SERVER_LISTEN_ADDRESS_KEY = "hive.spark.client.server.address";
+  public static final String SERVER_LISTEN_ADDRESS_KEY = "hive.spark.client.server.address";
 
   /** Maximum number of threads to use for the RPC event loop. */
-  public final static String RPC_MAX_THREADS_KEY = "hive.spark.client.rpc.threads";
-  public final static int RPC_MAX_THREADS_DEFAULT = 8;
+  public static final String RPC_MAX_THREADS_KEY = "hive.spark.client.rpc.threads";
+  public static final int RPC_MAX_THREADS_DEFAULT = 8;
 
   /** Maximum message size. Default = 10MB. */
-  public final static String RPC_MAX_MESSAGE_SIZE_KEY = "hive.spark.client.rpc.max.size";
-  public final static int RPC_MAX_MESSAGE_SIZE_DEFAULT = 50 * 1024 * 1024;
+  public static final String RPC_MAX_MESSAGE_SIZE_KEY = "hive.spark.client.rpc.max.size";
+  public static final int RPC_MAX_MESSAGE_SIZE_DEFAULT = 50 * 1024 * 1024;
 
   /** Channel logging level. */
-  public final static String RPC_CHANNEL_LOG_LEVEL_KEY = "hive.spark.client.channel.log.level";
+  public static final String RPC_CHANNEL_LOG_LEVEL_KEY = "hive.spark.client.channel.log.level";
 
   private final Map<String, String> config;
 
@@ -104,7 +104,8 @@ public final class RpcConfiguration {
 
     InetAddress address = InetAddress.getLocalHost();
     if (address.isLoopbackAddress()) {
-      // Address resolves to something like 127.0.1.1, which happens on Debian; try to find
+      // Address resolves to something like 127.0.1.1, which happens on Debian;
+      // try to find
       // a better address using the local network interfaces
       Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
       while (ifaces.hasMoreElements()) {
@@ -112,17 +113,13 @@ public final class RpcConfiguration {
         Enumeration<InetAddress> addrs = ni.getInetAddresses();
         while (addrs.hasMoreElements()) {
           InetAddress addr = addrs.nextElement();
-          if (!addr.isLinkLocalAddress() &&
-              !addr.isLoopbackAddress() &&
-              addr instanceof Inet4Address) {
+          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
+              && addr instanceof Inet4Address) {
             // We've found an address that looks reasonable!
-            LOG.warn("Your hostname, {}, resolves to a loopback address; using {} " +
-              " instead (on interface {})",
-              address.getHostName(),
-              addr.getHostAddress(),
-              ni.getName());
-            LOG.warn("Set '{}' if you need to bind to another address.",
-                SERVER_LISTEN_ADDRESS_KEY);
+            LOG.warn("Your hostname, {}, resolves to a loopback address; using {} "
+                + " instead (on interface {})", address.getHostName(), addr.getHostAddress(),
+                ni.getName());
+            LOG.warn("Set '{}' if you need to bind to another address.", SERVER_LISTEN_ADDRESS_KEY);
             return addr.getHostAddress();
           }
         }

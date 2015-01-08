@@ -17,9 +17,9 @@
 
 package org.apache.hive.spark.client;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
+import java.io.Serializable;
 
 /**
  * Interface for a Spark remote job.

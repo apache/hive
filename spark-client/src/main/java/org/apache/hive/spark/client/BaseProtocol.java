@@ -19,11 +19,11 @@ package org.apache.hive.spark.client;
 
 import java.io.Serializable;
 
-import com.google.common.base.Throwables;
-
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.rpc.RpcDispatcher;
 import org.apache.hive.spark.counter.SparkCounters;
+
+import com.google.common.base.Throwables;
 
 abstract class BaseProtocol extends RpcDispatcher {
 
@@ -118,7 +118,7 @@ abstract class BaseProtocol extends RpcDispatcher {
   }
 
   /**
-   * Inform the client that a new spark job has been submitted for the client job
+   * Inform the client that a new spark job has been submitted for the client job.
    */
   protected static class JobSubmitted implements Serializable {
     final String clientJobId;

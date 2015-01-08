@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -53,9 +54,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-
+@SuppressWarnings("rawtypes")
 public class SparkPlanGenerator {
-  private final String CLASS_NAME = SparkPlanGenerator.class.getName();
+  private static final String CLASS_NAME = SparkPlanGenerator.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final Log LOG = LogFactory.getLog(SparkPlanGenerator.class);
 
@@ -131,8 +132,8 @@ public class SparkPlanGenerator {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
       }
     } else {
-      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, " +
-          "but found " + work.getClass().getName());
+      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
+        + "but found " + work.getClass().getName());
     }
 
     if (cloneToWork.containsKey(work)) {
@@ -142,7 +143,7 @@ public class SparkPlanGenerator {
     return result;
   }
 
-  private Class getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
+  private Class<?> getInputFormat(JobConf jobConf, MapWork mWork) throws HiveException {
     // MergeFileWork is sub-class of MapWork, we don't need to distinguish here
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(jobConf, HiveConf.ConfVars.HIVEINPUTFORMAT,
@@ -168,6 +169,7 @@ public class SparkPlanGenerator {
     return inputFormatClass;
   }
 
+  @SuppressWarnings("unchecked")
   private MapInput generateMapInput(SparkPlan sparkPlan, MapWork mapWork)
       throws Exception {
     JobConf jobConf = cloneJobConf(mapWork);
@@ -209,11 +211,12 @@ public class SparkPlanGenerator {
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;
     } else {
-      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, " +
-          "but found " + work.getClass().getName());
+      throw new IllegalStateException("AssertionError: expected either MapWork or ReduceWork, "
+        + "but found " + work.getClass().getName());
     }
   }
 
+  @SuppressWarnings({ "unchecked" })
   private JobConf cloneJobConf(BaseWork work) throws Exception {
     if (workToJobConf.containsKey(work)) {
       return workToJobConf.get(work);
@@ -225,9 +228,8 @@ public class SparkPlanGenerator {
       cloned.setPartitionerClass((Class<? extends Partitioner>)
           (Class.forName(HiveConf.getVar(cloned, HiveConf.ConfVars.HIVEPARTITIONER))));
     } catch (ClassNotFoundException e) {
-      String msg = "Could not find partitioner class: " + e.getMessage() +
-          " which is specified by: " +
-        HiveConf.ConfVars.HIVEPARTITIONER.varname;
+      String msg = "Could not find partitioner class: " + e.getMessage()
+        + " which is specified by: " + HiveConf.ConfVars.HIVEPARTITIONER.varname;
       throw new IllegalArgumentException(msg, e);
     }
     if (work instanceof MapWork) {

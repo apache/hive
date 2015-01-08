@@ -38,7 +38,10 @@ import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestRpc {
 
@@ -255,6 +258,5 @@ public class TestRpc {
       // No op. Shouldn't actually be called, if it is, the test will fail.
     }
 
-  };
-
+  }
 }

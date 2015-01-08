@@ -23,7 +23,7 @@ public class SparkJobRef {
 
   private SparkJobStatus sparkJobStatus;
 
-  public SparkJobRef() {}
+  public SparkJobRef() { }
 
   public SparkJobRef(String jobId) {
     this.jobId = jobId;

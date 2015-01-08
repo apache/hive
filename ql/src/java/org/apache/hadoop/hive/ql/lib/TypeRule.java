@@ -18,17 +18,16 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-
 import java.util.Stack;
-import java.util.regex.Matcher;
+
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Rule that matches a particular type of node.
  */
 public class TypeRule implements Rule {
 
-  private Class nodeClass;
+  private Class<?> nodeClass;
 
   public TypeRule(Class<?> nodeClass) {
     this.nodeClass = nodeClass;

@@ -24,19 +24,19 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.DataReadMethod;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Provides metrics collected for a submitted job.
@@ -162,7 +162,6 @@ public class MetricsCollection {
       long remoteBytesRead = 0L;
 
       // Shuffle write metrics.
-      boolean hasShuffleWriteMetrics = false;
       long shuffleBytesWritten = 0L;
       long shuffleWriteTime = 0L;
 
@@ -195,7 +194,6 @@ public class MetricsCollection {
         }
 
         if (m.shuffleWriteMetrics != null) {
-          hasShuffleWriteMetrics = true;
           shuffleBytesWritten += m.shuffleWriteMetrics.shuffleBytesWritten;
           shuffleWriteTime += m.shuffleWriteMetrics.shuffleWriteTime;
         }

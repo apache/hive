@@ -17,16 +17,21 @@
 
 package org.apache.hive.spark.client.rpc;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.logging.LoggingHandler;
 
+import java.util.List;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import com.google.common.collect.Lists;
 
 public class TestKryoMessageCodec {
 

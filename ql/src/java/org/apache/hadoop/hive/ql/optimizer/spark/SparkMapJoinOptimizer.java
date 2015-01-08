@@ -60,8 +60,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
   private static final Log LOG = LogFactory.getLog(SparkMapJoinOptimizer.class.getName());
 
   @Override
-  /*
-   * (non-Javadoc) we should ideally not modify the tree we traverse. However,
+  /**
+   * We should ideally not modify the tree we traverse. However,
    * since we need to walk the tree at any time when we modify the operator, we
    * might as well do it here.
    */
@@ -74,66 +74,14 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     JoinOperator joinOp = (JoinOperator) nd;
 
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
-      // && !(conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN))) {
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
-      // int pos = 0; // it doesn't matter which position we use in this case.
-      // convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
       return null;
     }
 
     LOG.info("Check if it can be converted to map join");
     long[] mapJoinInfo = getMapJoinConversionInfo(joinOp, context);
-    int mapJoinConversionPos = (int)mapJoinInfo[0];
+    int mapJoinConversionPos = (int) mapJoinInfo[0];
 
     if (mapJoinConversionPos < 0) {
-      /* TODO: handle this later
-      // we cannot convert to bucket map join, we cannot convert to
-      // map join either based on the size. Check if we can convert to SMB join.
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN) == false) {
-        convertJoinSMBJoin(joinOp, context, 0, 0, false, false);
-        return null;
-      }
-      Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
-      try {
-        bigTableMatcherClass =
-            (Class<? extends BigTableSelectorForAutoSMJ>) (Class.forName(HiveConf.getVar(
-                parseContext.getConf(),
-                HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR)));
-      } catch (ClassNotFoundException e) {
-        throw new SemanticException(e.getMessage());
-      }
-
-      BigTableSelectorForAutoSMJ bigTableMatcher =
-          ReflectionUtils.newInstance(bigTableMatcherClass, null);
-      JoinDesc joinDesc = joinOp.getConf();
-      JoinCondDesc[] joinCondns = joinDesc.getConds();
-      Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
-      if (joinCandidates.isEmpty()) {
-        // This is a full outer join. This can never be a map-join
-        // of any type. So return false.
-        return false;
-      }
-      mapJoinConversionPos =
-          bigTableMatcher.getBigTablePosition(parseContext, joinOp, joinCandidates);
-      if (mapJoinConversionPos < 0) {
-        // contains aliases from sub-query
-        // we are just converting to a common merge join operator. The shuffle
-        // join in map-reduce case.
-        int pos = 0; // it doesn't matter which position we use in this case.
-        convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
-        return null;
-      }
-
-      if (checkConvertJoinSMBJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
-        convertJoinSMBJoin(joinOp, context, mapJoinConversionPos,
-            tezBucketJoinProcCtx.getNumBuckets(), tezBucketJoinProcCtx.isSubQuery(), true);
-      } else {
-        // we are just converting to a common merge join operator. The shuffle
-        // join in map-reduce case.
-        int pos = 0; // it doesn't matter which position we use in this case.
-        convertJoinSMBJoin(joinOp, context, pos, 0, false, false);
-      }  */
       return null;
     }
 
@@ -166,107 +114,9 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     return mapJoinOp;
   }
 
-  // replaces the join operator with a new CommonJoinOperator, removes the
-  // parent reduce sinks
-  /*
-  private void convertJoinSMBJoin(JoinOperator joinOp, OptimizeSparkProcContext context,
-      int mapJoinConversionPos, int numBuckets, boolean isSubQuery, boolean adjustParentsChildren)
-      throws SemanticException {
-    ParseContext parseContext = context.parseContext;
-    MapJoinDesc mapJoinDesc = null;
-    if (adjustParentsChildren) {
-        mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
-            joinOp, parseContext.getJoinContext().get(joinOp), mapJoinConversionPos, true);
-    } else {
-      JoinDesc joinDesc = joinOp.getConf();
-      // retain the original join desc in the map join.
-      mapJoinDesc =
-          new MapJoinDesc(null, null, joinDesc.getExprs(), null, null,
-              joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
-              joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
-    }
-
-    @SuppressWarnings("unchecked")
-    CommonMergeJoinOperator mergeJoinOp =
-        (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
-            isSubQuery, mapJoinConversionPos, mapJoinDesc));
-    OpTraits opTraits =
-        new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets, joinOp.getOpTraits()
-            .getSortCols());
-    mergeJoinOp.setOpTraits(opTraits);
-    mergeJoinOp.setStatistics(joinOp.getStatistics());
-
-    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
-      int pos = parentOp.getChildOperators().indexOf(joinOp);
-      parentOp.getChildOperators().remove(pos);
-      parentOp.getChildOperators().add(pos, mergeJoinOp);
-    }
-
-    for (Operator<? extends OperatorDesc> childOp : joinOp.getChildOperators()) {
-      int pos = childOp.getParentOperators().indexOf(joinOp);
-      childOp.getParentOperators().remove(pos);
-      childOp.getParentOperators().add(pos, mergeJoinOp);
-    }
-
-    List<Operator<? extends OperatorDesc>> childOperators = mergeJoinOp.getChildOperators();
-    if (childOperators == null) {
-      childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-      mergeJoinOp.setChildOperators(childOperators);
-    }
-
-    List<Operator<? extends OperatorDesc>> parentOperators = mergeJoinOp.getParentOperators();
-    if (parentOperators == null) {
-      parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
-      mergeJoinOp.setParentOperators(parentOperators);
-    }
-
-    childOperators.clear();
-    parentOperators.clear();
-    childOperators.addAll(joinOp.getChildOperators());
-    parentOperators.addAll(joinOp.getParentOperators());
-    mergeJoinOp.getConf().setGenJoinKeys(false);
-
-    if (adjustParentsChildren) {
-      mergeJoinOp.getConf().setGenJoinKeys(true);
-      List<Operator<? extends OperatorDesc>> newParentOpList =
-          new ArrayList<Operator<? extends OperatorDesc>>();
-      for (Operator<? extends OperatorDesc> parentOp : mergeJoinOp.getParentOperators()) {
-        for (Operator<? extends OperatorDesc> grandParentOp : parentOp.getParentOperators()) {
-          grandParentOp.getChildOperators().remove(parentOp);
-          grandParentOp.getChildOperators().add(mergeJoinOp);
-          newParentOpList.add(grandParentOp);
-        }
-      }
-      mergeJoinOp.getParentOperators().clear();
-      mergeJoinOp.getParentOperators().addAll(newParentOpList);
-      List<Operator<? extends OperatorDesc>> parentOps =
-          new ArrayList<Operator<? extends OperatorDesc>>(mergeJoinOp.getParentOperators());
-      for (Operator<? extends OperatorDesc> parentOp : parentOps) {
-        int parentIndex = mergeJoinOp.getParentOperators().indexOf(parentOp);
-        if (parentIndex == mapJoinConversionPos) {
-          continue;
-        }
-
-        // insert the dummy store operator here
-        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator();
-        dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
-        dummyStoreOp.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
-        dummyStoreOp.getChildOperators().add(mergeJoinOp);
-        int index = parentOp.getChildOperators().indexOf(mergeJoinOp);
-        parentOp.getChildOperators().remove(index);
-        parentOp.getChildOperators().add(index, dummyStoreOp);
-        dummyStoreOp.getParentOperators().add(parentOp);
-        mergeJoinOp.getParentOperators().remove(parentIndex);
-        mergeJoinOp.getParentOperators().add(parentIndex, dummyStoreOp);
-      }
-    }
-    mergeJoinOp.cloneOriginalParentsList(mergeJoinOp.getParentOperators());
-  }
-  */
-
   private void setNumberOfBucketsOnChildren(Operator<? extends OperatorDesc> currentOp) {
     int numBuckets = currentOp.getOpTraits().getNumBuckets();
-    for (Operator<? extends OperatorDesc>op : currentOp.getChildOperators()) {
+    for (Operator<? extends OperatorDesc> op : currentOp.getChildOperators()) {
       if (!(op instanceof ReduceSinkOperator) && !(op instanceof GroupByOperator)) {
         op.getOpTraits().setNumBuckets(numBuckets);
         if (numBuckets < 0) {
@@ -298,8 +148,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     BucketMapjoinProc.checkAndConvertBucketMapJoin(
       parseContext, mapJoinOp, joinTree, baseBigAlias, joinAliases);
     MapJoinDesc joinDesc = mapJoinOp.getConf();
-    return joinDesc.isBucketMapJoin() ?
-      joinDesc.getBigTableBucketNumMapping().size() : -1;
+    return joinDesc.isBucketMapJoin()
+      ? joinDesc.getBigTableBucketNumMapping().size() : -1;
   }
 
   /**
@@ -337,7 +187,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
 
       Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
-        LOG.warn("Couldn't get statistics from: "+parentOp);
+        LOG.warn("Couldn't get statistics from: " + parentOp);
         return new long[]{-1, 0, 0};
       }
 
@@ -359,15 +209,14 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       // Otherwise, we could try to break the op tree at the UNION, and create two MapWorks
       // for the branches above. Then, MJ will be in the following ReduceWork.
       // But, this is tricky to implement, and we'll leave it as a future work for now.
-      // TODO: handle this as a MJ case
       if (containUnionWithoutRS(parentOp.getParentOperators().get(0))) {
         return new long[]{-1, 0, 0};
       }
 
       long inputSize = currInputStat.getDataSize();
-      if ((bigInputStat == null) ||
-          ((bigInputStat != null) &&
-          (inputSize > bigInputStat.getDataSize()))) {
+      if ((bigInputStat == null)
+          || ((bigInputStat != null)
+          && (inputSize > bigInputStat.getDataSize()))) {
 
         if (bigTableFound) {
           // cannot convert to map join; we've already chosen a big table
@@ -416,9 +265,10 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       return new long[]{-1, 0, 0};
     }
 
-    //Final check, find size of already-calculated Mapjoin Operators in same work (spark-stage).  We need to factor
-    //this in to prevent overwhelming Spark executor-memory.
-    long connectedMapJoinSize = getConnectedMapJoinSize(joinOp.getParentOperators().get(bigTablePosition), joinOp, context);
+    //Final check, find size of already-calculated Mapjoin Operators in same work (spark-stage).
+    //We need to factor this in to prevent overwhelming Spark executor-memory.
+    long connectedMapJoinSize = getConnectedMapJoinSize(joinOp.getParentOperators().
+      get(bigTablePosition), joinOp, context);
     if ((connectedMapJoinSize + totalSize) > maxSize) {
       return new long[]{-1, 0, 0};
     }
@@ -434,7 +284,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
    * @return total size of parent mapjoins in same work as this operator.
    */
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private long getConnectedMapJoinSize(Operator<? extends OperatorDesc> parentOp, Operator joinOp, OptimizeSparkProcContext ctx) {
+  private long getConnectedMapJoinSize(Operator<? extends OperatorDesc> parentOp, Operator joinOp,
+    OptimizeSparkProcContext ctx) {
     long result = 0;
     for (Operator<? extends OperatorDesc> grandParentOp : parentOp.getParentOperators()) {
       result += getConnectedParentMapJoinSize(grandParentOp, ctx);
@@ -482,7 +333,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     if (op instanceof MapJoinOperator) {
-      //found child mapjoin operator.  Its size should already reflect any mapjoins connected to it, so stop processing.
+      //Found child mapjoin operator.
+      //Its size should already reflect any mapjoins connected to it, so stop processing.
       long mjSize = ctx.getMjOpSizes().get(op);
       return mjSize;
     }

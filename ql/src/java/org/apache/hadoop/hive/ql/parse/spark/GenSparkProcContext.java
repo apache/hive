@@ -58,7 +58,7 @@ import java.util.Set;
  * Cloned from GenTezProcContext.
  *
  */
-public class GenSparkProcContext implements NodeProcessorCtx{
+public class GenSparkProcContext implements NodeProcessorCtx {
   public final ParseContext parseContext;
   public final HiveConf conf;
   public final List<Task<MoveWork>> moveTask;
@@ -89,11 +89,12 @@ public class GenSparkProcContext implements NodeProcessorCtx{
 
   // map that keeps track of the last operator of a task to the following work
   // of this operator. This is used for connecting them later.
-  public final Map<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>> leafOpToFollowingWorkInfo;
+  public final Map<ReduceSinkOperator, ObjectPair<SparkEdgeProperty, ReduceWork>>
+    leafOpToFollowingWorkInfo;
 
   // a map that keeps track of work that need to be linked while
   // traversing an operator tree
-  public final Map<Operator<?>, Map<BaseWork,SparkEdgeProperty>> linkOpWithWorkMap;
+  public final Map<Operator<?>, Map<BaseWork, SparkEdgeProperty>> linkOpWithWorkMap;
 
   // a map to keep track of what reduce sinks have to be hooked up to
   // map join work
@@ -138,9 +139,13 @@ public class GenSparkProcContext implements NodeProcessorCtx{
   public final Map<String, Operator<? extends OperatorDesc>> topOps;
 
   @SuppressWarnings("unchecked")
-  public GenSparkProcContext(HiveConf conf, ParseContext parseContext,
-      List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs, Map<String, Operator<? extends OperatorDesc>> topOps) {
+  public GenSparkProcContext(HiveConf conf,
+      ParseContext parseContext,
+      List<Task<MoveWork>> moveTask,
+      List<Task<? extends Serializable>> rootTasks,
+      Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs,
+      Map<String, Operator<? extends OperatorDesc>> topOps) {
     this.conf = conf;
     this.parseContext = parseContext;
     this.moveTask = moveTask;
@@ -163,9 +168,9 @@ public class GenSparkProcContext implements NodeProcessorCtx{
     this.currentMapJoinOperators = new LinkedHashSet<MapJoinOperator>();
     this.linkChildOpWithDummyOp = new LinkedHashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = conf.getBoolVar(
-        HiveConf.ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES) ?
-        (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf) :
-        null;
+        HiveConf.ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)
+        ? (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf)
+        : null;
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();
     this.workWithUnionOperators = new LinkedHashSet<BaseWork>();

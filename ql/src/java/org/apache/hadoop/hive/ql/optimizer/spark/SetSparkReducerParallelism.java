@@ -96,8 +96,8 @@ public class SetSparkReducerParallelism implements NodeProcessor {
         long numberOfBytes = 0;
 
         // we need to add up all the estimates from the siblings of this reduce sink
-        for (Operator<? extends OperatorDesc> sibling:
-          sink.getChildOperators().get(0).getParentOperators()) {
+        for (Operator<? extends OperatorDesc> sibling
+          : sink.getChildOperators().get(0).getParentOperators()) {
           if (sibling.getStatistics() != null) {
             numberOfBytes += sibling.getStatistics().getDataSize();
             if (LOG.isDebugEnabled()) {
@@ -139,8 +139,8 @@ public class SetSparkReducerParallelism implements NodeProcessor {
         if (numReducers < cores) {
           numReducers = cores;
         }
-        LOG.info("Set parallelism parameters: cores = " + cores + ", numReducers = " + numReducers +
-          ", bytesPerReducer = " + bytesPerReducer + ", numberOfBytes = " + numberOfBytes);
+        LOG.info("Set parallelism parameters: cores = " + cores + ", numReducers = " + numReducers
+          + ", bytesPerReducer = " + bytesPerReducer + ", numberOfBytes = " + numberOfBytes);
         LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers + " (calculated)");
         desc.setNumReducers(numReducers);
       }

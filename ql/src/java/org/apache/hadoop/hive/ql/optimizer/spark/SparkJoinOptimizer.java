@@ -29,7 +29,8 @@ import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import java.util.Stack;
 
 /**
- * Converts a join to a more optimized join for the Spark path.  Delegates to a more specialized join processor.
+ * Converts a join to a more optimized join for the Spark path.
+ * Delegates to a more specialized join processor.
  */
 public class SparkJoinOptimizer implements NodeProcessor {
 

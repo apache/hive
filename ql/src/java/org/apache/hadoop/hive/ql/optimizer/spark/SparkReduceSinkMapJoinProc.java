@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -61,6 +62,8 @@ import java.util.Stack;
 
 public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
+  public static final Log LOG = LogFactory.getLog(SparkReduceSinkMapJoinProc.class.getName());
+
   public static class SparkMapJoinFollowedByGroupByProcessor implements NodeProcessor {
     private boolean hasGroupBy = false;
 
@@ -80,8 +83,6 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
       return hasGroupBy;
     }
   }
-
-  protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
 
   private boolean hasGroupBy(Operator<? extends OperatorDesc> mapjoinOp,
                              GenSparkProcContext context) throws SemanticException {
@@ -106,6 +107,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
    * on the basis of the big table side because it may be a mapwork (no need for shuffle)
    * or reduce work.
    */
+  @SuppressWarnings("unchecked")
   @Override
   public Object process(Node nd, Stack<Node> stack,
                         NodeProcessorCtx procContext, Object... nodeOutputs)
@@ -132,14 +134,14 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     parentRS.setSkipTag(true);
     // remember the original parent list before we start modifying it.
     if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
-      List<Operator<?>> parents = new ArrayList(mapJoinOp.getParentOperators());
+      List<Operator<?>> parents = new ArrayList<Operator<?>>(mapJoinOp.getParentOperators());
       context.mapJoinParentMap.put(mapJoinOp, parents);
     }
 
     List<BaseWork> mapJoinWork;
 
     /*
-     *  if there was a pre-existing work generated for the big-table mapjoin side,
+     *  If there was a pre-existing work generated for the big-table mapjoin side,
      *  we need to hook the work generated for the RS (associated with the RS-MJ pattern)
      *  with the pre-existing work.
      *
@@ -161,20 +163,6 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
     mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
 
-/*  int numBuckets = -1;
-    EdgeType edgeType = EdgeType.BROADCAST_EDGE;
-    if (mapJoinOp.getConf().isBucketMapJoin()) {
-
-      // disable auto parallelism for bucket map joins
-      parentRS.getConf().setAutoParallel(false);
-
-      numBuckets = (Integer) mapJoinOp.getConf().getBigTableBucketNumMapping().values().toArray()[0];
-      if (mapJoinOp.getConf().getCustomBucketMapJoin()) {
-        edgeType = EdgeType.CUSTOM_EDGE;
-      } else {
-        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
-      }
-    }*/
     SparkEdgeProperty edgeProp = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
 
     if (mapJoinWork != null) {
@@ -209,7 +197,6 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
 
     // create an new operator: HashTableDummyOperator, which share the table desc
     HashTableDummyDesc desc = new HashTableDummyDesc();
-    @SuppressWarnings("unchecked")
     HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
     TableDesc tbl;
 
@@ -221,7 +208,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     Map<Byte, List<ExprNodeDesc>> keyExprMap = mapJoinOp.getConf().getKeys();
     List<ExprNodeDesc> keyCols = keyExprMap.get(Byte.valueOf((byte) 0));
     StringBuffer keyOrder = new StringBuffer();
-    for (ExprNodeDesc k: keyCols) {
+    for (int i = 0; i < keyCols.size(); i++) {
       keyOrder.append("+");
     }
     TableDesc keyTableDesc = PlanUtils.getReduceKeyTableDesc(PlanUtils
@@ -291,11 +278,11 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
     }
 
     //get all parents of reduce sink
-    List<Operator<? extends OperatorDesc>> RSparentOps = parentRS.getParentOperators();
-    for (Operator<? extends OperatorDesc> parent : RSparentOps) {
+    List<Operator<? extends OperatorDesc>> rsParentOps = parentRS.getParentOperators();
+    for (Operator<? extends OperatorDesc> parent : rsParentOps) {
       parent.replaceChild(parentRS, hashTableSinkOp);
     }
-    hashTableSinkOp.setParentOperators(RSparentOps);
+    hashTableSinkOp.setParentOperators(rsParentOps);
     hashTableSinkOp.setTag(tag);
     return true;
   }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.spark.api.java.JavaPairRDD;
 
+@SuppressWarnings("rawtypes")
 public interface SparkTran<KI extends WritableComparable, VI, KO extends WritableComparable, VO> {
   JavaPairRDD<KO, VO> transform(
       JavaPairRDD<KI, VI> input);

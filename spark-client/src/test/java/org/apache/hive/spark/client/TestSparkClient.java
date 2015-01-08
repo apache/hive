@@ -268,15 +268,6 @@ public class TestSparkClient {
 
   }
 
-  private static class ErrorJob implements Job<String> {
-
-    @Override
-    public String call(JobContext jc) {
-      throw new IllegalStateException("This job does not work.");
-    }
-
-  }
-
   private static class JarJob implements Job<String>, Function<Integer, String> {
 
     @Override
@@ -298,10 +289,6 @@ public class TestSparkClient {
   private static class FileJob implements Job<String>, Function<Integer, String> {
 
     private final String fileName;
-
-    FileJob() {
-      this(null);
-    }
 
     FileJob(String fileName) {
       this.fileName = fileName;
@@ -346,7 +333,7 @@ public class TestSparkClient {
 
   }
 
-  private static abstract class TestFunction {
+  private abstract static class TestFunction {
     abstract void call(SparkClient client) throws Exception;
     void config(Map<String, String> conf) { }
   }

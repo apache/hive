@@ -56,7 +56,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static transient final Log LOG = LogFactory
+  protected static final transient Log LOG = LogFactory
       .getLog(LocalHiveSparkClient.class);
 
   private static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
@@ -138,7 +138,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
    * At this point single SparkContext is used by more than one thread, so make this
    * method synchronized.
    *
-   * TODO: This method can't remove a jar/resource from SparkContext. Looks like this is an
+   * This method can't remove a jar/resource from SparkContext. Looks like this is an
    * issue we have to live with until multiple SparkContexts are supported in a single JVM.
    */
   private synchronized void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {

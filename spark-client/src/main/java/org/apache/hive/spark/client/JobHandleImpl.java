@@ -17,15 +17,15 @@
 
 package org.apache.hive.spark.client;
 
+import io.netty.util.concurrent.Promise;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.netty.util.concurrent.Promise;
 
 import org.apache.hive.spark.counter.SparkCounters;
 

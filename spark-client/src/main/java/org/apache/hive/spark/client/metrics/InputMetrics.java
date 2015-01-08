@@ -36,6 +36,7 @@ public class InputMetrics implements Serializable {
     // For Serialization only.
     this(null, 0L);
   }
+
   public InputMetrics(
       DataReadMethod readMethod,
       long bytesRead) {

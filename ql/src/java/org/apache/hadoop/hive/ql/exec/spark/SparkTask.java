@@ -28,7 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -47,14 +46,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticGroup;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -70,23 +68,20 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.spark.counter.SparkCounters;
 
 import com.google.common.collect.Lists;
 
 public class SparkTask extends Task<SparkWork> {
-  private final String CLASS_NAME = SparkTask.class.getName();
+  private static final String CLASS_NAME = SparkTask.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
   private static final long serialVersionUID = 1L;
-  private transient JobConf job;
-  private transient ContentSummary inputSummary;
   private SparkCounters sparkCounters;
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
-    job = new JobConf(conf, SparkTask.class);
   }
 
   @Override
@@ -133,7 +128,7 @@ public class SparkTask extends Task<SparkWork> {
         rc = close(rc);
         try {
           sparkSessionManager.returnSession(sparkSession);
-        } catch(HiveException ex) {
+        } catch (HiveException ex) {
           LOG.error("Failed to return the session to SessionManager", ex);
         }
       }
@@ -155,7 +150,7 @@ public class SparkTask extends Task<SparkWork> {
   }
 
   /**
-   * close will move the temp files into the right place for the fetch
+   * Close will move the temp files into the right place for the fetch
    * task. If the job has failed it will clean up the files.
    */
   private int close(int rc) {
@@ -211,7 +206,7 @@ public class SparkTask extends Task<SparkWork> {
           }
         }
         if (candidate) {
-          result.add((MapWork)w);
+          result.add((MapWork) w);
         }
       }
     }
@@ -316,11 +311,11 @@ public class SparkTask extends Task<SparkWork> {
     }
     for (Task<? extends Serializable> task : childTasks) {
       if (task instanceof StatsTask) {
-        return (StatsTask)task;
+        return (StatsTask) task;
       } else {
         Task<? extends Serializable> childTask = getStatsTaskInChildTasks(task);
         if (childTask instanceof StatsTask) {
-          return (StatsTask)childTask;
+          return (StatsTask) childTask;
         } else {
           continue;
         }
@@ -383,7 +378,7 @@ public class SparkTask extends Task<SparkWork> {
     }
     SparkWork sparkWork = this.getWork();
     for (BaseWork work : sparkWork.getAllWork()) {
-      for (Operator operator : work.getAllOperators()) {
+      for (Operator<? extends OperatorDesc> operator : work.getAllOperators()) {
         if (operator instanceof FileSinkOperator) {
           for (FileSinkOperator.Counter counter : FileSinkOperator.Counter.values()) {
             hiveCounters.add(counter.toString());
@@ -392,11 +387,11 @@ public class SparkTask extends Task<SparkWork> {
           for (ReduceSinkOperator.Counter counter : ReduceSinkOperator.Counter.values()) {
             hiveCounters.add(counter.toString());
           }
-        }else if (operator instanceof ScriptOperator) {
+        } else if (operator instanceof ScriptOperator) {
           for (ScriptOperator.Counter counter : ScriptOperator.Counter.values()) {
             hiveCounters.add(counter.toString());
           }
-        }else if (operator instanceof JoinOperator) {
+        } else if (operator instanceof JoinOperator) {
           for (JoinOperator.SkewkeyTableCounter counter : JoinOperator.SkewkeyTableCounter.values()) {
             hiveCounters.add(counter.toString());
           }

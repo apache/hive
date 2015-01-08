@@ -18,7 +18,16 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
-import com.google.common.base.Preconditions;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -35,8 +44,8 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
-import java.io.Serializable;
-import java.util.*;
+import com.google.common.base.Preconditions;
+
 
 /**
  * Do a BFS on the sparkWork graph, and look for any work that has more than one child.
@@ -154,13 +163,12 @@ public class SplitSparkWorkResolver implements PhysicalPlanResolver {
   }
 
   // we lost statistics & opTraits through cloning, try to get them back
-  // TODO: make sure this method is sufficient to solve the problem
   private void setStatistics(BaseWork origin, BaseWork clone) {
     if (origin instanceof MapWork && clone instanceof MapWork) {
       MapWork originMW = (MapWork) origin;
       MapWork cloneMW = (MapWork) clone;
-      for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
-          originMW.getAliasToWork().entrySet()) {
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> entry
+        : originMW.getAliasToWork().entrySet()) {
         String alias = entry.getKey();
         Operator<? extends OperatorDesc> cloneOP = cloneMW.getAliasToWork().get(alias);
         if (cloneOP != null) {

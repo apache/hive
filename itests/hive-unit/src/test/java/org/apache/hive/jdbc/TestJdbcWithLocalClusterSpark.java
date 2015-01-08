@@ -124,7 +124,7 @@ public class TestJdbcWithLocalClusterSpark {
   }
 
   /**
-   * Verify that the connection to HS2 with MiniMr is successful
+   * Verify that the connection to HS2 with MiniMr is successful.
    * @throws Exception
    */
   @Test
@@ -134,7 +134,7 @@ public class TestJdbcWithLocalClusterSpark {
   }
 
   /**
-   * Run nonMr query
+   * Run nonMr query.
    * @throws Exception
    */
   @Test
@@ -147,15 +147,15 @@ public class TestJdbcWithLocalClusterSpark {
   }
 
   /**
-   * Run nonMr query
+   * Run nonMr query.
    * @throws Exception
    */
   @Test
   public void testSparkQuery() throws Exception {
     String tableName = "testTab2";
     String resultVal = "val_238";
-    String queryStr = "SELECT * FROM " + tableName +
-        " where value = '" + resultVal + "'";
+    String queryStr = "SELECT * FROM " + tableName
+        + " where value = '" + resultVal + "'";
 
     testKvQuery(tableName, queryStr, resultVal);
   }
@@ -233,8 +233,8 @@ public class TestJdbcWithLocalClusterSpark {
         + dataFilePath.toString() + "' into table " + tempTableName);
 
     String resultVal = "val_238";
-    String queryStr = "SELECT * FROM " + tempTableName +
-        " where value = '" + resultVal + "'";
+    String queryStr = "SELECT * FROM " + tempTableName
+        + " where value = '" + resultVal + "'";
     verifyResult(queryStr, resultVal, 2);
 
     // A second connection should not be able to see the table
@@ -244,8 +244,7 @@ public class TestJdbcWithLocalClusterSpark {
     stmt2.execute("USE " + dbName);
     boolean gotException = false;
     try {
-      ResultSet res;
-      res = stmt2.executeQuery(queryStr);
+      stmt2.executeQuery(queryStr);
     } catch (SQLException err) {
       // This is expected to fail.
       assertTrue("Expecting table not found error, instead got: " + err,
@@ -266,7 +265,7 @@ public class TestJdbcWithLocalClusterSpark {
   }
 
   /**
-   * Verify if the given property contains the expected value
+   * Verify if the given property contains the expected value.
    * @param propertyName
    * @param expectedValue
    * @throws Exception
@@ -275,7 +274,7 @@ public class TestJdbcWithLocalClusterSpark {
     Statement stmt = hs2Conn .createStatement();
     ResultSet res = stmt.executeQuery("set " + propertyName);
     assertTrue(res.next());
-    String results[] = res.getString(1).split("=");
+    String[] results = res.getString(1).split("=");
     assertEquals("Property should be set", results.length, 2);
     assertEquals("Property should be set", expectedValue, results[1]);
   }

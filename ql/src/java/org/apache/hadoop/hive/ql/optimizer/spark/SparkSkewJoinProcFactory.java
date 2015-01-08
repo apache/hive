@@ -56,7 +56,7 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
- * Spark-version of SkewJoinProcFactory
+ * Spark-version of SkewJoinProcFactory.
  */
 public class SparkSkewJoinProcFactory {
   private SparkSkewJoinProcFactory() {
@@ -82,10 +82,10 @@ public class SparkSkewJoinProcFactory {
       JoinOperator op = (JoinOperator) nd;
       ReduceWork reduceWork = context.getReducerToReduceWork().get(op);
       ParseContext parseContext = context.getParseCtx();
-      if (!op.getConf().isFixedAsSorted() && currentTsk instanceof SparkTask &&
-          reduceWork != null && ((SparkTask) currentTsk).getWork().contains(reduceWork) &&
-          GenSparkSkewJoinProcessor.supportRuntimeSkewJoin(
-              op, currentTsk, parseContext.getConf())) {
+      if (!op.getConf().isFixedAsSorted() && currentTsk instanceof SparkTask
+        && reduceWork != null && ((SparkTask) currentTsk).getWork().contains(reduceWork)
+        && GenSparkSkewJoinProcessor.supportRuntimeSkewJoin(
+          op, currentTsk, parseContext.getConf())) {
         // first we try to split the task
         splitTask((SparkTask) currentTsk, reduceWork, parseContext);
         GenSparkSkewJoinProcessor.processSkewJoin(op, currentTsk, reduceWork, parseContext);
@@ -102,8 +102,8 @@ public class SparkSkewJoinProcFactory {
     SparkWork currentWork = currentTask.getWork();
     Set<Operator<? extends OperatorDesc>> reduceSinkSet =
         SparkMapJoinResolver.getOp(reduceWork, ReduceSinkOperator.class);
-    if (currentWork.getChildren(reduceWork).size() == 1 && canSplit(currentWork) &&
-        reduceSinkSet.size() == 1) {
+    if (currentWork.getChildren(reduceWork).size() == 1 && canSplit(currentWork)
+      && reduceSinkSet.size() == 1) {
       ReduceSinkOperator reduceSink = (ReduceSinkOperator) reduceSinkSet.iterator().next();
       BaseWork childWork = currentWork.getChildren(reduceWork).get(0);
       SparkEdgeProperty originEdge = currentWork.getEdgeProperty(reduceWork, childWork);
@@ -118,7 +118,6 @@ public class SparkSkewJoinProcFactory {
       // remove them from current spark work
       for (BaseWork baseWork : newWork.getAllWorkUnsorted()) {
         currentWork.remove(baseWork);
-        // TODO: take care of cloneToWork?
         currentWork.getCloneToWork().remove(baseWork);
       }
       // create TS to read intermediate data
@@ -152,7 +151,6 @@ public class SparkSkewJoinProcFactory {
         } else {
           streamDesc = "$INTNAME";
         }
-        // TODO: remove this?
         String origStreamDesc = streamDesc;
         int pos = 0;
         while (mapWork.getAliasToWork().get(streamDesc) != null) {
@@ -162,6 +160,7 @@ public class SparkSkewJoinProcFactory {
       GenMapRedUtils.setTaskPlan(taskTmpDir.toUri().toString(), streamDesc,
           tableScanOp, mapWork, false, tableDesc);
       // insert the new task between current task and its child
+      @SuppressWarnings("unchecked")
       Task<? extends Serializable> newTask = TaskFactory.get(newWork, parseContext.getConf());
       List<Task<? extends Serializable>> childTasks = currentTask.getChildTasks();
       // must have at most one child
@@ -190,7 +189,7 @@ public class SparkSkewJoinProcFactory {
   }
 
   /**
-   * Copy a sub-graph from originWork to newWork
+   * Copy a sub-graph from originWork to newWork.
    */
   private static void copyWorkGraph(SparkWork originWork, SparkWork newWork,
       BaseWork baseWork, boolean upWards) {

@@ -50,6 +50,7 @@ public class GenSparkWorkWalker extends DefaultGraphWalker {
     this.ctx = ctx;
   }
 
+  @SuppressWarnings("unchecked")
   private void setRoot(Node nd) {
     ctx.currentRootOperator = (Operator<? extends OperatorDesc>) nd;
     ctx.preceedingWork = null;

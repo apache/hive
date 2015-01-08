@@ -98,15 +98,15 @@ public class Metrics implements Serializable {
       optionalShuffleWriteMetrics(metrics));
   }
 
-  private static final InputMetrics optionalInputMetric(TaskMetrics metrics) {
+  private static InputMetrics optionalInputMetric(TaskMetrics metrics) {
     return metrics.inputMetrics().isDefined() ? new InputMetrics(metrics) : null;
   }
 
-  private static final ShuffleReadMetrics optionalShuffleReadMetric(TaskMetrics metrics) {
+  private static ShuffleReadMetrics optionalShuffleReadMetric(TaskMetrics metrics) {
     return metrics.shuffleReadMetrics().isDefined() ? new ShuffleReadMetrics(metrics) : null;
   }
 
-  private static final ShuffleWriteMetrics optionalShuffleWriteMetrics(TaskMetrics metrics) {
+  private static ShuffleWriteMetrics optionalShuffleWriteMetrics(TaskMetrics metrics) {
     return metrics.shuffleWriteMetrics().isDefined() ? new ShuffleWriteMetrics(metrics) : null;
   }
 

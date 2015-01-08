@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
+
 import scala.Tuple2;
 
 import java.util.Iterator;
@@ -33,6 +34,7 @@ public class HiveReduceFunction extends HivePairFlatMapFunction<
     super(buffer, sparkReporter);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Iterable<Tuple2<HiveKey, BytesWritable>>
   call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
