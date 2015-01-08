@@ -223,7 +223,7 @@ public class QTestUtil {
 
   public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
       Exception {
-    this(outDir, logDir, MiniClusterType.spark, null, "0.20", initScript, cleanupScript);
+    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
   }
 
   public String getOutputDirectory() {
@@ -1545,7 +1545,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.spark, null, "0.20", "", "");
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20", "", "");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
