@@ -265,13 +265,20 @@ public final class UnionProcFactory {
         Operator<? extends OperatorDesc> operator =
           (Operator<? extends OperatorDesc>)stack.get(pos);
 
+        // (1) Because we have operator.supportUnionRemoveOptimization() for
+        // true only in SEL and FIL operators,
+        // this rule will actually only match UNION%(SEL%|FIL%)*FS%
+        // (2) The assumption here is that, if
+        // operator.getChildOperators().size() > 1, we are going to have
+        // multiple FS operators, i.e., multiple inserts.
+        // Current implementation does not support this. More details, please
+        // see HIVE-9217.
+        if (operator.getChildOperators() != null && operator.getChildOperators().size() > 1) {
+          return null;
+        }
         // Break if it encountered a union
         if (operator instanceof UnionOperator) {
           union = (UnionOperator)operator;
-          // No need for this optimization in case of multi-table inserts
-          if (union.getChildOperators().size() > 1) {
-            return null;
-          }
           break;
         }
 
