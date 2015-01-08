@@ -100,7 +100,7 @@ public class AvroSerDe extends AbstractSerDe {
         || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = determineSchemaOrReturnErrorSchema(properties);
+      schema = determineSchemaOrReturnErrorSchema(configuration, properties);
     } else {
       // Get column names and sort order
       columnNames = Arrays.asList(columnNameProperty.split(","));
@@ -159,10 +159,10 @@ public class AvroSerDe extends AbstractSerDe {
    * any call, including calls to update the serde properties, meaning
    * if the serde is in a bad state, there is no way to update that state.
    */
-  public Schema determineSchemaOrReturnErrorSchema(Properties props) {
+  public Schema determineSchemaOrReturnErrorSchema(Configuration conf, Properties props) {
     try {
       configErrors = "";
-      return AvroSerdeUtils.determineSchemaOrThrowException(props);
+      return AvroSerdeUtils.determineSchemaOrThrowException(conf, props);
     } catch(AvroSerdeException he) {
       LOG.warn("Encountered AvroSerdeException determining schema. Returning " +
               "signal schema to indicate problem", he);
