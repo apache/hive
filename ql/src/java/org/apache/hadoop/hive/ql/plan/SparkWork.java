@@ -39,7 +39,7 @@ import com.google.common.base.Preconditions;
 /**
  * This class encapsulates all the work objects that can be executed
  * in a single Spark job. Currently it's basically a tree with MapWork at the
- * roots and and ReduceWork (or UnionWork) at all other nodes.
+ * roots and and ReduceWork at all other nodes.
  */
 @SuppressWarnings("serial")
 @Explain(displayName = "Spark")
@@ -400,7 +400,9 @@ public class SparkWork extends AbstractOperatorDesc {
     return result;
   }
 
-  // get all reduce works in this spark work in sorted order
+  /**
+   * @return all reduce works of this spark work, in sorted order.
+   */
   public List<ReduceWork> getAllReduceWork() {
     List<ReduceWork> result = new ArrayList<ReduceWork>();
     for (BaseWork work : getAllWork()) {
