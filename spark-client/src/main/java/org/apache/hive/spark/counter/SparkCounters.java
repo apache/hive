@@ -23,8 +23,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
@@ -124,7 +122,7 @@ public class SparkCounters implements Serializable {
     StringBuilder sb = new StringBuilder();
     Map<String, SparkCounterGroup> groups = getSparkCounterGroups();
     if (groups != null) {
-      for(Map.Entry<String, SparkCounterGroup> groupEntry : groups.entrySet()) {
+      for (Map.Entry<String, SparkCounterGroup> groupEntry : groups.entrySet()) {
         String groupName = groupEntry.getKey();
         SparkCounterGroup group = groupEntry.getValue();
         sb.append(groupName).append("\n");

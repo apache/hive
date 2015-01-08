@@ -79,7 +79,7 @@ public class HiveKVResultCache {
 
       container.setSerDe(serDe, oi);
       container.setTableDesc(tableDesc);
-    } catch(Exception ex) {
+    } catch (Exception ex) {
       throw new RuntimeException("Failed to create RowContainer", ex);
     }
     return container;
@@ -114,7 +114,7 @@ public class HiveKVResultCache {
     }
     try {
       container.clearRows();
-    } catch(HiveException ex) {
+    } catch (HiveException ex) {
       throw new RuntimeException("Failed to clear rows in RowContainer", ex);
     }
     cursor = 0;

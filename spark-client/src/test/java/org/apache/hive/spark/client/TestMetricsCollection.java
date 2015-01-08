@@ -17,14 +17,20 @@
 
 package org.apache.hive.spark.client;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.util.Arrays;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import org.apache.hive.spark.client.metrics.DataReadMethod;
+import org.apache.hive.spark.client.metrics.InputMetrics;
+import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
+import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import org.apache.hive.spark.client.metrics.*;
+import com.google.common.collect.ImmutableSet;
 
 public class TestMetricsCollection {
 

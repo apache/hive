@@ -70,13 +70,15 @@ public abstract class HiveBaseFunctionResultList<T> implements
   /** Process the given record. */
   protected abstract void processNextRecord(T inputRecord) throws IOException;
 
-  /** Is the current state of the record processor done? */
+  /**
+   * @return true if current state of the record processor is done.
+   */
   protected abstract boolean processingDone();
 
-  /** Close the record processor */
+  /** Close the record processor. */
   protected abstract void closeRecordProcessor();
 
-  /** Implement Iterator interface */
+  /** Implement Iterator interface. */
   public class ResultIterator implements Iterator {
     @Override
     public boolean hasNext(){
@@ -98,8 +100,7 @@ public abstract class HiveBaseFunctionResultList<T> implements
             return true;
           }
         } catch (IOException ex) {
-          // TODO: better handling of exception.
-          throw new RuntimeException("Error while processing input.", ex);
+          throw new IllegalStateException("Error while processing input.", ex);
         }
       }
 

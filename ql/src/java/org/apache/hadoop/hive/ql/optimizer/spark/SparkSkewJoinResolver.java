@@ -18,8 +18,16 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
@@ -39,17 +47,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 /**
- * Spark version of SkewJoinResolver
+ * Spark version of SkewJoinResolver.
  */
 public class SparkSkewJoinResolver implements PhysicalPlanResolver {
   @Override
@@ -62,7 +61,7 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
     return pctx;
   }
 
-  class SparkSkewJoinTaskDispatcher implements Dispatcher{
+  class SparkSkewJoinTaskDispatcher implements Dispatcher {
     private PhysicalContext physicalContext;
 
     public SparkSkewJoinTaskDispatcher(PhysicalContext context) {
@@ -74,6 +73,7 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
 
+      @SuppressWarnings("unchecked")
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
       if (task instanceof SparkTask) {
         SparkWork sparkWork = ((SparkTask) task).getWork();

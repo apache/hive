@@ -18,11 +18,16 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -42,12 +47,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
+import com.google.common.base.Preconditions;
 
 /**
  * GenSparkWork separates the operator tree into spark tasks.
@@ -55,8 +55,6 @@ import java.util.Stack;
  * and break the operators into work and tasks along the way.
  *
  * Cloned from GenTezWork.
- *
- * TODO: need to go thru this to make it fit completely to Spark.
  */
 public class GenSparkWork implements NodeProcessor {
   static final private Log LOG = LogFactory.getLog(GenSparkWork.class.getName());
@@ -84,6 +82,7 @@ public class GenSparkWork implements NodeProcessor {
         "AssertionError: expected context.currentRootOperator to be not null");
 
     // Operator is a file sink or reduce sink. Something that forces a new vertex.
+    @SuppressWarnings("unchecked")
     Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
 
     // root is the start of the operator pipeline we're currently
@@ -122,7 +121,8 @@ public class GenSparkWork implements NodeProcessor {
         if (smbOp != null) {
           // This logic is for SortMergeBucket MapJoin case.
           // This MapWork (of big-table, see above..) is later initialized by SparkMapJoinFactory
-          // processor, so don't initialize it here. Just keep track of it in the context, for later processing.
+          // processor, so don't initialize it here. Just keep track of it in the context,
+          // for later processing.
           work = utils.createMapWork(context, root, sparkWork, null, true);
           if (context.smbJoinWorkMap.get(smbOp) != null) {
             throw new SemanticException("Each SMBMapJoin should be associated only with one Mapwork");
@@ -182,9 +182,9 @@ public class GenSparkWork implements NodeProcessor {
                 work.addDummyOp((HashTableDummyOperator) dummy);
               }
             }
-            for (Entry<BaseWork,SparkEdgeProperty> parentWorkMap : linkWorkMap.entrySet()) {
+            for (Entry<BaseWork, SparkEdgeProperty> parentWorkMap : linkWorkMap.entrySet()) {
               BaseWork parentWork = parentWorkMap.getKey();
-              LOG.debug("connecting "+parentWork.getName()+" with "+work.getName());
+              LOG.debug("connecting " + parentWork.getName() + " with " + work.getName());
               SparkEdgeProperty edgeProp = parentWorkMap.getValue();
               sparkWork.connect(parentWork, work, edgeProp);
 
@@ -218,7 +218,8 @@ public class GenSparkWork implements NodeProcessor {
       ReduceWork reduceWork = (ReduceWork) work;
       for (Operator<?> parent : new ArrayList<Operator<?>>(root.getParentOperators())) {
         Preconditions.checkArgument(parent instanceof ReduceSinkOperator,
-            "AssertionError: expected operator to be a ReduceSinkOperator, but was " + parent.getClass().getName());
+          "AssertionError: expected operator to be a ReduceSinkOperator, but was "
+          + parent.getClass().getName());
         ReduceSinkOperator rsOp = (ReduceSinkOperator) parent;
         SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(rsOp, reduceWork);
 
@@ -251,7 +252,8 @@ public class GenSparkWork implements NodeProcessor {
     // Also note: the concept of leaf and root is reversed in hive for historical
     // reasons. Roots are data sources, leaves are data sinks. I know.
     if (context.leafOpToFollowingWorkInfo.containsKey(operator)) {
-      ObjectPair<SparkEdgeProperty, ReduceWork> childWorkInfo = context.leafOpToFollowingWorkInfo.get(operator);
+      ObjectPair<SparkEdgeProperty, ReduceWork> childWorkInfo = context.
+        leafOpToFollowingWorkInfo.get(operator);
       SparkEdgeProperty edgeProp = childWorkInfo.getFirst();
       ReduceWork childWork = childWorkInfo.getSecond();
 
@@ -286,8 +288,8 @@ public class GenSparkWork implements NodeProcessor {
     // the next item will be a new root.
     if (!operator.getChildOperators().isEmpty()) {
       Preconditions.checkArgument(operator.getChildOperators().size() == 1,
-          "AssertionError: expected operator.getChildOperators().size() to be 1, but was " +
-              operator.getChildOperators().size());
+        "AssertionError: expected operator.getChildOperators().size() to be 1, but was "
+        + operator.getChildOperators().size());
       context.parentOfRoot = operator;
       context.currentRootOperator = operator.getChildOperators().get(0);
       context.preceedingWork = work;

@@ -30,7 +30,7 @@ public interface SparkSessionManager {
    *
    * @param hiveConf
    */
-  public void setup(HiveConf hiveConf) throws HiveException;
+  void setup(HiveConf hiveConf) throws HiveException;
 
   /**
    * Get a valid SparkSession. First try to check if existing session is reusable
@@ -40,9 +40,9 @@ public interface SparkSessionManager {
    * @param existingSession Existing session (can be null)
    * @param conf
    * @param doOpen Should the session be opened before returning?
-   * @return
+   * @return SparkSession
    */
-  public SparkSession getSession(SparkSession existingSession, HiveConf conf,
+  SparkSession getSession(SparkSession existingSession, HiveConf conf,
       boolean doOpen) throws HiveException;
 
   /**
@@ -50,16 +50,16 @@ public interface SparkSessionManager {
    * still holds references to session and may want to reuse it in future.
    * When client wants to reuse the session, it should pass the it <i>getSession</i> method.
    */
-  public void returnSession(SparkSession sparkSession) throws HiveException;
+  void returnSession(SparkSession sparkSession) throws HiveException;
 
   /**
    * Close the given session and return it to pool. This is used when the client
    * no longer needs a SparkSession.
    */
-  public void closeSession(SparkSession sparkSession) throws HiveException;
+  void closeSession(SparkSession sparkSession) throws HiveException;
 
   /**
    * Shutdown the session manager. Also closing up SparkSessions in pool.
    */
-  public void shutdown();
+  void shutdown();
 }

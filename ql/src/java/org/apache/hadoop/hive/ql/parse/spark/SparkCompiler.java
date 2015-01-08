@@ -87,14 +87,12 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 /**
  * SparkCompiler translates the operator plan into SparkTasks.
  *
- * Pretty much cloned from TezCompiler.
- *
- * TODO: need to complete and make it fit to Spark.
+ * Cloned from TezCompiler.
  */
 public class SparkCompiler extends TaskCompiler {
   private static final String CLASS_NAME = SparkCompiler.class.getName();
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final Log logger = LogFactory.getLog(SparkCompiler.class);
+  private static final PerfLogger PERF_LOGGER = PerfLogger.getPerfLogger();
+  private static final Log LOGGER = LogFactory.getLog(SparkCompiler.class);
 
   public SparkCompiler() {
   }
@@ -102,16 +100,12 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   public void init(HiveConf conf, LogHelper console, Hive db) {
     super.init(conf, console, db);
-
-//    TODO: Need to check if we require the use of recursive input dirs for union processing
-//    conf.setBoolean("mapred.input.dir.recursive", true);
-//    HiveConf.setBoolVar(conf, ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES, true);
   }
 
   @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
     // Sequence of TableScan operators to be walked
     Deque<Operator<? extends OperatorDesc>> deque = new LinkedList<Operator<? extends OperatorDesc>>();
     deque.addAll(pCtx.getTopOps().values());
@@ -137,7 +131,7 @@ public class SparkCompiler extends TaskCompiler {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
+    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
   /**
@@ -147,7 +141,7 @@ public class SparkCompiler extends TaskCompiler {
   protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
     GenSparkUtils.getUtils().resetSequenceNumber();
 
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
@@ -244,7 +238,7 @@ public class SparkCompiler extends TaskCompiler {
       GenSparkUtils.getUtils().processFileSink(procCtx, fileSink);
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
+    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_GENERATE_TASK_TREE);
   }
 
   @Override
@@ -301,7 +295,7 @@ public class SparkCompiler extends TaskCompiler {
   @Override
   protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       Context ctx) throws SemanticException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
@@ -345,7 +339,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping stage id rearranger");
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
+    PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_TASK_TREE);
     return;
   }
 }

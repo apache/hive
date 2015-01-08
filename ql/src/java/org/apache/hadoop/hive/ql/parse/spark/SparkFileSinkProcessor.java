@@ -29,11 +29,11 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * FileSinkProcessor handles addition of merge, move and stats tasks for filesinks
- * Cloned from tez's FileSinkProcessor
+ * FileSinkProcessor handles addition of merge, move and stats tasks for filesinks.
+ * Cloned from tez's FileSinkProcessor.
  */
 public class SparkFileSinkProcessor implements NodeProcessor {
-  private static final Log logger = LogFactory.getLog(SparkFileSinkProcessor.class.getName());
+  private static final Log LOGGER = LogFactory.getLog(SparkFileSinkProcessor.class.getName());
 
   /*
    * (non-Javadoc)

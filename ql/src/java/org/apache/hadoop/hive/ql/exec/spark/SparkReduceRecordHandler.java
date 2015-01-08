@@ -69,7 +69,7 @@ import org.apache.hadoop.util.StringUtils;
  * - Catch and handle errors during execution of the operators.
  *
  */
-public class SparkReduceRecordHandler extends SparkRecordHandler{
+public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   private static final Log LOG = LogFactory.getLog(SparkReduceRecordHandler.class);
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
@@ -98,14 +98,15 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
   private VectorizedRowBatch[] batches;
   // number of columns pertaining to keys in a vectorized row batch
   private int keysColumnOffset;
-  private final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
+  private static final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
   private StructObjectInspector keyStructInspector;
   private StructObjectInspector[] valueStructInspectors;
   /* this is only used in the error code path */
   private List<VectorExpressionWriter>[] valueStringWriters;
   private MapredLocalWork localWork = null;
 
-  public void init(JobConf job, OutputCollector output, Reporter reporter) {
+  @SuppressWarnings("unchecked")
+  public void init(JobConf job, OutputCollector output, Reporter reporter) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
 
@@ -240,7 +241,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
   }
 
   @Override
-  public void processRow(Object key, Iterator values) throws IOException {
+  public <E> void processRow(Object key, Iterator<E> values) throws IOException {
     if (reducer.getDone()) {
       return;
     }
@@ -305,7 +306,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
    * @param values
    * @return true if it is not done and can take more inputs
    */
-  private boolean processKeyValues(Iterator values, byte tag) throws HiveException {
+  private <E> boolean processKeyValues(Iterator<E> values, byte tag) throws HiveException {
     while (values.hasNext()) {
       BytesWritable valueWritable = (BytesWritable) values.next();
       try {
@@ -332,10 +333,10 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
         try {
           rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag]);
         } catch (Exception e2) {
-          rowString = "[Error getting row data with exception " +
-            StringUtils.stringifyException(e2) + " ]";
+          rowString = "[Error getting row data with exception "
+            + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Hive Runtime Error while processing row (tag="
+        throw new HiveException("Error while processing row (tag="
           + tag + ") " + rowString, e);
       }
     }
@@ -346,7 +347,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
    * @param values
    * @return true if it is not done and can take more inputs
    */
-  private boolean processVectors(Iterator values, byte tag) throws HiveException {
+  private <E> boolean processVectors(Iterator<E> values, byte tag) throws HiveException {
     VectorizedRowBatch batch = batches[tag];
     batch.reset();
 
@@ -392,7 +393,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
         rowString = "[Error getting row data with exception " + StringUtils.stringifyException(e2)
           + " ]";
       }
-      throw new HiveException("Hive Runtime Error while processing vector batch (tag=" + tag + ") "
+      throw new HiveException("Error while processing vector batch (tag=" + tag + ") "
         + rowString, e);
     }
     return true; // give me more
@@ -402,7 +403,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler{
     try {
       return inputValueDeserializer[tag].deserialize(valueWritable);
     } catch (SerDeException e) {
-      throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input value (tag="
+      throw new HiveException("Error: Unable to deserialize reduce input value (tag="
         + tag + ") from "
         + Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
         + " with properties " + valueTableDesc[tag].getProperties(), e);

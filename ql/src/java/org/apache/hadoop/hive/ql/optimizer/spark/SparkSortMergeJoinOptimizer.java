@@ -70,26 +70,29 @@ public class SparkSortMergeJoinOptimizer extends AbstractSMBJoinProc implements 
     return null;
   }
 
-  protected boolean canConvertJoinToSMBJoin(JoinOperator joinOperator, SortBucketJoinProcCtx smbJoinContext,
-    ParseContext pGraphContext, Stack<Node> stack) throws SemanticException {
+  protected boolean canConvertJoinToSMBJoin(JoinOperator joinOperator,
+    SortBucketJoinProcCtx smbJoinContext, ParseContext pGraphContext,
+    Stack<Node> stack) throws SemanticException {
     if (!supportBucketMapJoin(stack)) {
       return false;
     }
     return canConvertJoinToSMBJoin(joinOperator, smbJoinContext, pGraphContext);
   }
 
-  //Preliminary checks.  In the MR version of the code, these used to be done via another walk, refactoring to be inline.
+  //Preliminary checks.  In the MR version of the code, these used to be done via another walk,
+  //here it is done inline.
   private boolean supportBucketMapJoin(Stack<Node> stack) {
     int size = stack.size();
-    if (!(stack.get(size-1) instanceof JoinOperator) ||
-            !(stack.get(size-2) instanceof ReduceSinkOperator)) {
+    if (!(stack.get(size - 1) instanceof JoinOperator)
+      || !(stack.get(size - 2) instanceof ReduceSinkOperator)) {
       return false;
     }
 
     // If any operator in the stack does not support a auto-conversion, this join should
     // not be converted.
-    for (int pos = size -3; pos >= 0; pos--) {
-      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)stack.get(pos);
+    for (int pos = size - 3; pos >= 0; pos--) {
+      @SuppressWarnings("unchecked")
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) stack.get(pos);
       if (!op.supportAutomaticSortMergeJoin()) {
         return false;
       }

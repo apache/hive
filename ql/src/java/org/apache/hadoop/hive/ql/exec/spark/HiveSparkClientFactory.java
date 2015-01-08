@@ -33,7 +33,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 
 public class HiveSparkClientFactory {
-  protected static transient final Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
+  protected static final transient Log LOG = LogFactory.getLog(HiveSparkClientFactory.class);
 
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
   private static final String SPARK_DEFAULT_MASTER = "local";

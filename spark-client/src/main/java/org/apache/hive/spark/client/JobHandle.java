@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
 import org.apache.hive.spark.counter.SparkCounters;
 
 /**
@@ -45,12 +46,12 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
   MetricsCollection getMetrics();
 
   /**
-   * Get corresponding spark job IDs for this job
+   * Get corresponding spark job IDs for this job.
    */
   List<Integer> getSparkJobIds();
 
   /**
-   * Get the SparkCounters for this job
+   * Get the SparkCounters for this job.
    */
   SparkCounters getSparkCounters();
 

@@ -23,10 +23,6 @@ public class SparkStageProgress {
   private int succeededTaskCount;
   private int runningTaskCount;
   private int failedTaskCount;
-  // TODO: remove the following two metrics as they're not available in current spark API,
-  // we can add them back once spark provides it
-//  private int killedTaskCount;
-//  private long cumulativeTime;
 
   public SparkStageProgress(
     int totalTaskCount,

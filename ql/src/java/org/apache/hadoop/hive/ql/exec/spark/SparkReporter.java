@@ -67,7 +67,7 @@ public class SparkReporter implements Reporter, Serializable {
   }
 
   @Override
-  public InputSplit getInputSplit() throws UnsupportedOperationException {
+  public InputSplit getInputSplit() {
     throw new UnsupportedOperationException("do not support this method now.");
   }
 

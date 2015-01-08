@@ -94,8 +94,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_" +
-            sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
+          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
       }
     }
     return stageProgresses;
@@ -132,8 +132,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   private SparkJobInfo getSparkJobInfo() {
-    Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1 ?
-        jobHandle.getSparkJobIds().get(0) : null;
+    Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1
+      ? jobHandle.getSparkJobIds().get(0) : null;
     if (sparkJobId == null) {
       long duration = TimeUnit.MILLISECONDS.convert(
           System.nanoTime() - startTime, TimeUnit.NANOSECONDS);

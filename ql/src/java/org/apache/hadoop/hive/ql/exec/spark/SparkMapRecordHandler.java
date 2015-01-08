@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -58,16 +59,16 @@ import java.util.List;
 public class SparkMapRecordHandler extends SparkRecordHandler {
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
-  public static final Log l4j = LogFactory.getLog(SparkMapRecordHandler.class);
+  public static final Log LOG = LogFactory.getLog(SparkMapRecordHandler.class);
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
   private ExecMapperContext execContext;
 
-  public void init(JobConf job, OutputCollector output, Reporter reporter) {
+  public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
 
-    isLogInfoEnabled = l4j.isInfoEnabled();
+    isLogInfoEnabled = LOG.isInfoEnabled();
     ObjectCache cache = ObjectCacheFactory.getCache(job);
 
     try {
@@ -90,7 +91,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
       // initialize map operator
       mo.setChildren(job);
-      l4j.info(mo.dump(0));
+      LOG.info(mo.dump(0));
       // initialize map local work
       localWork = mrwork.getMapRedLocalWork();
       execContext.setLocalWork(localWork);
@@ -111,11 +112,11 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
       //The following code is for mapjoin
       //initialize all the dummy ops
-      l4j.info("Initializing dummy operator");
+      LOG.info("Initializing dummy operator");
       List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
-      for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+      for (Operator<? extends OperatorDesc> dummyOp : dummyOps) {
         dummyOp.setExecContext(execContext);
-        dummyOp.initialize(jc,null);
+        dummyOp.initialize(jc, null);
       }
     } catch (Throwable e) {
       abort = true;
@@ -148,14 +149,14 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        l4j.fatal(StringUtils.stringifyException(e));
+        LOG.fatal(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }
   }
 
   @Override
-  public void processRow(Object key, Iterator values) throws IOException {
+  public <E> void processRow(Object key, Iterator<E> values) throws IOException {
     throw new UnsupportedOperationException("Do not support this method in SparkMapRecordHandler.");
   }
 
@@ -163,7 +164,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   public void close() {
     // No row was processed
     if (oc == null) {
-      l4j.trace("Close called. no row processed by map.");
+      LOG.trace("Close called. no row processed by map.");
     }
 
     // check if there are IOExceptions
@@ -177,10 +178,10 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       mo.close(abort);
 
       //for close the local work
-      if(localWork != null){
+      if (localWork != null) {
         List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
 
-        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps) {
           dummyOp.close(abort);
         }
       }
@@ -195,8 +196,8 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
     } catch (Exception e) {
       if (!abort) {
         // signal new failure to map-reduce
-        l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException("Hive Runtime Error while closing operators", e);
+        LOG.error("Hit error while closing operators - failing tree");
+        throw new IllegalStateException("Error while closing operators", e);
       }
     } finally {
       MapredContext.close();

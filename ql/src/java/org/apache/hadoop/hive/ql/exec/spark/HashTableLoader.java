@@ -101,7 +101,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
             bigInputPath = null;
           } else {
             Set<String> aliases =
-              ((SparkBucketMapJoinContext)mapJoinCtx).getPosToAliasMap().get(pos);
+              ((SparkBucketMapJoinContext) mapJoinCtx).getPosToAliasMap().get(pos);
             String alias = aliases.iterator().next();
             // Any one small table input path
             String smallInputPath =
@@ -110,7 +110,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           }
         }
         String fileName = localWork.getBucketFileName(bigInputPath);
-        Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
+        Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte) pos, fileName);
         LOG.info("\tLoad back all hashtable files from tmp folder uri:" + path);
         mapJoinTables[pos] = mapJoinTableSerdes[pos].load(fs, path);
       }

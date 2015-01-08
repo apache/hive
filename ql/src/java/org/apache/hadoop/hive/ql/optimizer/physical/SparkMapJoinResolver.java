@@ -240,8 +240,6 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
             }
           }
         }
-
-        // TODO: enable non-staged mapjoin
       }
     }
 

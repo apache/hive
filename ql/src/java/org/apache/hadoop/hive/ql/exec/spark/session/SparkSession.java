@@ -28,15 +28,17 @@ import scala.Tuple2;
 public interface SparkSession {
   /**
    * Initializes a Spark session for DAG execution.
+   * @param conf Hive configuration.
    */
-  public void open(HiveConf conf) throws HiveException;
+  void open(HiveConf conf) throws HiveException;
 
   /**
-   * Submit given <i>sparkWork</i> to SparkClient
+   * Submit given <i>sparkWork</i> to SparkClient.
    * @param driverContext
    * @param sparkWork
+   * @return SparkJobRef
    */
-  public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception;
+  SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception;
 
   /**
    * Get Spark shuffle memory per task, and total number of cores. This
@@ -45,25 +47,25 @@ public interface SparkSession {
    * @return a tuple, the first element is the shuffle memory per task in bytes,
    *  the second element is the number of total cores usable by the client
    */
-  public Tuple2<Long, Integer> getMemoryAndCores() throws Exception;
+  Tuple2<Long, Integer> getMemoryAndCores() throws Exception;
 
   /**
-   * Is the session open and ready to submit jobs?
+   * @return true if the session is open and ready to submit jobs.
    */
-  public boolean isOpen();
+  boolean isOpen();
 
   /**
-   * Return configuration.
+   * @return configuration.
    */
-  public HiveConf getConf();
+  HiveConf getConf();
 
   /**
-   * Return session id.
+   * @return session id.
    */
-  public String getSessionId();
+  String getSessionId();
 
   /**
-   * Close session and release resources
+   * Close session and release resources.
    */
-  public void close();
+  void close();
 }

@@ -99,8 +99,8 @@ public class LocalSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_" +
-            sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
+          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
       }
     }
     return stageProgresses;

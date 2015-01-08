@@ -64,7 +64,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
     });
   }
 
-  public synchronized static SparkSessionManagerImpl getInstance()
+  public static synchronized SparkSessionManagerImpl getInstance()
       throws HiveException {
     if (instance == null) {
       instance = new SparkSessionManagerImpl();
@@ -142,12 +142,12 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       UserGroupInformation newUgi = Utils.getUGI();
       String newUserName = newUgi.getShortUserName();
 
-      // TODOD this we need to store the session username somewhere else as getUGIForConf never used the conf
+      // TODO this we need to store the session username somewhere else as getUGIForConf never used the conf
       UserGroupInformation ugiInSession = Utils.getUGI();
       String userNameInSession = ugiInSession.getShortUserName();
 
       return newUserName.equals(userNameInSession);
-    } catch(Exception ex) {
+    } catch (Exception ex) {
       throw new HiveException("Failed to get user info from HiveConf.", ex);
     }
   }
@@ -175,7 +175,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
   public void shutdown() {
     LOG.info("Closing the session manager.");
     if (createdSessions != null) {
-      synchronized(createdSessions) {
+      synchronized (createdSessions) {
         Iterator<SparkSession> it = createdSessions.iterator();
         while (it.hasNext()) {
           SparkSession session = it.next();

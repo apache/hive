@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 @Explain(displayName = "Edge Property")
 public class SparkEdgeProperty {
-  public static long SHUFFLE_NONE = 0; // No shuffle is needed. For union only.
-  public static long SHUFFLE_GROUP = 1; // HashPartition shuffle, keys are not sorted in any way.
-  public static long SHUFFLE_SORT = 2;  // RangePartition shuffle, keys are total sorted.
-  public static long MR_SHUFFLE_SORT = 4; // HashPartition shuffle, keys are sorted by partition.
+  public static final long SHUFFLE_NONE = 0; // No shuffle is needed. For union only.
+  public static final long SHUFFLE_GROUP = 1; // HashPartition shuffle, keys are not sorted in any way.
+  public static final long SHUFFLE_SORT = 2;  // RangePartition shuffle, keys are total sorted.
+  public static final long MR_SHUFFLE_SORT = 4; // HashPartition shuffle, keys are sorted by partition.
 
   private long edgeType;
 

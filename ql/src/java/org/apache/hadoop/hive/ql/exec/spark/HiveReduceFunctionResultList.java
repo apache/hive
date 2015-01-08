@@ -32,6 +32,7 @@ public class HiveReduceFunctionResultList extends
   /**
    * Instantiate result set Iterable for Reduce function output.
    *
+   * @param conf Hive configuration.
    * @param inputIterator Input record iterator.
    * @param reducer Initialized {@link org.apache.hadoop.hive.ql.exec.mr.ExecReducer} instance.
    */

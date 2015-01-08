@@ -21,13 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobState;
 import org.apache.spark.executor.TaskMetrics;
-import org.apache.spark.scheduler.JobSucceeded;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerApplicationEnd;
 import org.apache.spark.scheduler.SparkListenerApplicationStart;
@@ -44,9 +40,12 @@ import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
 import org.apache.spark.scheduler.SparkListenerTaskStart;
 import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 public class JobMetricsListener implements SparkListener {
 
-  private final static Log LOG = LogFactory.getLog(JobMetricsListener.class);
+  private static final Log LOG = LogFactory.getLog(JobMetricsListener.class);
 
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
@@ -100,7 +99,7 @@ public class JobMetricsListener implements SparkListener {
     int jobId = jobStart.jobId();
     int size = jobStart.stageIds().size();
     int[] intStageIds = new int[size];
-    for(int i=0; i< size; i++) {
+    for (int i = 0; i < size; i++) {
       Integer stageId = (Integer) jobStart.stageIds().apply(i);
       intStageIds[i] = stageId;
       stageIdToJobId.put(stageId, jobId);

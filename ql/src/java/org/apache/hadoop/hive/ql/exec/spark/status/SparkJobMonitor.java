@@ -74,8 +74,8 @@ public class SparkJobMonitor {
         if (LOG.isDebugEnabled()) {
           console.printInfo("state = " + state);
         }
-        if (state != null && state != JobExecutionStatus.UNKNOWN &&
-            (state != lastState || state == JobExecutionStatus.RUNNING)) {
+        if (state != null && state != JobExecutionStatus.UNKNOWN
+          && (state != lastState || state == JobExecutionStatus.RUNNING)) {
           lastState = state;
           Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
 
@@ -84,19 +84,19 @@ public class SparkJobMonitor {
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               // print job stages.
-              console.printInfo("\nQuery Hive on Spark job[" +
-                sparkJobStatus.getJobId() + "] stages:");
+              console.printInfo("\nQuery Hive on Spark job["
+                + sparkJobStatus.getJobId() + "] stages:");
               for (int stageId : sparkJobStatus.getStageIds()) {
                 console.printInfo(Integer.toString(stageId));
               }
 
-              console.printInfo("\nStatus: Running (Hive on Spark job[" +
-                sparkJobStatus.getJobId() + "])");
+              console.printInfo("\nStatus: Running (Hive on Spark job["
+                + sparkJobStatus.getJobId() + "])");
               startTime = System.currentTimeMillis();
               running = true;
 
-              console.printInfo("Job Progress Format\nCurrentTime StageId_StageAttemptId: " +
-                "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
+              console.printInfo("Job Progress Format\nCurrentTime StageId_StageAttemptId: "
+                + "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
             }
 
 
@@ -110,14 +110,20 @@ public class SparkJobMonitor {
               console.printInfo("Status: Finished successfully within a check interval.");
             } else {
               double duration = (System.currentTimeMillis() - startTime) / 1000.0;
-              console.printInfo("Status: Finished successfully in " +
-                  String.format("%.2f seconds", duration));
+              console.printInfo("Status: Finished successfully in "
+                + String.format("%.2f seconds", duration));
             }
             running = false;
             done = true;
             break;
           case FAILED:
             console.printError("Status: Failed");
+            running = false;
+            done = true;
+            rc = 2;
+            break;
+          case UNKNOWN:
+            console.printError("Status: Unknown");
             running = false;
             done = true;
             rc = 2;
@@ -231,11 +237,7 @@ public class SparkJobMonitor {
     }
 
     if (progressMap.isEmpty()) {
-      if (lastProgressMap.isEmpty()) {
-        return true;
-      } else {
-        return false;
-      }
+      return lastProgressMap.isEmpty();
     } else {
       if (lastProgressMap.isEmpty()) {
         return false;
@@ -244,8 +246,8 @@ public class SparkJobMonitor {
           return false;
         }
         for (String key : progressMap.keySet()) {
-          if (!lastProgressMap.containsKey(key) ||
-            !progressMap.get(key).equals(lastProgressMap.get(key))) {
+          if (!lastProgressMap.containsKey(key)
+            || !progressMap.get(key).equals(lastProgressMap.get(key))) {
             return false;
           }
         }

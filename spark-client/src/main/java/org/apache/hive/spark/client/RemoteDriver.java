@@ -74,7 +74,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 @InterfaceAudience.Private
 public class RemoteDriver {
 
-  private final static Logger LOG = LoggerFactory.getLogger(RemoteDriver.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RemoteDriver.class);
 
   private final Map<String, JobWrapper<?>> activeJobs;
   private final Object shutdownLock;
@@ -108,8 +108,8 @@ public class RemoteDriver {
         String[] val = getArg(args, idx).split("[=]", 2);
         conf.set(val[0], val[1]);
       } else {
-        throw new IllegalArgumentException("Invalid command line: " +
-            Joiner.on(" ").join(args));
+        throw new IllegalArgumentException("Invalid command line: "
+          + Joiner.on(" ").join(args));
       }
     }
 
@@ -158,7 +158,7 @@ public class RemoteDriver {
     }
 
     synchronized (jobQueue) {
-      for (Iterator<JobWrapper<?>> it = jobQueue.iterator(); it.hasNext(); ) {
+      for (Iterator<JobWrapper<?>> it = jobQueue.iterator(); it.hasNext();) {
         it.next().submit();
       }
     }
@@ -216,8 +216,8 @@ public class RemoteDriver {
   private String getArg(String[] args, int keyIdx) {
     int valIdx = keyIdx + 1;
     if (args.length <= valIdx) {
-      throw new IllegalArgumentException("Invalid command line: " +
-          Joiner.on(" ").join(args));
+      throw new IllegalArgumentException("Invalid command line: "
+        + Joiner.on(" ").join(args));
     }
     return args[valIdx];
   }
@@ -382,7 +382,7 @@ public class RemoteDriver {
     public void onJobEnd(SparkListenerJobEnd jobEnd) {
       synchronized (stageToJobId) {
         for (Iterator<Map.Entry<Integer, Integer>> it = stageToJobId.entrySet().iterator();
-            it.hasNext(); ) {
+            it.hasNext();) {
           Map.Entry<Integer, Integer> e = it.next();
           if (e.getValue() == jobEnd.jobId()) {
             it.remove();
@@ -398,8 +398,8 @@ public class RemoteDriver {
 
     @Override
     public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
-      if (taskEnd.reason() instanceof org.apache.spark.Success$ &&
-          !taskEnd.taskInfo().speculative()) {
+      if (taskEnd.reason() instanceof org.apache.spark.Success$
+          && !taskEnd.taskInfo().speculative()) {
         Metrics metrics = new Metrics(taskEnd.taskMetrics());
         Integer jobId;
         synchronized (stageToJobId) {

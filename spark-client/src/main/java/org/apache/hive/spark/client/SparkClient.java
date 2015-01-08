@@ -17,8 +17,8 @@
 
 package org.apache.hive.spark.client;
 
-import java.net.URL;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -69,7 +69,7 @@ public interface SparkClient extends Serializable {
   Future<?> addFile(URL url);
 
   /**
-   * Get the count of executors
+   * Get the count of executors.
    */
   Future<Integer> getExecutorCount();
 }

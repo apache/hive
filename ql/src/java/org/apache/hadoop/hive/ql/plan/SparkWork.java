@@ -73,7 +73,7 @@ public class SparkWork extends AbstractOperatorDesc {
   }
 
   /**
-   * getWorkMap returns a map of "vertex name" to BaseWork
+   * @return a map of "vertex name" to BaseWork
    */
   @Explain(displayName = "Vertices")
   public Map<String, BaseWork> getWorkMap() {
@@ -85,7 +85,7 @@ public class SparkWork extends AbstractOperatorDesc {
   }
 
   /**
-   * getAllWork returns a topologically sorted list of BaseWork
+   * @return a topologically sorted list of BaseWork
    */
   public List<BaseWork> getAllWork() {
 
@@ -122,7 +122,7 @@ public class SparkWork extends AbstractOperatorDesc {
   }
 
   /**
-   * add all nodes in the collection without any connections
+   * Add all nodes in the collection without any connections.
    */
   public void addAll(Collection<BaseWork> c) {
     for (BaseWork w: c) {
@@ -131,7 +131,7 @@ public class SparkWork extends AbstractOperatorDesc {
   }
 
   /**
-   * add all nodes in the collection without any connections
+   * Add all nodes in the collection without any connections.
    */
   public void addAll(BaseWork[] bws) {
     for (BaseWork w: bws) {
@@ -260,7 +260,7 @@ public class SparkWork extends AbstractOperatorDesc {
    * returns the edge type connecting work a and b
    */
   public SparkEdgeProperty getEdgeProperty(BaseWork a, BaseWork b) {
-    return edgeProperties.get(new ImmutablePair<BaseWork, BaseWork>(a,b));
+    return edgeProperties.get(new ImmutablePair<BaseWork, BaseWork>(a, b));
   }
 
   /**
@@ -330,7 +330,9 @@ public class SparkWork extends AbstractOperatorDesc {
      */
     boolean dependsOn(String n1, String n2) {
       for (String p = dependencies.get(n1); p != null; p = dependencies.get(p)) {
-        if (p.equals(n2)) return true;
+        if (p.equals(n2)) {
+          return true;
+        }
       }
       return false;
     }

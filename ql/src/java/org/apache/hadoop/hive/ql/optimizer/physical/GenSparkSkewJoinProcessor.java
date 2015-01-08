@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -79,6 +80,7 @@ public class GenSparkSkewJoinProcessor {
     // prevent instantiation
   }
 
+  @SuppressWarnings("unchecked")
   public static void processSkewJoin(JoinOperator joinOp, Task<? extends Serializable> currTask,
       ReduceWork reduceWork, ParseContext parseCtx) throws SemanticException {
 
@@ -138,7 +140,7 @@ public class GenSparkSkewJoinProcessor {
     // used for create mapJoinDesc, should be in order
     List<TableDesc> newJoinValueTblDesc = new ArrayList<TableDesc>();
 
-    for (Byte tag : tags) {
+    for (int i = 0; i < tags.length; i++) {
       newJoinValueTblDesc.add(null);
     }
 
@@ -231,14 +233,14 @@ public class GenSparkSkewJoinProcessor {
       for (int k = 0; k < tags.length; k++) {
         Operator<? extends OperatorDesc> ts =
             GenMapRedUtils.createTemporaryTableScanOperator(rowSchemaList.get((byte) k));
-        ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
+        ((TableScanOperator) ts).setTableDesc(tableDescList.get((byte) k));
         parentOps[k] = ts;
       }
 
       // create the MapJoinOperator
-      String dumpFilePrefix = "mapfile"+ PlanUtils.getCountForMapJoinDumpFilePrefix();
+      String dumpFilePrefix = "mapfile" + PlanUtils.getCountForMapJoinDumpFilePrefix();
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
-          newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc,joinDescriptor
+          newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc, joinDescriptor
           .getOutputColumnNames(), i, joinDescriptor.getConds(),
           joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
       mapJoinDescriptor.setTagOrder(tags);
@@ -307,7 +309,7 @@ public class GenSparkSkewJoinProcessor {
       for (BaseWork work : sparkWork.getRoots()) {
         Preconditions.checkArgument(work instanceof MapWork,
             "All root work should be MapWork, but got " + work.getClass().getSimpleName());
-        if(work != bigMapWork) {
+        if (work != bigMapWork) {
           sparkWork.connect(work, bigMapWork,
               new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE));
         }
@@ -351,8 +353,9 @@ public class GenSparkSkewJoinProcessor {
   }
 
   /**
-   * Insert SparkHashTableSink and HashTableDummy between small dir TS and MJ
+   * Insert SparkHashTableSink and HashTableDummy between small dir TS and MJ.
    */
+  @SuppressWarnings("unchecked")
   private static void insertSHTS(byte tag, TableScanOperator tableScan, MapWork bigMapWork) {
     Preconditions.checkArgument(tableScan.getChildOperators().size() == 1
         && tableScan.getChildOperators().get(0) instanceof MapJoinOperator);
@@ -419,7 +422,7 @@ public class GenSparkSkewJoinProcessor {
   public static boolean supportRuntimeSkewJoin(JoinOperator joinOp,
       Task<? extends Serializable> currTask, HiveConf hiveConf) {
     List<Task<? extends Serializable>> children = currTask.getChildTasks();
-    return GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp) &&
-        (children == null || children.size() <= 1);
+    return GenMRSkewJoinProcessor.skewJoinEnabled(hiveConf, joinOp)
+      && (children == null || children.size() <= 1);
   }
 }

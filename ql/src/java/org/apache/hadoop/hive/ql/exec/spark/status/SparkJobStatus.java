@@ -28,17 +28,17 @@ import java.util.Map;
  */
 public interface SparkJobStatus {
 
-  public int getJobId();
+  int getJobId();
 
-  public JobExecutionStatus getState();
+  JobExecutionStatus getState();
 
-  public int[] getStageIds();
+  int[] getStageIds();
 
-  public Map<String, SparkStageProgress> getSparkStageProgress();
+  Map<String, SparkStageProgress> getSparkStageProgress();
 
-  public SparkCounters getCounter();
+  SparkCounters getCounter();
 
-  public SparkStatistics getSparkStatistics();
+  SparkStatistics getSparkStatistics();
 
-  public void cleanup();
+  void cleanup();
 }

@@ -34,9 +34,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public abstract class SparkRecordHandler {
-  protected final String CLASS_NAME = this.getClass().getName();
+  protected static final String CLASS_NAME = SparkRecordHandler.class.getName();
   protected final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private final Log LOG = LogFactory.getLog(this.getClass());
+  private static final Log LOG = LogFactory.getLog(SparkRecordHandler.class);
 
   // used to log memory usage periodically
   protected final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -48,14 +48,13 @@ public abstract class SparkRecordHandler {
   private long rowNumber = 0;
   private long nextLogThreshold = 1;
 
-  public void init(JobConf job, OutputCollector output, Reporter reporter) {
+  public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     jc = job;
     MapredContext.init(false, new JobConf(jc));
     MapredContext.get().setReporter(reporter);
 
     oc = output;
     rp = reporter;
-//    MapredContext.get().setReporter(reporter);
 
     LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
@@ -78,7 +77,7 @@ public abstract class SparkRecordHandler {
   /**
    * Process row with key and value collection.
    */
-  public abstract void processRow(Object key, Iterator values) throws IOException;
+  public abstract <E> void processRow(Object key, Iterator<E> values) throws IOException;
 
   /**
    * Log processed row number and used memory info.
@@ -86,9 +85,9 @@ public abstract class SparkRecordHandler {
   protected void logMemoryInfo() {
     rowNumber++;
     if (rowNumber == nextLogThreshold) {
-      long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
+      long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
       LOG.info("processing " + rowNumber
-        + " rows: used memory = " + used_memory);
+        + " rows: used memory = " + usedMemory);
       nextLogThreshold = getNextLogThreshold(rowNumber);
     }
   }
@@ -97,12 +96,12 @@ public abstract class SparkRecordHandler {
   public abstract boolean getDone();
 
   /**
-   * Log information to be logged at the end
+   * Log information to be logged at the end.
    */
   protected void logCloseInfo() {
-    long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
+    long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
     LOG.info("processed " + rowNumber + " rows: used memory = "
-      + used_memory);
+      + usedMemory);
   }
 
   private long getNextLogThreshold(long currentThreshold) {

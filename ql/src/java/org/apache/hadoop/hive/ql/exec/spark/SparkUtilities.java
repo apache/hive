@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
- * Contains utilities methods used as part of Spark tasks
+ * Contains utilities methods used as part of Spark tasks.
  */
 public class SparkUtilities {
 
@@ -76,7 +76,7 @@ public class SparkUtilities {
     SparkSession sparkSession = SessionState.get().getSparkSession();
 
     // Spark configurations are updated close the existing session
-    if(conf.getSparkConfigUpdated()){
+    if (conf.getSparkConfigUpdated()) {
       sparkSessionManager.closeSession(sparkSession);
       sparkSession =  null;
       conf.setSparkConfigUpdated(false);

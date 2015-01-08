@@ -94,7 +94,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
   }
 
   private OutstandingRpc findRpc(long id) {
-    for (Iterator<OutstandingRpc> it = rpcs.iterator(); it.hasNext(); ) {
+    for (Iterator<OutstandingRpc> it = rpcs.iterator(); it.hasNext();) {
       OutstandingRpc rpc = it.next();
       if (rpc.id == id) {
         it.remove();
