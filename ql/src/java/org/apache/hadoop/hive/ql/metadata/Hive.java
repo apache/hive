@@ -2363,19 +2363,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (srcf == null) {
       return false;
     }
-    URI srcfUri = srcf.toUri();
-    // In query test, the ware house is using the local file system.
-    boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(fs.getConf(), ConfVars.HIVE_IN_TEST));
-    if (isInTest) {
-      return FileUtils.isSubDir(srcf, destf, fs);
-    } else {
-      // If the source file is in the file schema, it can not be the subdirectory of a HDFS path
-      if (srcfUri != null && srcfUri.isAbsolute() && !srcfUri.getScheme().equals("hdfs")) {
-        return false;
-      } else {
-        return FileUtils.isSubDir(srcf, destf, fs);
-      }
-    }
+    Path currentWorkingDir = fs.getWorkingDirectory();
+    String fullF1 = srcf.makeQualified(srcf.toUri(), currentWorkingDir).toString();
+    String fullF2 = destf.makeQualified(destf.toUri(), currentWorkingDir).toString();
+    LOG.debug("The source path is " + fullF1 + " and destination path is " + fullF2);
+    return fullF1.startsWith(fullF2);
   }
 
   //it is assumed that parent directory of the destf should already exist when this
