@@ -539,12 +539,14 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
-    // TODO: hack to allow spark to run in a cluster mode. Without this, depending on
-    // user's local hadoop settings, true may be returned, which causes plan to be 
-    // stored in local path. This will be addressed in subsquent patches, where false is
-    // returned for spark always. 
-    return false;
-//    return ShimLoader.getHadoopShims().isLocalMode(conf);
+    // Always allow spark to run in a cluster mode. Without this, depending on
+    // user's local hadoop settings, true may be returned, which causes plan to be
+    // stored in local path.
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      return false;
+    }
+
+    return ShimLoader.getHadoopShims().isLocalMode(conf);
   }
 
   public List<HiveLock> getHiveLocks() {
