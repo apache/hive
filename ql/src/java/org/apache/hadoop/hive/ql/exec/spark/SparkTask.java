@@ -191,24 +191,8 @@ public class SparkTask extends Task<SparkWork> {
   @Override
   public Collection<MapWork> getMapWork() {
     List<MapWork> result = Lists.newArrayList();
-    SparkWork work = getWork();
-
-    // framework expects MapWork instances that have no physical parents (i.e.: union parent is
-    // fine, broadcast parent isn't)
-    for (BaseWork w: work.getAllWorkUnsorted()) {
-      if (w instanceof MapWork) {
-        List<BaseWork> parents = work.getParents(w);
-        boolean candidate = true;
-        // TODO: since we don't have UnionWork anymore, can we simplify this?
-        for (BaseWork parent: parents) {
-          if (!(parent instanceof UnionWork)) {
-            candidate = false;
-          }
-        }
-        if (candidate) {
-          result.add((MapWork) w);
-        }
-      }
+    for (BaseWork w : getWork().getRoots()) {
+        result.add((MapWork) w);
     }
     return result;
   }
