@@ -30,7 +30,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -414,7 +416,13 @@ public class VectorColumnAssignFactory {
             if (val == null) {
               assignNull(destIndex);
             } else {
-              HiveVarchar hiveVarchar = (HiveVarchar) val;
+              // We store VARCHAR type stripped of pads.
+              HiveVarchar hiveVarchar;
+              if (val instanceof HiveVarchar) {
+                hiveVarchar = (HiveVarchar) val;
+              } else {
+                hiveVarchar = ((HiveVarcharWritable) val).getHiveVarchar();
+              }
               byte[] bytes = hiveVarchar.getValue().getBytes();
               assignBytes(bytes, 0, bytes.length, destIndex);
             }
@@ -429,7 +437,12 @@ public class VectorColumnAssignFactory {
               assignNull(destIndex);
             } else {
               // We store CHAR type stripped of pads.
-              HiveChar hiveChar = (HiveChar) val;
+              HiveChar hiveChar;
+              if (val instanceof HiveChar) {
+                hiveChar = (HiveChar) val;
+              } else {
+                hiveChar = ((HiveCharWritable) val).getHiveChar();
+              }
               byte[] bytes = hiveChar.getStrippedValue().getBytes();
               assignBytes(bytes, 0, bytes.length, destIndex);
             }
