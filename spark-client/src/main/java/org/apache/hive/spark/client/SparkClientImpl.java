@@ -155,6 +155,11 @@ class SparkClientImpl implements SparkClient {
     return submit(new GetExecutorCountJob());
   }
 
+  @Override
+  public Future<Integer> getDefaultParallelism() {
+    return submit(new GetDefaultParallelismJob());
+  }
+
   void cancel(String jobId) {
     protocol.cancel(jobId);
   }
@@ -489,10 +494,20 @@ class SparkClientImpl implements SparkClient {
 
       @Override
       public Integer call(JobContext jc) throws Exception {
-        int count = jc.sc().sc().getExecutorMemoryStatus().size();
+        // minus 1 here otherwise driver is also counted as an executor
+        int count = jc.sc().sc().getExecutorMemoryStatus().size() - 1;
         return Integer.valueOf(count);
       }
 
+  }
+
+  private static class GetDefaultParallelismJob implements Job<Integer> {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Integer call(JobContext jc) throws Exception {
+      return jc.sc().sc().defaultParallelism();
+    }
   }
 
 }

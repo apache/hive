@@ -1,4 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
+PREHOOK: query: -- SORT_QUERY_RESULTS
 
 -- Disable CBO here, because it messes with the cases specifically crafted for the optimizer.
 -- Instead, we could improve the optimizer to recognize more cases, e.g. filter before join.
@@ -6,7 +6,7 @@ PREHOOK: query: -- SORT_BEFORE_DIFF
 explain extended 
 select key from src where false
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
+POSTHOOK: query: -- SORT_QUERY_RESULTS
 
 -- Disable CBO here, because it messes with the cases specifically crafted for the optimizer.
 -- Instead, we could improve the optimizer to recognize more cases, e.g. filter before join.
@@ -228,7 +228,7 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 4 <- Map 3 (GROUP, 1)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Reducer 4 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1519,7 +1519,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 3), Map 4 (PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Map 2 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1766,7 +1766,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

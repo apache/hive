@@ -95,6 +95,11 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
+  public int getDefaultParallelism() throws Exception {
+    return sc.sc().defaultParallelism();
+  }
+
+  @Override
   public SparkJobRef execute(DriverContext driverContext, SparkWork sparkWork) throws Exception {
     Context ctx = driverContext.getCtx();
     HiveConf hiveConf = (HiveConf) ctx.getConf();

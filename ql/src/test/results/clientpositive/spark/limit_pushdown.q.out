@@ -368,11 +368,11 @@ val_129	130.0
 val_131	132.0
 PREHOOK: query: -- distincts
 explain
-select distinct(cdouble) from alltypesorc limit 20
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: -- distincts
 explain
-select distinct(cdouble) from alltypesorc limit 20
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -382,7 +382,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -433,11 +433,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select distinct(cdouble) from alltypesorc limit 20
+PREHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cdouble) from alltypesorc limit 20
+POSTHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
@@ -695,7 +695,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP, 2)
         Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -810,9 +810,9 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 4 (GROUP, 3)
+        Reducer 5 <- Map 4 (GROUP, 2)
         Reducer 6 <- Reducer 5 (GROUP, 1)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 3), Reducer 6 (PARTITION-LEVEL SORT, 3)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1203,11 +1203,11 @@ POSTHOOK: Input: default@src
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 PREHOOK: query: -- flush for group-by
 explain
-select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: -- flush for group-by
 explain
-select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1217,7 +1217,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1234,7 +1235,6 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: concat(key, value, value, value, value, value, value, value, value, value) (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 2.0E-5
                       value expressions: key (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -1248,16 +1248,27 @@ STAGE PLANS:
                   expressions: _col1 (type: double)
                   outputColumnNames: _col0
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 100
+                  Reduce Output Operator
+                    key expressions: _col0 (type: double)
+                    sort order: +
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 2.0E-5
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: double)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1265,111 +1276,111 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
+PREHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100
+POSTHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+0.0
 10.0
+102.0
 105.0
-1107.0
+105.0
+11.0
+111.0
 114.0
-1227.0
-1251.0
+116.0
+116.0
 126.0
-1314.0
+131.0
 133.0
+134.0
 136.0
 143.0
+144.0
 145.0
-1494.0
 15.0
+150.0
+152.0
 153.0
 155.0
+156.0
+157.0
+158.0
+160.0
+162.0
 163.0
 166.0
+166.0
+168.0
+168.0
 17.0
+170.0
+177.0
+178.0
+180.0
+181.0
 183.0
-1872.0
+186.0
+189.0
+19.0
+190.0
+190.0
+192.0
 194.0
 194.0
-1956.0
+196.0
+196.0
+2.0
+20.0
+200.0
 201.0
 202.0
+206.0
 208.0
 210.0
 214.0
+218.0
 222.0
 226.0
-2345.0
-241.0
-250.0
-252.0
-262.0
-263.0
-268.0
-283.0
-291.0
-292.0
+226.0
+228.0
+24.0
+27.0
+28.0
 30.0
-310.0
-328.0
+30.0
 33.0
-330.0
-339.0
-341.0
-348.0
-350.0
-351.0
-360.0
-379.0
-389.0
-390.0
+34.0
+36.0
 4.0
-406.0
 41.0
-418.0
-419.0
-426.0
-437.0
-442.0
-446.0
-448.0
-448.0
-449.0
-457.0
-466.0
-467.0
-477.0
-479.0
-484.0
-487.0
-496.0
-497.0
+43.0
+44.0
+47.0
+48.0
+52.0
 53.0
-544.0
-562.0
-564.0
+54.0
 57.0
-579.0
-618.0
-642.0
+64.0
 65.0
-662.0
+66.0
 69.0
 74.0
+74.0
 77.0
-798.0
-819.0
+78.0
+8.0
+80.0
 82.0
 84.0
 85.0
-858.0
-878.0
-916.0
-918.0
-933.0
-956.0
+86.0
+87.0
+9.0
+92.0
+96.0
