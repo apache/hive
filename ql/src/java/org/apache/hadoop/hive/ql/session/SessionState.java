@@ -1271,7 +1271,7 @@ public class SessionState {
     if (sparkSession != null) {
       try {
         SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
-      } catch(Exception ex) {
+      } catch (Exception ex) {
         LOG.error("Error closing spark session.", ex);
       } finally {
         sparkSession = null;

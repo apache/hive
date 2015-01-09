@@ -147,9 +147,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   // loop over all the operators recursively
-  // TODO: changed from private to protected for SparkCompiler to use. It will be changed back onece SparkCompiler
-  //       stands alone.
-  protected void breakOperatorTree(Operator<? extends OperatorDesc> topOp) {
+  private void breakOperatorTree(Operator<? extends OperatorDesc> topOp) {
     if (topOp instanceof ReduceSinkOperator) {
       topOp.setChildOperators(null);
     }

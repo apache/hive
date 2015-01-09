@@ -424,12 +424,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               json.accumulate(ent.getKey().toString(), jsonDep);
             }
           }
-        } else if (ent.getValue() != null && !((List<?>)ent.getValue()).isEmpty()
-            && ((List<?>)ent.getValue()).get(0) != null &&
-            ((List<?>)ent.getValue()).get(0) instanceof SparkWork.Dependency) {
+        } else if (ent.getValue() != null && !((List<?>) ent.getValue()).isEmpty()
+            && ((List<?>) ent.getValue()).get(0) != null &&
+            ((List<?>) ent.getValue()).get(0) instanceof SparkWork.Dependency) {
           if (out != null) {
             boolean isFirst = true;
-            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>)ent.getValue()) {
+            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>) ent.getValue()) {
               if (!isFirst) {
                 out.print(", ");
               } else {
@@ -446,7 +446,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             out.println();
           }
           if (jsonOutput) {
-            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>)ent.getValue()) {
+            for (SparkWork.Dependency dep: (List<SparkWork.Dependency>) ent.getValue()) {
               JSONObject jsonDep = new JSONObject();
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getShuffleType());

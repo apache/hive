@@ -154,7 +154,7 @@ public class MapJoinTableContainerSerDe {
       return tableContainer;
     } catch (IOException e) {
       throw new HiveException("IO error while trying to create table container", e);
-    } catch(Exception e) {
+    } catch (Exception e) {
       throw new HiveException("Error while trying to create table container", e);
     }
   }

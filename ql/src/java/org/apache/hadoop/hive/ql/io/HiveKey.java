@@ -24,7 +24,6 @@ import org.apache.hadoop.io.WritableComparator;
 /**
  * HiveKey is a simple wrapper on Text which allows us to set the hashCode
  * easily. hashCode is used for hadoop partitioner.
- * 
  */
 public class HiveKey extends BytesWritable {
 
