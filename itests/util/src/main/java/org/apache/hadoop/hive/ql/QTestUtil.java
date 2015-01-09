@@ -267,7 +267,7 @@ public class QTestUtil {
 
     // Plug verifying metastore in for testing.
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+      "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
 
     if (mr != null) {
       assert dfs != null;
@@ -926,7 +926,18 @@ public class QTestUtil {
     String [] cmds = commands.split(";");
     int rc = 0;
 
-    for (String command : cmds) {
+    String command = "";
+    for (String oneCmd : cmds) {
+      if (StringUtils.endsWith(oneCmd, "\\")) {
+        command += StringUtils.chop(oneCmd) + "\\;";
+        continue;
+      } else {
+        command += oneCmd;
+      }
+      if (StringUtils.isBlank(command)) {
+        continue;
+      }
+
       if (isCommandUsedForTesting(command)) {
         rc = executeTestCommand(command);
       } else {
@@ -936,6 +947,7 @@ public class QTestUtil {
       if (rc != 0) {
         break;
       }
+      command = "";
     }
 
     return rc;
