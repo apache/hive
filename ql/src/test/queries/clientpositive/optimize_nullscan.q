@@ -1,5 +1,5 @@
 set hive.cbo.enable=false;
--- SORT_BEFORE_DIFF
+-- SORT_QUERY_RESULTS
 
 -- Disable CBO here, because it messes with the cases specifically crafted for the optimizer.
 -- Instead, we could improve the optimizer to recognize more cases, e.g. filter before join.

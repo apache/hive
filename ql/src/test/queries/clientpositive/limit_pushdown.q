@@ -24,8 +24,8 @@ select value,avg(key + 1) from src group by value order by value limit 20;
 
 -- distincts
 explain
-select distinct(cdouble) from alltypesorc limit 20;
-select distinct(cdouble) from alltypesorc limit 20;
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20;
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20;
 
 explain
 select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20;
@@ -69,5 +69,5 @@ select key,value,value,value,value,value,value,value,value from src order by key
 
 -- flush for group-by
 explain
-select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100;
-select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) limit 100;
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100;
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100;
