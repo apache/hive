@@ -73,6 +73,7 @@ import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule;
+import org.apache.calcite.rel.rules.UnionMergeRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -715,8 +716,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
-
       hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
+      hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
+
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
@@ -1817,7 +1819,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         relToHiveColNameCalcitePosMap.put(gbRel,
             buildHiveToCalciteColumnMap(groupByOutputRowResolver, gbRel));
         this.relToHiveRR.put(gbRel, groupByOutputRowResolver);
-        
+
         // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id.
         // Further, we insert a project operator on top to remove the grouping
         // boolean associated to each column in Calcite; this will avoid
