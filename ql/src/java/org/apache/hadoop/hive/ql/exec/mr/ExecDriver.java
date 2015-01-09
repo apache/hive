@@ -242,7 +242,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       job.setPartitionerClass((Class<? extends Partitioner>) (Class.forName(HiveConf.getVar(job,
           HiveConf.ConfVars.HIVEPARTITIONER))));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
     if (mWork.getNumMapTasks() != null) {
@@ -288,7 +288,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     try {
       job.setInputFormat((Class<? extends InputFormat>) (Class.forName(inpFormat)));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
 

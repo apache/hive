@@ -66,8 +66,8 @@ public class DataWritableWriter {
         writeGroupFields(record, schema);
       } catch (RuntimeException e) {
         String errorMessage = "Parquet record is malformed: " + e.getMessage();
-        LOG.error(errorMessage);
-        throw new RuntimeException(errorMessage);
+        LOG.error(errorMessage, e);
+        throw new RuntimeException(errorMessage, e);
       }
       recordConsumer.endMessage();
     }

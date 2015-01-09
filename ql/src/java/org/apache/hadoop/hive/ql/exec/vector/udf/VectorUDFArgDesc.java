@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.udf;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -107,7 +106,7 @@ public class VectorUDFArgDesc implements Serializable {
         o = writers[argPosition].writeValue(cv, row);
         return new GenericUDF.DeferredJavaObject(o);
       } catch (HiveException e) {
-        throw new RuntimeException("Unable to get Java object from VectorizedRowBatch");
+        throw new RuntimeException("Unable to get Java object from VectorizedRowBatch", e);
       }
     }
   }

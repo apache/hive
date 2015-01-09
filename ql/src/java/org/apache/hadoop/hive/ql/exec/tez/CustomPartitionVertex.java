@@ -234,7 +234,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         try {
           fileSplit = getFileSplitFromEvent(diEvent);
         } catch (IOException e) {
-          throw new RuntimeException("Failed to get file split for event: " + diEvent);
+          throw new RuntimeException("Failed to get file split for event: " + diEvent, e);
         }
         Set<FileSplit> fsList =
             pathFileSplitsMap.get(Utilities.getBucketFileNameFromPathSubString(fileSplit.getPath()
