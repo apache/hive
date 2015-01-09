@@ -100,12 +100,14 @@ public final class ExprNodeEvaluatorFactory {
 
   private static class EvaluatorContext {
 
-    private final Map<String, ExprNodeEvaluator> cached = new HashMap<String, ExprNodeEvaluator>();
+    private final Map<ExprNodeDesc.ExprNodeDescEqualityWrapper, ExprNodeEvaluator> cached = 
+        new HashMap<ExprNodeDesc.ExprNodeDescEqualityWrapper, ExprNodeEvaluator>();
 
     private boolean hasReference;
 
     public ExprNodeEvaluator getEvaluated(ExprNodeEvaluator eval) {
-      String key = eval.getExpr().toString();
+      ExprNodeDesc.ExprNodeDescEqualityWrapper key = 
+          new ExprNodeDesc.ExprNodeDescEqualityWrapper(eval.expr); 
       ExprNodeEvaluator prev = cached.get(key);
       if (prev == null) {
         cached.put(key, eval);

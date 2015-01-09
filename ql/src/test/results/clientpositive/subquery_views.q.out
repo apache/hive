@@ -70,7 +70,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv2
 Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: explain
 select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
@@ -383,7 +383,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
 PREHOOK: type: QUERY

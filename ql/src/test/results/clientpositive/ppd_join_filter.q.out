@@ -202,7 +202,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -345,7 +345,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0:a]
+        /src [$hdt$_0:a]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -627,7 +627,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -762,7 +762,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0:a]
+        /src [$hdt$_0:a]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -1040,7 +1040,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1179,7 +1179,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0:a]
+        /src [$hdt$_0:a]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -1461,7 +1461,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_1:$hdt$_1:$hdt$_1:a]
+        /src [$hdt$_1:$hdt$_1:$hdt$_1:a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1596,7 +1596,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:$hdt$_0:a]
+        /src [$hdt$_0:a]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:

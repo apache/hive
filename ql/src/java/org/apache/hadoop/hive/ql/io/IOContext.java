@@ -36,23 +36,30 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
  */
 public class IOContext {
 
-  private static ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
+  /**
+   * Spark uses this thread local
+   */
+  private static final ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
     @Override
     protected synchronized IOContext initialValue() { return new IOContext(); }
  };
 
-  private static Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
-
   private static IOContext get() {
     return IOContext.threadLocal.get();
   }
+
+  /**
+   * Tez and MR use this map but are single threaded per JVM thus no synchronization is required.
+   */
+  private static final Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
+
 
   public static IOContext get(Configuration conf) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       return get();
     }
     String inputName = conf.get(Utilities.INPUT_NAME);
-    if (inputNameIOContextMap.containsKey(inputName) == false) {
+    if (!inputNameIOContextMap.containsKey(inputName)) {
       IOContext ioContext = new IOContext();
       inputNameIOContextMap.put(inputName, ioContext);
     }
@@ -65,26 +72,26 @@ public class IOContext {
     inputNameIOContextMap.clear();
   }
 
-  long currentBlockStart;
-  long nextBlockStart;
-  long currentRow;
-  boolean isBlockPointer;
-  boolean ioExceptions;
+  private long currentBlockStart;
+  private long nextBlockStart;
+  private long currentRow;
+  private boolean isBlockPointer;
+  private boolean ioExceptions;
 
   // Are we using the fact the input is sorted
-  boolean useSorted = false;
+  private boolean useSorted = false;
   // Are we currently performing a binary search
-  boolean isBinarySearching = false;
+  private boolean isBinarySearching = false;
   // Do we want to end the binary search
-  boolean endBinarySearch = false;
+  private boolean endBinarySearch = false;
   // The result of the comparison of the last row processed
-  Comparison comparison = null;
+  private Comparison comparison = null;
   // The class name of the generic UDF being used by the filter
-  String genericUDFClassName = null;
+  private String genericUDFClassName = null;
   /**
    * supports {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
    */
-  public RecordIdentifier ri;
+  private  RecordIdentifier ri;
 
   public static enum Comparison {
     GREATER,
@@ -93,7 +100,7 @@ public class IOContext {
     UNKNOWN
   }
 
-  Path inputPath;
+  private Path inputPath;
 
   public IOContext() {
     this.currentBlockStart = 0;
@@ -163,7 +170,7 @@ public class IOContext {
     return isBinarySearching;
   }
 
-  public void setIsBinarySearching(boolean isBinarySearching) {
+  public void setBinarySearching(boolean isBinarySearching) {
     this.isBinarySearching = isBinarySearching;
   }
 
@@ -202,6 +209,14 @@ public class IOContext {
 
   public void setGenericUDFClassName(String genericUDFClassName) {
     this.genericUDFClassName = genericUDFClassName;
+  }
+
+  public RecordIdentifier getRecordIdentifier() {
+    return this.ri;
+  }
+
+  public void setRecordIdentifier(RecordIdentifier ri) {
+    this.ri = ri;
   }
 
   /**

@@ -118,7 +118,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     conf.set(Utilities.INPUT_NAME, "TestHiveBinarySearchRecordReader");
     ioContext = IOContext.get(conf);
     ioContext.setUseSorted(false);
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setEndBinarySearch(false);
     ioContext.setComparison(null);
     ioContext.setGenericUDFClassName(null);
@@ -252,7 +252,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPEqual.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);
@@ -292,7 +292,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPGreaterThan.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);
@@ -306,7 +306,7 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
     ioContext.setGenericUDFClassName(GenericUDFOPEqualOrGreaterThan.class.getName());
     Assert.assertTrue(ioContext.isBinarySearching());
     Assert.assertTrue(executeDoNext(hbsReader));
-    ioContext.setIsBinarySearching(false);
+    ioContext.setBinarySearching(false);
     ioContext.setComparison(-1);
     Assert.assertTrue(executeDoNext(hbsReader));
     ioContext.setComparison(0);

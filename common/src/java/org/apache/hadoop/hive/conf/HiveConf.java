@@ -421,6 +421,9 @@ public class HiveConf extends Configuration {
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_USE_THRIFT_FRAMED_TRANSPORT("hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),
+    METASTORE_USE_THRIFT_COMPACT_PROTOCOL("hive.metastore.thrift.compact.protocol.enabled", false,
+        "If true, the metastore Thrift interface will use TCompactProtocol. When false (default) TBinaryProtocol will be used.\n" +
+        "Setting it to true will break compatibility with older clients running TBinaryProtocol."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS("hive.cluster.delegation.token.store.class",
         "org.apache.hadoop.hive.thrift.MemoryTokenStore",
         "The delegation token store implementation. Set to org.apache.hadoop.hive.thrift.ZooKeeperTokenStore for load-balanced cluster."),
@@ -486,6 +489,9 @@ public class HiveConf extends Configuration {
     METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", "",
         "List of comma separated listeners for metastore events."),
     METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "", ""),
+    METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "time after which events will be removed from the database listener queue"),
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false,
         "Should the metastore do authorization checks against the underlying storage (usually hdfs) \n" +
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +
@@ -869,6 +875,11 @@ public class HiveConf extends Configuration {
     HIVE_RCFILE_COLUMN_NUMBER_CONF("hive.io.rcfile.column.number.conf", 0, ""),
     HIVE_RCFILE_TOLERATE_CORRUPTIONS("hive.io.rcfile.tolerate.corruptions", false, ""),
     HIVE_RCFILE_RECORD_BUFFER_SIZE("hive.io.rcfile.record.buffer.size", 4194304, ""),   // 4M
+
+    PARQUET_MEMORY_POOL_RATIO("parquet.memory.pool.ratio", 0.5f,
+        "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
+        "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
+        "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
 
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),

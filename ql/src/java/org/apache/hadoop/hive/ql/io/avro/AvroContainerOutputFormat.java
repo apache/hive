@@ -60,7 +60,7 @@ public class AvroContainerOutputFormat
          Properties properties, Progressable progressable) throws IOException {
     Schema schema;
     try {
-      schema = AvroSerdeUtils.determineSchemaOrThrowException(properties);
+      schema = AvroSerdeUtils.determineSchemaOrThrowException(jobConf, properties);
     } catch (AvroSerdeException e) {
       throw new IOException(e);
     }

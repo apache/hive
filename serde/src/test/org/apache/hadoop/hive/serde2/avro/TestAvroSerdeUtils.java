@@ -117,26 +117,29 @@ public class TestAvroSerdeUtils {
 
   @Test(expected=AvroSerdeException.class)
   public void determineSchemaThrowsExceptionIfNoSchema() throws IOException, AvroSerdeException {
+    Configuration conf = new Configuration();
     Properties prop = new Properties();
-    AvroSerdeUtils.determineSchemaOrThrowException(prop);
+    AvroSerdeUtils.determineSchemaOrThrowException(conf, prop);
   }
 
   @Test
   public void determineSchemaFindsLiterals() throws Exception {
     String schema = TestAvroObjectInspectorGenerator.RECORD_SCHEMA;
+    Configuration conf = new Configuration();
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_LITERAL, schema);
     Schema expected = AvroSerdeUtils.getSchemaFor(schema);
-    assertEquals(expected, AvroSerdeUtils.determineSchemaOrThrowException(props));
+    assertEquals(expected, AvroSerdeUtils.determineSchemaOrThrowException(conf, props));
   }
 
   @Test
   public void detemineSchemaTriesToOpenUrl() throws AvroSerdeException, IOException {
+    Configuration conf = new Configuration();
     Properties props = new Properties();
     props.put(AvroSerdeUtils.SCHEMA_URL, "not:///a.real.url");
 
     try {
-      AvroSerdeUtils.determineSchemaOrThrowException(props);
+      AvroSerdeUtils.determineSchemaOrThrowException(conf, props);
       fail("Should have tried to open that URL");
     } catch (AvroSerdeException e) {
       assertEquals("Unable to read schema from given path: not:///a.real.url", e.getMessage());
@@ -145,13 +148,14 @@ public class TestAvroSerdeUtils {
 
   @Test
   public void noneOptionWorksForSpecifyingSchemas() throws IOException, AvroSerdeException {
+    Configuration conf = new Configuration();
     Properties props = new Properties();
 
     // Combo 1: Both set to none
     props.put(SCHEMA_URL, SCHEMA_NONE);
     props.put(SCHEMA_LITERAL, SCHEMA_NONE);
     try {
-      determineSchemaOrThrowException(props);
+      determineSchemaOrThrowException(conf, props);
       fail("Should have thrown exception with none set for both url and literal");
     } catch(AvroSerdeException he) {
       assertEquals(EXCEPTION_MESSAGE, he.getMessage());
@@ -161,7 +165,7 @@ public class TestAvroSerdeUtils {
     props.put(SCHEMA_LITERAL, TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
     Schema s;
     try {
-      s = determineSchemaOrThrowException(props);
+      s = determineSchemaOrThrowException(conf, props);
       assertNotNull(s);
       assertEquals(AvroSerdeUtils.getSchemaFor(TestAvroObjectInspectorGenerator.RECORD_SCHEMA), s);
     } catch(AvroSerdeException he) {
@@ -172,7 +176,7 @@ public class TestAvroSerdeUtils {
     props.put(SCHEMA_LITERAL, SCHEMA_NONE);
     props.put(SCHEMA_URL, "not:///a.real.url");
     try {
-      determineSchemaOrThrowException(props);
+      determineSchemaOrThrowException(conf, props);
       fail("Should have tried to open that bogus URL");
     } catch (AvroSerdeException e) {
       assertEquals("Unable to read schema from given path: not:///a.real.url", e.getMessage());

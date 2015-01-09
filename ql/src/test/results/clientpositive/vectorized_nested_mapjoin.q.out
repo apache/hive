@@ -11,14 +11,14 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_0:$hdt$_0:$hdt$_0:v1 
+        $hdt$_0:$hdt$_0:$hdt$_0:v1 
           Fetch Operator
             limit: -1
-        $hdt$_0:$hdt$_0:$hdt$_1:v1 
+        $hdt$_0:$hdt$_1:v1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_0:$hdt$_0:$hdt$_0:v1 
+        $hdt$_0:$hdt$_0:$hdt$_0:v1 
           TableScan
             alias: v1
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
@@ -33,7 +33,7 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: tinyint)
                     1 _col0 (type: tinyint)
-        $hdt$_0:$hdt$_0:$hdt$_1:v1 
+        $hdt$_0:$hdt$_1:v1 
           TableScan
             alias: v1
             Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE

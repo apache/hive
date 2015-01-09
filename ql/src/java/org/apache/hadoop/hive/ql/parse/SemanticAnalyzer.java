@@ -3117,7 +3117,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private List<Integer> getGroupingSetsForRollup(int size) {
+  protected List<Integer> getGroupingSetsForRollup(int size) {
     List<Integer> groupingSetKeys = new ArrayList<Integer>();
     for (int i = 0; i <= size; i++) {
       groupingSetKeys.add((1 << i) - 1);
@@ -3125,7 +3125,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return groupingSetKeys;
   }
 
-  private List<Integer> getGroupingSetsForCube(int size) {
+  protected List<Integer> getGroupingSetsForCube(int size) {
     int count = 1 << size;
     List<Integer> results = new ArrayList<Integer>(count);
     for (int i = 0; i < count; ++i) {
@@ -3152,7 +3152,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return new ObjectPair<List<ASTNode>, List<Integer>>(groupByExprs, groupingSets);
   }
 
-  private List<Integer> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
+  protected List<Integer> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
       String dest) throws SemanticException {
     Map<String, Integer> exprPos = new HashMap<String, Integer>();
     for (int i = 0; i < groupByExpr.size(); ++i) {

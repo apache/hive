@@ -24,11 +24,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -38,6 +40,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -556,5 +561,33 @@ public interface RawStore extends Configurable {
 
   public AggrStats get_aggr_stats_for(String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get the next notification event.
+   * @param rqst Request containing information on the last processed notification.
+   * @return list of notifications, sorted by eventId
+   */
+  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst);
+
+
+  /**
+   * Add a notification entry.  This should only be called from inside the metastore
+   * @param event the notification to add
+   */
+  public void addNotificationEvent(NotificationEvent event);
+
+  /**
+   * Remove older notification events.
+   * @param olderThan Remove any events older than a given number of seconds
+   */
+  public void cleanNotificationEvents(int olderThan);
+
+  /**
+   * Get the last issued notification event id.  This is intended for use by the export command
+   * so that users can determine the state of the system at the point of the export,
+   * and determine which notification events happened before or after the export.
+   * @return
+   */
+  public CurrentNotificationEventId getCurrentNotificationEventId();
   
 }
