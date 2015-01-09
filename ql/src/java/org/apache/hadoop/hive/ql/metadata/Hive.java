@@ -2364,18 +2364,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    // schema is diff, return false
-    String schemaSrcf = srcf.toUri().getScheme();
-    String schemaDestf = destf.toUri().getScheme();
-
     String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, fs);
-    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(srcf, fs);
+    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, fs);
 
     boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(fs.getConf(), ConfVars.HIVE_IN_TEST));
     // In the automation, the data warehouse is the local file system based.
     if (isInTest) {
       return fullF1.startsWith(fullF2);
     }
+
+    // schema is diff, return false
+    String schemaSrcf = srcf.toUri().getScheme();
+    String schemaDestf = destf.toUri().getScheme();
 
     // if the schemaDestf is null, it means the destination is not in the local file system
     if (schemaDestf == null && isSrcLocal) {
