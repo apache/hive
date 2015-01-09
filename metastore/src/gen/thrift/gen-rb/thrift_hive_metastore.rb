@@ -1977,34 +1977,34 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
     end
 
-    def getNextNotification(rqst)
-      send_getNextNotification(rqst)
-      return recv_getNextNotification()
+    def get_next_notification(rqst)
+      send_get_next_notification(rqst)
+      return recv_get_next_notification()
     end
 
-    def send_getNextNotification(rqst)
-      send_message('getNextNotification', GetNextNotification_args, :rqst => rqst)
+    def send_get_next_notification(rqst)
+      send_message('get_next_notification', Get_next_notification_args, :rqst => rqst)
     end
 
-    def recv_getNextNotification()
-      result = receive_message(GetNextNotification_result)
+    def recv_get_next_notification()
+      result = receive_message(Get_next_notification_result)
       return result.success unless result.success.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getNextNotification failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_next_notification failed: unknown result')
     end
 
-    def getCurrentNotificationEventId()
-      send_getCurrentNotificationEventId()
-      return recv_getCurrentNotificationEventId()
+    def get_current_notificationEventId()
+      send_get_current_notificationEventId()
+      return recv_get_current_notificationEventId()
     end
 
-    def send_getCurrentNotificationEventId()
-      send_message('getCurrentNotificationEventId', GetCurrentNotificationEventId_args)
+    def send_get_current_notificationEventId()
+      send_message('get_current_notificationEventId', Get_current_notificationEventId_args)
     end
 
-    def recv_getCurrentNotificationEventId()
-      result = receive_message(GetCurrentNotificationEventId_result)
+    def recv_get_current_notificationEventId()
+      result = receive_message(Get_current_notificationEventId_result)
       return result.success unless result.success.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getCurrentNotificationEventId failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
   end
@@ -3523,18 +3523,18 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'show_compact', seqid)
     end
 
-    def process_getNextNotification(seqid, iprot, oprot)
-      args = read_args(iprot, GetNextNotification_args)
-      result = GetNextNotification_result.new()
-      result.success = @handler.getNextNotification(args.rqst)
-      write_result(result, oprot, 'getNextNotification', seqid)
+    def process_get_next_notification(seqid, iprot, oprot)
+      args = read_args(iprot, Get_next_notification_args)
+      result = Get_next_notification_result.new()
+      result.success = @handler.get_next_notification(args.rqst)
+      write_result(result, oprot, 'get_next_notification', seqid)
     end
 
-    def process_getCurrentNotificationEventId(seqid, iprot, oprot)
-      args = read_args(iprot, GetCurrentNotificationEventId_args)
-      result = GetCurrentNotificationEventId_result.new()
-      result.success = @handler.getCurrentNotificationEventId()
-      write_result(result, oprot, 'getCurrentNotificationEventId', seqid)
+    def process_get_current_notificationEventId(seqid, iprot, oprot)
+      args = read_args(iprot, Get_current_notificationEventId_args)
+      result = Get_current_notificationEventId_result.new()
+      result.success = @handler.get_current_notificationEventId()
+      write_result(result, oprot, 'get_current_notificationEventId', seqid)
     end
 
   end
@@ -8025,7 +8025,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class GetNextNotification_args
+  class Get_next_notification_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
@@ -8041,7 +8041,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class GetNextNotification_result
+  class Get_next_notification_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
 
@@ -8057,7 +8057,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class GetCurrentNotificationEventId_args
+  class Get_current_notificationEventId_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
 
     FIELDS = {
@@ -8072,7 +8072,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class GetCurrentNotificationEventId_result
+  class Get_current_notificationEventId_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
 

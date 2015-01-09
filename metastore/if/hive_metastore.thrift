@@ -1132,8 +1132,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
 
   // Notification logging calls
-  NotificationEventResponse getNextNotification(1:NotificationEventRequest rqst) 
-  CurrentNotificationEventId getCurrentNotificationEventId()
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  CurrentNotificationEventId get_current_notificationEventId()
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
