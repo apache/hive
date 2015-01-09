@@ -578,7 +578,7 @@ public class DagUtils {
         }
       } catch (IOException e) {
         throw new RuntimeException(
-            "Can't make path " + outputPath + " : " + e.getMessage());
+            "Can't make path " + outputPath + " : " + e.getMessage(), e);
       }
     }
 

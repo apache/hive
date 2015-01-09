@@ -71,7 +71,7 @@ public class UDFXPathUtil {
     try {
       return expression.evaluate(inputSource, qname);
     } catch (XPathExpressionException e) {
-      throw new RuntimeException ("Invalid expression '" + oldPath + "'");
+      throw new RuntimeException ("Invalid expression '" + oldPath + "'", e);
     }
   }
 

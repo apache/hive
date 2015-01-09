@@ -273,8 +273,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           }
         } catch (HiveException e) {
           String logMsg = "Collecting stats failed.";
-          LOG.error(logMsg);
-          throw new RuntimeException(logMsg);
+          LOG.error(logMsg, e);
+          throw new RuntimeException(logMsg, e);
         }
       }
 
