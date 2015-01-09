@@ -72,4 +72,9 @@ public interface SparkClient extends Serializable {
    * Get the count of executors.
    */
   Future<Integer> getExecutorCount();
+
+  /**
+   * Get default parallelism. For standalone mode, this can be used to get total number of cores.
+   */
+  Future<Integer> getDefaultParallelism();
 }

@@ -297,8 +297,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1202,8 +1202,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1447,8 +1447,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1728,8 +1728,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2055,7 +2055,7 @@ STAGE PLANS:
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
-                                numFiles 3
+                                numFiles 2
                                 numRows 5
                                 rawDataSize 17
                                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2154,7 +2154,7 @@ STAGE PLANS:
                                 columns.types int:int
 #### A masked pattern was here ####
                                 name default.outputtbl1
-                                numFiles 3
+                                numFiles 2
                                 numRows 5
                                 rawDataSize 17
                                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2237,7 +2237,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 3
+                numFiles 2
                 numRows 5
                 rawDataSize 17
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -2381,8 +2381,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 4 <- Reducer 3 (GROUP, 3)
+        Reducer 3 <- Map 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Reducer 3 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2802,7 +2802,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2992,7 +2992,7 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
-                          numFiles 4
+                          numFiles 3
                           numRows 10
                           rawDataSize 32
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -3022,7 +3022,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 4
+                numFiles 3
                 numRows 10
                 rawDataSize 32
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -3166,9 +3166,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 5 <- Reducer 4 (GROUP, 3)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Reducer 5 (PARTITION-LEVEL SORT, 3)
+        Reducer 4 <- Map 3 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Reducer 4 (GROUP, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3468,8 +3468,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 3)
-        Reducer 3 <- Reducer 2 (GROUP, 3)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3598,7 +3598,7 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
-                          numFiles 3
+                          numFiles 2
                           numRows 5
                           rawDataSize 15
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -3628,7 +3628,7 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
-                numFiles 3
+                numFiles 2
                 numRows 5
                 rawDataSize 15
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -3761,7 +3761,7 @@ STAGE PLANS:
                                 columns.types int:int:string:int
 #### A masked pattern was here ####
                                 name default.outputtbl4
-                                numFiles 3
+                                numFiles 2
                                 numRows 6
                                 rawDataSize 48
                                 serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
@@ -3844,7 +3844,7 @@ STAGE PLANS:
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4
-                numFiles 3
+                numFiles 2
                 numRows 6
                 rawDataSize 48
                 serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}

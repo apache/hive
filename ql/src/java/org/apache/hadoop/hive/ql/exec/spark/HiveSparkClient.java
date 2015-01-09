@@ -45,4 +45,10 @@ public interface HiveSparkClient extends Serializable, Closeable {
    * @return the number of executors
    */
   int getExecutorCount() throws Exception;
+
+  /**
+   * For standalone mode, this can be used to get total number of cores.
+   * @return  default parallelism.
+   */
+  int getDefaultParallelism() throws Exception;
 }

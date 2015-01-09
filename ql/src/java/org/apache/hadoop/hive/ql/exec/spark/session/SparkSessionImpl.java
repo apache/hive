@@ -68,19 +68,34 @@ public class SparkSessionImpl implements SparkSession {
   @Override
   public Tuple2<Long, Integer> getMemoryAndCores() throws Exception {
     SparkConf sparkConf = hiveSparkClient.getSparkConf();
-    int cores = sparkConf.getInt("spark.executor.cores", 1);
-    double memoryFraction = sparkConf.getDouble("spark.shuffle.memoryFraction", 0.2);
+    int numExecutors = hiveSparkClient.getExecutorCount();
+    // at start-up, we may be unable to get number of executors
+    if (numExecutors <= 0) {
+      return new Tuple2<Long, Integer>(-1L, -1);
+    }
     int executorMemoryInMB = Utils.memoryStringToMb(
-      sparkConf.get("spark.executor.memory", "512m"));
-    long memoryPerTaskInBytes =
-      (long) (executorMemoryInMB * memoryFraction * 1024 * 1024 / cores);
-    int executors = hiveSparkClient.getExecutorCount();
-    int totalCores = executors * cores;
-    LOG.info("Spark cluster current has executors: " + executors
-      + ", cores per executor: " + cores + ", memory per executor: "
-      + executorMemoryInMB + "M, shuffle memoryFraction: " + memoryFraction);
+        sparkConf.get("spark.executor.memory", "512m"));
+    double memoryFraction = 1.0 - sparkConf.getDouble("spark.storage.memoryFraction", 0.6);
+    long totalMemory = (long) (numExecutors * executorMemoryInMB * memoryFraction * 1024 * 1024);
+    int totalCores;
+    String masterURL = sparkConf.get("spark.master");
+    if (masterURL.startsWith("spark")) {
+      totalCores = sparkConf.contains("spark.default.parallelism") ?
+          sparkConf.getInt("spark.default.parallelism", 1) :
+          hiveSparkClient.getDefaultParallelism();
+      totalCores = Math.max(totalCores, numExecutors);
+    } else {
+      int coresPerExecutor = sparkConf.getInt("spark.executor.cores", 1);
+      totalCores = numExecutors * coresPerExecutor;
+    }
+    totalCores = totalCores / sparkConf.getInt("spark.task.cpus", 1);
+
+    long memoryPerTaskInBytes = totalMemory / totalCores;
+    LOG.info("Spark cluster current has executors: " + numExecutors
+        + ", total cores: " + totalCores + ", memory per executor: "
+        + executorMemoryInMB + "M, memoryFraction: " + memoryFraction);
     return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
-      Integer.valueOf(totalCores));
+        Integer.valueOf(totalCores));
   }
 
   @Override

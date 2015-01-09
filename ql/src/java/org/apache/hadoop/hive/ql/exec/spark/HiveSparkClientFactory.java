@@ -62,7 +62,6 @@ public class HiveSparkClientFactory {
     sparkConf.put("spark.app.name", SPARK_DEFAULT_APP_NAME);
     sparkConf.put("spark.serializer",
       "org.apache.spark.serializer.KryoSerializer");
-    sparkConf.put("spark.default.parallelism", "1");
 
     // load properties from spark-defaults.conf.
     InputStream inputStream = null;

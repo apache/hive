@@ -95,6 +95,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   }
 
   @Override
+  public int getDefaultParallelism() throws Exception {
+    long timeout = hiveConf.getTimeVar(
+        HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
+    Future<Integer> handler = remoteClient.getDefaultParallelism();
+    return handler.get(timeout, TimeUnit.SECONDS);
+  }
+
+  @Override
   public SparkJobRef execute(final DriverContext driverContext, final SparkWork sparkWork) throws Exception {
     final Context ctx = driverContext.getCtx();
     final HiveConf hiveConf = (HiveConf) ctx.getConf();

@@ -117,7 +117,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
               context.getConf(), sparkSessionManager);
             sparkMemoryAndCores = sparkSession.getMemoryAndCores();
           } catch (Exception e) {
-            throw new SemanticException("Failed to get spark memory/core info: " + e, e);
+            LOG.warn("Failed to get spark memory/core info", e);
           } finally {
             if (sparkSession != null && sparkSessionManager != null) {
               try {
@@ -130,18 +130,24 @@ public class SetSparkReducerParallelism implements NodeProcessor {
         }
 
         // Divide it by 2 so that we can have more reducers
-        long bytesPerReducer = sparkMemoryAndCores._1.longValue() / 2;
+        long bytesPerReducer = context.getConf().getLongVar(HiveConf.ConfVars.BYTESPERREDUCER) / 2;
         int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
-          maxReducers, false);
+            maxReducers, false);
 
-        // If there are more cores, use the number of cores
-        int cores = sparkMemoryAndCores._2.intValue();
-        if (numReducers < cores) {
-          numReducers = cores;
+        if (sparkMemoryAndCores != null &&
+            sparkMemoryAndCores._1() > 0 && sparkMemoryAndCores._2() > 0) {
+          // warn the user if bytes per reducer is much larger than memory per task
+          if ((double) sparkMemoryAndCores._1() / bytesPerReducer < 0.5) {
+            LOG.warn("Average load of a reducer is much larger than its available memory. " +
+                "Consider decreasing hive.exec.reducers.bytes.per.reducer");
+          }
+
+          // If there are more cores, use the number of cores
+          numReducers = Math.max(numReducers, sparkMemoryAndCores._2());
         }
-        LOG.info("Set parallelism parameters: cores = " + cores + ", numReducers = " + numReducers
-          + ", bytesPerReducer = " + bytesPerReducer + ", numberOfBytes = " + numberOfBytes);
-        LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers + " (calculated)");
+        numReducers = Math.min(numReducers, maxReducers);
+        LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers +
+            " (calculated)");
         desc.setNumReducers(numReducers);
       }
     } else {
