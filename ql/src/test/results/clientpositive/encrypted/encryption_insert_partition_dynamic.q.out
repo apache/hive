@@ -14,14 +14,14 @@ POSTHOOK: query: drop table IF EXISTS unencryptedTable
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table encryptedTable(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
-    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedTable
 POSTHOOK: query: create table encryptedTable(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
-    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true')
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default

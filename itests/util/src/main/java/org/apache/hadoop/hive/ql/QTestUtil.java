@@ -949,6 +949,13 @@ public class QTestUtil {
       commandArgs = StringUtils.chop(commandArgs);
     }
 
+    //replace ${hiveconf:hive.metastore.warehouse.dir} with actual dir if existed.
+    //we only want the absolute path, so remove the header, such as hdfs://localhost:57145
+    String wareHouseDir = SessionState.get().getConf().getVar(ConfVars.METASTOREWAREHOUSE)
+        .replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
+    commandArgs = commandArgs.replaceAll("\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}",
+        wareHouseDir);
+
     try {
       CommandProcessor proc = getTestCommand(commandName);
       if (proc != null) {

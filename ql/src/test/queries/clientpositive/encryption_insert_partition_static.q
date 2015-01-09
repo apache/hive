@@ -10,9 +10,9 @@ drop table IF EXISTS unencryptedTable;
 
 create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
-    location '/build/ql/test/data/warehouse/encryptedTable' TBLPROPERTIES ('transactional'='true');
+    LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encryptedTable' TBLPROPERTIES ('transactional'='true');
 CRYPTO CREATE_KEY --keyName key_1 --bitLength 128;
-CRYPTO CREATE_ZONE --keyName key_1 --path /build/ql/test/data/warehouse/encryptedTable;
+CRYPTO CREATE_ZONE --keyName key_1 --path ${hiveconf:hive.metastore.warehouse.dir}/encryptedTable;
 
 create table unencryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
