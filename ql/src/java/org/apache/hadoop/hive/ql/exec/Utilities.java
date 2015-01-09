@@ -363,8 +363,8 @@ public final class Utilities {
       path = getPlanPath(conf, name);
       LOG.info("PLAN PATH = " + path);
       assert path != null;
-      if (!gWorkMap.containsKey(path) ||
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      if (!gWorkMap.containsKey(path)
+        || HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         Path localPath;
         if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
           localPath = new Path(name);
@@ -2673,7 +2673,8 @@ public final class Utilities {
     return sparkTasks;
   }
 
-  private static void getSparkTasks(List<Task<? extends Serializable>> tasks, List<SparkTask> sparkTasks) {
+  private static void getSparkTasks(List<Task<? extends Serializable>> tasks,
+    List<SparkTask> sparkTasks) {
     for (Task<? extends Serializable> task : tasks) {
       if (task instanceof SparkTask && !sparkTasks.contains(task)) {
         sparkTasks.add((SparkTask) task);

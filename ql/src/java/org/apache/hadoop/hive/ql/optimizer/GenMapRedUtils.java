@@ -861,10 +861,10 @@ public final class GenMapRedUtils {
         }
       }
     } else if (task instanceof SparkTask) {
-      SparkWork work = (SparkWork)task.getWork();
+      SparkWork work = (SparkWork) task.getWork();
       for (BaseWork w : work.getAllWorkUnsorted()) {
         if (w instanceof MapWork) {
-          ((MapWork)w).deriveExplainAttributes();
+          ((MapWork) w).deriveExplainAttributes();
         }
       }
     }

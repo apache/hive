@@ -518,14 +518,14 @@ public interface HadoopShims {
   Path getCurrentTrashPath(Configuration conf, FileSystem fs);
 
   /**
-   * Returns a shim to wrap KerberosName
-   */
-  public KerberosNameShim getKerberosNameShim(String name) throws IOException;
-
-  /**
    * Check whether file is directory.
    */
   boolean isDirectory(FileStatus fileStatus);
+
+  /**
+   * Returns a shim to wrap KerberosName
+   */
+  public KerberosNameShim getKerberosNameShim(String name) throws IOException;
 
   /**
    * Shim for KerberosName

@@ -129,7 +129,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     // add all children
     opStack.addAll(opSet);
 
-    while(!opStack.empty()) {
+    while (!opStack.empty()) {
       Operator<?> op = opStack.pop();
       if (op.getNumChild() == 0) {
         returnSet.add(op);
