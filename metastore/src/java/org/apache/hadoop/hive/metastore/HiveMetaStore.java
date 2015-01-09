@@ -5586,14 +5586,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public NotificationEventResponse getNextNotification(NotificationEventRequest rqst)
+    public NotificationEventResponse get_next_notification(NotificationEventRequest rqst)
         throws TException {
       RawStore ms = getMS();
       return ms.getNextNotification(rqst);
     }
 
     @Override
-    public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+    public CurrentNotificationEventId get_current_notificationEventId() throws TException {
       RawStore ms = getMS();
       return ms.getCurrentNotificationEventId();
     }

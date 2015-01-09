@@ -1847,7 +1847,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
                                                        NotificationFilter filter) throws TException {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
     rqst.setMaxEvents(maxEvents);
-    NotificationEventResponse rsp = client.getNextNotification(rqst);
+    NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back " + rsp.getEventsSize() + " events");
     if (filter == null) {
       return rsp;
@@ -1864,7 +1864,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
-    return client.getCurrentNotificationEventId();
+    return client.get_current_notificationEventId();
   }
 
   /**

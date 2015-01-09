@@ -140,8 +140,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest txns)'
   print '  void compact(CompactionRequest rqst)'
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
-  print '  NotificationEventResponse getNextNotification(NotificationEventRequest rqst)'
-  print '  CurrentNotificationEventId getCurrentNotificationEventId()'
+  print '  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)'
+  print '  CurrentNotificationEventId get_current_notificationEventId()'
   print ''
   sys.exit(0)
 
@@ -895,17 +895,17 @@ elif cmd == 'show_compact':
     sys.exit(1)
   pp.pprint(client.show_compact(eval(args[0]),))
 
-elif cmd == 'getNextNotification':
+elif cmd == 'get_next_notification':
   if len(args) != 1:
-    print 'getNextNotification requires 1 args'
+    print 'get_next_notification requires 1 args'
     sys.exit(1)
-  pp.pprint(client.getNextNotification(eval(args[0]),))
+  pp.pprint(client.get_next_notification(eval(args[0]),))
 
-elif cmd == 'getCurrentNotificationEventId':
+elif cmd == 'get_current_notificationEventId':
   if len(args) != 0:
-    print 'getCurrentNotificationEventId requires 0 args'
+    print 'get_current_notificationEventId requires 0 args'
     sys.exit(1)
-  pp.pprint(client.getCurrentNotificationEventId())
+  pp.pprint(client.get_current_notificationEventId())
 
 else:
   print 'Unrecognized method %s' % cmd

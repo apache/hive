@@ -976,14 +976,14 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def getNextNotification(self, rqst):
+  def get_next_notification(self, rqst):
     """
     Parameters:
      - rqst
     """
     pass
 
-  def getCurrentNotificationEventId(self, ):
+  def get_current_notificationEventId(self, ):
     pass
 
 
@@ -5206,60 +5206,60 @@ class Client(fb303.FacebookService.Client, Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "show_compact failed: unknown result");
 
-  def getNextNotification(self, rqst):
+  def get_next_notification(self, rqst):
     """
     Parameters:
      - rqst
     """
-    self.send_getNextNotification(rqst)
-    return self.recv_getNextNotification()
+    self.send_get_next_notification(rqst)
+    return self.recv_get_next_notification()
 
-  def send_getNextNotification(self, rqst):
-    self._oprot.writeMessageBegin('getNextNotification', TMessageType.CALL, self._seqid)
-    args = getNextNotification_args()
+  def send_get_next_notification(self, rqst):
+    self._oprot.writeMessageBegin('get_next_notification', TMessageType.CALL, self._seqid)
+    args = get_next_notification_args()
     args.rqst = rqst
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getNextNotification(self, ):
+  def recv_get_next_notification(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getNextNotification_result()
+    result = get_next_notification_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getNextNotification failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_next_notification failed: unknown result");
 
-  def getCurrentNotificationEventId(self, ):
-    self.send_getCurrentNotificationEventId()
-    return self.recv_getCurrentNotificationEventId()
+  def get_current_notificationEventId(self, ):
+    self.send_get_current_notificationEventId()
+    return self.recv_get_current_notificationEventId()
 
-  def send_getCurrentNotificationEventId(self, ):
-    self._oprot.writeMessageBegin('getCurrentNotificationEventId', TMessageType.CALL, self._seqid)
-    args = getCurrentNotificationEventId_args()
+  def send_get_current_notificationEventId(self, ):
+    self._oprot.writeMessageBegin('get_current_notificationEventId', TMessageType.CALL, self._seqid)
+    args = get_current_notificationEventId_args()
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getCurrentNotificationEventId(self, ):
+  def recv_get_current_notificationEventId(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getCurrentNotificationEventId_result()
+    result = get_current_notificationEventId_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getCurrentNotificationEventId failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_current_notificationEventId failed: unknown result");
 
 
 class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
@@ -5382,8 +5382,8 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["heartbeat_txn_range"] = Processor.process_heartbeat_txn_range
     self._processMap["compact"] = Processor.process_compact
     self._processMap["show_compact"] = Processor.process_show_compact
-    self._processMap["getNextNotification"] = Processor.process_getNextNotification
-    self._processMap["getCurrentNotificationEventId"] = Processor.process_getCurrentNotificationEventId
+    self._processMap["get_next_notification"] = Processor.process_get_next_notification
+    self._processMap["get_current_notificationEventId"] = Processor.process_get_current_notificationEventId
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -7269,24 +7269,24 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getNextNotification(self, seqid, iprot, oprot):
-    args = getNextNotification_args()
+  def process_get_next_notification(self, seqid, iprot, oprot):
+    args = get_next_notification_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getNextNotification_result()
-    result.success = self._handler.getNextNotification(args.rqst)
-    oprot.writeMessageBegin("getNextNotification", TMessageType.REPLY, seqid)
+    result = get_next_notification_result()
+    result.success = self._handler.get_next_notification(args.rqst)
+    oprot.writeMessageBegin("get_next_notification", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getCurrentNotificationEventId(self, seqid, iprot, oprot):
-    args = getCurrentNotificationEventId_args()
+  def process_get_current_notificationEventId(self, seqid, iprot, oprot):
+    args = get_current_notificationEventId_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getCurrentNotificationEventId_result()
-    result.success = self._handler.getCurrentNotificationEventId()
-    oprot.writeMessageBegin("getCurrentNotificationEventId", TMessageType.REPLY, seqid)
+    result = get_current_notificationEventId_result()
+    result.success = self._handler.get_current_notificationEventId()
+    oprot.writeMessageBegin("get_current_notificationEventId", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -26270,7 +26270,7 @@ class show_compact_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getNextNotification_args:
+class get_next_notification_args:
   """
   Attributes:
    - rqst
@@ -26308,7 +26308,7 @@ class getNextNotification_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getNextNotification_args')
+    oprot.writeStructBegin('get_next_notification_args')
     if self.rqst is not None:
       oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
       self.rqst.write(oprot)
@@ -26331,7 +26331,7 @@ class getNextNotification_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getNextNotification_result:
+class get_next_notification_result:
   """
   Attributes:
    - success
@@ -26368,7 +26368,7 @@ class getNextNotification_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getNextNotification_result')
+    oprot.writeStructBegin('get_next_notification_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
@@ -26391,7 +26391,7 @@ class getNextNotification_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getCurrentNotificationEventId_args:
+class get_current_notificationEventId_args:
 
   thrift_spec = (
   )
@@ -26414,7 +26414,7 @@ class getCurrentNotificationEventId_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getCurrentNotificationEventId_args')
+    oprot.writeStructBegin('get_current_notificationEventId_args')
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -26433,7 +26433,7 @@ class getCurrentNotificationEventId_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getCurrentNotificationEventId_result:
+class get_current_notificationEventId_result:
   """
   Attributes:
    - success
@@ -26470,7 +26470,7 @@ class getCurrentNotificationEventId_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getCurrentNotificationEventId_result')
+    oprot.writeStructBegin('get_current_notificationEventId_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
