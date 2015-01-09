@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import junit.framework.Assert;
 
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -37,6 +39,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
@@ -742,7 +747,28 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws MetaException {
     return null;
   }
-  
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
+    return null;
+  }
+
+  @Override
+  public void addNotificationEvent(NotificationEvent event) {
+
+  }
+
+  @Override
+  public void cleanNotificationEvents(int olderThan) {
+
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() {
+    return null;
+  }
+
+
 }
 
 

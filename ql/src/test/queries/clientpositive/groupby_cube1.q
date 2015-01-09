@@ -13,6 +13,11 @@ SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 
 EXPLAIN
+SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube;
+
+SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube;
+
+EXPLAIN
 SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;
 
 SELECT key, count(distinct val) FROM T1 GROUP BY key with cube;

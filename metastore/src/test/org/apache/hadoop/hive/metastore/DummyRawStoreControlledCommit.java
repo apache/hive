@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -36,6 +38,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
@@ -349,7 +354,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public boolean grantRole(Role role, String userName, PrincipalType principalType,
       String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return objectStore.grantRole(role, userName,  principalType, grantor, grantorType,
+    return objectStore.grantRole(role, userName, principalType, grantor, grantorType,
         grantOption);
   }
 
@@ -403,13 +408,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName) {
-    return objectStore.listPrincipalDBGrants(principalName,  principalType, dbName);
+    return objectStore.listPrincipalDBGrants(principalName, principalType, dbName);
   }
 
   @Override
   public List<MTablePrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String dbName, String tableName) {
-    return objectStore.listAllTableGrants(principalName,  principalType,
+    return objectStore.listAllTableGrants(principalName, principalType,
         dbName, tableName);
   }
 
@@ -725,5 +730,26 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       throws MetaException {
     return null;
   }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
+    return objectStore.getNextNotification(rqst);
+  }
+
+  @Override
+  public void addNotificationEvent(NotificationEvent event) {
+    objectStore.addNotificationEvent(event);
+  }
+
+  @Override
+  public void cleanNotificationEvents(int olderThan) {
+    objectStore.cleanNotificationEvents(olderThan);
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() {
+    return objectStore.getCurrentNotificationEventId();
+  }
+
 
 }

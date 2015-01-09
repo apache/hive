@@ -488,6 +488,14 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     }
   }
 
+  private static Class counterClass = null;
+  static {
+    try {
+      counterClass = Class.forName("org.cliffc.high_scale_lib.Counter");
+    } catch (ClassNotFoundException cnfe) {
+      // this dependency is removed for HBase 1.0
+    }
+  }
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     try {
@@ -498,9 +506,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
        * will not be required once Hive bumps up its hbase version). At that time , we will
        * only need TableMapReduceUtil.addDependencyJars(jobConf) here.
        */
-      TableMapReduceUtil.addDependencyJars(
-          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class,
-          org.cliffc.high_scale_lib.Counter.class); // this will be removed for HBase 1.0
+      if (counterClass != null) {
+        TableMapReduceUtil.addDependencyJars(
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class, counterClass);
+      } else {
+        TableMapReduceUtil.addDependencyJars(
+          jobConf, HBaseStorageHandler.class, TableInputFormatBase.class);
+      }
       Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
 
       Job copy = new Job(jobConf);

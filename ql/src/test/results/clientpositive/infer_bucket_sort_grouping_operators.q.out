@@ -44,11 +44,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: key (type: string), value (type: string), '0' (type: string)
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1500 Data size: 15936 Basic stats: COMPLETE Column stats: NONE
@@ -231,11 +231,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: key (type: string), value (type: string), '0' (type: string)
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -418,11 +418,11 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(1)
-                keys: key (type: string), value (type: string), '0' (type: string)
+                keys: _col0 (type: string), _col1 (type: string), '0' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE

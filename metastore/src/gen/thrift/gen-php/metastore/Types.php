@@ -11696,6 +11696,442 @@ class ShowCompactResponse {
 
 }
 
+class NotificationEventRequest {
+  static $_TSPEC;
+
+  public $lastEvent = null;
+  public $maxEvents = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'lastEvent',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'maxEvents',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['lastEvent'])) {
+        $this->lastEvent = $vals['lastEvent'];
+      }
+      if (isset($vals['maxEvents'])) {
+        $this->maxEvents = $vals['maxEvents'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'NotificationEventRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lastEvent);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxEvents);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('NotificationEventRequest');
+    if ($this->lastEvent !== null) {
+      $xfer += $output->writeFieldBegin('lastEvent', TType::I64, 1);
+      $xfer += $output->writeI64($this->lastEvent);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxEvents !== null) {
+      $xfer += $output->writeFieldBegin('maxEvents', TType::I32, 2);
+      $xfer += $output->writeI32($this->maxEvents);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class NotificationEvent {
+  static $_TSPEC;
+
+  public $eventId = null;
+  public $eventTime = null;
+  public $eventType = null;
+  public $dbName = null;
+  public $tableName = null;
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'eventId',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'eventTime',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'eventType',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'tableName',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['eventId'])) {
+        $this->eventId = $vals['eventId'];
+      }
+      if (isset($vals['eventTime'])) {
+        $this->eventTime = $vals['eventTime'];
+      }
+      if (isset($vals['eventType'])) {
+        $this->eventType = $vals['eventType'];
+      }
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['tableName'])) {
+        $this->tableName = $vals['tableName'];
+      }
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'NotificationEvent';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->eventId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->eventTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->eventType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tableName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('NotificationEvent');
+    if ($this->eventId !== null) {
+      $xfer += $output->writeFieldBegin('eventId', TType::I64, 1);
+      $xfer += $output->writeI64($this->eventId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->eventTime !== null) {
+      $xfer += $output->writeFieldBegin('eventTime', TType::I32, 2);
+      $xfer += $output->writeI32($this->eventTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->eventType !== null) {
+      $xfer += $output->writeFieldBegin('eventType', TType::STRING, 3);
+      $xfer += $output->writeString($this->eventType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 4);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tableName !== null) {
+      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 5);
+      $xfer += $output->writeString($this->tableName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 6);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class NotificationEventResponse {
+  static $_TSPEC;
+
+  public $events = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'events',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\NotificationEvent',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['events'])) {
+        $this->events = $vals['events'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'NotificationEventResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->events = array();
+            $_size437 = 0;
+            $_etype440 = 0;
+            $xfer += $input->readListBegin($_etype440, $_size437);
+            for ($_i441 = 0; $_i441 < $_size437; ++$_i441)
+            {
+              $elem442 = null;
+              $elem442 = new \metastore\NotificationEvent();
+              $xfer += $elem442->read($input);
+              $this->events []= $elem442;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('NotificationEventResponse');
+    if ($this->events !== null) {
+      if (!is_array($this->events)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('events', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->events));
+        {
+          foreach ($this->events as $iter443)
+          {
+            $xfer += $iter443->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CurrentNotificationEventId {
+  static $_TSPEC;
+
+  public $eventId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'eventId',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['eventId'])) {
+        $this->eventId = $vals['eventId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CurrentNotificationEventId';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->eventId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CurrentNotificationEventId');
+    if ($this->eventId !== null) {
+      $xfer += $output->writeFieldBegin('eventId', TType::I64, 1);
+      $xfer += $output->writeI64($this->eventId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 

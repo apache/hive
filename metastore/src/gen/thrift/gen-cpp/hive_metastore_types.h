@@ -5078,6 +5078,218 @@ class ShowCompactResponse {
 
 void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
+typedef struct _NotificationEventRequest__isset {
+  _NotificationEventRequest__isset() : maxEvents(false) {}
+  bool maxEvents;
+} _NotificationEventRequest__isset;
+
+class NotificationEventRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "6E578DA8AB10EED824A75534350EBAEF";
+  static const uint8_t binary_fingerprint[16]; // = {0x6E,0x57,0x8D,0xA8,0xAB,0x10,0xEE,0xD8,0x24,0xA7,0x55,0x34,0x35,0x0E,0xBA,0xEF};
+
+  NotificationEventRequest() : lastEvent(0), maxEvents(0) {
+  }
+
+  virtual ~NotificationEventRequest() throw() {}
+
+  int64_t lastEvent;
+  int32_t maxEvents;
+
+  _NotificationEventRequest__isset __isset;
+
+  void __set_lastEvent(const int64_t val) {
+    lastEvent = val;
+  }
+
+  void __set_maxEvents(const int32_t val) {
+    maxEvents = val;
+    __isset.maxEvents = true;
+  }
+
+  bool operator == (const NotificationEventRequest & rhs) const
+  {
+    if (!(lastEvent == rhs.lastEvent))
+      return false;
+    if (__isset.maxEvents != rhs.__isset.maxEvents)
+      return false;
+    else if (__isset.maxEvents && !(maxEvents == rhs.maxEvents))
+      return false;
+    return true;
+  }
+  bool operator != (const NotificationEventRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NotificationEventRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(NotificationEventRequest &a, NotificationEventRequest &b);
+
+typedef struct _NotificationEvent__isset {
+  _NotificationEvent__isset() : dbName(false), tableName(false) {}
+  bool dbName;
+  bool tableName;
+} _NotificationEvent__isset;
+
+class NotificationEvent {
+ public:
+
+  static const char* ascii_fingerprint; // = "ACAF0036D9999F3A389F490F5E22D369";
+  static const uint8_t binary_fingerprint[16]; // = {0xAC,0xAF,0x00,0x36,0xD9,0x99,0x9F,0x3A,0x38,0x9F,0x49,0x0F,0x5E,0x22,0xD3,0x69};
+
+  NotificationEvent() : eventId(0), eventTime(0), eventType(), dbName(), tableName(), message() {
+  }
+
+  virtual ~NotificationEvent() throw() {}
+
+  int64_t eventId;
+  int32_t eventTime;
+  std::string eventType;
+  std::string dbName;
+  std::string tableName;
+  std::string message;
+
+  _NotificationEvent__isset __isset;
+
+  void __set_eventId(const int64_t val) {
+    eventId = val;
+  }
+
+  void __set_eventTime(const int32_t val) {
+    eventTime = val;
+  }
+
+  void __set_eventType(const std::string& val) {
+    eventType = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+    __isset.dbName = true;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+    __isset.tableName = true;
+  }
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const NotificationEvent & rhs) const
+  {
+    if (!(eventId == rhs.eventId))
+      return false;
+    if (!(eventTime == rhs.eventTime))
+      return false;
+    if (!(eventType == rhs.eventType))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const NotificationEvent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NotificationEvent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(NotificationEvent &a, NotificationEvent &b);
+
+
+class NotificationEventResponse {
+ public:
+
+  static const char* ascii_fingerprint; // = "EE3DB23399639114BCD1782A0FB01818";
+  static const uint8_t binary_fingerprint[16]; // = {0xEE,0x3D,0xB2,0x33,0x99,0x63,0x91,0x14,0xBC,0xD1,0x78,0x2A,0x0F,0xB0,0x18,0x18};
+
+  NotificationEventResponse() {
+  }
+
+  virtual ~NotificationEventResponse() throw() {}
+
+  std::vector<NotificationEvent>  events;
+
+  void __set_events(const std::vector<NotificationEvent> & val) {
+    events = val;
+  }
+
+  bool operator == (const NotificationEventResponse & rhs) const
+  {
+    if (!(events == rhs.events))
+      return false;
+    return true;
+  }
+  bool operator != (const NotificationEventResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NotificationEventResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(NotificationEventResponse &a, NotificationEventResponse &b);
+
+
+class CurrentNotificationEventId {
+ public:
+
+  static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+  static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+  CurrentNotificationEventId() : eventId(0) {
+  }
+
+  virtual ~CurrentNotificationEventId() throw() {}
+
+  int64_t eventId;
+
+  void __set_eventId(const int64_t val) {
+    eventId = val;
+  }
+
+  bool operator == (const CurrentNotificationEventId & rhs) const
+  {
+    if (!(eventId == rhs.eventId))
+      return false;
+    return true;
+  }
+  bool operator != (const CurrentNotificationEventId &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CurrentNotificationEventId & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;

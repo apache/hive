@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -111,6 +112,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -201,7 +204,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -5579,6 +5584,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+
+    @Override
+    public NotificationEventResponse getNextNotification(NotificationEventRequest rqst)
+        throws TException {
+      RawStore ms = getMS();
+      return ms.getNextNotification(rqst);
+    }
+
+    @Override
+    public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+      RawStore ms = getMS();
+      return ms.getCurrentNotificationEventId();
+    }
   }
 
 
@@ -5798,6 +5816,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
       boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+      boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
@@ -5805,6 +5824,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       TProcessor processor;
       TTransportFactory transFactory;
+      final TProtocolFactory protocolFactory;
+      final TProtocolFactory inputProtoFactory;
+      if (useCompactProtocol) {
+        protocolFactory = new TCompactProtocol.Factory();
+        inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
+      } else {
+        protocolFactory = new TBinaryProtocol.Factory();
+        inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
+      }
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
@@ -5844,9 +5872,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TCompactProtocol.Factory())
-          .inputProtocolFactory(
-              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
+          .protocolFactory(protocolFactory)
+          .inputProtocolFactory(inputProtoFactory)
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 

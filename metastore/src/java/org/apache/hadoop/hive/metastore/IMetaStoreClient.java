@@ -21,12 +21,16 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -1305,6 +1309,41 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * A filter provided by the client that determines if a given notification event should be
+   * returned.
+   */
+  interface NotificationFilter {
+    /**
+     * Whether a notification event should be accepted
+     * @param event
+     * @return if true, event will be added to list, if false it will be ignored
+     */
+    boolean accept(NotificationEvent event);
+  }
+
+  /**
+   * Get the next set of notifications from the database.
+   * @param lastEventId The last event id that was consumed by this reader.  The returned
+   *                    notifications will start at the next eventId available after this eventId.
+   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   *                  be returned.
+   * @param filter User provided filter to remove unwanted events.  If null, all events will be
+   *               returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws TException
+   */
+  NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
+                                                NotificationFilter filter) throws TException;
+
+  /**
+   * Get the last used notification event id.
+   * @return last used id
+   * @throws TException
+   */
+  CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

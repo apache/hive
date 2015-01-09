@@ -109,7 +109,7 @@ public class AvroGenericRecordReader implements
 
           Properties props = pathsAndParts.getValue().getProperties();
           if(props.containsKey(AvroSerdeUtils.SCHEMA_LITERAL) || props.containsKey(AvroSerdeUtils.SCHEMA_URL)) {
-            return AvroSerdeUtils.determineSchemaOrThrowException(props);
+            return AvroSerdeUtils.determineSchemaOrThrowException(job, props);
           }
           else {
             return null; // If it's not in this property, it won't be in any others

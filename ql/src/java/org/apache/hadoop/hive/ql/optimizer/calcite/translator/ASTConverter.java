@@ -27,6 +27,7 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
@@ -49,12 +50,14 @@ import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.util.BitSets;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSort;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -93,7 +96,7 @@ public class ASTConverter {
     return c.convert();
   }
 
-  private ASTNode convert() {
+  private ASTNode convert() throws CalciteSemanticException {
     /*
      * 1. Walk RelNode Graph; note from, where, gBy.. nodes.
      */
@@ -118,15 +121,50 @@ public class ASTConverter {
      * 4. GBy
      */
     if (groupBy != null) {
-      ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
-      for (int i : BitSets.toIter(groupBy.getGroupSet())) {
+      ASTBuilder b;
+      boolean groupingSetsExpression = false;
+      if (groupBy.indicator) {
+        Group aggregateType = Aggregate.Group.induce(groupBy.getGroupSet(),
+                groupBy.getGroupSets());
+        if (aggregateType == Group.ROLLUP) {
+          b = ASTBuilder.construct(HiveParser.TOK_ROLLUP_GROUPBY, "TOK_ROLLUP_GROUPBY");
+        }
+        else if (aggregateType == Group.CUBE) {
+          b = ASTBuilder.construct(HiveParser.TOK_CUBE_GROUPBY, "TOK_CUBE_GROUPBY");
+        }
+        else {
+          b = ASTBuilder.construct(HiveParser.TOK_GROUPING_SETS, "TOK_GROUPING_SETS");
+          groupingSetsExpression = true;
+        }
+      }
+      else {
+        b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
+      }
+
+      for (int i : groupBy.getGroupSet()) {
         RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
             .createSqlType(SqlTypeName.ANY));
         b.add(iRef.accept(new RexVisitor(schema)));
       }
 
-      if (!groupBy.getGroupSet().isEmpty())
+      //Grouping sets expressions
+      if(groupingSetsExpression) {
+        for(ImmutableBitSet groupSet: groupBy.getGroupSets()) {
+          ASTBuilder expression = ASTBuilder.construct(
+                  HiveParser.TOK_GROUPING_SETS_EXPRESSION, "TOK_GROUPING_SETS_EXPRESSION");
+          for (int i : groupSet) {
+            RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
+                .createSqlType(SqlTypeName.ANY));
+            expression.add(iRef.accept(new RexVisitor(schema)));
+          }
+          b.add(expression);
+        }
+      }
+
+      if (!groupBy.getGroupSet().isEmpty()) {
         hiveAST.groupBy = b.node();
+      }
+
       schema = new Schema(schema, groupBy);
     }
 
@@ -151,9 +189,33 @@ public class ASTConverter {
       int i = 0;
 
       for (RexNode r : select.getChildExps()) {
-        ASTNode selectExpr = ASTBuilder.selectExpr(r.accept(
-             new RexVisitor(schema, r instanceof RexLiteral)),
-                  select.getRowType().getFieldNames().get(i++));
+        // If it is a GroupBy with grouping sets and grouping__id column
+        // is selected, we reformulate to project that column from
+        // the output of the GroupBy operator
+        boolean reformulate = false;
+        if (groupBy != null && groupBy.indicator) {
+          RexNode expr = select.getChildExps().get(i);
+          if (expr instanceof RexCall) {
+            if ( ((RexCall) expr).getOperator().
+                    equals(HiveGroupingID.GROUPING__ID)) {
+              reformulate = true;
+            }
+          }
+        }
+        ASTNode expr;
+        if(reformulate) {
+          RexInputRef iRef = new RexInputRef(
+                  groupBy.getGroupCount() * 2 + groupBy.getAggCallList().size(),
+                  TypeConverter.convert(
+                          VirtualColumn.GROUPINGID.getTypeInfo(),
+                          groupBy.getCluster().getTypeFactory()));
+          expr = iRef.accept(new RexVisitor(schema));
+        }
+        else {
+          expr = r.accept(new RexVisitor(schema, r instanceof RexLiteral));
+        }
+        String alias = select.getRowType().getFieldNames().get(i++);
+        ASTNode selectExpr = ASTBuilder.selectExpr(expr, alias);
         b.add(selectExpr);
       }
     }
@@ -232,7 +294,7 @@ public class ASTConverter {
     return new Schema(select, tblAlias);
   }
 
-  private QueryBlockInfo convertSource(RelNode r) {
+  private QueryBlockInfo convertSource(RelNode r) throws CalciteSemanticException {
     Schema s;
     ASTNode ast;
 
@@ -554,9 +616,18 @@ public class ASTConverter {
     }
 
     Schema(Schema src, Aggregate gBy) {
-      for (int i : BitSets.toIter(gBy.getGroupSet())) {
+      for (int i : gBy.getGroupSet()) {
         ColumnInfo cI = src.get(i);
         add(cI);
+      }
+      // If we are using grouping sets, we add the
+      // fields again, these correspond to the boolean
+      // grouping in Calcite. They are not used by Hive.
+      if(gBy.indicator) {
+        for (int i : gBy.getGroupSet()) {
+          ColumnInfo cI = src.get(i);
+          add(cI);
+        }
       }
       List<AggregateCall> aggs = gBy.getAggCallList();
       for (AggregateCall agg : aggs) {
@@ -571,6 +642,9 @@ public class ASTConverter {
           b.add(iRef.accept(new RexVisitor(src)));
         }
         add(new ColumnInfo(null, b.node()));
+      }
+      if(gBy.indicator) {
+        add(new ColumnInfo(null,VirtualColumn.GROUPINGID.getName()));
       }
     }
 
@@ -665,4 +739,5 @@ public class ASTConverter {
 
     return flat;
   }
+
 }
