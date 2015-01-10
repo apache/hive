@@ -119,13 +119,13 @@ public class TestOrcNullOptimization {
     assertEquals(0, ((IntegerColumnStatistics) stats[1]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[1]).isSumDefined());
     assertEquals(0, ((IntegerColumnStatistics) stats[1]).getSum());
-    assertEquals("count: 19998 min: 0 max: 0 sum: 0",
+    assertEquals("count: 19998 hasNull: true min: 0 max: 0 sum: 0",
         stats[1].toString());
 
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(19998, stats[2].getNumberOfValues());
-    assertEquals("count: 19998 min: a max: a sum: 19998",
+    assertEquals("count: 19998 hasNull: true min: a max: a sum: 19998",
         stats[2].toString());
 
     // check the inspectors
@@ -223,13 +223,13 @@ public class TestOrcNullOptimization {
     assertEquals(0, ((IntegerColumnStatistics) stats[1]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[1]).isSumDefined());
     assertEquals(0, ((IntegerColumnStatistics) stats[1]).getSum());
-    assertEquals("count: 20000 min: 0 max: 0 sum: 0",
+    assertEquals("count: 20000 hasNull: false min: 0 max: 0 sum: 0",
         stats[1].toString());
 
     assertEquals("b", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(20000, stats[2].getNumberOfValues());
-    assertEquals("count: 20000 min: a max: b sum: 20000",
+    assertEquals("count: 20000 hasNull: false min: a max: b sum: 20000",
         stats[2].toString());
 
     // check the inspectors
@@ -324,13 +324,13 @@ public class TestOrcNullOptimization {
     assertEquals(2, ((IntegerColumnStatistics) stats[1]).getMinimum());
     assertEquals(true, ((IntegerColumnStatistics) stats[1]).isSumDefined());
     assertEquals(17, ((IntegerColumnStatistics) stats[1]).getSum());
-    assertEquals("count: 7 min: 2 max: 3 sum: 17",
+    assertEquals("count: 7 hasNull: true min: 2 max: 3 sum: 17",
         stats[1].toString());
 
     assertEquals("h", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(7, stats[2].getNumberOfValues());
-    assertEquals("count: 7 min: a max: h sum: 7",
+    assertEquals("count: 7 hasNull: true min: a max: h sum: 7",
         stats[2].toString());
 
     // check the inspectors

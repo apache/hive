@@ -27,4 +27,10 @@ public interface ColumnStatistics {
    * @return the number of values
    */
   long getNumberOfValues();
+
+  /**
+   * Returns true if there are nulls in the scope of column statistics.
+   * @return true if null present else false
+   */
+  boolean hasNull();
 }

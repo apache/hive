@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import java.sql.Timestamp;
 
 class ColumnStatisticsImpl implements ColumnStatistics {
 
@@ -816,10 +816,15 @@ class ColumnStatisticsImpl implements ColumnStatistics {
   }
 
   private long count = 0;
+  private boolean hasNull = false;
 
   ColumnStatisticsImpl(OrcProto.ColumnStatistics stats) {
     if (stats.hasNumberOfValues()) {
       count = stats.getNumberOfValues();
+    }
+
+    if (stats.hasHasNull()) {
+      hasNull = stats.getHasNull();
     }
   }
 
@@ -828,6 +833,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void increment() {
     count += 1;
+  }
+
+  void setNull() {
+    hasNull = true;
   }
 
   void updateBoolean(boolean value) {
@@ -864,10 +873,12 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void merge(ColumnStatisticsImpl stats) {
     count += stats.count;
+    hasNull |= stats.hasNull;
   }
 
   void reset() {
     count = 0;
+    hasNull = false;
   }
 
   @Override
@@ -876,14 +887,20 @@ class ColumnStatisticsImpl implements ColumnStatistics {
   }
 
   @Override
+  public boolean hasNull() {
+    return hasNull;
+  }
+
+  @Override
   public String toString() {
-    return "count: " + count;
+    return "count: " + count + " hasNull: " + hasNull;
   }
 
   OrcProto.ColumnStatistics.Builder serialize() {
     OrcProto.ColumnStatistics.Builder builder =
       OrcProto.ColumnStatistics.newBuilder();
     builder.setNumberOfValues(count);
+    builder.setHasNull(hasNull);
     return builder;
   }
 
