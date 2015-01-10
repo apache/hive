@@ -17,15 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Map;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -45,6 +36,14 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A tool for printing out the file structure of ORC files.
@@ -170,10 +169,7 @@ public final class FileDump {
                 buf.append("no stats at ");
               } else {
                 ColumnStatistics cs = ColumnStatisticsImpl.deserialize(colStats);
-                Object min = RecordReaderImpl.getMin(cs), max = RecordReaderImpl.getMax(cs);
-                buf.append(" count: ").append(cs.getNumberOfValues());
-                buf.append(" min: ").append(min);
-                buf.append(" max: ").append(max);
+                buf.append(cs.toString());
               }
               buf.append(" positions: ");
               for (int posIx = 0; posIx < entry.getPositionsCount(); ++posIx) {

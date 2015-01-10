@@ -18,16 +18,28 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static junit.framework.Assert.assertEquals;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.sql.Timestamp;
-
-import static junit.framework.Assert.assertEquals;
+import java.util.List;
 
 /**
  * Test ColumnStatisticsImpl for ORC.
@@ -172,5 +184,160 @@ public class TestColumnStatistics {
     stats1.merge(stats2);
     assertEquals(-10, typed.getMinimum().longValue());
     assertEquals(10000, typed.getMaximum().longValue());
+  }
+
+
+  public static class SimpleStruct {
+    BytesWritable bytes1;
+    Text string1;
+
+    SimpleStruct(BytesWritable b1, String s1) {
+      this.bytes1 = b1;
+      if (s1 == null) {
+        this.string1 = null;
+      } else {
+        this.string1 = new Text(s1);
+      }
+    }
+  }
+
+  Path workDir = new Path(System.getProperty("test.tmp.dir",
+      "target" + File.separator + "test" + File.separator + "tmp"));
+
+  Configuration conf;
+  FileSystem fs;
+  Path testFilePath;
+
+  @Rule
+  public TestName testCaseName = new TestName();
+
+  @Before
+  public void openFileSystem() throws Exception {
+    conf = new Configuration();
+    fs = FileSystem.getLocal(conf);
+    fs.setWorkingDirectory(workDir);
+    testFilePath = new Path("TestOrcFile." + testCaseName.getMethodName() + ".orc");
+    fs.delete(testFilePath, false);
+  }
+
+  private static BytesWritable bytes(int... items) {
+    BytesWritable result = new BytesWritable();
+    result.setSize(items.length);
+    for (int i = 0; i < items.length; ++i) {
+      result.getBytes()[i] = (byte) items[i];
+    }
+    return result;
+  }
+
+  @Test
+  public void testHasNull() throws Exception {
+
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (SimpleStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf)
+            .inspector(inspector)
+            .rowIndexStride(1000)
+            .stripeSize(10000)
+            .bufferSize(10000));
+    // STRIPE 1
+    // RG1
+    for(int i=0; i<1000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), "RG1"));
+    }
+    // RG2
+    for(int i=0; i<1000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    }
+    // RG3
+    for(int i=0; i<1000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), "RG3"));
+    }
+    // RG4
+    for(int i=0; i<1000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    }
+    // RG5
+    for(int i=0; i<1000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    }
+    // STRIPE 2
+    for(int i=0; i<5000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    }
+    // STRIPE 3
+    for(int i=0; i<5000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), "STRIPE-3"));
+    }
+    // STRIPE 4
+    for(int i=0; i<5000; i++) {
+      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    }
+    writer.close();
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+
+    // check the file level stats
+    ColumnStatistics[] stats = reader.getStatistics();
+    assertEquals(20000, stats[0].getNumberOfValues());
+    assertEquals(20000, stats[1].getNumberOfValues());
+    assertEquals(7000, stats[2].getNumberOfValues());
+    assertEquals(false, stats[0].hasNull());
+    assertEquals(false, stats[1].hasNull());
+    assertEquals(true, stats[2].hasNull());
+
+    // check the stripe level stats
+    List<StripeStatistics> stripeStats = reader.getMetadata().getStripeStatistics();
+    // stripe 1 stats
+    StripeStatistics ss1 = stripeStats.get(0);
+    ColumnStatistics ss1_cs1 = ss1.getColumnStatistics()[0];
+    ColumnStatistics ss1_cs2 = ss1.getColumnStatistics()[1];
+    ColumnStatistics ss1_cs3 = ss1.getColumnStatistics()[2];
+    assertEquals(false, ss1_cs1.hasNull());
+    assertEquals(false, ss1_cs2.hasNull());
+    assertEquals(true, ss1_cs3.hasNull());
+
+    // stripe 2 stats
+    StripeStatistics ss2 = stripeStats.get(1);
+    ColumnStatistics ss2_cs1 = ss2.getColumnStatistics()[0];
+    ColumnStatistics ss2_cs2 = ss2.getColumnStatistics()[1];
+    ColumnStatistics ss2_cs3 = ss2.getColumnStatistics()[2];
+    assertEquals(false, ss2_cs1.hasNull());
+    assertEquals(false, ss2_cs2.hasNull());
+    assertEquals(true, ss2_cs3.hasNull());
+
+    // stripe 3 stats
+    StripeStatistics ss3 = stripeStats.get(2);
+    ColumnStatistics ss3_cs1 = ss3.getColumnStatistics()[0];
+    ColumnStatistics ss3_cs2 = ss3.getColumnStatistics()[1];
+    ColumnStatistics ss3_cs3 = ss3.getColumnStatistics()[2];
+    assertEquals(false, ss3_cs1.hasNull());
+    assertEquals(false, ss3_cs2.hasNull());
+    assertEquals(false, ss3_cs3.hasNull());
+
+    // stripe 4 stats
+    StripeStatistics ss4 = stripeStats.get(3);
+    ColumnStatistics ss4_cs1 = ss4.getColumnStatistics()[0];
+    ColumnStatistics ss4_cs2 = ss4.getColumnStatistics()[1];
+    ColumnStatistics ss4_cs3 = ss4.getColumnStatistics()[2];
+    assertEquals(false, ss4_cs1.hasNull());
+    assertEquals(false, ss4_cs2.hasNull());
+    assertEquals(true, ss4_cs3.hasNull());
+
+    // Test file dump
+    PrintStream origOut = System.out;
+    String outputFilename = "orc-file-has-null.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + File.separator + outputFilename);
+
+    // replace stdout and run command
+    System.setOut(new PrintStream(myOut));
+    FileDump.main(new String[]{testFilePath.toString(), "--rowindex=2"});
+    System.out.flush();
+    System.setOut(origOut);
+
+    TestFileDump.checkOutput(outputFilename, workDir + File.separator + outputFilename);
   }
 }
