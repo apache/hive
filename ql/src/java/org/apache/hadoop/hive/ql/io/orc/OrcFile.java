@@ -18,6 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_PADDING;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BLOCK_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_BUFFER_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_COMPRESS;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -25,8 +33,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -184,7 +190,7 @@ public final class OrcFile {
     private ReaderImpl.FileMetaInfo fileMetaInfo;
     private long maxLength = Long.MAX_VALUE;
 
-    ReaderOptions(Configuration conf) {
+    public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
     ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {

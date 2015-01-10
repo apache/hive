@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -81,14 +80,14 @@ import org.apache.hadoop.io.Text;
 
 import com.google.common.collect.ComparisonChain;
 
-class RecordReaderImpl implements RecordReader {
+public class RecordReaderImpl implements RecordReader {
 
   private static final Log LOG = LogFactory.getLog(RecordReaderImpl.class);
   private static final boolean isLogTraceEnabled = LOG.isTraceEnabled();
 
   private final FSDataInputStream file;
   private final long firstRow;
-  private final List<StripeInformation> stripes =
+  protected final List<StripeInformation> stripes =
     new ArrayList<StripeInformation>();
   private OrcProto.StripeFooter stripeFooter;
   private final long totalRowCount;
@@ -98,7 +97,7 @@ class RecordReaderImpl implements RecordReader {
   private final boolean[] included;
   private final long rowIndexStride;
   private long rowInStripe = 0;
-  private int currentStripe = -1;
+  protected int currentStripe = -1;
   private long rowBaseInStripe = 0;
   private long rowCountInStripe = 0;
   private final Map<StreamName, InStream> streams =
@@ -236,16 +235,16 @@ class RecordReaderImpl implements RecordReader {
     return result;
   }
 
-  RecordReaderImpl(List<StripeInformation> stripes,
-                   FileSystem fileSystem,
-                   Path path,
-                   Reader.Options options,
-                   List<OrcProto.Type> types,
-                   CompressionCodec codec,
-                   int bufferSize,
-                   long strideRate,
-                   Configuration conf
-                  ) throws IOException {
+  protected RecordReaderImpl(List<StripeInformation> stripes,
+      FileSystem fileSystem,
+      Path path,
+      Reader.Options options,
+      List<OrcProto.Type> types,
+      CompressionCodec codec,
+      int bufferSize,
+      long strideRate,
+      Configuration conf
+  ) throws IOException {
     this.file = fileSystem.open(path);
     this.codec = codec;
     this.types = types;
@@ -2271,7 +2270,7 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
-  OrcProto.StripeFooter readStripeFooter(StripeInformation stripe
+  protected OrcProto.StripeFooter readStripeFooter(StripeInformation stripe
                                          ) throws IOException {
     long offset = stripe.getOffset() + stripe.getIndexLength() +
         stripe.getDataLength();
@@ -2568,7 +2567,7 @@ class RecordReaderImpl implements RecordReader {
    *    row groups must be read.
    * @throws IOException
    */
-  private boolean[] pickRowGroups() throws IOException {
+  protected boolean[] pickRowGroups() throws IOException {
     // if we don't have a sarg or indexes, we read everything
     if (sarg == null || rowIndexStride == 0) {
       return null;
@@ -3236,7 +3235,7 @@ class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  OrcProto.RowIndex[] readRowIndex(int stripeIndex) throws IOException {
+  protected OrcProto.RowIndex[] readRowIndex(int stripeIndex) throws IOException {
     long offset = stripes.get(stripeIndex).getOffset();
     OrcProto.StripeFooter stripeFooter;
     OrcProto.RowIndex[] indexes;

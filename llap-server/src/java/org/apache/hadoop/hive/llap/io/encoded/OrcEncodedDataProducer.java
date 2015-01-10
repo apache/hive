@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,19 +35,21 @@ import org.apache.hadoop.hive.llap.io.api.cache.Allocator.LlapBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
+import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 
 public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> {
   private FileSystem cachedFs = null;
-  private final OrcMetadataCache metadataCache = new OrcMetadataCache();
+  private Configuration conf;
+  private OrcMetadataCache metadataCache;
   private final Allocator allocator;
   private final Cache<OrcCacheKey> cache;
 
@@ -101,14 +100,8 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       orcReader = null;
       if (stripes == null || types == null) {
         orcReader = createOrcReader(split);
-        if (stripes == null) {
-          stripes = orcReader.getStripes();
-          metadataCache.cacheStripes(internedFilePath, stripes);
-        }
-        if (types == null) {
-          types = orcReader.getTypes();
-          metadataCache.cacheTypes(internedFilePath, types);
-        }
+        stripes = metadataCache.getStripes(internedFilePath);
+        types = metadataCache.getTypes(internedFilePath);
       }
 
       if (columnIds == null) {
@@ -298,9 +291,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
   private Reader createOrcReader(FileSplit fileSplit) throws IOException {
     FileSystem fs = cachedFs;
     Path path = fileSplit.getPath();
-    Configuration conf = new Configuration();
     if ("pfile".equals(path.toUri().getScheme())) {
       fs = path.getFileSystem(conf); // Cannot use cached FS due to hive tests' proxy FS.
+    }
+    if (metadataCache == null) {
+      metadataCache = new OrcMetadataCache(cachedFs, path, conf);
     }
     return OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
   }
@@ -315,6 +310,8 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     this.cachedFs = FileSystem.get(conf);
     this.cache = cache;
     this.allocator = allocator;
+    this.conf = conf;
+    this.metadataCache = null;
   }
 
   @Override

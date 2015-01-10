@@ -44,23 +44,23 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.protobuf.CodedInputStream;
 
-final class ReaderImpl implements Reader {
+public class ReaderImpl implements Reader {
 
   private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
 
-  private final FileSystem fileSystem;
-  private final Path path;
-  private final CompressionKind compressionKind;
-  private final CompressionCodec codec;
-  private final int bufferSize;
+  protected final FileSystem fileSystem;
+  protected final Path path;
+  protected final CompressionKind compressionKind;
+  protected final CompressionCodec codec;
+  protected final int bufferSize;
   private OrcProto.Metadata metadata = null;
   private final int metadataSize;
-  private final OrcProto.Footer footer;
+  protected final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
-  private final Configuration conf;
+  protected final Configuration conf;
   private final List<Integer> versionList;
   private final OrcFile.WriterVersion writerVersion;
 
@@ -295,7 +295,7 @@ final class ReaderImpl implements Reader {
    * @param options options for reading
    * @throws IOException
    */
-  ReaderImpl(Path path, OrcFile.ReaderOptions options) throws IOException {
+  public ReaderImpl(Path path, OrcFile.ReaderOptions options) throws IOException {
     FileSystem fs = options.getFilesystem();
     if (fs == null) {
       fs = path.getFileSystem(options.getConfiguration());
