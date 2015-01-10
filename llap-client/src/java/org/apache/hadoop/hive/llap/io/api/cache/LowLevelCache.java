@@ -16,12 +16,30 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.cache;
+package org.apache.hadoop.hive.llap.io.api.cache;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 
-/** Dummy interface for now, might be different. */
-public interface Cache<CacheKey> {
-  public ColumnBuffer cacheOrGet(CacheKey key, ColumnBuffer value);
-  public ColumnBuffer get(CacheKey key);
+public interface LowLevelCache {
+
+  /**
+   * Gets file data for particular offsets. Null entries mean no data.
+   */
+  LlapMemoryBuffer[] getFileData(String fileName, long[] offsets);
+
+  /**
+   * Puts file data into cache.
+   * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
+   *         the replacement chunks from cache are updated directly in the array.
+   */
+  long[] putFileData(String file, long[] offsets, LlapMemoryBuffer[] chunks);
+
+  /**
+   * Releases the buffer returned by getFileData or allocateMultiple.
+   */
+  void releaseBuffer(LlapMemoryBuffer buffer);
+
+  /**
+   * Allocate dest.length new blocks of size into dest.
+   */
+  void allocateMultiple(LlapMemoryBuffer[] dest, int size);
 }

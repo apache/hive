@@ -26,11 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.cache.Cache;
-import org.apache.hadoop.hive.llap.cache.JavaAllocator;
+import org.apache.hadoop.hive.llap.cache.LowLevelBuddyCache;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.VectorReader;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
@@ -53,11 +52,8 @@ public class LlapIoImpl implements LlapIo, Configurable {
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.conf = conf;
-    // ChunkPool<OrcLoader.ChunkKey> chunkPool = new ChunkPool<OrcLoader.ChunkKey>();
-    // new BufferPool(conf, chunkPool)
-    Allocator allocator = new JavaAllocator();
-    Cache<OrcCacheKey> cache = new NoopCache<OrcCacheKey>();
-    this.edp = new OrcEncodedDataProducer(allocator, cache, conf);
+    Cache<OrcCacheKey> cache = new NoopCache<OrcCacheKey>(); // High-level cache not supported yet.
+    this.edp = new OrcEncodedDataProducer(new LowLevelBuddyCache(conf), cache, conf);
     this.cvp = new OrcColumnVectorProducer(edp, conf);
   }
 
@@ -66,7 +62,7 @@ public class LlapIoImpl implements LlapIo, Configurable {
     getOrCreateInstance(conf);
   }
 
-  // TODO#: Add "create" method in a well-defined place when server is started
+  // TODO: Add "create" method in a well-defined place when server is started
   public static LlapIo getOrCreateInstance(Configuration conf) {
     if (ioImpl != null) return ioImpl;
     synchronized (instanceLock) {

@@ -18,10 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
-
-/** Dummy interface for now, might be different. */
-public interface Cache<CacheKey> {
-  public ColumnBuffer cacheOrGet(CacheKey key, ColumnBuffer value);
-  public ColumnBuffer get(CacheKey key);
+interface EvictionListener {
+  void notifyEvicted(LlapCacheableBuffer buffer);
 }

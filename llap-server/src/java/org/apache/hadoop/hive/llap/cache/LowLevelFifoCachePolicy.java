@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.old;
+package org.apache.hadoop.hive.llap.cache;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -24,49 +24,54 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.hadoop.hive.llap.old.BufferPool.WeakBuffer;
-
-public class FifoCachePolicy implements CachePolicy {
+public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
   private final Lock lock = new ReentrantLock();
-  private final LinkedHashSet<WeakBuffer> buffers;
-  private final int maxBuffers;
+  private final LinkedHashSet<LlapCacheableBuffer> buffers;
 
-  public FifoCachePolicy(int bufferSize, long maxCacheSize) {
-    maxBuffers = (int)Math.ceil((maxCacheSize * 1.0) / bufferSize);
-    buffers = new LinkedHashSet<BufferPool.WeakBuffer>((int)(maxBuffers / 0.75f));
+  public LowLevelFifoCachePolicy(
+      int expectedBufferSize, long maxCacheSize, EvictionListener listener) {
+    super(maxCacheSize, listener);
+    int expectedBuffers = (int)Math.ceil((maxCacheSize * 1.0) / expectedBufferSize);
+    buffers = new LinkedHashSet<LlapCacheableBuffer>((int)(expectedBuffers / 0.75f));
   }
 
   @Override
-  public WeakBuffer cache(WeakBuffer buffer) {
-    WeakBuffer result = null;
+  public void cache(LlapCacheableBuffer buffer) {
     lock.lock();
     try {
-      if (buffers.size() == maxBuffers) {
-        Iterator<WeakBuffer> iter = buffers.iterator();
-        while (iter.hasNext()) {
-          WeakBuffer candidate = iter.next();
-          if (candidate.invalidate()) {
-            iter.remove();
-            break;
-          }
-          result = candidate;
-        }
-        if (result == null) return CANNOT_EVICT;
-      }
       buffers.add(buffer);
     } finally {
       lock.unlock();
     }
-    return result;
   }
 
   @Override
-  public void notifyLock(WeakBuffer buffer) {
+  public void notifyLock(LlapCacheableBuffer buffer) {
     // FIFO policy doesn't care.
   }
 
   @Override
-  public void notifyUnlock(WeakBuffer buffer) {
+  public void notifyUnlock(LlapCacheableBuffer buffer) {
     // FIFO policy doesn't care.
+  }
+
+  @Override
+  protected long evictSomeBlocks(long memoryToReserve, EvictionListener listener) {
+    long evicted = 0;
+    lock.lock();
+    try {
+      Iterator<LlapCacheableBuffer> iter = buffers.iterator();
+      while (evicted < memoryToReserve && iter.hasNext()) {
+        LlapCacheableBuffer candidate = iter.next();
+        if (candidate.invalidate()) {
+          iter.remove();
+          evicted += candidate.length;
+          listener.notifyEvicted(candidate);
+        }
+      }
+    } finally {
+      lock.unlock();
+    }
+    return evicted;
   }
 }

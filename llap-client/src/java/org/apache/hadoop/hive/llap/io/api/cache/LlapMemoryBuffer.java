@@ -16,12 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.cache;
+package org.apache.hadoop.hive.llap.io.api.cache;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
+import java.nio.ByteBuffer;
 
-/** Dummy interface for now, might be different. */
-public interface Cache<CacheKey> {
-  public ColumnBuffer cacheOrGet(CacheKey key, ColumnBuffer value);
-  public ColumnBuffer get(CacheKey key);
+public abstract class LlapMemoryBuffer {
+  protected LlapMemoryBuffer(ByteBuffer byteBuffer, int offset, int length) {
+    initialize(byteBuffer, offset, length);
+  }
+  public void initialize(ByteBuffer byteBuffer, int offset, int length) {
+    this.byteBuffer = byteBuffer;
+    this.offset = offset;
+    this.length = length;
+  }
+  public ByteBuffer byteBuffer;
+  public int offset;
+  public int length;
+
 }

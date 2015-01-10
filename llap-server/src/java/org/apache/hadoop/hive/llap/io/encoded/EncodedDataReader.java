@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.llap.io.encoded;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator.LlapBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 
-public interface EncodedDataReader<BatchKey> extends ConsumerFeedback<LlapBuffer> {
+public interface EncodedDataReader<BatchKey> extends ConsumerFeedback<ColumnBuffer> {
   public void start() throws IOException;
 }

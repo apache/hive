@@ -26,9 +26,8 @@ import java.util.List;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator.LlapBuffer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -38,10 +37,10 @@ import org.apache.hadoop.mapred.InputSplit;
 public abstract class ColumnVectorProducer<BatchKey> {
   static class EncodedColumnBatch {
     public EncodedColumnBatch(int colCount) {
-      columnDatas = new LlapBuffer[colCount];
+      columnDatas = new ColumnBuffer[colCount];
       columnsRemaining = colCount;
     }
-    public LlapBuffer[] columnDatas;
+    public ColumnBuffer[] columnDatas;
     public int columnsRemaining;
   }
 
@@ -51,7 +50,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
     private final HashMap<BatchKey, EncodedColumnBatch> pendingData =
         new HashMap<BatchKey, EncodedColumnBatch>();
-    private ConsumerFeedback<LlapBuffer> upstreamFeedback;
+    private ConsumerFeedback<ColumnBuffer> upstreamFeedback;
     private final Consumer<ColumnVectorBatch> downstreamConsumer;
     private final int colCount;
 
@@ -60,7 +59,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
       this.colCount = colCount;
     }
 
-    public void init(ConsumerFeedback<LlapBuffer> upstreamFeedback) {
+    public void init(ConsumerFeedback<ColumnBuffer> upstreamFeedback) {
       this.upstreamFeedback = upstreamFeedback;
     }
 
@@ -134,13 +133,14 @@ public abstract class ColumnVectorProducer<BatchKey> {
 
     @Override
     public void returnData(ColumnVectorBatch data) {
-      for (LlapBuffer lockedBuffer : data.lockedBuffers) {
+      // TODO#: this should happen earlier, when data is decoded buffers are not needed
+      for (ColumnBuffer lockedBuffer : data.lockedBuffers) {
         upstreamFeedback.returnData(lockedBuffer);
       }
     }
 
     private void dicardPendingData(boolean isStopped) {
-      List<LlapBuffer> dataToDiscard = new ArrayList<LlapBuffer>(pendingData.size() * colCount);
+      List<ColumnBuffer> dataToDiscard = new ArrayList<ColumnBuffer>(pendingData.size() * colCount);
       List<EncodedColumnBatch> batches = new ArrayList<EncodedColumnBatch>(pendingData.size());
       synchronized (pendingData) {
         if (isStopped) {
@@ -151,13 +151,13 @@ public abstract class ColumnVectorProducer<BatchKey> {
       }
       for (EncodedColumnBatch batch : batches) {
         synchronized (batch) {
-          for (LlapBuffer b : batch.columnDatas) {
+          for (ColumnBuffer b : batch.columnDatas) {
             dataToDiscard.add(b);
           }
           batch.columnDatas = null;
         }
       }
-      for (LlapBuffer data : dataToDiscard) {
+      for (ColumnBuffer data : dataToDiscard) {
         upstreamFeedback.returnData(data);
       }
     }

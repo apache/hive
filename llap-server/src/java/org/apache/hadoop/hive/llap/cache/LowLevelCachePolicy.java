@@ -18,17 +18,9 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import java.nio.ByteBuffer;
-
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
-
-public class JavaAllocator implements Allocator {
-  @Override
-  public LlapBuffer allocateMemory(int size) {
-    return new LlapBuffer(ByteBuffer.allocate(size), 0, size);
-  }
-
-  @Override
-  public void deallocate(LlapBuffer columnData) {
-  }
+public interface LowLevelCachePolicy {
+  void cache(LlapCacheableBuffer buffer);
+  void notifyLock(LlapCacheableBuffer buffer);
+  void notifyUnlock(LlapCacheableBuffer buffer);
+  void reserveMemory(long total);
 }

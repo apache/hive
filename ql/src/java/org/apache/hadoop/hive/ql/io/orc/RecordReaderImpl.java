@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -2676,11 +2676,13 @@ public class RecordReaderImpl implements RecordReader {
                                   ) throws IOException {
     long start = stripe.getIndexLength();
     long end = start + stripe.getDataLength();
+    // TODO: planning should be added here too, to take cache into account
     // explicitly trigger 1 big read
     DiskRange[] ranges = new DiskRange[]{new DiskRange(start, end)};
     bufferChunks = readDiskRanges(file, zcr, stripe.getOffset(), Arrays.asList(ranges));
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
+    // TODO: decompressed data from streams should be put in cache
   }
 
   /**
@@ -3050,6 +3052,7 @@ public class RecordReaderImpl implements RecordReader {
   private void readPartialDataStreams(StripeInformation stripe
                                       ) throws IOException {
     List<OrcProto.Stream> streamList = stripeFooter.getStreamsList();
+    // TODO: planning should take cache into account
     List<DiskRange> chunks =
         planReadPartialDataStreams(streamList,
             indexes, included, includedRowGroups, codec != null,
@@ -3062,8 +3065,8 @@ public class RecordReaderImpl implements RecordReader {
       LOG.debug("merge = " + stringifyDiskRanges(chunks));
     }
     bufferChunks = readDiskRanges(file, zcr, stripe.getOffset(), chunks);
-    createStreams(streamList, bufferChunks, included, codec, bufferSize,
-        streams);
+    // TODO: decompressed data from streams should be put in cache
+    createStreams(streamList, bufferChunks, included, codec, bufferSize, streams);
   }
 
   @Override
@@ -3300,7 +3303,7 @@ public class RecordReaderImpl implements RecordReader {
 
   @Override
   public void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
-      Consumer<EncodedColumn<OrcBatchKey>> consumer, Allocator allocator) {
+      Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache allocator) {
     // TODO: HERE read encoded data
   }
 

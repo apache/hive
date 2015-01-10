@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
 
@@ -97,5 +97,5 @@ public interface RecordReader {
    * @param allocator Allocator to allocate memory.
    */
   void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
-      Consumer<EncodedColumn<OrcBatchKey>> consumer, Allocator allocator);
+      Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache);
 }

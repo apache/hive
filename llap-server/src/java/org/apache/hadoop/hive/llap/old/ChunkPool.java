@@ -54,11 +54,9 @@ public class ChunkPool<K> /*implements EvictionListener*/ {
    * @return Chunk corresponding to k.
    */
   public Chunk getChunk(K key, HashSet<WeakBuffer> lockedBuffers) {
-    Chunk result = chunkCache.get(key);
-    if (result == null) {
-      return null;
-    }
     while (true) {
+      Chunk result = chunkCache.get(key);
+      if (result == null) return null;
       if (lockChunk(result, lockedBuffers)) return result;
       if (chunkCache.remove(key, result)) return null;
     }

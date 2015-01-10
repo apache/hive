@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator;
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator.LlapBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
@@ -48,9 +48,9 @@ import org.apache.hadoop.mapred.InputSplit;
 
 public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> {
   private FileSystem cachedFs = null;
+  private final LowLevelCache lowLevelCache;
   private Configuration conf;
   private OrcMetadataCache metadataCache;
-  private final Allocator allocator;
   private final Cache<OrcCacheKey> cache;
 
   private class OrcEncodedDataReader implements EncodedDataReader<OrcBatchKey>,
@@ -140,7 +140,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         }
         RecordReader stripeReader = orcReader.rows(si.getOffset(), si.getLength(), includes);
         // We pass in the already-filtered RGs, as well as sarg. ORC can apply additional filtering.
-        stripeReader.readEncodedColumns(colRgs, rgCount, sarg, this, allocator);
+        stripeReader.readEncodedColumns(colRgs, rgCount, sarg, this, lowLevelCache);
         stripeReader.close();
       }
 
@@ -151,7 +151,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     }
 
     @Override
-    public void returnData(LlapBuffer data) {
+    public void returnData(ColumnBuffer data) {
       // TODO#: return the data to cache (unlock)
     }
 
@@ -231,7 +231,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
           boolean areAllRgsInCache = true;
           for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
             key.rgIx = rgIx;
-            LlapBuffer cached = cache.get(key);
+            ColumnBuffer cached = cache.get(key);
             if (cached == null) {
               areAllRgsInCache = false;
               continue;
@@ -274,9 +274,9 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     public void consumeData(EncodedColumn<OrcBatchKey> data) {
       // Store object in cache; create new key object - cannot be reused.
       OrcCacheKey key = new OrcCacheKey(data.batchKey, data.columnIndex);
-      LlapBuffer cached = cache.cacheOrGet(key, data.columnData);
+      ColumnBuffer cached = cache.cacheOrGet(key, data.columnData);
       if (data.columnData != cached) {
-        allocator.deallocate(data.columnData);
+        // TODO: deallocate columnData
         data.columnData = cached;
       }
       consumer.consumeData(data);
@@ -301,15 +301,15 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
   }
 
   private static int align64(int number) {
-    int rem = number & 63;
-    return number - rem + (rem == 0 ? 0 : 64);
+    return ((number + 63) & ~63);
   }
 
-  public OrcEncodedDataProducer(Allocator allocator, Cache<OrcCacheKey> cache, Configuration conf) throws IOException {
+  public OrcEncodedDataProducer(LowLevelCache lowLevelCache, Cache<OrcCacheKey> cache,
+      Configuration conf) throws IOException {
     // We assume all splits will come from the same FS.
     this.cachedFs = FileSystem.get(conf);
     this.cache = cache;
-    this.allocator = allocator;
+    this.lowLevelCache = lowLevelCache;
     this.conf = conf;
     this.metadataCache = null;
   }
@@ -319,5 +319,4 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       SearchArgument sarg, Consumer<EncodedColumn<OrcBatchKey>> consumer) {
     return new OrcEncodedDataReader(split, columnIds, sarg, consumer);
   }
-
 }

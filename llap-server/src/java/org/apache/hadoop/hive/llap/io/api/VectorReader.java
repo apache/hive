@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.llap.io.api;
 import java.util.List;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.io.api.cache.Allocator.LlapBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
 public interface VectorReader {
@@ -33,7 +33,7 @@ public interface VectorReader {
   public static class ColumnVectorBatch {
     public ColumnVector[] cols;
     public int size;
-    public List<LlapBuffer> lockedBuffers;
+    public List<ColumnBuffer> lockedBuffers;
   }
   public ColumnVectorBatch next() throws InterruptedException, IOException;
   public void close() throws IOException;

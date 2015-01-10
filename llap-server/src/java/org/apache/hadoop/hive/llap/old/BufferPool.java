@@ -39,11 +39,9 @@ public class BufferPool {
 
 
   public BufferPool(Configuration conf) {
-    this.maxCacheSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_CACHE_SIZE);
-    this.bufferSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_BUFFER_SIZE);
-    this.cachePolicy = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU)
-        ? new LrfuCachePolicy(conf, bufferSize, maxCacheSize)
-        : new FifoCachePolicy(bufferSize, maxCacheSize);
+    this.maxCacheSize = 0;// HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_CACHE_SIZE);
+    this.bufferSize = 0; // HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_BUFFER_SIZE);
+    this.cachePolicy = null;
   }
 
   /**

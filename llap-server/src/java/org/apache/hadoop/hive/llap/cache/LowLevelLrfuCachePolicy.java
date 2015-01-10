@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.old;
+package org.apache.hadoop.hive.llap.cache;
 
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.StringUtils;
@@ -25,19 +26,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.llap.old.BufferPool.WeakBuffer;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Implementation of the "simple" algorithm from "On the Existence of a Spectrum of Policies
  * that Subsumes the Least Recently Used (LRU) and Least Frequently Used (LFU) Policies".
- * We expect the number of buffers to be relatively small (100s-1000s), so we just use one heap.
- * Additionally, the cache (as of now) is fixed size, so we know exactly how big the heap is
- * going to be. Because of that and of the difficulty of iterating the heap in order, we
- * evict the blocks as the heap overflows, and keep them in overflow list to return to ChunkPool
- * when it officially decides to do an eviction. */
-public class LrfuCachePolicy implements CachePolicy {
+ * TODO: fix this, no longer true; with ORC as is, 4k buffers per gig of cache
+ * We expect the number of buffers to be relatively small (1000s), so we just use one heap.
+ **/
+public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
   private final double lambda;
   private final double f(long x) {
     return Math.pow(0.5, lambda * x);
@@ -55,28 +53,25 @@ public class LrfuCachePolicy implements CachePolicy {
    * The heap. Currently synchronized on itself; there is a number of papers out there
    * with various lock-free/efficient priority queues which we can use if needed.
    */
-  private final WeakBuffer[] heap;
+  private final LlapCacheableBuffer[] heap;
   /** Number of elements. */
   private int heapSize = 0;
 
-  public LrfuCachePolicy(Configuration conf, long bufferSize, long totalSize) {
-    heap = new WeakBuffer[(int)Math.ceil((totalSize * 1.0) / bufferSize)];
+  public LowLevelLrfuCachePolicy(Configuration conf,
+      long minBufferSize, long maxCacheSize, EvictionListener listener) {
+    super(maxCacheSize, listener);
+    heap = new LlapCacheableBuffer[(int)Math.ceil((maxCacheSize * 1.0) / minBufferSize)];
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
   }
 
   @Override
-  public WeakBuffer cache(WeakBuffer buffer) {
-    WeakBuffer evicted = null;
+  public void cache(LlapCacheableBuffer buffer) {
     buffer.lastUpdate = timer.incrementAndGet();
     buffer.priority = F0;
     assert buffer.isLocked();
     buffer.isLockedInHeap = true;
     synchronized (heap) {
-      if (heapSize == heap.length) {
-        evicted = evictFromHeapUnderLock(buffer.lastUpdate);
-        // If we failed to lock, caller should retry.
-        if (evicted == null) return CANNOT_EVICT;
-      }
+      // Ensured by reserveMemory.
       assert heapSize < heap.length : heap.length + " >= " + heapSize;
       buffer.indexInHeap = heapSize;
       heapifyUpUnderLock(buffer, buffer.lastUpdate);
@@ -85,11 +80,10 @@ public class LrfuCachePolicy implements CachePolicy {
       }
       ++heapSize;
     }
-    return evicted;
   }
 
   @Override
-  public void notifyLock(WeakBuffer buffer) {
+  public void notifyLock(LlapCacheableBuffer buffer) {
     long time = timer.get();
     synchronized (heap) {
       buffer.isLockedInHeap = true;
@@ -98,7 +92,7 @@ public class LrfuCachePolicy implements CachePolicy {
   }
 
   @Override
-  public void notifyUnlock(WeakBuffer buffer) {
+  public void notifyUnlock(LlapCacheableBuffer buffer) {
     long time = timer.incrementAndGet();
     synchronized (heap) {
       if (DebugUtils.isTraceCachingEnabled()) {
@@ -112,9 +106,9 @@ public class LrfuCachePolicy implements CachePolicy {
     }
   }
 
-  private WeakBuffer evictFromHeapUnderLock(long time) {
+  private LlapCacheableBuffer evictFromHeapUnderLock(long time) {
     if (heapSize == 0) return null;
-    WeakBuffer result = heap[0];
+    LlapCacheableBuffer result = heap[0];
     if (!result.invalidate()) {
       // We boost the priority of locked buffers to a very large value;
       // this means entire heap is locked. TODO: need to work around that for small pools?
@@ -128,9 +122,9 @@ public class LrfuCachePolicy implements CachePolicy {
     }
     result.indexInHeap = -1;
     --heapSize;
-    WeakBuffer newRoot = heap[heapSize];
+    LlapCacheableBuffer newRoot = heap[heapSize];
     newRoot.indexInHeap = 0;
-    if (newRoot.lastUpdate != time && !newRoot.isLockedInHeap)  {
+    if (newRoot.lastUpdate != time && !newRoot.isLockedInHeap) {
       newRoot.priority = expirePriority(time, newRoot.lastUpdate, newRoot.priority);
       newRoot.lastUpdate = time;
     }
@@ -138,7 +132,7 @@ public class LrfuCachePolicy implements CachePolicy {
     return result;
   }
 
-  private void heapifyDownUnderLock(WeakBuffer buffer, long time) {
+  private void heapifyDownUnderLock(LlapCacheableBuffer buffer, long time) {
     // Relative positions of the blocks don't change over time; priorities we expire can only
     // decrease; we only have one block that could have broken heap rule and we always move it
     // down; therefore, we can update priorities of other blocks as we go for part of the heap -
@@ -150,7 +144,7 @@ public class LrfuCachePolicy implements CachePolicy {
     while (true) {
       int leftIx = (ix << 1) + 1, rightIx = leftIx + 1;
       if (leftIx >= heapSize) break; // Buffer is at the leaf node.
-      WeakBuffer left = heap[leftIx], right = null;
+      LlapCacheableBuffer left = heap[leftIx], right = null;
       if (rightIx < heapSize) {
         right = heap[rightIx];
       }
@@ -170,14 +164,14 @@ public class LrfuCachePolicy implements CachePolicy {
     heap[ix] = buffer;
   }
 
-  private void heapifyUpUnderLock(WeakBuffer buffer, long time) {
+  private void heapifyUpUnderLock(LlapCacheableBuffer buffer, long time) {
     // See heapifyDown comment.
     int ix = buffer.indexInHeap;
     double priority = buffer.isLockedInHeap ? Double.MAX_VALUE : buffer.priority;
     while (true) {
       if (ix == 0) break; // Buffer is at the top of the heap.
       int parentIx = (ix - 1) >>> 1;
-      WeakBuffer parent = heap[parentIx];
+      LlapCacheableBuffer parent = heap[parentIx];
       double parentPri = getHeapifyPriority(parent, time);
       if (priority >= parentPri) break;
       heap[ix] = parent;
@@ -188,7 +182,7 @@ public class LrfuCachePolicy implements CachePolicy {
     heap[ix] = buffer;
   }
 
-  private double getHeapifyPriority(WeakBuffer buf, long time) {
+  private double getHeapifyPriority(LlapCacheableBuffer buf, long time) {
     if (buf == null || buf.isLockedInHeap) return Double.MAX_VALUE;
     if (buf.lastUpdate != time) {
       buf.priority = expirePriority(time, buf.lastUpdate, buf.priority);
@@ -238,9 +232,21 @@ public class LrfuCachePolicy implements CachePolicy {
   }
 
   @VisibleForTesting
-  public WeakBuffer evictOneMoreBlock() {
+  public LlapCacheableBuffer evictOneMoreBlock() {
     synchronized (heap) {
       return evictFromHeapUnderLock(timer.get());
     }
+  }
+
+  @Override
+  protected long evictSomeBlocks(long memoryToReserve, EvictionListener listener) {
+    long evicted = 0;
+    while (evicted < memoryToReserve) {
+      LlapCacheableBuffer buffer = evictOneMoreBlock();
+      if (buffer == null) return evicted;
+      evicted += buffer.length;
+      listener.notifyEvicted(buffer);
+    }
+    return evicted;
   }
 }

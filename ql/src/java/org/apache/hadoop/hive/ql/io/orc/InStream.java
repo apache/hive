@@ -152,6 +152,7 @@ abstract class InStream extends InputStream {
       currentRange = 0;
     }
 
+    // TODO: this should allocate from cache
     private ByteBuffer allocateBuffer(int size) {
       // TODO: use the same pool as the ORC readers
       if(isDirect == true) {
