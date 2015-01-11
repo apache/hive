@@ -154,7 +154,7 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>1.2.1-SNAPSHOT</spark.version>
+    <spark.version>1.2.0</spark.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -833,6 +833,7 @@
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>

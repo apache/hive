@@ -90,7 +90,7 @@
                     mv $BASE_DIR/${finalName}* $BASE_DIR/$finalName
                   }
                   mkdir -p $DOWNLOAD_DIR
-                  download "http://ec2-50-18-79-139.us-west-1.compute.amazonaws.com/data/spark-1.2.1-SNAPSHOT-bin-hadoop2-without-hive.tgz" "spark"
+                  download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
                   cp -f $HIVE_ROOT/data/conf/spark/log4j.properties $BASE_DIR/spark/conf/
                 </echo>
               </target>
