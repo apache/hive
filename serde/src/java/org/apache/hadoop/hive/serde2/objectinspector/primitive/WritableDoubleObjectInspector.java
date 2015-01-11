@@ -33,17 +33,17 @@ public class WritableDoubleObjectInspector extends
 
   @Override
   public double get(Object o) {
-    return ((DoubleWritable) o).get();
+    return ((org.apache.hadoop.io.DoubleWritable) o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new DoubleWritable(((DoubleWritable) o).get());
+    return o == null ? null : new DoubleWritable(get(o));
   }
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    return o == null ? null : Double.valueOf(((DoubleWritable) o).get());
+    return o == null ? null : Double.valueOf(get(o));
   }
 
   @Override
@@ -53,7 +53,7 @@ public class WritableDoubleObjectInspector extends
 
   @Override
   public Object set(Object o, double value) {
-    ((DoubleWritable) o).set(value);
+    ((org.apache.hadoop.io.DoubleWritable) o).set(value);
     return o;
   }
 

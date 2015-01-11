@@ -33,17 +33,17 @@ public class WritableByteObjectInspector extends
 
   @Override
   public byte get(Object o) {
-    return ((ByteWritable) o).get();
+    return ((org.apache.hadoop.io.ByteWritable) o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new ByteWritable(((ByteWritable) o).get());
+    return o == null ? null : new ByteWritable(get(o));
   }
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    return o == null ? null : Byte.valueOf(((ByteWritable) o).get());
+    return o == null ? null : Byte.valueOf(get(o));
   }
 
   @Override
@@ -53,7 +53,7 @@ public class WritableByteObjectInspector extends
 
   @Override
   public Object set(Object o, byte value) {
-    ((ByteWritable) o).set(value);
+    ((org.apache.hadoop.io.ByteWritable) o).set(value);
     return o;
   }
 }
