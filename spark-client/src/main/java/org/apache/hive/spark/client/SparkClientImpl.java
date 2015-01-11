@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -63,6 +64,7 @@ class SparkClientImpl implements SparkClient {
 
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
   private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
+  private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
 
   private final Map<String, String> conf;
   private final AtomicInteger childIdGenerator;
@@ -230,6 +232,17 @@ class SparkClientImpl implements SparkClient {
       allProps.put(SparkClientFactory.CONF_KEY_SECRET, secret);
       allProps.put(DRIVER_OPTS_KEY, driverJavaOpts);
       allProps.put(EXECUTOR_OPTS_KEY, executorJavaOpts);
+
+      String hiveHadoopTestClasspath = Strings.nullToEmpty(System.getenv("HIVE_HADOOP_TEST_CLASSPATH"));
+      if (!hiveHadoopTestClasspath.isEmpty()) {
+        String extraClasspath = Strings.nullToEmpty((String)allProps.get(DRIVER_EXTRA_CLASSPATH));
+        if (extraClasspath.isEmpty()) {
+          allProps.put(DRIVER_EXTRA_CLASSPATH, hiveHadoopTestClasspath);
+        } else {
+          extraClasspath = extraClasspath.endsWith(File.pathSeparator) ? extraClasspath : extraClasspath + File.pathSeparator;
+          allProps.put(DRIVER_EXTRA_CLASSPATH, extraClasspath + hiveHadoopTestClasspath);
+        }
+      }
 
       Writer writer = new OutputStreamWriter(new FileOutputStream(properties), Charsets.UTF_8);
       try {
