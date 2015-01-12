@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Walks the operator tree in DFS fashion.
- * 
+ *
  * Cloned from GenTezWorkWarlker.
  */
 public class GenSparkWorkWalker extends DefaultGraphWalker {
