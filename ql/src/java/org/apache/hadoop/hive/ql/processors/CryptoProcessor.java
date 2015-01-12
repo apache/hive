@@ -39,8 +39,8 @@ import java.util.Arrays;
  * This class processes HADOOP commands used for HDFS encryption. It is meant to be run
  * only by Hive unit & queries tests.
  */
-public class EncryptionProcessor implements CommandProcessor {
-  public static final Log LOG = LogFactory.getLog(EncryptionProcessor.class.getName());
+public class CryptoProcessor implements CommandProcessor {
+  public static final Log LOG = LogFactory.getLog(CryptoProcessor.class.getName());
 
   private HadoopShims.HdfsEncryptionShim encryptionShim;
 
@@ -52,7 +52,7 @@ public class EncryptionProcessor implements CommandProcessor {
 
   private HiveConf conf;
 
-  public EncryptionProcessor(HadoopShims.HdfsEncryptionShim encryptionShim, HiveConf conf) {
+  public CryptoProcessor(HadoopShims.HdfsEncryptionShim encryptionShim, HiveConf conf) {
     this.encryptionShim = encryptionShim;
     this.conf = conf;
 

@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.RuntimeException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,6 +86,10 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -94,10 +99,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.hadoop.hive.ql.processors.EncryptionProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.processors.HiveCommand;
 
 import com.google.common.collect.ImmutableList;
 
@@ -117,6 +118,7 @@ public class QTestUtil {
   private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
   private final String defaultInitScript = "q_test_init.sql";
   private final String defaultCleanupScript = "q_test_cleanup.sql";
+  private final String[] testOnlyCommands = new String[]{"crypto"};
 
   private String testWarehouse;
   private final String testFiles;
@@ -966,7 +968,9 @@ public class QTestUtil {
     String wareHouseDir = SessionState.get().getConf().getVar(ConfVars.METASTOREWAREHOUSE)
         .replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
     commandArgs = commandArgs.replaceAll("\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}",
-        wareHouseDir);
+      wareHouseDir);
+
+    enableTestOnlyCmd(SessionState.get().getConf());
 
     try {
       CommandProcessor proc = getTestCommand(commandName);
@@ -987,22 +991,25 @@ public class QTestUtil {
     }
   }
 
-  private CommandProcessor getTestCommand(final String commandName) {
+  private CommandProcessor getTestCommand(final String commandName) throws SQLException {
     HiveCommand testCommand = HiveCommand.find(new String[]{commandName}, HiveCommand.ONLY_FOR_TESTING);
+
     if (testCommand == null) {
       return null;
     }
 
-    switch (testCommand) {
-      case CRYPTO:
-        if (hes == null) {
-          throw new RuntimeException("HDFS encryption is not initialized for testing.");
-        }
+    return CommandProcessorFactory
+      .getForHiveCommandInternal(new String[]{commandName}, SessionState.get().getConf(),
+        testCommand.isOnlyForTesting());
+  }
 
-        return new EncryptionProcessor(hes, conf);
-      default:
-        throw new IllegalArgumentException("Unknown test command: " + commandName);
+  private void enableTestOnlyCmd(HiveConf conf){
+    StringBuilder securityCMDs = new StringBuilder(conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST));
+    for(String c : testOnlyCommands){
+      securityCMDs.append(",");
+      securityCMDs.append(c);
     }
+    conf.set(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST.toString(), securityCMDs.toString());
   }
 
   private boolean isCommandUsedForTesting(final String command) {
