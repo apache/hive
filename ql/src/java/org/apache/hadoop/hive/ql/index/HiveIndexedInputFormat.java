@@ -185,7 +185,7 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
         }
       } catch (HiveException e) {
         throw new RuntimeException(
-            "Unable to get metadata for input table split" + split.getPath());
+            "Unable to get metadata for input table split" + split.getPath(), e);
       }
     }
     InputSplit retA[] = newSplits.toArray((new FileSplit[newSplits.size()]));

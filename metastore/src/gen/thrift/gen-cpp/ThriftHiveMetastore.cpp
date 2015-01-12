@@ -27094,7 +27094,7 @@ uint32_t ThriftHiveMetastore_show_compact_presult::read(::apache::thrift::protoc
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_next_notification_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -27134,9 +27134,9 @@ uint32_t ThriftHiveMetastore_getNextNotification_args::read(::apache::thrift::pr
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_next_notification_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getNextNotification_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_next_notification_args");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->rqst.write(oprot);
@@ -27147,9 +27147,9 @@ uint32_t ThriftHiveMetastore_getNextNotification_args::write(::apache::thrift::p
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_next_notification_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getNextNotification_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_next_notification_pargs");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->rqst)).write(oprot);
@@ -27160,7 +27160,7 @@ uint32_t ThriftHiveMetastore_getNextNotification_pargs::write(::apache::thrift::
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_next_notification_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -27200,11 +27200,11 @@ uint32_t ThriftHiveMetastore_getNextNotification_result::read(::apache::thrift::
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_next_notification_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getNextNotification_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_next_notification_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -27216,7 +27216,7 @@ uint32_t ThriftHiveMetastore_getNextNotification_result::write(::apache::thrift:
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getNextNotification_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_next_notification_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -27256,7 +27256,7 @@ uint32_t ThriftHiveMetastore_getNextNotification_presult::read(::apache::thrift:
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -27283,25 +27283,25 @@ uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_args::read(::apache::
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getCurrentNotificationEventId_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_current_notificationEventId_args");
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getCurrentNotificationEventId_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_current_notificationEventId_pargs");
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -27341,11 +27341,11 @@ uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_result::read(::apache
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_getCurrentNotificationEventId_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_current_notificationEventId_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -27357,7 +27357,7 @@ uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_result::write(::apach
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_getCurrentNotificationEventId_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_current_notificationEventId_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -34908,18 +34908,18 @@ void ThriftHiveMetastoreClient::recv_show_compact(ShowCompactResponse& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "show_compact failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::getNextNotification(NotificationEventResponse& _return, const NotificationEventRequest& rqst)
+void ThriftHiveMetastoreClient::get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst)
 {
-  send_getNextNotification(rqst);
-  recv_getNextNotification(_return);
+  send_get_next_notification(rqst);
+  recv_get_next_notification(_return);
 }
 
-void ThriftHiveMetastoreClient::send_getNextNotification(const NotificationEventRequest& rqst)
+void ThriftHiveMetastoreClient::send_get_next_notification(const NotificationEventRequest& rqst)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("getNextNotification", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_next_notification", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_getNextNotification_pargs args;
+  ThriftHiveMetastore_get_next_notification_pargs args;
   args.rqst = &rqst;
   args.write(oprot_);
 
@@ -34928,7 +34928,7 @@ void ThriftHiveMetastoreClient::send_getNextNotification(const NotificationEvent
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_getNextNotification(NotificationEventResponse& _return)
+void ThriftHiveMetastoreClient::recv_get_next_notification(NotificationEventResponse& _return)
 {
 
   int32_t rseqid = 0;
@@ -34948,12 +34948,12 @@ void ThriftHiveMetastoreClient::recv_getNextNotification(NotificationEventRespon
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("getNextNotification") != 0) {
+  if (fname.compare("get_next_notification") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_getNextNotification_presult result;
+  ThriftHiveMetastore_get_next_notification_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -34963,21 +34963,21 @@ void ThriftHiveMetastoreClient::recv_getNextNotification(NotificationEventRespon
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getNextNotification failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_next_notification failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::getCurrentNotificationEventId(CurrentNotificationEventId& _return)
+void ThriftHiveMetastoreClient::get_current_notificationEventId(CurrentNotificationEventId& _return)
 {
-  send_getCurrentNotificationEventId();
-  recv_getCurrentNotificationEventId(_return);
+  send_get_current_notificationEventId();
+  recv_get_current_notificationEventId(_return);
 }
 
-void ThriftHiveMetastoreClient::send_getCurrentNotificationEventId()
+void ThriftHiveMetastoreClient::send_get_current_notificationEventId()
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("getCurrentNotificationEventId", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_current_notificationEventId", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_getCurrentNotificationEventId_pargs args;
+  ThriftHiveMetastore_get_current_notificationEventId_pargs args;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -34985,7 +34985,7 @@ void ThriftHiveMetastoreClient::send_getCurrentNotificationEventId()
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_getCurrentNotificationEventId(CurrentNotificationEventId& _return)
+void ThriftHiveMetastoreClient::recv_get_current_notificationEventId(CurrentNotificationEventId& _return)
 {
 
   int32_t rseqid = 0;
@@ -35005,12 +35005,12 @@ void ThriftHiveMetastoreClient::recv_getCurrentNotificationEventId(CurrentNotifi
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("getCurrentNotificationEventId") != 0) {
+  if (fname.compare("get_current_notificationEventId") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_getCurrentNotificationEventId_presult result;
+  ThriftHiveMetastore_get_current_notificationEventId_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -35020,7 +35020,7 @@ void ThriftHiveMetastoreClient::recv_getCurrentNotificationEventId(CurrentNotifi
     // _return pointer has now been filled
     return;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getCurrentNotificationEventId failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_current_notificationEventId failed: unknown result");
 }
 
 bool ThriftHiveMetastoreProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
@@ -42033,38 +42033,38 @@ void ThriftHiveMetastoreProcessor::process_show_compact(int32_t seqid, ::apache:
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_getNextNotification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.getNextNotification", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_next_notification", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.getNextNotification");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_next_notification");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.getNextNotification");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_next_notification");
   }
 
-  ThriftHiveMetastore_getNextNotification_args args;
+  ThriftHiveMetastore_get_next_notification_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.getNextNotification", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_next_notification", bytes);
   }
 
-  ThriftHiveMetastore_getNextNotification_result result;
+  ThriftHiveMetastore_get_next_notification_result result;
   try {
-    iface_->getNextNotification(result.success, args.rqst);
+    iface_->get_next_notification(result.success, args.rqst);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.getNextNotification");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_next_notification");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("getNextNotification", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("get_next_notification", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -42073,52 +42073,52 @@ void ThriftHiveMetastoreProcessor::process_getNextNotification(int32_t seqid, ::
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.getNextNotification");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_next_notification");
   }
 
-  oprot->writeMessageBegin("getNextNotification", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("get_next_notification", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.getNextNotification", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_next_notification", bytes);
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_getCurrentNotificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.getCurrentNotificationEventId", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_current_notificationEventId", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.getCurrentNotificationEventId");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_current_notificationEventId");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.getCurrentNotificationEventId");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_current_notificationEventId");
   }
 
-  ThriftHiveMetastore_getCurrentNotificationEventId_args args;
+  ThriftHiveMetastore_get_current_notificationEventId_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.getCurrentNotificationEventId", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_current_notificationEventId", bytes);
   }
 
-  ThriftHiveMetastore_getCurrentNotificationEventId_result result;
+  ThriftHiveMetastore_get_current_notificationEventId_result result;
   try {
-    iface_->getCurrentNotificationEventId(result.success);
+    iface_->get_current_notificationEventId(result.success);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.getCurrentNotificationEventId");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_current_notificationEventId");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("getCurrentNotificationEventId", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("get_current_notificationEventId", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -42127,17 +42127,17 @@ void ThriftHiveMetastoreProcessor::process_getCurrentNotificationEventId(int32_t
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.getCurrentNotificationEventId");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_current_notificationEventId");
   }
 
-  oprot->writeMessageBegin("getCurrentNotificationEventId", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("get_current_notificationEventId", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.getCurrentNotificationEventId", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_current_notificationEventId", bytes);
   }
 }
 

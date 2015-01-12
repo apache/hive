@@ -5665,28 +5665,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  @SuppressWarnings("nls")
-  private Operator genConversionOps(String dest, QB qb, Operator input)
-      throws SemanticException {
-
-    Integer dest_type = qb.getMetaData().getDestTypeForAlias(dest);
-    switch (dest_type.intValue()) {
-    case QBMetaData.DEST_TABLE: {
-      qb.getMetaData().getDestTableForAlias(dest);
-      break;
-    }
-    case QBMetaData.DEST_PARTITION: {
-      qb.getMetaData().getDestPartitionForAlias(dest).getTable();
-      break;
-    }
-    default: {
-      return input;
-    }
-    }
-
-    return input;
-  }
-
   private int getReducersBucketing(int totalFiles, int maxReducers) {
     int numFiles = (int)Math.ceil((double)totalFiles / (double)maxReducers);
     while (true) {
@@ -8883,7 +8861,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .getOrderByForClause(dest) != null ? false : true);
       }
     } else {
-      curr = genConversionOps(dest, qb, curr);
       // exact limit can be taken care of by the fetch operator
       if (limit != null) {
         boolean extraMRStep = true;
@@ -10590,6 +10567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<List<String>> skewedValues = new ArrayList<List<String>>();
     Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
     boolean storedAsDirs = false;
+    boolean isUserStorageFormat = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -10607,6 +10585,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       if (storageFormat.fillStorageFormat(child)) {
+        isUserStorageFormat = true;
         continue;
       }
       switch (child.getToken().getType()) {
@@ -10799,7 +10778,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(dbDotTab, isExt, isTemporary,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
-          likeTableName);
+          likeTableName, isUserStorageFormat);
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblLikeDesc), conf));

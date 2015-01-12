@@ -2356,21 +2356,36 @@ class RecordReaderImpl implements RecordReader {
   /**
    * Evaluate a predicate with respect to the statistics from the column
    * that is referenced in the predicate.
-   * @param index the statistics for the column mentioned in the predicate
+   * @param statsProto the statistics for the column mentioned in the predicate
    * @param predicate the leaf predicate we need to evaluation
    * @return the set of truth values that may be returned for the given
    *   predicate.
    */
-  static TruthValue evaluatePredicate(OrcProto.ColumnStatistics index,
+  static TruthValue evaluatePredicate(OrcProto.ColumnStatistics statsProto,
                                       PredicateLeaf predicate) {
-    ColumnStatistics cs = ColumnStatisticsImpl.deserialize(index);
+    ColumnStatistics cs = ColumnStatisticsImpl.deserialize(statsProto);
     Object minValue = getMin(cs);
     Object maxValue = getMax(cs);
-    return evaluatePredicateRange(predicate, minValue, maxValue);
+    return evaluatePredicateRange(predicate, minValue, maxValue, cs.hasNull());
+  }
+
+  /**
+   * Evaluate a predicate with respect to the statistics from the column
+   * that is referenced in the predicate.
+   * @param stats the statistics for the column mentioned in the predicate
+   * @param predicate the leaf predicate we need to evaluation
+   * @return the set of truth values that may be returned for the given
+   *   predicate.
+   */
+  static TruthValue evaluatePredicate(ColumnStatistics stats,
+      PredicateLeaf predicate) {
+    Object minValue = getMin(stats);
+    Object maxValue = getMax(stats);
+    return evaluatePredicateRange(predicate, minValue, maxValue, stats.hasNull());
   }
 
   static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object min,
-      Object max) {
+      Object max, boolean hasNull) {
     // if we didn't have any values, everything must have been null
     if (min == null) {
       if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
@@ -2405,29 +2420,29 @@ class RecordReaderImpl implements RecordReader {
       case EQUALS:
         loc = compareToRange((Comparable) predObj, minValue, maxValue);
         if (minValue.equals(maxValue) && loc == Location.MIN) {
-          return TruthValue.YES_NULL;
+          return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
         } else if (loc == Location.BEFORE || loc == Location.AFTER) {
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
-          return TruthValue.YES_NO_NULL;
+          return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case LESS_THAN:
         loc = compareToRange((Comparable) predObj, minValue, maxValue);
         if (loc == Location.AFTER) {
-          return TruthValue.YES_NULL;
+          return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
         } else if (loc == Location.BEFORE || loc == Location.MIN) {
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
-          return TruthValue.YES_NO_NULL;
+          return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case LESS_THAN_EQUALS:
         loc = compareToRange((Comparable) predObj, minValue, maxValue);
         if (loc == Location.AFTER || loc == Location.MAX) {
-          return TruthValue.YES_NULL;
+          return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
         } else if (loc == Location.BEFORE) {
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
-          return TruthValue.YES_NO_NULL;
+          return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case IN:
         if (minValue.equals(maxValue)) {
@@ -2437,10 +2452,10 @@ class RecordReaderImpl implements RecordReader {
             predObj = getBaseObjectForComparison(arg, minValue);
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN) {
-              return TruthValue.YES_NULL;
+              return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
             }
           }
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
           // are all of the values outside of the range?
           for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
@@ -2448,10 +2463,10 @@ class RecordReaderImpl implements RecordReader {
             loc = compareToRange((Comparable) predObj, minValue, maxValue);
             if (loc == Location.MIN || loc == Location.MIDDLE ||
                 loc == Location.MAX) {
-              return TruthValue.YES_NO_NULL;
+              return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
             }
           }
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         }
       case BETWEEN:
         List<Object> args = predicate.getLiteralList(PredicateLeaf.FileFormat.ORC);
@@ -2463,26 +2478,26 @@ class RecordReaderImpl implements RecordReader {
 
           Location loc2 = compareToRange((Comparable) predObj2, minValue, maxValue);
           if (loc2 == Location.AFTER || loc2 == Location.MAX) {
-            return TruthValue.YES_NULL;
+            return hasNull ? TruthValue.YES_NULL : TruthValue.YES;
           } else if (loc2 == Location.BEFORE) {
-            return TruthValue.NO_NULL;
+            return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
           } else {
-            return TruthValue.YES_NO_NULL;
+            return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
           }
         } else if (loc == Location.AFTER) {
-          return TruthValue.NO_NULL;
+          return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
         } else {
-          return TruthValue.YES_NO_NULL;
+          return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case IS_NULL:
-        return TruthValue.YES_NO;
+        return hasNull ? TruthValue.YES : TruthValue.NO;
       default:
-        return TruthValue.YES_NO_NULL;
+        return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
       }
 
       // in case failed conversion, return the default YES_NO_NULL truth value
     } catch (NumberFormatException nfe) {
-      return TruthValue.YES_NO_NULL;
+      return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
     }
   }
 

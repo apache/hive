@@ -656,6 +656,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     void write(Object obj) throws IOException {
       if (obj != null) {
         indexStatistics.increment();
+      } else {
+        indexStatistics.setNull();
       }
       if (isPresent != null) {
         isPresent.write(obj == null ? 0 : 1);

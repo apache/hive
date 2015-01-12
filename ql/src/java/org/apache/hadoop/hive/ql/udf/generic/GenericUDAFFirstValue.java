@@ -286,8 +286,7 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver {
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
       State s = (State) agg;
-      FirstValueBuffer fb = (FirstValueBuffer) s.wrappedBuf;
-      ValIndexPair r = fb.skipNulls && s.valueChain.size() == 0 ? null : s.valueChain.getFirst();
+      ValIndexPair r = s.valueChain.size() == 0 ? null : s.valueChain.getFirst();
 
       for (int i = 0; i < s.numFollowing; i++) {
         s.results.add(r == null ? null : r.val);

@@ -82,12 +82,9 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   public void setConf(Configuration config) {
     try {
       hmap = hmapClass.newInstance();
-    } catch (InstantiationException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Whoops, could not create an Authenticator of class " +
-          hmapClass.getName());
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("Whoops, could not create an Authenticator of class " +
-          hmapClass.getName());
+          hmapClass.getName(), e);
     }
 
     hmap.setConf(config);

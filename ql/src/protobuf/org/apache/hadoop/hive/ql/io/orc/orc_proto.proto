@@ -74,6 +74,7 @@ message ColumnStatistics {
   optional DateStatistics dateStatistics = 7;
   optional BinaryStatistics binaryStatistics = 8;
   optional TimestampStatistics timestampStatistics = 9;
+  optional bool hasNull = 10;
 }
 
 message RowIndexEntry {
