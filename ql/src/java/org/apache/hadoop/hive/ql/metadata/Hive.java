@@ -2361,6 +2361,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static boolean isSubDir(Path srcf, Path destf, FileSystem fs, boolean isSrcLocal){
     if (srcf == null) {
+      LOG.debug("The source path is null for isSubDir method.");
       return false;
     }
 
@@ -2369,6 +2370,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(fs.getConf(), ConfVars.HIVE_IN_TEST));
     // In the automation, the data warehouse is the local file system based.
+    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     if (isInTest) {
       return fullF1.startsWith(fullF2);
     }
@@ -2396,8 +2398,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static String getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
     Path currentWorkingDir = fs.getWorkingDirectory();
-    Path path = Path.getPathWithoutSchemeAndAuthority(srcf);
-    return path.makeQualified(path.toUri(), currentWorkingDir).toString();
+    Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
+    return Path.getPathWithoutSchemeAndAuthority(path).toString();
   }
 
   //it is assumed that parent directory of the destf should already exist when this
@@ -2432,7 +2434,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           //if destf is an existing file, rename is actually a replace, and do not need
           // to delete the file first
           if (replace && !destIsSubDir) {
-            LOG.debug("===== xc ===== The path " + destf.toString() + " is deleted");
+            LOG.debug("The path " + destf.toString() + " is deleted");
             fs.delete(destf, true);
           }
         } catch (FileNotFoundException ignore) {
