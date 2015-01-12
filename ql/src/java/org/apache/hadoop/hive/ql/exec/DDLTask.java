@@ -169,8 +169,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -4108,6 +4106,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (crtTbl.getTblProps() != null) {
         params.putAll(crtTbl.getTblProps());
+      }
+
+      if (crtTbl.isUserStorageFormat()) {
+        tbl.setInputFormatClass(crtTbl.getDefaultInputFormat());
+        tbl.setOutputFormatClass(crtTbl.getDefaultOutputFormat());
+        tbl.getTTable().getSd().setInputFormat(
+        tbl.getInputFormatClass().getName());
+        tbl.getTTable().getSd().setOutputFormat(
+        tbl.getOutputFormatClass().getName());
+        if (crtTbl.getDefaultSerName() == null) {
+          LOG.info("Default to LazySimpleSerDe for like table " + crtTbl.getTableName());
+          tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+        } else {
+          // let's validate that the serde exists
+          validateSerDe(crtTbl.getDefaultSerName());
+          tbl.setSerializationLib(crtTbl.getDefaultSerName());
+        }
       }
 
       tbl.getTTable().setTemporary(crtTbl.isTemporary());

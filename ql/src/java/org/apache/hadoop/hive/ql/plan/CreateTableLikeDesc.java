@@ -39,6 +39,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   boolean ifNotExists;
   String likeTableName;
   boolean isTemporary = false;
+  boolean isUserStorageFormat = false;
 
   public CreateTableLikeDesc() {
   }
@@ -46,7 +47,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   public CreateTableLikeDesc(String tableName, boolean isExternal, boolean isTemporary,
       String defaultInputFormat, String defaultOutputFormat, String location,
       String defaultSerName, Map<String, String> defaultSerdeProps, Map<String, String> tblProps,
-      boolean ifNotExists, String likeTableName) {
+      boolean ifNotExists, String likeTableName, boolean isUserStorageFormat) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
@@ -58,6 +59,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
     this.likeTableName = likeTableName;
+    this.isUserStorageFormat = isUserStorageFormat;
   }
 
   @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
@@ -186,4 +188,11 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.isTemporary = isTemporary;
   }
 
+  /**
+   * True if user has specified storage format in query
+   * @return boolean
+   */
+  public boolean isUserStorageFormat() {
+    return this.isUserStorageFormat;
+  }
 }

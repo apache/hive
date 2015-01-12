@@ -823,6 +823,8 @@ createTableStatement
 @after { popMsg(state); }
     : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
+         tableRowFormat?
+         tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeList RPAREN)?
