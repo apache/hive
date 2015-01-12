@@ -1323,13 +1323,20 @@ public class HiveConf extends Configuration {
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
-    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000,
-        "ZooKeeper client's session timeout. The client is disconnected, and as a result, all locks released, \n" +
+    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "600000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
     HIVE_ZOOKEEPER_NAMESPACE("hive.zookeeper.namespace", "hive_zookeeper_namespace",
         "The parent node under which all ZooKeeper nodes are created."),
     HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES("hive.zookeeper.clean.extra.nodes", false,
         "Clean extra nodes at the end of the session."),
+    HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES("hive.zookeeper.connection.max.retries", 3,
+        "Max number of times to retry when connecting to the ZooKeeper server."),
+    HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME("hive.zookeeper.connection.basesleeptime", "1000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Initial amount of time (in milliseconds) to wait between retries\n" +
+        "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
