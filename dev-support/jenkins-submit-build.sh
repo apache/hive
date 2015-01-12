@@ -30,9 +30,15 @@ case "$BUILD_PROFILE" in
    curl -v -i "$url"
    exit 0
   ;;
-  spark-mr2|spark2-mr2)
+  spark-mr2)
    test -n "$SPARK_URL" || fail "SPARK_URL must be specified"
    url="$SPARK_URL&ISSUE_NUM=$ISSUE_NUM"
+   curl -v -i "$url"
+   exit 0
+  ;;
+  encryption-mr2)
+   test -n "$ENCRYPTION_URL" || fail "ENCRYPTION_URL must be specified"
+   url="$ENCRYPTION_URL&ISSUE_NUM=$ISSUE_NUM"
    curl -v -i "$url"
    exit 0
   ;;
