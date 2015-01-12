@@ -1,0 +1,351 @@
+PREHOOK: query: -- Create two bucketed and sorted tables
+CREATE TABLE test_table1 (key int, value STRING) PARTITIONED BY (ds STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: -- Create two bucketed and sorted tables
+CREATE TABLE test_table1 (key int, value STRING) PARTITIONED BY (ds STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: CREATE TABLE test_table2 (key STRING, value1 STRING, value2 string) PARTITIONED BY (ds STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: CREATE TABLE test_table2 (key STRING, value1 STRING, value2 string) PARTITIONED BY (ds STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table1@ds=1
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table1@ds=1
+POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- with different datatypes. This should be a map-reduce operation
+EXPLAIN
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
+SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- with different datatypes. This should be a map-reduce operation
+EXPLAIN
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
+SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: UDFToString(_col0) (type: string)
+                      sort order: +
+                      Map-reduce partition columns: UDFToString(_col0) (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table2
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
+SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Output: default@test_table2@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
+SELECT a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table2@ds=1
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table2 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table2 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+242
+PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2@ds=1
+#### A masked pattern was here ####
+258
+PREHOOK: query: CREATE TABLE test_table3 (key STRING, value1 int, value2 string) PARTITIONED BY (ds STRING)
+CLUSTERED BY (value1) SORTED BY (value1) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table3
+POSTHOOK: query: CREATE TABLE test_table3 (key STRING, value1 int, value2 string) PARTITIONED BY (ds STRING)
+CLUSTERED BY (value1) SORTED BY (value1) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table3
+PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- This should be a map-only operation, although the bucketing positions dont match
+EXPLAIN
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- This should be a map-only operation, although the bucketing positions dont match
+EXPLAIN
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string), key (type: int), value (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.test_table3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Output: default@test_table3@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Output: default@test_table3@ds=1
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value1 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value2 SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table3 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table3 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+500
+PREHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+247
+PREHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+253
+PREHOOK: query: select count(*) from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+247
+PREHOOK: query: select count(*) from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+253
+PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- However, since an expression is being selected, it should involve a reducer
+EXPLAIN
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
+SELECT a.key+a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
+-- However, since an expression is being selected, it should involve a reducer
+EXPLAIN
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
+SELECT a.key+a.key, a.value, a.value FROM test_table1 a WHERE a.ds = '1'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: (key + key) (type: int), value (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: UDFToString(_col0) (type: string)
+                      sort order: +
+                      Map-reduce partition columns: UDFToString(_col0) (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Extract
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.test_table2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table2
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+

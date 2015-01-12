@@ -1,0 +1,231 @@
+PREHOOK: query: CREATE TABLE decimal_vgby STORED AS ORC AS 
+    SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
+    CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
+    cint
+    FROM alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_vgby
+POSTHOOK: query: CREATE TABLE decimal_vgby STORED AS ORC AS 
+    SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
+    CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
+    cint
+    FROM alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_vgby
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- First only do simple aggregations that output primitives only
+EXPLAIN SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- First only do simple aggregations that output primitives only
+EXPLAIN SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_vgby
+                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
+                    outputColumnNames: cint, cdecimal1, cdecimal2
+                    Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(cdecimal1), max(cdecimal1), min(cdecimal1), sum(cdecimal1), count(cdecimal2), max(cdecimal2), min(cdecimal2), sum(cdecimal2), count()
+                      keys: cint (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint), _col2 (type: decimal(20,10)), _col3 (type: decimal(20,10)), _col4 (type: decimal(30,10)), _col5 (type: bigint), _col6 (type: decimal(23,14)), _col7 (type: decimal(23,14)), _col8 (type: decimal(33,14)), _col9 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), max(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), max(VALUE._col5), min(VALUE._col6), sum(VALUE._col7), count(VALUE._col8)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col9 > 1) (type: boolean)
+                  Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: decimal(20,10)), _col3 (type: decimal(20,10)), _col4 (type: decimal(30,10)), _col5 (type: bigint), _col6 (type: decimal(23,14)), _col7 (type: decimal(23,14)), _col8 (type: decimal(33,14))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
+-3728	6	5831542.269248378	-3367.6517567568	5817556.0411483778	6	6984454.211097692	-4033.445769230769	6967702.8672438458471
+-563	2	-515.621072973	-3367.6517567568	-3883.2728297298	2	-617.5607769230769	-4033.445769230769	-4651.0065461538459
+253665376	1024	9767.0054054054	-9779.5486486487	-347484.0818378374	1024	11697.969230769231	-11712.99230769231	-416182.64030769233089
+528534767	1024	5831542.269248378	-9777.1594594595	11646372.8607481068	1024	6984454.211097692	-11710.130769230771	13948892.79980307629003
+626923679	1024	9723.4027027027	-9778.9513513514	10541.0525297287	1024	11645.746153846154	-11712.276923076923	12625.04759999997746
+6981	3	5831542.269248378	-515.621072973	5830511.027102432	3	6984454.211097692	-617.5607769230769	6983219.0895438458462
+762	2	5831542.269248378	1531.2194054054	5833073.4886537834	2	6984454.211097692	1833.9456923076925	6986288.1567899996925
+NULL	3072	9318.4351351351	-4298.1513513514	5018444.1081079808	3072	11160.715384615385	-5147.907692307693	6010604.3076923073536
+PREHOOK: query: -- Now add the others...
+EXPLAIN SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Now add the others...
+EXPLAIN SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_vgby
+                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
+                    outputColumnNames: cint, cdecimal1, cdecimal2
+                    Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(cdecimal1), max(cdecimal1), min(cdecimal1), sum(cdecimal1), avg(cdecimal1), stddev_pop(cdecimal1), stddev_samp(cdecimal1), count(cdecimal2), max(cdecimal2), min(cdecimal2), sum(cdecimal2), avg(cdecimal2), stddev_pop(cdecimal2), stddev_samp(cdecimal2), count()
+                      keys: cint (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                      Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint), _col2 (type: decimal(20,10)), _col3 (type: decimal(20,10)), _col4 (type: decimal(30,10)), _col5 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>), _col6 (type: struct<count:bigint,sum:double,variance:double>), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: bigint), _col9 (type: decimal(23,14)), _col10 (type: decimal(23,14)), _col11 (type: decimal(33,14)), _col12 (type: struct<count:bigint,sum:decimal(33,14),input:decimal(23,14)>), _col13 (type: struct<count:bigint,sum:double,variance:double>), _col14 (type: struct<count:bigint,sum:double,variance:double>), _col15 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), max(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), avg(VALUE._col4), stddev_pop(VALUE._col5), stddev_samp(VALUE._col6), count(VALUE._col7), max(VALUE._col8), min(VALUE._col9), sum(VALUE._col10), avg(VALUE._col11), stddev_pop(VALUE._col12), stddev_samp(VALUE._col13), count(VALUE._col14)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col15 > 1) (type: boolean)
+                  Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: decimal(20,10)), _col3 (type: decimal(20,10)), _col4 (type: decimal(30,10)), _col5 (type: decimal(24,14)), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: decimal(23,14)), _col10 (type: decimal(23,14)), _col11 (type: decimal(33,14)), _col12 (type: decimal(27,18)), _col13 (type: double), _col14 (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+                    Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2048 Data size: 360843 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cint,
+    COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
+    COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
+    FROM decimal_vgby
+    GROUP BY cint
+    HAVING COUNT(*) > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_vgby
+#### A masked pattern was here ####
+-3728	6	5831542.269248378	-3367.6517567568	5817556.0411483778	969592.67352472963333	2174330.2092403853	2381859.406131774	6	6984454.211097692	-4033.445769230769	6967702.8672438458471	1161283.811207307641183333	2604201.2704476737	2852759.5602156054
+-563	2	-515.621072973	-3367.6517567568	-3883.2728297298	-1941.6364148649	1426.0153418918999	2016.6902366556308	2	-617.5607769230769	-4033.445769230769	-4651.0065461538459	-2325.50327307692295	1707.9424961538462	2415.395441814127
+253665376	1024	9767.0054054054	-9779.5486486487	-347484.0818378374	-339.33992366976309	5708.9563478862	5711.745967572779	1024	11697.969230769231	-11712.99230769231	-416182.64030769233089	-406.428359675480791885	6837.632716002934	6840.973851172274
+528534767	1024	5831542.269248378	-9777.1594594595	11646372.8607481068	11373.41099682432305	257528.92988206653	257654.7686043977	1024	6984454.211097692	-11710.130769230771	13948892.79980307629003	13621.965624807691689482	308443.1074570801	308593.82484083984
+626923679	1024	9723.4027027027	-9778.9513513514	10541.0525297287	10.29399661106318	5742.09145323734	5744.897264034267	1024	11645.746153846154	-11712.276923076923	12625.04759999997746	12.329148046874977988	6877.318722794877	6880.679250101603
+6981	3	5831542.269248378	-515.621072973	5830511.027102432	1943503.67570081066667	2749258.455012492	3367140.1929065133	3	6984454.211097692	-617.5607769230769	6983219.0895438458462	2327739.696514615282066667	3292794.4113115156	4032833.0678006653
+762	2	5831542.269248378	1531.2194054054	5833073.4886537834	2916536.7443268917	2915005.5249214866	4122440.3477364695	2	6984454.211097692	1833.9456923076925	6986288.1567899996925	3493144.07839499984625	3491310.1327026924	4937458.140118758
+NULL	3072	9318.4351351351	-4298.1513513514	5018444.1081079808	1633.60810810806667	5695.483082135364	5696.4103077145055	3072	11160.715384615385	-5147.907692307693	6010604.3076923073536	1956.576923076922966667	6821.495748565159	6822.606289190924

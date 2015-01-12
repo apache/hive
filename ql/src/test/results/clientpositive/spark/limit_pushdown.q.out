@@ -1,0 +1,1386 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-3562 Some limit can be pushed down to map stage
+
+explain
+select key,value from src order by key limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- HIVE-3562 Some limit can be pushed down to map stage
+
+explain
+select key,value from src order by key limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.3
+                      value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key,value from src order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key,value from src order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+PREHOOK: query: explain
+select key,value from src order by key desc limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key,value from src order by key desc limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: -
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.3
+                      value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key,value from src order by key desc limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key,value from src order by key desc limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: explain
+select value, sum(key + 1) as sum from src group by value order by value limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select value, sum(key + 1) as sum from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string), key (type: string)
+                    outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum((key + 1))
+                      keys: value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col1 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value, sum(key + 1) as sum from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	3.0
+val_10	11.0
+val_100	202.0
+val_103	208.0
+val_104	210.0
+val_105	106.0
+val_11	12.0
+val_111	112.0
+val_113	228.0
+val_114	115.0
+val_116	117.0
+val_118	238.0
+val_119	360.0
+val_12	26.0
+val_120	242.0
+val_125	252.0
+val_126	127.0
+val_128	387.0
+val_129	260.0
+val_131	132.0
+PREHOOK: query: -- deduped RS
+explain
+select value,avg(key + 1) from src group by value order by value limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- deduped RS
+explain
+select value,avg(key + 1) from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string), key (type: string)
+                    outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: avg((key + 1))
+                      keys: value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select value,avg(key + 1) from src group by value order by value limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value,avg(key + 1) from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	1.0
+val_10	11.0
+val_100	101.0
+val_103	104.0
+val_104	105.0
+val_105	106.0
+val_11	12.0
+val_111	112.0
+val_113	114.0
+val_114	115.0
+val_116	117.0
+val_118	119.0
+val_119	120.0
+val_12	13.0
+val_120	121.0
+val_125	126.0
+val_126	127.0
+val_128	129.0
+val_129	130.0
+val_131	132.0
+PREHOOK: query: -- distincts
+explain
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- distincts
+explain
+select distinct(cdouble) as dis from alltypesorc order by dis limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cdouble (type: double)
+                    outputColumnNames: cdouble
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: cdouble (type: double)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct(cdouble) as dis from alltypesorc order by dis limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-16269.0
+-16274.0
+-16277.0
+-16280.0
+-16296.0
+-16300.0
+-16305.0
+-16306.0
+-16307.0
+-16309.0
+-16310.0
+-16311.0
+-16324.0
+-16339.0
+-16355.0
+-16369.0
+-16372.0
+-16373.0
+-16379.0
+NULL
+PREHOOK: query: explain
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), cdouble (type: double)
+                    outputColumnNames: ctinyint, cdouble
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT cdouble)
+                      keys: ctinyint (type: tinyint), cdouble (type: double)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint), _col1 (type: double)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: tinyint), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-46	24
+-47	22
+-48	29
+-49	26
+-50	30
+-51	21
+-52	33
+-53	22
+-54	26
+-55	29
+-56	36
+-57	35
+-58	23
+-59	31
+-60	27
+-61	25
+-62	27
+-63	19
+-64	24
+NULL	2932
+PREHOOK: query: -- multi distinct
+explain
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- multi distinct
+explain
+select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
+                    outputColumnNames: ctinyint, cstring1, cstring2
+                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT cstring1), count(DISTINCT cstring2)
+                      keys: ctinyint (type: tinyint), cstring1 (type: string), cstring2 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: tinyint)
+                        Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: tinyint), _col1 (type: bigint), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-46	3	19
+-47	3	23
+-48	3	27
+-49	3	24
+-50	3	25
+-51	1012	1045
+-52	3	21
+-53	3	17
+-54	3	21
+-55	3	21
+-56	3	22
+-57	3	23
+-58	3	24
+-59	3	27
+-60	3	25
+-61	3	25
+-62	3	23
+-63	3	16
+-64	3	13
+NULL	3065	3
+PREHOOK: query: -- limit zero
+explain
+select key,value from src order by key limit 0
+PREHOOK: type: QUERY
+POSTHOOK: query: -- limit zero
+explain
+select key,value from src order by key limit 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key,value from src order by key limit 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key,value from src order by key limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: query: -- 2MR (applied to last RS)
+explain
+select value, sum(key) as sum from src group by value order by sum limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- 2MR (applied to last RS)
+explain
+select value, sum(key) as sum from src group by value order by sum limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: string), key (type: string)
+                    outputColumnNames: value, key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(key)
+                      keys: value (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: double)
+                  sort order: +
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.3
+                  value expressions: _col0 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select value, sum(key) as sum from src group by value order by sum limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value, sum(key) as sum from src group by value order by sum limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	0.0
+val_10	10.0
+val_11	11.0
+val_12	24.0
+val_15	30.0
+val_17	17.0
+val_18	36.0
+val_19	19.0
+val_2	2.0
+val_20	20.0
+val_27	27.0
+val_28	28.0
+val_30	30.0
+val_33	33.0
+val_34	34.0
+val_4	4.0
+val_41	41.0
+val_5	15.0
+val_8	8.0
+val_9	9.0
+PREHOOK: query: -- subqueries
+explain
+select * from
+(select key, count(1) from src group by key order by key limit 2) subq
+join
+(select key, count(1) from src group by key limit 3) subq2
+on subq.key=subq2.key limit 4
+PREHOOK: type: QUERY
+POSTHOOK: query: -- subqueries
+explain
+select * from
+(select key, count(1) from src group by key order by key limit 2) subq
+join
+(select key, count(1) from src group by key limit 3) subq2
+on subq.key=subq2.key limit 4
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Map 4 (GROUP, 2)
+        Reducer 6 <- Reducer 5 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col1 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.3
+                        value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: _col0 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 4
+                    Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.3
+                    value expressions: _col0 (type: string), _col1 (type: bigint)
+        Reducer 6 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: _col0 is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 4
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- map aggregation disabled
+explain
+select value, sum(key) as sum from src group by value order by value limit 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map aggregation disabled
+explain
+select value, sum(key) as sum from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.3
+                      value expressions: key (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: complete
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value, sum(key) as sum from src group by value order by value limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+val_0	0.0
+val_10	10.0
+val_100	200.0
+val_103	206.0
+val_104	208.0
+val_105	105.0
+val_11	11.0
+val_111	111.0
+val_113	226.0
+val_114	114.0
+val_116	116.0
+val_118	236.0
+val_119	357.0
+val_12	24.0
+val_120	240.0
+val_125	250.0
+val_126	126.0
+val_128	384.0
+val_129	258.0
+val_131	131.0
+PREHOOK: query: -- flush for order-by
+explain
+select key,value,value,value,value,value,value,value,value from src order by key limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: -- flush for order-by
+explain
+select key,value,value,value,value,value,value,value,value from src order by key limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 2.0E-5
+                      value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key,value,value,value,value,value,value,value,value from src order by key limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key,value,value,value,value,value,value,value,value from src order by key limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0	val_0	val_0	val_0	val_0	val_0	val_0	val_0
+0	val_0	val_0	val_0	val_0	val_0	val_0	val_0	val_0
+0	val_0	val_0	val_0	val_0	val_0	val_0	val_0	val_0
+10	val_10	val_10	val_10	val_10	val_10	val_10	val_10	val_10
+100	val_100	val_100	val_100	val_100	val_100	val_100	val_100	val_100
+100	val_100	val_100	val_100	val_100	val_100	val_100	val_100	val_100
+103	val_103	val_103	val_103	val_103	val_103	val_103	val_103	val_103
+103	val_103	val_103	val_103	val_103	val_103	val_103	val_103	val_103
+104	val_104	val_104	val_104	val_104	val_104	val_104	val_104	val_104
+104	val_104	val_104	val_104	val_104	val_104	val_104	val_104	val_104
+105	val_105	val_105	val_105	val_105	val_105	val_105	val_105	val_105
+11	val_11	val_11	val_11	val_11	val_11	val_11	val_11	val_11
+111	val_111	val_111	val_111	val_111	val_111	val_111	val_111	val_111
+113	val_113	val_113	val_113	val_113	val_113	val_113	val_113	val_113
+113	val_113	val_113	val_113	val_113	val_113	val_113	val_113	val_113
+114	val_114	val_114	val_114	val_114	val_114	val_114	val_114	val_114
+116	val_116	val_116	val_116	val_116	val_116	val_116	val_116	val_116
+118	val_118	val_118	val_118	val_118	val_118	val_118	val_118	val_118
+118	val_118	val_118	val_118	val_118	val_118	val_118	val_118	val_118
+119	val_119	val_119	val_119	val_119	val_119	val_119	val_119	val_119
+119	val_119	val_119	val_119	val_119	val_119	val_119	val_119	val_119
+119	val_119	val_119	val_119	val_119	val_119	val_119	val_119	val_119
+12	val_12	val_12	val_12	val_12	val_12	val_12	val_12	val_12
+12	val_12	val_12	val_12	val_12	val_12	val_12	val_12	val_12
+120	val_120	val_120	val_120	val_120	val_120	val_120	val_120	val_120
+120	val_120	val_120	val_120	val_120	val_120	val_120	val_120	val_120
+125	val_125	val_125	val_125	val_125	val_125	val_125	val_125	val_125
+125	val_125	val_125	val_125	val_125	val_125	val_125	val_125	val_125
+126	val_126	val_126	val_126	val_126	val_126	val_126	val_126	val_126
+128	val_128	val_128	val_128	val_128	val_128	val_128	val_128	val_128
+128	val_128	val_128	val_128	val_128	val_128	val_128	val_128	val_128
+128	val_128	val_128	val_128	val_128	val_128	val_128	val_128	val_128
+129	val_129	val_129	val_129	val_129	val_129	val_129	val_129	val_129
+129	val_129	val_129	val_129	val_129	val_129	val_129	val_129	val_129
+131	val_131	val_131	val_131	val_131	val_131	val_131	val_131	val_131
+133	val_133	val_133	val_133	val_133	val_133	val_133	val_133	val_133
+134	val_134	val_134	val_134	val_134	val_134	val_134	val_134	val_134
+134	val_134	val_134	val_134	val_134	val_134	val_134	val_134	val_134
+136	val_136	val_136	val_136	val_136	val_136	val_136	val_136	val_136
+137	val_137	val_137	val_137	val_137	val_137	val_137	val_137	val_137
+137	val_137	val_137	val_137	val_137	val_137	val_137	val_137	val_137
+138	val_138	val_138	val_138	val_138	val_138	val_138	val_138	val_138
+138	val_138	val_138	val_138	val_138	val_138	val_138	val_138	val_138
+138	val_138	val_138	val_138	val_138	val_138	val_138	val_138	val_138
+138	val_138	val_138	val_138	val_138	val_138	val_138	val_138	val_138
+143	val_143	val_143	val_143	val_143	val_143	val_143	val_143	val_143
+145	val_145	val_145	val_145	val_145	val_145	val_145	val_145	val_145
+146	val_146	val_146	val_146	val_146	val_146	val_146	val_146	val_146
+146	val_146	val_146	val_146	val_146	val_146	val_146	val_146	val_146
+149	val_149	val_149	val_149	val_149	val_149	val_149	val_149	val_149
+149	val_149	val_149	val_149	val_149	val_149	val_149	val_149	val_149
+15	val_15	val_15	val_15	val_15	val_15	val_15	val_15	val_15
+15	val_15	val_15	val_15	val_15	val_15	val_15	val_15	val_15
+150	val_150	val_150	val_150	val_150	val_150	val_150	val_150	val_150
+152	val_152	val_152	val_152	val_152	val_152	val_152	val_152	val_152
+152	val_152	val_152	val_152	val_152	val_152	val_152	val_152	val_152
+153	val_153	val_153	val_153	val_153	val_153	val_153	val_153	val_153
+155	val_155	val_155	val_155	val_155	val_155	val_155	val_155	val_155
+156	val_156	val_156	val_156	val_156	val_156	val_156	val_156	val_156
+157	val_157	val_157	val_157	val_157	val_157	val_157	val_157	val_157
+158	val_158	val_158	val_158	val_158	val_158	val_158	val_158	val_158
+160	val_160	val_160	val_160	val_160	val_160	val_160	val_160	val_160
+162	val_162	val_162	val_162	val_162	val_162	val_162	val_162	val_162
+163	val_163	val_163	val_163	val_163	val_163	val_163	val_163	val_163
+164	val_164	val_164	val_164	val_164	val_164	val_164	val_164	val_164
+164	val_164	val_164	val_164	val_164	val_164	val_164	val_164	val_164
+165	val_165	val_165	val_165	val_165	val_165	val_165	val_165	val_165
+165	val_165	val_165	val_165	val_165	val_165	val_165	val_165	val_165
+166	val_166	val_166	val_166	val_166	val_166	val_166	val_166	val_166
+167	val_167	val_167	val_167	val_167	val_167	val_167	val_167	val_167
+167	val_167	val_167	val_167	val_167	val_167	val_167	val_167	val_167
+167	val_167	val_167	val_167	val_167	val_167	val_167	val_167	val_167
+168	val_168	val_168	val_168	val_168	val_168	val_168	val_168	val_168
+169	val_169	val_169	val_169	val_169	val_169	val_169	val_169	val_169
+169	val_169	val_169	val_169	val_169	val_169	val_169	val_169	val_169
+169	val_169	val_169	val_169	val_169	val_169	val_169	val_169	val_169
+169	val_169	val_169	val_169	val_169	val_169	val_169	val_169	val_169
+17	val_17	val_17	val_17	val_17	val_17	val_17	val_17	val_17
+170	val_170	val_170	val_170	val_170	val_170	val_170	val_170	val_170
+172	val_172	val_172	val_172	val_172	val_172	val_172	val_172	val_172
+172	val_172	val_172	val_172	val_172	val_172	val_172	val_172	val_172
+174	val_174	val_174	val_174	val_174	val_174	val_174	val_174	val_174
+174	val_174	val_174	val_174	val_174	val_174	val_174	val_174	val_174
+175	val_175	val_175	val_175	val_175	val_175	val_175	val_175	val_175
+175	val_175	val_175	val_175	val_175	val_175	val_175	val_175	val_175
+176	val_176	val_176	val_176	val_176	val_176	val_176	val_176	val_176
+176	val_176	val_176	val_176	val_176	val_176	val_176	val_176	val_176
+177	val_177	val_177	val_177	val_177	val_177	val_177	val_177	val_177
+178	val_178	val_178	val_178	val_178	val_178	val_178	val_178	val_178
+179	val_179	val_179	val_179	val_179	val_179	val_179	val_179	val_179
+179	val_179	val_179	val_179	val_179	val_179	val_179	val_179	val_179
+18	val_18	val_18	val_18	val_18	val_18	val_18	val_18	val_18
+18	val_18	val_18	val_18	val_18	val_18	val_18	val_18	val_18
+180	val_180	val_180	val_180	val_180	val_180	val_180	val_180	val_180
+181	val_181	val_181	val_181	val_181	val_181	val_181	val_181	val_181
+183	val_183	val_183	val_183	val_183	val_183	val_183	val_183	val_183
+186	val_186	val_186	val_186	val_186	val_186	val_186	val_186	val_186
+187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
+187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
+187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
+PREHOOK: query: -- flush for group-by
+explain
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: -- flush for group-by
+explain
+select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: concat(key, value, value, value, value, value, value, value, value, value) (type: string)
+                      sort order: +
+                      Map-reduce partition columns: concat(key, value, value, value, value, value, value, value, value, value) (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: key (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: complete
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: double)
+                    sort order: +
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 2.0E-5
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: double)
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.0
+10.0
+102.0
+105.0
+105.0
+11.0
+111.0
+114.0
+116.0
+116.0
+126.0
+131.0
+133.0
+134.0
+136.0
+143.0
+144.0
+145.0
+15.0
+150.0
+152.0
+153.0
+155.0
+156.0
+157.0
+158.0
+160.0
+162.0
+163.0
+166.0
+166.0
+168.0
+168.0
+17.0
+170.0
+177.0
+178.0
+180.0
+181.0
+183.0
+186.0
+189.0
+19.0
+190.0
+190.0
+192.0
+194.0
+194.0
+196.0
+196.0
+2.0
+20.0
+200.0
+201.0
+202.0
+206.0
+208.0
+210.0
+214.0
+218.0
+222.0
+226.0
+226.0
+228.0
+24.0
+27.0
+28.0
+30.0
+30.0
+33.0
+34.0
+36.0
+4.0
+41.0
+43.0
+44.0
+47.0
+48.0
+52.0
+53.0
+54.0
+57.0
+64.0
+65.0
+66.0
+69.0
+74.0
+74.0
+77.0
+78.0
+8.0
+80.0
+82.0
+84.0
+85.0
+86.0
+87.0
+9.0
+92.0
+96.0

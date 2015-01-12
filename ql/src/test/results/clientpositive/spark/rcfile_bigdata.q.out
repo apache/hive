@@ -1,0 +1,47 @@
+PREHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@columnTable_Bigdata
+POSTHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@columnTable_Bigdata
+PREHOOK: query: FROM (FROM src MAP src.key,src.value USING 'python dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
+INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@columntable_bigdata
+POSTHOOK: query: FROM (FROM src MAP src.key,src.value USING 'python dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
+INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@columntable_bigdata
+POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe columnTable_Bigdata
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@columntable_bigdata
+POSTHOOK: query: describe columnTable_Bigdata
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@columntable_bigdata
+key                 	string              	                    
+value               	string              	                    
+PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columntable_bigdata
+#### A masked pattern was here ####
+POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columntable_bigdata
+#### A masked pattern was here ####
+5005500

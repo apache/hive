@@ -1,0 +1,889 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- This test is used for testing the ColumnAccessAnalyzer
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2
+PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T3
+PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T4
+PREHOOK: query: -- Simple select queries
+SELECT key FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+1
+2
+3
+7
+8
+8
+PREHOOK: query: SELECT key, val FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+1	11
+2	12
+3	13
+7	17
+8	18
+8	28
+PREHOOK: query: SELECT 1 FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+1
+PREHOOK: query: SELECT key, val from T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:key,p,val
+
+PREHOOK: query: SELECT val FROM T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:p,val
+
+PREHOOK: query: SELECT p, val FROM T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:p,val
+
+PREHOOK: query: -- More complicated select queries
+EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1) subq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+1
+2
+3
+7
+8
+8
+PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+1
+2
+3
+7
+8
+8
+PREHOOK: query: SELECT key + 1 as k FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+2.0
+3.0
+4.0
+8.0
+9.0
+9.0
+PREHOOK: query: SELECT key + val as k FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+12.0
+14.0
+16.0
+24.0
+26.0
+36.0
+PREHOOK: query: -- Work with union
+EXPLAIN
+SELECT * FROM (
+SELECT key as c FROM T1
+ UNION ALL
+SELECT val as c FROM T1
+) subq1
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Select Operator
+                    expressions: val (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM (
+SELECT key as c FROM T1
+ UNION ALL
+SELECT val as c FROM T1
+) subq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+1
+11
+12
+13
+17
+18
+2
+28
+3
+7
+8
+8
+PREHOOK: query: EXPLAIN
+SELECT * FROM (
+SELECT key as c FROM T1
+ UNION ALL
+SELECT key as c FROM T1
+) subq1
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM (
+SELECT key as c FROM T1
+ UNION ALL
+SELECT key as c FROM T1
+) subq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+1
+1
+2
+2
+3
+3
+7
+7
+8
+8
+8
+8
+PREHOOK: query: -- Work with insert overwrite
+FROM T1
+INSERT OVERWRITE TABLE T2 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t2
+PREHOOK: Output: default@t3
+Table:default@t1
+Columns:key,val
+
+PREHOOK: query: -- Simple joins
+SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+Table:default@t2
+Columns:key,val
+
+1	11	1	1
+2	12	2	1
+3	13	3	1
+7	17	7	1
+8	18	8	2
+8	28	8	2
+PREHOOK: query: EXPLAIN
+SELECT T1.key
+FROM T1 JOIN T2
+ON T1.key = T2.key
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT T1.key
+FROM T1 JOIN T2
+ON T1.key = T2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+Table:default@t2
+Columns:key
+
+1
+2
+3
+7
+8
+8
+PREHOOK: query: SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key AND T1.val = T2.val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+Table:default@t2
+Columns:key,val
+
+PREHOOK: query: -- Map join
+SELECT /*+ MAPJOIN(a) */ * 
+FROM T1 a JOIN T2 b 
+ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+Table:default@t2
+Columns:key,val
+
+1	11	1	1
+2	12	2	1
+3	13	3	1
+7	17	7	1
+8	18	8	2
+8	28	8	2
+PREHOOK: query: -- More joins
+EXPLAIN
+SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((val = 3) and key is not null) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((val = 3) and key is not null) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), '3' (type: string), _col5 (type: string), '3' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+Table:default@t2
+Columns:key,val
+
+PREHOOK: query: EXPLAIN
+SELECT subq1.val
+FROM 
+(
+  SELECT val FROM T1 WHERE key = 5  
+) subq1
+JOIN 
+(
+  SELECT val FROM T2 WHERE key = 6
+) subq2 
+ON subq1.val = subq2.val
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 5) and val is not null) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Select Operator
+                      expressions: val (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((key = 6) and val is not null) (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Select Operator
+                      expressions: val (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT subq1.val
+FROM 
+(
+  SELECT val FROM T1 WHERE key = 5  
+) subq1
+JOIN 
+(
+  SELECT val FROM T2 WHERE key = 6
+) subq2 
+ON subq1.val = subq2.val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key,val
+
+Table:default@t2
+Columns:key,val
+
+PREHOOK: query: -- Join followed by join
+EXPLAIN
+SELECT *
+FROM
+(
+  SELECT subq1.key as key
+  FROM
+  (
+    SELECT key, val FROM T1
+  ) subq1
+  JOIN
+  (
+    SELECT key, 'teststring' as val FROM T2
+  ) subq2
+  ON subq1.key = subq2.key
+) T4
+JOIN T3
+ON T3.key = T4.key
+PREHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 0 Data size: 20 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  Statistics: Num rows: 0 Data size: 35 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      value expressions: val (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM
+(
+  SELECT subq1.key as key
+  FROM
+  (
+    SELECT key, val FROM T1
+  ) subq1
+  JOIN
+  (
+    SELECT key, 'teststring' as val FROM T2
+  ) subq2
+  ON subq1.key = subq2.key
+) T4
+JOIN T3
+ON T3.key = T4.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+Table:default@t1
+Columns:key
+
+Table:default@t2
+Columns:key
+
+Table:default@t3
+Columns:key,val
+
+1	1	11.0
+2	2	12.0
+3	3	13.0
+7	7	17.0
+8	8	46.0
+8	8	46.0
+PREHOOK: query: -- for partitioned table
+SELECT * FROM srcpart TABLESAMPLE (10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,hr,key,value
+
+165	val_165	2008-04-08	11
+238	val_238	2008-04-08	11
+255	val_255	2008-04-08	11
+27	val_27	2008-04-08	11
+278	val_278	2008-04-08	11
+311	val_311	2008-04-08	11
+409	val_409	2008-04-08	11
+484	val_484	2008-04-08	11
+86	val_86	2008-04-08	11
+98	val_98	2008-04-08	11
+PREHOOK: query: SELECT key,ds FROM srcpart TABLESAMPLE (10 ROWS) WHERE hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,hr,key
+
+165	2008-04-08
+238	2008-04-08
+255	2008-04-08
+27	2008-04-08
+278	2008-04-08
+311	2008-04-08
+409	2008-04-08
+484	2008-04-08
+86	2008-04-08
+98	2008-04-08
+PREHOOK: query: SELECT value FROM srcpart TABLESAMPLE (10 ROWS) WHERE ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+Table:default@srcpart
+Columns:ds,value
+
+val_165
+val_238
+val_255
+val_27
+val_278
+val_311
+val_409
+val_484
+val_86
+val_98

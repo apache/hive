@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -360,17 +361,21 @@ public final class Utilities {
     InputStream in = null;
     try {
       path = getPlanPath(conf, name);
+      LOG.info("PLAN PATH = " + path);
       assert path != null;
-      if (!gWorkMap.containsKey(path)) {
+      if (!gWorkMap.containsKey(path)
+        || HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
         Path localPath;
         if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
           localPath = new Path(name);
         } else if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
+          LOG.info("***************non-local mode***************");
           localPath = new Path(name);
         }
-
+        localPath = path;
+        LOG.info("local path = " + localPath);
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
           LOG.debug("Loading plan from string: "+path.toUri().getPath());
           String planString = conf.get(path.toUri().getPath());
@@ -382,7 +387,8 @@ public final class Utilities {
           in = new ByteArrayInputStream(planBytes);
           in = new InflaterInputStream(in);
         } else {
-          in = new FileInputStream(localPath.toUri().getPath());
+          LOG.info("Open file to read in plan: " + localPath);
+          in = localPath.getFileSystem(conf).open(localPath);
         }
 
         if(MAP_PLAN_NAME.equals(name)){
@@ -416,6 +422,7 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
+      LOG.info("File not found: " + fnf.getMessage());
       LOG.info("No plan file found: "+path);
       return null;
     } catch (Exception e) {
@@ -962,6 +969,23 @@ public final class Utilities {
     serializePlan(plan, baos, conf, true);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         MapredWork.class, conf, true);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    return newPlan;
+  }
+
+  /**
+   * Clones using the powers of XML. Do not use unless necessary.
+   * @param plan The plan.
+   * @return The clone.
+   */
+  public static BaseWork cloneBaseWork(BaseWork plan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    Configuration conf = new HiveConf();
+    serializePlan(plan, baos, conf, true);
+    BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+        plan.getClass(), conf, true);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
@@ -2637,6 +2661,27 @@ public final class Utilities {
 
       if (task.getDependentTasks() != null) {
         getTezTasks(task.getDependentTasks(), tezTasks);
+      }
+    }
+  }
+
+  public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
+    List<SparkTask> sparkTasks = new ArrayList<SparkTask>();
+    if (tasks != null) {
+      getSparkTasks(tasks, sparkTasks);
+    }
+    return sparkTasks;
+  }
+
+  private static void getSparkTasks(List<Task<? extends Serializable>> tasks,
+    List<SparkTask> sparkTasks) {
+    for (Task<? extends Serializable> task : tasks) {
+      if (task instanceof SparkTask && !sparkTasks.contains(task)) {
+        sparkTasks.add((SparkTask) task);
+      }
+
+      if (task.getDependentTasks() != null) {
+        getSparkTasks(task.getDependentTasks(), sparkTasks);
       }
     }
   }

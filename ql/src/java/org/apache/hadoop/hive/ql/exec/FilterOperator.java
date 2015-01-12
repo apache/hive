@@ -59,7 +59,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
       }
 
       conditionInspector = null;
-      ioContext = IOContext.get(hconf.get(Utilities.INPUT_NAME));
+      ioContext = IOContext.get(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }

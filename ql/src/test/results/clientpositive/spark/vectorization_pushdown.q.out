@@ -1,0 +1,74 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  filterExpr: (cbigint < cdouble) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cbigint < cdouble) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cbigint (type: bigint)
+                      outputColumnNames: cbigint
+                      Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(cbigint)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                          value expressions: _col0 (type: struct<count:bigint,sum:double,input:bigint>)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-1.4670720493864927E9

@@ -1,0 +1,362 @@
+PREHOOK: query: DROP TABLE insert_into3a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE insert_into3a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE insert_into3b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE insert_into3b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE insert_into3a (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into3a
+POSTHOOK: query: CREATE TABLE insert_into3a (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_into3a
+PREHOOK: query: CREATE TABLE insert_into3b (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into3b
+POSTHOOK: query: CREATE TABLE insert_into3b (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_into3b
+PREHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
+                 INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
+                 INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (SORT, 1)
+        Reducer 3 <- Map 5 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 50 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 50 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 50 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.insert_into3a
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.insert_into3b
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert_into3a
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert_into3b
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
+         INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
+POSTHOOK: query: FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
+         INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
+POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3b.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into3a
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into3a
+#### A masked pattern was here ####
+-1254133670
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into3b
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into3b
+#### A masked pattern was here ####
+-1142373758
+PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
+                 INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
+                 INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (GROUP, 1)
+        Reducer 3 <- Map 5 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.insert_into3a
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.insert_into3b
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert_into3a
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert_into3b
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
+         INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
+         INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
+POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3b.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_into3b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into3a
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into3a
+#### A masked pattern was here ####
+-826625916
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into3b
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into3b
+#### A masked pattern was here ####
+-1968999674
+PREHOOK: query: DROP TABLE insert_into3a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@insert_into3a
+PREHOOK: Output: default@insert_into3a
+POSTHOOK: query: DROP TABLE insert_into3a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@insert_into3a
+POSTHOOK: Output: default@insert_into3a
+PREHOOK: query: DROP TABLE insert_into3b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@insert_into3b
+PREHOOK: Output: default@insert_into3b
+POSTHOOK: query: DROP TABLE insert_into3b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@insert_into3b
+POSTHOOK: Output: default@insert_into3b

@@ -41,14 +41,16 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
 
   @Override
   public boolean connect(Configuration hconf, Task sourceTask) {
-    try {
-      jc = new JobClient(toJobConf(hconf));
-      RunningJob job = jc.getJob(((MapRedTask)sourceTask).getJobID());
-      if (job != null) {
-        counters = job.getCounters();
+    if (sourceTask instanceof MapRedTask) {
+      try {
+        jc = new JobClient(toJobConf(hconf));
+        RunningJob job = jc.getJob(((MapRedTask)sourceTask).getJobID());
+        if (job != null) {
+          counters = job.getCounters();
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to get Job instance for " + sourceTask.getJobID(),e);
       }
-    } catch (Exception e) {
-      LOG.error("Failed to get Job instance for " + sourceTask.getJobID(),e);
     }
     return counters != null;
   }
@@ -59,9 +61,13 @@ public class CounterStatsAggregator implements StatsAggregator, StatsCollectionT
 
   @Override
   public String aggregateStats(String counterGrpName, String statType) {
-    // In case of counters, aggregation is done by JobTracker / MR AM itself
-    // so no need to aggregate, simply return the counter value for requested stat.
-    return String.valueOf(counters.getGroup(counterGrpName).getCounter(statType));
+    long value = 0;
+    if (counters != null) {
+      // In case of counters, aggregation is done by JobTracker / MR AM itself
+      // so no need to aggregate, simply return the counter value for requested stat.
+      value = counters.getGroup(counterGrpName).getCounter(statType);
+    }
+    return String.valueOf(value);
   }
 
   @Override

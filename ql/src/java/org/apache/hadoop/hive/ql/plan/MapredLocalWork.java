@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,8 @@ public class MapredLocalWork implements Serializable {
   private BucketMapJoinContext bucketMapjoinContext;
   private Path tmpPath;
   private String stageID;
+  // Temp HDFS path for Spark HashTable sink
+  private Path tmpHDFSPath;
 
   private List<Operator<? extends OperatorDesc>> dummyParentOp;
   private Map<MapJoinOperator, List<Operator<? extends OperatorDesc>>> directFetchOp;
@@ -52,7 +55,10 @@ public class MapredLocalWork implements Serializable {
   private boolean hasStagedAlias;
 
   public MapredLocalWork() {
-
+    this(new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
+        new LinkedHashMap<String, FetchWork>());
+    this.dummyParentOp = new ArrayList<Operator<? extends OperatorDesc>>();
+    this.directFetchOp = new LinkedHashMap<MapJoinOperator, List<Operator<? extends OperatorDesc>>>();
   }
 
   public MapredLocalWork(
@@ -60,15 +66,12 @@ public class MapredLocalWork implements Serializable {
     final LinkedHashMap<String, FetchWork> aliasToFetchWork) {
     this.aliasToWork = aliasToWork;
     this.aliasToFetchWork = aliasToFetchWork;
-
   }
 
   public MapredLocalWork(MapredLocalWork clone){
     this.tmpPath = clone.tmpPath;
     this.inputFileChangeSensitive=clone.inputFileChangeSensitive;
-
   }
-
 
   public void setDummyParentOp(List<Operator<? extends OperatorDesc>> op){
     this.dummyParentOp=op;
@@ -76,7 +79,7 @@ public class MapredLocalWork implements Serializable {
 
 
   public List<Operator<? extends OperatorDesc>> getDummyParentOp(){
-    return this.dummyParentOp;
+    return dummyParentOp;
   }
 
 
@@ -166,6 +169,14 @@ public class MapredLocalWork implements Serializable {
 
   public Path getTmpPath() {
     return tmpPath;
+  }
+
+  public void setTmpHDFSPath(Path tmpPath) {
+    this.tmpHDFSPath = tmpPath;
+  }
+
+  public Path getTmpHDFSPath() {
+    return tmpHDFSPath;
   }
 
   public String getBucketFileName(String bigFileName) {
