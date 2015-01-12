@@ -96,8 +96,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected transient MapJoinPersistableTableContainer[] mapJoinTables;
   protected transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
 
-  private final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-  private final MapJoinEagerRowContainer EMPTY_ROW_CONTAINER = new MapJoinEagerRowContainer();
+  private final Object[] emptyObjectArray = new Object[0];
+  private final MapJoinEagerRowContainer emptyRowContainer = new MapJoinEagerRowContainer();
 
   private long rowNumber = 0;
   protected transient LogHelper console;
@@ -118,7 +118,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
     memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
-    EMPTY_ROW_CONTAINER.addRow(EMPTY_OBJECT_ARRAY);
+    emptyRowContainer.addRow(emptyObjectArray);
 
     // for small tables only; so get the big table position first
     posBigTableAlias = conf.getPosBigTable();
@@ -229,7 +229,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     MapJoinKeyObject key = new MapJoinKeyObject();
     key.readFromRow(currentKey, joinKeysObjectInspectors[alias]);
 
-    Object[] value = EMPTY_OBJECT_ARRAY;
+    Object[] value = emptyObjectArray;
     if((hasFilter(alias) && filterMaps[alias].length > 0) || joinValues[alias].size() > 0) {
       value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
         joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
@@ -242,14 +242,14 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         rowContainer = new MapJoinEagerRowContainer();
         rowContainer.addRow(value);
       } else {
-        rowContainer = EMPTY_ROW_CONTAINER;
+        rowContainer = emptyRowContainer;
       }
       rowNumber++;
       if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
         memoryExhaustionHandler.checkMemoryStatus(tableContainer.size(), rowNumber);
       }
       tableContainer.put(key, rowContainer);
-    } else if (rowContainer == EMPTY_ROW_CONTAINER) {
+    } else if (rowContainer == emptyRowContainer) {
       rowContainer = rowContainer.copy();
       rowContainer.addRow(value);
       tableContainer.put(key, rowContainer);

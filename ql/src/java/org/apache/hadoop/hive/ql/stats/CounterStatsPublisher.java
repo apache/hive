@@ -53,7 +53,8 @@ public class CounterStatsPublisher implements StatsPublisher, StatsCollectionTas
       try {
         reporter.incrCounter(fileID, entry.getKey(), Long.valueOf(entry.getValue()));
       } catch (Exception e) {
-        LOG.error("Failed to increment counter value " + entry.getValue() + " for " + entry.getKey());
+        LOG.error("Failed to increment counter value " + entry.getValue() + " for " + entry.getKey()
+          + ": " + e, e);
         return false;
       }
     }
