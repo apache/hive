@@ -70,3 +70,16 @@ CREATE TABLE LikePropertiedParquetTable LIKE PropertiedParquetTable;
 
 DESCRIBE FORMATTED LikePropertiedParquetTable;
 
+CREATE TABLE table5(col1 int, col2 string) stored as TEXTFILE;
+DESCRIBE FORMATTED table5;
+
+CREATE TABLE table6 like table5 stored as RCFILE;
+DESCRIBE FORMATTED table6;
+
+drop table table6;
+
+CREATE  TABLE table6 like table5 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' OUTPUTFORMAT   'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' LOCATION '${system:hive.root}/data/files/table6';
+DESCRIBE FORMATTED table6;
+
+drop table table5;
+

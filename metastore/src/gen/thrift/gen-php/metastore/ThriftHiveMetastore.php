@@ -133,8 +133,8 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function heartbeat_txn_range(\metastore\HeartbeatTxnRangeRequest $txns);
   public function compact(\metastore\CompactionRequest $rqst);
   public function show_compact(\metastore\ShowCompactRequest $rqst);
-  public function getNextNotification(\metastore\NotificationEventRequest $rqst);
-  public function getCurrentNotificationEventId();
+  public function get_next_notification(\metastore\NotificationEventRequest $rqst);
+  public function get_current_notificationEventId();
 }
 
 class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metastore\ThriftHiveMetastoreIf {
@@ -6886,34 +6886,34 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("show_compact failed: unknown result");
   }
 
-  public function getNextNotification(\metastore\NotificationEventRequest $rqst)
+  public function get_next_notification(\metastore\NotificationEventRequest $rqst)
   {
-    $this->send_getNextNotification($rqst);
-    return $this->recv_getNextNotification();
+    $this->send_get_next_notification($rqst);
+    return $this->recv_get_next_notification();
   }
 
-  public function send_getNextNotification(\metastore\NotificationEventRequest $rqst)
+  public function send_get_next_notification(\metastore\NotificationEventRequest $rqst)
   {
-    $args = new \metastore\ThriftHiveMetastore_getNextNotification_args();
+    $args = new \metastore\ThriftHiveMetastore_get_next_notification_args();
     $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'getNextNotification', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'get_next_notification', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('getNextNotification', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('get_next_notification', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_getNextNotification()
+  public function recv_get_next_notification()
   {
     $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_getNextNotification_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_next_notification_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -6927,43 +6927,43 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_getNextNotification_result();
+      $result = new \metastore\ThriftHiveMetastore_get_next_notification_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
     if ($result->success !== null) {
       return $result->success;
     }
-    throw new \Exception("getNextNotification failed: unknown result");
+    throw new \Exception("get_next_notification failed: unknown result");
   }
 
-  public function getCurrentNotificationEventId()
+  public function get_current_notificationEventId()
   {
-    $this->send_getCurrentNotificationEventId();
-    return $this->recv_getCurrentNotificationEventId();
+    $this->send_get_current_notificationEventId();
+    return $this->recv_get_current_notificationEventId();
   }
 
-  public function send_getCurrentNotificationEventId()
+  public function send_get_current_notificationEventId()
   {
-    $args = new \metastore\ThriftHiveMetastore_getCurrentNotificationEventId_args();
+    $args = new \metastore\ThriftHiveMetastore_get_current_notificationEventId_args();
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'getCurrentNotificationEventId', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'get_current_notificationEventId', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('getCurrentNotificationEventId', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('get_current_notificationEventId', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_getCurrentNotificationEventId()
+  public function recv_get_current_notificationEventId()
   {
     $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_getCurrentNotificationEventId_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_current_notificationEventId_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -6977,14 +6977,14 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_getCurrentNotificationEventId_result();
+      $result = new \metastore\ThriftHiveMetastore_get_current_notificationEventId_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
     if ($result->success !== null) {
       return $result->success;
     }
-    throw new \Exception("getCurrentNotificationEventId failed: unknown result");
+    throw new \Exception("get_current_notificationEventId failed: unknown result");
   }
 
 }
@@ -33334,7 +33334,7 @@ class ThriftHiveMetastore_show_compact_result {
 
 }
 
-class ThriftHiveMetastore_getNextNotification_args {
+class ThriftHiveMetastore_get_next_notification_args {
   static $_TSPEC;
 
   public $rqst = null;
@@ -33357,7 +33357,7 @@ class ThriftHiveMetastore_getNextNotification_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_getNextNotification_args';
+    return 'ThriftHiveMetastore_get_next_notification_args';
   }
 
   public function read($input)
@@ -33395,7 +33395,7 @@ class ThriftHiveMetastore_getNextNotification_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_getNextNotification_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_next_notification_args');
     if ($this->rqst !== null) {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -33411,7 +33411,7 @@ class ThriftHiveMetastore_getNextNotification_args {
 
 }
 
-class ThriftHiveMetastore_getNextNotification_result {
+class ThriftHiveMetastore_get_next_notification_result {
   static $_TSPEC;
 
   public $success = null;
@@ -33434,7 +33434,7 @@ class ThriftHiveMetastore_getNextNotification_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_getNextNotification_result';
+    return 'ThriftHiveMetastore_get_next_notification_result';
   }
 
   public function read($input)
@@ -33472,7 +33472,7 @@ class ThriftHiveMetastore_getNextNotification_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_getNextNotification_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_next_notification_result');
     if ($this->success !== null) {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -33488,7 +33488,7 @@ class ThriftHiveMetastore_getNextNotification_result {
 
 }
 
-class ThriftHiveMetastore_getCurrentNotificationEventId_args {
+class ThriftHiveMetastore_get_current_notificationEventId_args {
   static $_TSPEC;
 
 
@@ -33500,7 +33500,7 @@ class ThriftHiveMetastore_getCurrentNotificationEventId_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_getCurrentNotificationEventId_args';
+    return 'ThriftHiveMetastore_get_current_notificationEventId_args';
   }
 
   public function read($input)
@@ -33530,7 +33530,7 @@ class ThriftHiveMetastore_getCurrentNotificationEventId_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_getCurrentNotificationEventId_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_current_notificationEventId_args');
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -33538,7 +33538,7 @@ class ThriftHiveMetastore_getCurrentNotificationEventId_args {
 
 }
 
-class ThriftHiveMetastore_getCurrentNotificationEventId_result {
+class ThriftHiveMetastore_get_current_notificationEventId_result {
   static $_TSPEC;
 
   public $success = null;
@@ -33561,7 +33561,7 @@ class ThriftHiveMetastore_getCurrentNotificationEventId_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_getCurrentNotificationEventId_result';
+    return 'ThriftHiveMetastore_get_current_notificationEventId_result';
   }
 
   public function read($input)
@@ -33599,7 +33599,7 @@ class ThriftHiveMetastore_getCurrentNotificationEventId_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_getCurrentNotificationEventId_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_current_notificationEventId_result');
     if ($this->success !== null) {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

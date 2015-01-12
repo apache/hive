@@ -453,3 +453,138 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: CREATE TABLE table5(col1 int, col2 string) stored as TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table5
+POSTHOOK: query: CREATE TABLE table5(col1 int, col2 string) stored as TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table5
+PREHOOK: query: DESCRIBE FORMATTED table5
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table5
+POSTHOOK: query: DESCRIBE FORMATTED table5
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table5
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE table6 like table5 stored as RCFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table6
+POSTHOOK: query: CREATE TABLE table6 like table5 stored as RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table6
+PREHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table6
+POSTHOOK: query: DESCRIBE FORMATTED table6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table6
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table table6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table6
+PREHOOK: Output: default@table6
+POSTHOOK: query: drop table table6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table6
+POSTHOOK: Output: default@table6
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table6
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table6
+PREHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table6
+POSTHOOK: query: DESCRIBE FORMATTED table6
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table6
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table table5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table5
+PREHOOK: Output: default@table5
+POSTHOOK: query: drop table table5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table5
+POSTHOOK: Output: default@table5

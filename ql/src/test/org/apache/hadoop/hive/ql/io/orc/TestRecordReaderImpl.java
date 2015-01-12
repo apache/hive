@@ -23,11 +23,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -45,6 +40,11 @@ import org.apache.hadoop.io.DataOutputBuffer;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRecordReaderImpl {
 
@@ -262,6 +262,15 @@ public class TestRecordReaderImpl {
     dblStats.setMinimum(min);
     dblStats.setMaximum(max);
     return OrcProto.ColumnStatistics.newBuilder().setDoubleStatistics(dblStats.build()).build();
+  }
+
+  private static OrcProto.ColumnStatistics createStringStats(String min, String max,
+      boolean hasNull) {
+    OrcProto.StringStatistics.Builder strStats = OrcProto.StringStatistics.newBuilder();
+    strStats.setMinimum(min);
+    strStats.setMaximum(max);
+    return OrcProto.ColumnStatistics.newBuilder().setStringStatistics(strStats.build())
+        .setHasNull(hasNull).build();
   }
 
   private static OrcProto.ColumnStatistics createStringStats(String min, String max) {
@@ -483,17 +492,17 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(15L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 15L), pred));
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(0L, 10L), pred));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(15L, 15L), pred));
   }
 
@@ -521,15 +530,15 @@ public class TestRecordReaderImpl {
     PredicateLeaf lessThan = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), lessThan));
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(15L, 30L), lessThan));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 30L), lessThan));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 15L), lessThan));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(0L, 10L), lessThan));
   }
 
@@ -538,15 +547,15 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.INTEGER,
             "x", 15L, null);
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(15L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 30L), pred));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 15L), pred));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(0L, 10L), pred));
   }
 
@@ -558,13 +567,13 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 20L), pred));
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(30L, 30L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 30L), pred));
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(12L, 18L), pred));
   }
 
@@ -576,19 +585,19 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.INTEGER,
             "x", null, args);
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(0L, 5L), pred));
-    assertEquals(TruthValue.NO_NULL,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(30L, 40L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(5L, 15L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(15L, 25L), pred));
-    assertEquals(TruthValue.YES_NO_NULL,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(5L, 25L), pred));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(10L, 20L), pred));
-    assertEquals(TruthValue.YES_NULL,
+    assertEquals(TruthValue.YES,
         RecordReaderImpl.evaluatePredicate(createIntStats(12L, 18L), pred));
   }
 
@@ -597,8 +606,154 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.INTEGER,
             "x", null, null);
-    assertEquals(TruthValue.YES_NO,
+    assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createIntStats(20L, 30L), pred));
+  }
+
+
+  @Test
+  public void testEqualsWithNullInStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.EQUALS, PredicateLeaf.Type.STRING,
+            "x", "c", null);
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred)); // before
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "c", true), pred)); // max
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred)); // min
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.YES_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred)); // same
+  }
+
+  @Test
+  public void testNullSafeEqualsWithNullInStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.STRING,
+            "x", "c", null);
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred)); // before
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "c", true), pred)); // max
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred)); // min
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.YES_NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred)); // same
+  }
+
+  @Test
+  public void testLessThanWithNullInStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.LESS_THAN, PredicateLeaf.Type.STRING,
+            "x", "c", null);
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred)); // before
+    assertEquals(TruthValue.YES_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "c", true), pred)); // max
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred)); // min
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.NO_NULL, // min, same stats
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred));
+  }
+
+  @Test
+  public void testLessThanEqualsWithNullInStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.LESS_THAN_EQUALS, PredicateLeaf.Type.STRING,
+            "x", "c", null);
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred)); // before
+    assertEquals(TruthValue.YES_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "c", true), pred)); // max
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred)); // min
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred)); // same
+  }
+
+  @Test
+  public void testInWithNullInStats() throws Exception {
+    List<Object> args = new ArrayList<Object>();
+    args.add("c");
+    args.add("f");
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.IN, PredicateLeaf.Type.STRING,
+            "x", null, args);
+    assertEquals(TruthValue.NO_NULL, // before & after
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred));
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("e", "f", true), pred)); // max
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred)); // min
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.YES_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred)); // same
+  }
+
+  @Test
+  public void testBetweenWithNullInStats() throws Exception {
+    List<Object> args = new ArrayList<Object>();
+    args.add("c");
+    args.add("f");
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.BETWEEN, PredicateLeaf.Type.STRING,
+            "x", null, args);
+    assertEquals(TruthValue.YES_NULL, // before & after
+        RecordReaderImpl.evaluatePredicate(createStringStats("d", "e", true), pred));
+    assertEquals(TruthValue.YES_NULL, // before & max
+        RecordReaderImpl.evaluatePredicate(createStringStats("e", "f", true), pred));
+    assertEquals(TruthValue.NO_NULL, // before & before
+        RecordReaderImpl.evaluatePredicate(createStringStats("h", "g", true), pred));
+    assertEquals(TruthValue.YES_NO_NULL, // before & min
+        RecordReaderImpl.evaluatePredicate(createStringStats("f", "g", true), pred));
+    assertEquals(TruthValue.YES_NO_NULL, // before & middle
+        RecordReaderImpl.evaluatePredicate(createStringStats("e", "g", true), pred));
+
+    assertEquals(TruthValue.YES_NULL, // min & after
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "e", true), pred));
+    assertEquals(TruthValue.YES_NULL, // min & max
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "f", true), pred));
+    assertEquals(TruthValue.YES_NO_NULL, // min & middle
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "g", true), pred));
+
+    assertEquals(TruthValue.NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "b", true), pred)); // after
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("a", "c", true), pred)); // max
+    assertEquals(TruthValue.YES_NO_NULL,
+        RecordReaderImpl.evaluatePredicate(createStringStats("b", "d", true), pred)); // middle
+    assertEquals(TruthValue.YES_NULL, // min & after, same stats
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "c", true), pred));
+  }
+
+  @Test
+  public void testIsNullWithNullInStats() throws Exception {
+    PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
+        (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.STRING,
+            "x", null, null);
+    assertEquals(TruthValue.YES,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred));
+    assertEquals(TruthValue.NO,
+        RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", false), pred));
   }
 
   @Test

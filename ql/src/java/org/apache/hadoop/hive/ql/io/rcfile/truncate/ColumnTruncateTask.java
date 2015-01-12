@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -124,7 +123,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
       job.setInputFormat((Class<? extends InputFormat>) (Class
           .forName(inpFormat)));
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException(e.getMessage(), e);
     }
 
     Path outputPath = this.work.getOutputDir();

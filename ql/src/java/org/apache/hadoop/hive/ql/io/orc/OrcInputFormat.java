@@ -18,18 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.NavigableMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,9 +45,9 @@ import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -74,9 +65,18 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A MapReduce/Hive input format for ORC files.
  * <p>
@@ -919,13 +919,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (filterColumns[pred] != -1) {
 
           // column statistics at index 0 contains only the number of rows
-          ColumnStatistics stats =
-              stripeStatistics.getColumnStatistics()[filterColumns[pred]];
-          Object minValue = RecordReaderImpl.getMin(stats);
-          Object maxValue = RecordReaderImpl.getMax(stats);
-          truthValues[pred] =
-              RecordReaderImpl.evaluatePredicateRange(predLeaves.get(pred),
-                  minValue, maxValue);
+          ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
+          truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred));
         } else {
 
           // parition column case.
