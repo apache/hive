@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -42,7 +40,6 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
@@ -519,6 +516,11 @@ public interface HadoopShims {
    * @return Path to HDFS trash, if current hadoop supports trash feature.  Null otherwise.
    */
   Path getCurrentTrashPath(Configuration conf, FileSystem fs);
+
+  /**
+   * Check whether file is directory.
+   */
+  boolean isDirectory(FileStatus fileStatus);
 
   /**
    * Returns a shim to wrap KerberosName

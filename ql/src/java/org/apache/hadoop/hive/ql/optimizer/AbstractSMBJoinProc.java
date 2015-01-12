@@ -521,7 +521,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     JoinOperator joinOp,
     SortBucketJoinProcCtx joinContext,
     ParseContext parseContext) throws SemanticException {
-    MapJoinOperator mapJoinOp = MapJoinProcessor.convertMapJoin(
+    MapJoinOperator mapJoinOp = new MapJoinProcessor().convertMapJoin(
       parseContext.getConf(),
       parseContext.getOpParseCtx(),
       joinOp,

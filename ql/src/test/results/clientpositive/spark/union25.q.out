@@ -1,0 +1,183 @@
+PREHOOK: query: create table tmp_srcpart like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_srcpart
+POSTHOOK: query: create table tmp_srcpart like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_srcpart
+PREHOOK: query: insert overwrite table tmp_srcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@tmp_srcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table tmp_srcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tmp_srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tmp_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+create table tmp_unionall as
+SELECT count(1) as counts, key, value
+FROM
+(
+  SELECT key, value FROM srcpart a WHERE a.ds='2008-04-08' and a.hr='11'
+
+    UNION ALL
+
+  SELECT key, key as value FROM (
+    SELECT distinct key FROM (
+      SELECT key, value FROM tmp_srcpart a WHERE a.ds='2008-04-08' and a.hr='11'
+        UNION ALL
+      SELECT key, value FROM tmp_srcpart b WHERE b.ds='2008-04-08' and b.hr='11'
+    )t
+  ) master_table
+) a GROUP BY key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: explain
+create table tmp_unionall as
+SELECT count(1) as counts, key, value
+FROM
+(
+  SELECT key, value FROM srcpart a WHERE a.ds='2008-04-08' and a.hr='11'
+
+    UNION ALL
+
+  SELECT key, key as value FROM (
+    SELECT distinct key FROM (
+      SELECT key, value FROM tmp_srcpart a WHERE a.ds='2008-04-08' and a.hr='11'
+        UNION ALL
+      SELECT key, value FROM tmp_srcpart b WHERE b.ds='2008-04-08' and b.hr='11'
+    )t
+  ) master_table
+) a GROUP BY key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 4 <- Map 3 (GROUP, 2), Map 5 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 2), Reducer 4 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Group By Operator
+                      aggregations: count(1)
+                      keys: _col0 (type: string), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        value expressions: _col2 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.tmp_unionall
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: _col0 (type: string), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Group By Operator
+                    aggregations: count(1)
+                    keys: _col0 (type: string), _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      value expressions: _col2 (type: bigint)
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
+      Create Table Operator:
+        Create Table
+          columns: counts bigint, key string, value string
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.tmp_unionall
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+

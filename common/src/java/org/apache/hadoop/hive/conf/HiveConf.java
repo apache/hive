@@ -79,6 +79,15 @@ public class HiveConf extends Configuration {
   private final List<String> restrictList = new ArrayList<String>();
 
   private Pattern modWhiteListPattern = null;
+  private boolean isSparkConfigUpdated = false;
+
+  public boolean getSparkConfigUpdated() {
+    return isSparkConfigUpdated;
+  }
+
+  public void setSparkConfigUpdated(boolean isSparkConfigUpdated) {
+    this.isSparkConfigUpdated = isSparkConfigUpdated;
+  }
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -842,6 +851,7 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false,
         "Merge small files at the end of a map-reduce job"),
     HIVEMERGETEZFILES("hive.merge.tezfiles", false, "Merge small files at the end of a Tez DAG"),
+    HIVEMERGESPARKFILES("hive.merge.sparkfiles", false, "Merge small files at the end of a Spark DAG Transformation"),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000),
         "Size of merged files at the end of the job"),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000),
@@ -1855,8 +1865,8 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez"),
-        "Chooses execution engine. Options are: mr (Map reduce, default) or tez (hadoop 2 only)"),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
+        "Chooses execution engine. Options are: mr (Map reduce, default), tez (hadoop 2 only), spark"),
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
         "installed hive instance."),
@@ -1971,7 +1981,12 @@ public class HiveConf extends Configuration {
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,
-        "Updates tez job execution progress in-place in the terminal.")
+        "Updates tez job execution progress in-place in the terminal."),
+    SPARK_CLIENT_FUTURE_TIMEOUT(
+        "hive.spark.client.future.timeout",
+        "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "remote spark client JobHandle future timeout value in seconds.")
     ;
 
     public final String varname;
@@ -2212,6 +2227,7 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
+    isSparkConfigUpdated = name.startsWith("spark");
     set(name, value);
   }
 

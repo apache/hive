@@ -1,0 +1,330 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_nontemp
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_nontemp
+PREHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_temp
+PREHOOK: query: -- Non temp table join
+EXPLAIN
+FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Non temp table join
+EXPLAIN
+FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col6
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_nontemp
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_nontemp
+#### A masked pattern was here ####
+165	val_165
+238	val_238
+255	val_255
+27	val_27
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+86	val_86
+98	val_98
+PREHOOK: query: -- Non temp table join with temp table
+EXPLAIN
+FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Non temp table join with temp table
+EXPLAIN
+FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col6
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_nontemp
+PREHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_nontemp
+POSTHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+165	val_165
+238	val_238
+255	val_255
+27	val_27
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+86	val_86
+98	val_98
+PREHOOK: query: -- temp table join with temp table
+EXPLAIN
+FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- temp table join with temp table
+EXPLAIN
+FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 5 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: value (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col6
+                Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col6 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 5 Data size: 57 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
+SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+165	val_165
+238	val_238
+255	val_255
+27	val_27
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+86	val_86
+98	val_98
+PREHOOK: query: DROP TABLE src_nontemp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_nontemp
+PREHOOK: Output: default@src_nontemp
+POSTHOOK: query: DROP TABLE src_nontemp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_nontemp
+POSTHOOK: Output: default@src_nontemp
+PREHOOK: query: DROP TABLE src_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_temp
+PREHOOK: Output: default@src_temp
+POSTHOOK: query: DROP TABLE src_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: default@src_temp

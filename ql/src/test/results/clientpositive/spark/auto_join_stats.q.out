@@ -1,0 +1,317 @@
+PREHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
+-- This query plan should thus not try to combine the mapjoin into a single work.
+
+create table smalltable(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
+-- This query plan should thus not try to combine the mapjoin into a single work.
+
+create table smalltable(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: analyze table smalltable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: smalltable
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 (_col0 + _col5) (type: double)
+                        1 UDFToDouble(key) (type: double)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 (_col0 + _col5) (type: double)
+                      1 UDFToDouble(key) (type: double)
+                    outputColumnNames: _col0, _col5, _col10
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col5 (type: string), _col10 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+4	4	8
+4	4	8
+PREHOOK: query: create table smalltable2(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smalltable2
+POSTHOOK: query: create table smalltable2(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smalltable2
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@smalltable2
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@smalltable2
+PREHOOK: query: analyze table smalltable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: smalltable
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 (_col0 + _col5) (type: double)
+                        1 UDFToDouble(key) (type: double)
+            Local Work:
+              Map Reduce Local Work
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: smalltable2
+                  Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 (_col0 + _col5) (type: double)
+                        1 UDFToDouble(key) (type: double)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 (_col0 + _col5) (type: double)
+                      1 UDFToDouble(key) (type: double)
+                    outputColumnNames: _col0, _col5, _col10
+                    input vertices:
+                      1 Map 4
+                    Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: (_col0 + _col5) is not null (type: boolean)
+                      Statistics: Num rows: 76 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 (_col0 + _col5) (type: double)
+                          1 UDFToDouble(key) (type: double)
+                        outputColumnNames: _col0, _col5, _col10
+                        input vertices:
+                          1 Map 5
+                        Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: string), _col5 (type: string), _col10 (type: string)
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@smalltable2
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@smalltable2
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+4	4	8
+4	4	8
+4	4	8
+4	4	8

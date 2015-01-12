@@ -1,0 +1,316 @@
+PREHOOK: query: EXPLAIN
+SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 10)
+             AND (ctimestamp2 != 16)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 10)
+             AND (ctimestamp2 != 16)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((cstring2 is not null and ((ctimestamp1 <= 10) and (ctimestamp2 <> 16))) or ((cfloat < -6432) or (cboolean1 is not null and (cdouble = 988888.0)))) (type: boolean)
+                    Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15 - cdouble) (type: double), (cdouble * -257) (type: double), (cint + cfloat) (type: float), ((- cdouble) + cbigint) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: double), (- cfloat) (type: float), ((-5638.15 - cdouble) + (cint + cfloat)) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                      Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                      Limit
+                        Number of rows: 20
+                        Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 10)
+             AND (ctimestamp2 != 16)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 10)
+             AND (ctimestamp2 != 16)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+1969-12-31 16:00:05.478	-200.0	NULL	NULL	38.0	200.0	-5438.15	51400.0	NULL	-1.090413913E9	200.0	-39.389	-38.0	NULL
+1969-12-31 15:59:49.567	-200.0	NULL	NULL	38.0	200.0	-5438.15	51400.0	NULL	1.576772582E9	200.0	-39.389	-38.0	NULL
+1969-12-31 16:00:07.648	-200.0	NULL	NULL	3.0	200.0	-5438.15	51400.0	NULL	-1.438142292E9	200.0	-4.389	-3.0	NULL
+1969-12-31 15:59:54.739	-200.0	NULL	NULL	31.0	200.0	-5438.15	51400.0	NULL	-2.45476531E8	200.0	-32.389	-31.0	NULL
+1969-12-31 16:00:03.248	-200.0	NULL	NULL	-10.0	200.0	-5438.15	51400.0	NULL	-1.818374453E9	200.0	8.611	10.0	NULL
+1969-12-31 15:59:46.007	-200.0	NULL	NULL	8.0	200.0	-5438.15	51400.0	NULL	-1.236645108E9	200.0	-9.389	-8.0	NULL
+1969-12-31 16:00:06.852	-200.0	NULL	NULL	-63.0	200.0	-5438.15	51400.0	NULL	1.927856572E9	200.0	61.611	63.0	NULL
+1969-12-31 15:59:44.842	-200.0	NULL	NULL	-30.0	200.0	-5438.15	51400.0	NULL	-8.15880983E8	200.0	28.611	30.0	NULL
+1969-12-31 16:00:00.958	-200.0	NULL	NULL	-39.0	200.0	-5438.15	51400.0	NULL	9.44478114E8	200.0	37.611	39.0	NULL
+1969-12-31 15:59:54.328	-200.0	NULL	NULL	-39.0	200.0	-5438.15	51400.0	NULL	-1.74772438E9	200.0	37.611	39.0	NULL
+1969-12-31 15:59:44.55	-200.0	NULL	NULL	24.0	200.0	-5438.15	51400.0	NULL	-4.99521157E8	200.0	-25.389	-24.0	NULL
+1969-12-31 16:00:02.208	-200.0	NULL	NULL	16.0	200.0	-5438.15	51400.0	NULL	1.043214222E9	200.0	-17.389	-16.0	NULL
+1969-12-31 15:59:58.305	-200.0	NULL	NULL	-12.0	200.0	-5438.15	51400.0	NULL	-9.97940606E8	200.0	10.611	12.0	NULL
+1969-12-31 16:00:00.911	-200.0	NULL	NULL	12.0	200.0	-5438.15	51400.0	NULL	1.153060648E9	200.0	-13.389	-12.0	NULL
+1969-12-31 16:00:03.139	-200.0	NULL	NULL	10.0	200.0	-5438.15	51400.0	NULL	-1.709273652E9	200.0	-11.389	-10.0	NULL
+1969-12-31 15:59:54.199	-200.0	NULL	NULL	55.0	200.0	-5438.15	51400.0	NULL	-1.151590935E9	200.0	-56.389	-55.0	NULL
+1969-12-31 15:59:54.016	-200.0	NULL	NULL	46.0	200.0	-5438.15	51400.0	NULL	-5.17349102E8	200.0	-47.389	-46.0	NULL
+1969-12-31 15:59:57.847	-200.0	NULL	NULL	50.0	200.0	-5438.15	51400.0	NULL	1.819421586E9	200.0	-51.389	-50.0	NULL
+1969-12-31 15:59:49.764	-200.0	NULL	NULL	-20.0	200.0	-5438.15	51400.0	NULL	1.115401341E9	200.0	18.611	20.0	NULL
+1969-12-31 15:59:51.417	-200.0	NULL	NULL	-17.0	200.0	-5438.15	51400.0	NULL	1.806593848E9	200.0	15.611	17.0	NULL
+PREHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 12.503)
+             AND (ctimestamp2 != 11.998)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: -- double compare timestamp
+EXPLAIN
+SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 12.503)
+             AND (ctimestamp2 != 11.998)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((cstring2 is not null and ((ctimestamp1 <= 12.503) and (ctimestamp2 <> 11.998))) or ((cfloat < -6432) or (cboolean1 is not null and (cdouble = 988888.0)))) (type: boolean)
+                    Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15 - cdouble) (type: double), (cdouble * -257) (type: double), (cint + cfloat) (type: float), ((- cdouble) + cbigint) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: double), (- cfloat) (type: float), ((-5638.15 - cdouble) + (cint + cfloat)) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                      Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                      Limit
+                        Number of rows: 20
+                        Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 20 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 12.503)
+             AND (ctimestamp2 != 11.998)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ctimestamp1,
+       cdouble,
+       cboolean1,
+       cstring1,
+       cfloat,
+       (-(cdouble)),
+       (-5638.15 - cdouble),
+       (cdouble * -257),
+       (cint + cfloat),
+       ((-(cdouble)) + cbigint),
+       (-(cdouble)),
+       (-1.389 - cfloat),
+       (-(cfloat)),
+       ((-5638.15 - cdouble) + (cint + cfloat))
+FROM   alltypesorc
+WHERE  (((cstring2 IS NOT NULL)
+         AND ((ctimestamp1 <= 12.503)
+             AND (ctimestamp2 != 11.998)))
+        OR ((cfloat < -6432)
+            OR ((cboolean1 IS NOT NULL)
+                AND (cdouble = 988888))))
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+1969-12-31 16:00:05.478	-200.0	NULL	NULL	38.0	200.0	-5438.15	51400.0	NULL	-1.090413913E9	200.0	-39.389	-38.0	NULL
+1969-12-31 15:59:49.567	-200.0	NULL	NULL	38.0	200.0	-5438.15	51400.0	NULL	1.576772582E9	200.0	-39.389	-38.0	NULL
+1969-12-31 16:00:07.648	-200.0	NULL	NULL	3.0	200.0	-5438.15	51400.0	NULL	-1.438142292E9	200.0	-4.389	-3.0	NULL
+1969-12-31 15:59:54.739	-200.0	NULL	NULL	31.0	200.0	-5438.15	51400.0	NULL	-2.45476531E8	200.0	-32.389	-31.0	NULL
+1969-12-31 16:00:03.248	-200.0	NULL	NULL	-10.0	200.0	-5438.15	51400.0	NULL	-1.818374453E9	200.0	8.611	10.0	NULL
+1969-12-31 15:59:46.007	-200.0	NULL	NULL	8.0	200.0	-5438.15	51400.0	NULL	-1.236645108E9	200.0	-9.389	-8.0	NULL
+1969-12-31 16:00:06.852	-200.0	NULL	NULL	-63.0	200.0	-5438.15	51400.0	NULL	1.927856572E9	200.0	61.611	63.0	NULL
+1969-12-31 15:59:44.842	-200.0	NULL	NULL	-30.0	200.0	-5438.15	51400.0	NULL	-8.15880983E8	200.0	28.611	30.0	NULL
+1969-12-31 16:00:00.958	-200.0	NULL	NULL	-39.0	200.0	-5438.15	51400.0	NULL	9.44478114E8	200.0	37.611	39.0	NULL
+1969-12-31 15:59:54.328	-200.0	NULL	NULL	-39.0	200.0	-5438.15	51400.0	NULL	-1.74772438E9	200.0	37.611	39.0	NULL
+1969-12-31 15:59:44.55	-200.0	NULL	NULL	24.0	200.0	-5438.15	51400.0	NULL	-4.99521157E8	200.0	-25.389	-24.0	NULL
+1969-12-31 16:00:11.236	-200.0	NULL	NULL	-28.0	200.0	-5438.15	51400.0	NULL	-4.95166106E8	200.0	26.611	28.0	NULL
+1969-12-31 16:00:10.436	-200.0	NULL	NULL	22.0	200.0	-5438.15	51400.0	NULL	-9.98574107E8	200.0	-23.389	-22.0	NULL
+1969-12-31 16:00:02.208	-200.0	NULL	NULL	16.0	200.0	-5438.15	51400.0	NULL	1.043214222E9	200.0	-17.389	-16.0	NULL
+1969-12-31 15:59:58.305	-200.0	NULL	NULL	-12.0	200.0	-5438.15	51400.0	NULL	-9.97940606E8	200.0	10.611	12.0	NULL
+1969-12-31 16:00:00.911	-200.0	NULL	NULL	12.0	200.0	-5438.15	51400.0	NULL	1.153060648E9	200.0	-13.389	-12.0	NULL
+1969-12-31 16:00:03.139	-200.0	NULL	NULL	10.0	200.0	-5438.15	51400.0	NULL	-1.709273652E9	200.0	-11.389	-10.0	NULL
+1969-12-31 15:59:54.199	-200.0	NULL	NULL	55.0	200.0	-5438.15	51400.0	NULL	-1.151590935E9	200.0	-56.389	-55.0	NULL
+1969-12-31 15:59:54.016	-200.0	NULL	NULL	46.0	200.0	-5438.15	51400.0	NULL	-5.17349102E8	200.0	-47.389	-46.0	NULL
+1969-12-31 15:59:57.847	-200.0	NULL	NULL	50.0	200.0	-5438.15	51400.0	NULL	1.819421586E9	200.0	-51.389	-50.0	NULL

@@ -1,0 +1,283 @@
+PREHOOK: query: DROP TABLE over1k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE over1korc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE over1korc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k
+POSTHOOK: query: -- data setup
+CREATE TABLE over1k(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k
+PREHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal(4,2),
+           bin binary)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1korc
+PREHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1korc
+POSTHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1korc
+POSTHOOK: Lineage: over1korc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1korc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1korc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1korc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1korc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1korc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1korc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1korc
+                  Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: boolean), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: decimal(4,2)), VALUE._col9 (type: binary)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
+18	280	65536	4294967320	32.92	45.94	false	holly white	2013-03-01 09:11:58.703086	58.86	topology
+69	489	65536	4294967404	33.52	17.99	false	oscar ichabod	2013-03-01 09:11:58.703247	32.68	topology
+108	301	65536	4294967357	90.05	17.59	true	ethan johnson	2013-03-01 09:11:58.703271	75.7	undecided
+27	405	65536	4294967508	82.24	29.41	true	oscar ovid	2013-03-01 09:11:58.703166	16.85	biology
+42	495	65536	4294967431	43.57	46.81	false	tom johnson	2013-03-01 09:11:58.703245	62.25	american history
+118	497	65536	4294967381	50.32	12.72	false	david nixon	2013-03-01 09:11:58.703285	83.48	values clariffication
+72	267	65537	4294967460	55.2	42.89	false	oscar carson	2013-03-01 09:11:58.703153	51.91	topology
+22	264	65537	4294967419	8.07	10.71	false	david xylophone	2013-03-01 09:11:58.703136	11.87	undecided
+63	458	65537	4294967463	21.94	49.71	true	fred van buren	2013-03-01 09:11:58.703278	99.34	wind surfing
+121	355	65537	4294967437	85.9	10.99	true	calvin brown	2013-03-01 09:11:58.703254	4.49	yard duty
+59	431	65537	4294967326	11.34	2.9	true	oscar robinson	2013-03-01 09:11:58.703161	81.04	zync studies
+83	353	65538	4294967339	0.08	23.91	true	holly thompson	2013-03-01 09:11:58.703157	30.27	quiet hour
+109	376	65538	4294967453	59.61	35.62	true	priscilla xylophone	2013-03-01 09:11:58.703286	9.53	study skills
+101	283	65538	4294967527	84.03	27.29	true	yuri brown	2013-03-01 09:11:58.703306	44.24	biology
+120	331	65539	4294967324	88.02	40.94	true	holly nixon	2013-03-01 09:11:58.703262	96.64	yard duty
+70	430	65539	4294967534	18.89	43.84	true	tom carson	2013-03-01 09:11:58.703182	21.93	joggying
+29	331	65539	4294967420	73.18	28.96	true	ethan brown	2013-03-01 09:11:58.703094	58.85	zync studies
+71	298	65540	4294967510	91.63	9.6	false	gabriella zipper	2013-03-01 09:11:58.70314	68.14	geology
+89	466	65541	4294967468	85.51	19.79	true	calvin davidson	2013-03-01 09:11:58.703113	35.38	philosophy
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+-17045922556
+PREHOOK: query: EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1korc
+                  Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: boolean), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: decimal(4,2)), VALUE._col9 (type: binary)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 20
+                  Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 20
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
+18	280	65536	4294967320	32.92	45.94	false	holly white	2013-03-01 09:11:58.703086	58.86	topology
+69	489	65536	4294967404	33.52	17.99	false	oscar ichabod	2013-03-01 09:11:58.703247	32.68	topology
+108	301	65536	4294967357	90.05	17.59	true	ethan johnson	2013-03-01 09:11:58.703271	75.7	undecided
+27	405	65536	4294967508	82.24	29.41	true	oscar ovid	2013-03-01 09:11:58.703166	16.85	biology
+42	495	65536	4294967431	43.57	46.81	false	tom johnson	2013-03-01 09:11:58.703245	62.25	american history
+118	497	65536	4294967381	50.32	12.72	false	david nixon	2013-03-01 09:11:58.703285	83.48	values clariffication
+72	267	65537	4294967460	55.2	42.89	false	oscar carson	2013-03-01 09:11:58.703153	51.91	topology
+22	264	65537	4294967419	8.07	10.71	false	david xylophone	2013-03-01 09:11:58.703136	11.87	undecided
+63	458	65537	4294967463	21.94	49.71	true	fred van buren	2013-03-01 09:11:58.703278	99.34	wind surfing
+121	355	65537	4294967437	85.9	10.99	true	calvin brown	2013-03-01 09:11:58.703254	4.49	yard duty
+59	431	65537	4294967326	11.34	2.9	true	oscar robinson	2013-03-01 09:11:58.703161	81.04	zync studies
+83	353	65538	4294967339	0.08	23.91	true	holly thompson	2013-03-01 09:11:58.703157	30.27	quiet hour
+109	376	65538	4294967453	59.61	35.62	true	priscilla xylophone	2013-03-01 09:11:58.703286	9.53	study skills
+101	283	65538	4294967527	84.03	27.29	true	yuri brown	2013-03-01 09:11:58.703306	44.24	biology
+120	331	65539	4294967324	88.02	40.94	true	holly nixon	2013-03-01 09:11:58.703262	96.64	yard duty
+70	430	65539	4294967534	18.89	43.84	true	tom carson	2013-03-01 09:11:58.703182	21.93	joggying
+29	331	65539	4294967420	73.18	28.96	true	ethan brown	2013-03-01 09:11:58.703094	58.85	zync studies
+71	298	65540	4294967510	91.63	9.6	false	gabriella zipper	2013-03-01 09:11:58.70314	68.14	geology
+89	466	65541	4294967468	85.51	19.79	true	calvin davidson	2013-03-01 09:11:58.703113	35.38	philosophy
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1korc
+#### A masked pattern was here ####
+-17045922556

@@ -1,0 +1,66 @@
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+-- HIVE-2901
+select x from (select value as x from src order by x limit 5 union all select NULL as x from src limit 5) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+-- HIVE-2901
+select x from (select value as x from src order by x limit 5 union all select NULL as x from src limit 5) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+val_0
+val_0
+val_0
+val_10
+val_100
+PREHOOK: query: -- HIVE-4837
+select * from (select null as N from src1 group by key UNION ALL select null as N from src1 group by key ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: -- HIVE-4837
+select * from (select null as N from src1 group by key UNION ALL select null as N from src1 group by key ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL

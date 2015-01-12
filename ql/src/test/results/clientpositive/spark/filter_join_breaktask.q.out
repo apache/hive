@@ -1,0 +1,438 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@filter_join_breaktask
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@filter_join_breaktask
+PREHOOK: query: INSERT OVERWRITE TABLE filter_join_breaktask PARTITION(ds='2008-04-08')
+SELECT key, value from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@filter_join_breaktask@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE filter_join_breaktask PARTITION(ds='2008-04-08')
+SELECT key, value from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@filter_join_breaktask@ds=2008-04-08
+POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN EXTENDED  
+SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED  
+SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_TABREF
+               TOK_TABNAME
+                  filter_join_breaktask
+               f
+            TOK_TABREF
+               TOK_TABNAME
+                  filter_join_breaktask
+               m
+            AND
+               AND
+                  AND
+                     =
+                        .
+                           TOK_TABLE_OR_COL
+                              f
+                           key
+                        .
+                           TOK_TABLE_OR_COL
+                              m
+                           key
+                     =
+                        .
+                           TOK_TABLE_OR_COL
+                              f
+                           ds
+                        '2008-04-08'
+                  =
+                     .
+                        TOK_TABLE_OR_COL
+                           m
+                        ds
+                     '2008-04-08'
+               TOK_FUNCTION
+                  TOK_ISNOTNULL
+                  .
+                     TOK_TABLE_OR_COL
+                        f
+                     key
+         TOK_TABREF
+            TOK_TABNAME
+               filter_join_breaktask
+            g
+         AND
+            AND
+               AND
+                  AND
+                     =
+                        .
+                           TOK_TABLE_OR_COL
+                              g
+                           value
+                        .
+                           TOK_TABLE_OR_COL
+                              m
+                           value
+                     =
+                        .
+                           TOK_TABLE_OR_COL
+                              g
+                           ds
+                        '2008-04-08'
+                  =
+                     .
+                        TOK_TABLE_OR_COL
+                           m
+                        ds
+                     '2008-04-08'
+               TOK_FUNCTION
+                  TOK_ISNOTNULL
+                  .
+                     TOK_TABLE_OR_COL
+                        m
+                     value
+            !=
+               .
+                  TOK_TABLE_OR_COL
+                     m
+                  value
+               ''
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  f
+               key
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  g
+               value
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: f
+                  Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: int)
+                      sort order: +
+                      Map-reduce partition columns: key (type: int)
+                      Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                      tag: 0
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2008-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.filter_join_breaktask
+                    numFiles 1
+                    numRows 25
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 211
+                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 236
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.filter_join_breaktask
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.filter_join_breaktask
+                  name: default.filter_join_breaktask
+            Truncated Path -> Alias:
+              /filter_join_breaktask/ds=2008-04-08 [f]
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: m
+                  Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((key is not null and value is not null) and (value <> '')) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: key (type: int)
+                      sort order: +
+                      Map-reduce partition columns: key (type: int)
+                      Statistics: Num rows: 7 Data size: 59 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      value expressions: value (type: string)
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2008-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.filter_join_breaktask
+                    numFiles 1
+                    numRows 25
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 211
+                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 236
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.filter_join_breaktask
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.filter_join_breaktask
+                  name: default.filter_join_breaktask
+            Truncated Path -> Alias:
+              /filter_join_breaktask/ds=2008-04-08 [m]
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: g
+                  Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((value <> '') and value is not null) (type: boolean)
+                    Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 13 Data size: 109 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: ds=2008-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.filter_join_breaktask
+                    numFiles 1
+                    numRows 25
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 211
+                    serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 236
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.filter_join_breaktask
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.filter_join_breaktask
+                  name: default.filter_join_breaktask
+            Truncated Path -> Alias:
+              /filter_join_breaktask/ds=2008-04-08 [g]
+        Reducer 2 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                outputColumnNames: _col0, _col7
+                Statistics: Num rows: 14 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col7 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col7 (type: string)
+                  Statistics: Num rows: 14 Data size: 119 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col0 (type: int)
+                  auto parallelism: false
+        Reducer 3 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col7 (type: string)
+                  1 value (type: string)
+                outputColumnNames: _col0, _col13
+                Statistics: Num rows: 15 Data size: 130 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col13 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 15 Data size: 130 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 15 Data size: 130 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          columns _col0,_col1
+                          columns.types int:string
+                          escape.delim \
+                          hive.serialization.extend.nesting.levels true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@filter_join_breaktask
+PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@filter_join_breaktask
+POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
+#### A masked pattern was here ####
+146	val_146
+150	val_150
+213	val_213
+238	val_238
+255	val_255
+273	val_273
+278	val_278
+311	val_311
+401	val_401
+406	val_406
+66	val_66
+98	val_98

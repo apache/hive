@@ -111,6 +111,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // Write type, since this needs to calculate buckets differently for updates and deletes
   private AcidUtils.Operation writeType;
 
+  // whether we'll enforce the sort order of the RS
+  private transient boolean enforceSort = false;
+
   private static transient Log LOG = LogFactory.getLog(ReduceSinkDesc.class);
   public ReduceSinkDesc() {
   }
@@ -165,6 +168,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setStatistics(this.getStatistics());
     desc.setSkipTag(skipTag);
     desc.reduceTraits = reduceTraits.clone();
+    desc.setEnforceSort(enforceSort);
     return desc;
   }
 
@@ -406,5 +410,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public AcidUtils.Operation getWriteType() {
     return writeType;
+  }
+
+  public boolean isEnforceSort() {
+    return enforceSort;
+  }
+
+  public void setEnforceSort(boolean isDeduplicated) {
+    this.enforceSort = isDeduplicated;
   }
 }

@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.io;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * IOContext basically contains the position information of the current
@@ -42,12 +44,21 @@ public class IOContext {
     protected synchronized IOContext initialValue() { return new IOContext(); }
  };
 
+  private static IOContext get() {
+    return IOContext.threadLocal.get();
+  }
+
   /**
    * Tez and MR use this map but are single threaded per JVM thus no synchronization is required.
    */
   private static final Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
 
-  public static IOContext get(String inputName) {
+
+  public static IOContext get(Configuration conf) {
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      return get();
+    }
+    String inputName = conf.get(Utilities.INPUT_NAME);
     if (!inputNameIOContextMap.containsKey(inputName)) {
       IOContext ioContext = new IOContext();
       inputNameIOContextMap.put(inputName, ioContext);
@@ -219,4 +230,5 @@ public class IOContext {
     this.comparison = null;
     this.genericUDFClassName = null;
   }
+
 }

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -286,6 +287,14 @@ public class HiveServer2 extends CompositeService {
             + "Shutting down HiveServer2 anyway.", e);
       }
     }
+
+    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      try {
+        SparkSessionManagerImpl.getInstance().shutdown();
+      } catch(Exception ex) {
+        LOG.error("Spark session pool manager failed to stop during HiveServer2 shutdown.", ex);
+      }
+    }
   }
 
   private static void startHiveServer2() throws Throwable {
@@ -308,6 +317,10 @@ public class HiveServer2 extends CompositeService {
           TezSessionPoolManager sessionPool = TezSessionPoolManager.getInstance();
           sessionPool.setupPool(hiveConf);
           sessionPool.startPool();
+        }
+
+        if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+          SparkSessionManagerImpl.getInstance().setup(hiveConf);
         }
         break;
       } catch (Throwable throwable) {

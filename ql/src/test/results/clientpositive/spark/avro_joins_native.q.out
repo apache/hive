@@ -1,0 +1,94 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that new joins bring in correct schemas (including evolved schemas)
+
+CREATE TABLE doctors4 (
+  number int COMMENT "Order of playing the role",
+  first_name string COMMENT "first name of actor playing role",
+  last_name string COMMENT "last name of actor playing role")
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors4
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- verify that new joins bring in correct schemas (including evolved schemas)
+
+CREATE TABLE doctors4 (
+  number int COMMENT "Order of playing the role",
+  first_name string COMMENT "first name of actor playing role",
+  last_name string COMMENT "last name of actor playing role")
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doctors4
+PREHOOK: query: DESCRIBE doctors4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors4
+POSTHOOK: query: DESCRIBE doctors4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors4
+number              	int                 	from deserializer   
+first_name          	string              	from deserializer   
+last_name           	string              	from deserializer   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@doctors4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@doctors4
+PREHOOK: query: CREATE TABLE episodes (
+  title string COMMENT "episode title",
+  air_date string COMMENT "initial date",
+  doctor int COMMENT "main actor playing the Doctor in episode")
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@episodes
+POSTHOOK: query: CREATE TABLE episodes (
+  title string COMMENT "episode title",
+  air_date string COMMENT "initial date",
+  doctor int COMMENT "main actor playing the Doctor in episode")
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@episodes
+PREHOOK: query: DESCRIBE episodes
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@episodes
+POSTHOOK: query: DESCRIBE episodes
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@episodes
+title               	string              	from deserializer   
+air_date            	string              	from deserializer   
+doctor              	int                 	from deserializer   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@episodes
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@episodes
+PREHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, e.air_date
+FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors4
+PREHOOK: Input: default@episodes
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, e.air_date
+FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors4
+POSTHOOK: Input: default@episodes
+#### A masked pattern was here ####
+An Unearthly Child	23 November 1963	William	Hartnell	23 November 1963
+Castrolava	4 January 1982	Peter	Davison	4 January 1982
+Horror of Fang Rock	3 September 1977	Tom	Baker	3 September 1977
+Rose	26 March 2005	Christopher	Eccleston	26 March 2005
+The Doctor's Wife	14 May 2011	Matt	Smith	14 May 2011
+The Eleventh Hour	3 April 2010	Matt	Smith	3 April 2010
+The Mysterious Planet	6 September 1986	Colin	Baker	6 September 1986
+The Power of the Daleks	5 November 1966	Patrick	Troughton	5 November 1966

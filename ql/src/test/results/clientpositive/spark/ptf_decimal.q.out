@@ -1,0 +1,188 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- 1. aggregate functions with decimal type
+
+select p_mfgr, p_retailprice,
+lead(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c1,
+lag(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c2,
+first_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c3,
+last_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c4
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- 1. aggregate functions with decimal type
+
+select p_mfgr, p_retailprice,
+lead(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c1,
+lag(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c2,
+first_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c3,
+last_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c4
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	1173.15	NULL	1173.15	1173.15
+Manufacturer#1	1173.15	1753.76	1173.15	1173.15	1173.15
+Manufacturer#1	1414.42	1632.66	1602.59	1173.15	1414.42
+Manufacturer#1	1602.59	1414.42	1753.76	1173.15	1602.59
+Manufacturer#1	1632.66	NULL	1414.42	1173.15	1632.66
+Manufacturer#1	1753.76	1602.59	1173.15	1173.15	1753.76
+Manufacturer#2	1690.68	1800.7	NULL	1690.68	1690.68
+Manufacturer#2	1698.66	1701.6	2031.98	1690.68	1698.66
+Manufacturer#2	1701.6	NULL	1698.66	1690.68	1701.6
+Manufacturer#2	1800.7	2031.98	1690.68	1690.68	1800.7
+Manufacturer#2	2031.98	1698.66	1800.7	1690.68	2031.98
+Manufacturer#3	1190.27	1410.39	1671.68	1671.68	1190.27
+Manufacturer#3	1337.29	NULL	1922.98	1671.68	1337.29
+Manufacturer#3	1410.39	1922.98	1190.27	1671.68	1410.39
+Manufacturer#3	1671.68	1190.27	NULL	1671.68	1671.68
+Manufacturer#3	1922.98	1337.29	1410.39	1671.68	1922.98
+Manufacturer#4	1206.26	1844.92	1375.42	1620.67	1206.26
+Manufacturer#4	1290.35	NULL	1844.92	1620.67	1290.35
+Manufacturer#4	1375.42	1206.26	1620.67	1620.67	1375.42
+Manufacturer#4	1620.67	1375.42	NULL	1620.67	1620.67
+Manufacturer#4	1844.92	1290.35	1206.26	1620.67	1844.92
+Manufacturer#5	1018.1	1464.48	1788.73	1789.69	1018.1
+Manufacturer#5	1464.48	NULL	1018.1	1789.69	1464.48
+Manufacturer#5	1611.66	1788.73	1789.69	1789.69	1611.66
+Manufacturer#5	1788.73	1018.1	1611.66	1789.69	1788.73
+Manufacturer#5	1789.69	1611.66	NULL	1789.69	1789.69
+PREHOOK: query: -- 2. ranking functions with decimal type
+
+select p_mfgr, p_retailprice,
+row_number() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c1,
+rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c2,
+dense_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c3,
+percent_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c4,
+cume_dist() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c5,
+ntile(5) over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c6
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2. ranking functions with decimal type
+
+select p_mfgr, p_retailprice,
+row_number() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c1,
+rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c2,
+dense_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c3,
+percent_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c4,
+cume_dist() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c5,
+ntile(5) over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c6
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	1	1	1	0.0	0.3333333333333333	1
+Manufacturer#1	1173.15	2	1	1	0.0	0.3333333333333333	1
+Manufacturer#1	1414.42	3	3	2	0.4	0.5	2
+Manufacturer#1	1602.59	4	4	3	0.6	0.6666666666666666	3
+Manufacturer#1	1632.66	5	5	4	0.8	0.8333333333333334	4
+Manufacturer#1	1753.76	6	6	5	1.0	1.0	5
+Manufacturer#2	1690.68	1	1	1	0.0	0.2	1
+Manufacturer#2	1698.66	2	2	2	0.25	0.4	2
+Manufacturer#2	1701.6	3	3	3	0.5	0.6	3
+Manufacturer#2	1800.7	4	4	4	0.75	0.8	4
+Manufacturer#2	2031.98	5	5	5	1.0	1.0	5
+Manufacturer#3	1190.27	1	1	1	0.0	0.2	1
+Manufacturer#3	1337.29	2	2	2	0.25	0.4	2
+Manufacturer#3	1410.39	3	3	3	0.5	0.6	3
+Manufacturer#3	1671.68	4	4	4	0.75	0.8	4
+Manufacturer#3	1922.98	5	5	5	1.0	1.0	5
+Manufacturer#4	1206.26	1	1	1	0.0	0.2	1
+Manufacturer#4	1290.35	2	2	2	0.25	0.4	2
+Manufacturer#4	1375.42	3	3	3	0.5	0.6	3
+Manufacturer#4	1620.67	4	4	4	0.75	0.8	4
+Manufacturer#4	1844.92	5	5	5	1.0	1.0	5
+Manufacturer#5	1018.1	1	1	1	0.0	0.2	1
+Manufacturer#5	1464.48	2	2	2	0.25	0.4	2
+Manufacturer#5	1611.66	3	3	3	0.5	0.6	3
+Manufacturer#5	1788.73	4	4	4	0.75	0.8	4
+Manufacturer#5	1789.69	5	5	5	1.0	1.0	5
+PREHOOK: query: -- 3. order by decimal
+
+select p_mfgr, p_retailprice,
+lag(p_retailprice) over (partition by p_mfgr ORDER BY p_retailprice desc) as c1
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3. order by decimal
+
+select p_mfgr, p_retailprice,
+lag(p_retailprice) over (partition by p_mfgr ORDER BY p_retailprice desc) as c1
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	1173.15
+Manufacturer#1	1173.15	1414.42
+Manufacturer#1	1414.42	1602.59
+Manufacturer#1	1602.59	1632.66
+Manufacturer#1	1632.66	1753.76
+Manufacturer#1	1753.76	NULL
+Manufacturer#2	1690.68	1698.66
+Manufacturer#2	1698.66	1701.6
+Manufacturer#2	1701.6	1800.7
+Manufacturer#2	1800.7	2031.98
+Manufacturer#2	2031.98	NULL
+Manufacturer#3	1190.27	1337.29
+Manufacturer#3	1337.29	1410.39
+Manufacturer#3	1410.39	1671.68
+Manufacturer#3	1671.68	1922.98
+Manufacturer#3	1922.98	NULL
+Manufacturer#4	1206.26	1290.35
+Manufacturer#4	1290.35	1375.42
+Manufacturer#4	1375.42	1620.67
+Manufacturer#4	1620.67	1844.92
+Manufacturer#4	1844.92	NULL
+Manufacturer#5	1018.1	1464.48
+Manufacturer#5	1464.48	1611.66
+Manufacturer#5	1611.66	1788.73
+Manufacturer#5	1788.73	1789.69
+Manufacturer#5	1789.69	NULL
+PREHOOK: query: -- 4. partition by decimal
+
+select p_mfgr, p_retailprice,
+lag(p_retailprice) over (partition by p_retailprice) as c1
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 4. partition by decimal
+
+select p_mfgr, p_retailprice,
+lag(p_retailprice) over (partition by p_retailprice) as c1
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	1173.15
+Manufacturer#1	1173.15	NULL
+Manufacturer#1	1414.42	NULL
+Manufacturer#1	1602.59	NULL
+Manufacturer#1	1632.66	NULL
+Manufacturer#1	1753.76	NULL
+Manufacturer#2	1690.68	NULL
+Manufacturer#2	1698.66	NULL
+Manufacturer#2	1701.6	NULL
+Manufacturer#2	1800.7	NULL
+Manufacturer#2	2031.98	NULL
+Manufacturer#3	1190.27	NULL
+Manufacturer#3	1337.29	NULL
+Manufacturer#3	1410.39	NULL
+Manufacturer#3	1671.68	NULL
+Manufacturer#3	1922.98	NULL
+Manufacturer#4	1206.26	NULL
+Manufacturer#4	1290.35	NULL
+Manufacturer#4	1375.42	NULL
+Manufacturer#4	1620.67	NULL
+Manufacturer#4	1844.92	NULL
+Manufacturer#5	1018.1	NULL
+Manufacturer#5	1464.48	NULL
+Manufacturer#5	1611.66	NULL
+Manufacturer#5	1788.73	NULL
+Manufacturer#5	1789.69	NULL

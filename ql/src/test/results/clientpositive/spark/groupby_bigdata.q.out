@@ -1,0 +1,11 @@
+PREHOOK: query: select count(distinct subq.key) from
+(FROM src MAP src.key USING 'python dumpdata_script.py' AS key WHERE src.key = 10) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct subq.key) from
+(FROM src MAP src.key USING 'python dumpdata_script.py' AS key WHERE src.key = 10) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1000022

@@ -241,7 +241,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
    * <p>
    * For MR the taskname is the StageName, for Tez it is the vertex name.
    */
-  class MapJoinCheck implements NodeProcessor, NodeProcessorCtx {
+  public static class MapJoinCheck implements NodeProcessor, NodeProcessorCtx {
 
     final List<String> warnings;
     final String taskName;
@@ -302,7 +302,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
    * in the Work. For Tez, you can restrict it to ReduceSinks for a particular output
    * vertex.
    */
-  static class ExtractReduceSinkInfo implements NodeProcessor, NodeProcessorCtx {
+  public static class ExtractReduceSinkInfo implements NodeProcessor, NodeProcessorCtx {
 
     static class Info {
       List<ExprNodeDesc> keyCols;

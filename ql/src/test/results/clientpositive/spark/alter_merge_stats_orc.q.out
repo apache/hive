@@ -1,0 +1,390 @@
+PREHOOK: query: create table src_orc_merge_test_stat(key int, value string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: create table src_orc_merge_test_stat(key int, value string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc_merge_test_stat
+PREHOOK: query: insert overwrite table src_orc_merge_test_stat select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: insert overwrite table src_orc_merge_test_stat select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: Lineage: src_orc_merge_test_stat.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_stat.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_stat select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: insert into table src_orc_merge_test_stat select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: Lineage: src_orc_merge_test_stat.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_stat.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_stat select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: insert into table src_orc_merge_test_stat select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: Lineage: src_orc_merge_test_stat.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_stat.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like `src_orc_merge_test_stat`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_orc_merge_test_stat`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_orc_merge_test_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:7545
+maxFileSize:2515
+minFileSize:2515
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended src_orc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: query: desc extended src_orc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_stat
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_stat
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: Output: default@src_orc_merge_test_stat
+PREHOOK: query: desc formatted  src_orc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: query: desc formatted  src_orc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_stat
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	3                   
+	numRows             	1500                
+	rawDataSize         	141000              
+	totalSize           	7545                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table src_orc_merge_test_stat concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@src_orc_merge_test_stat
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: alter table src_orc_merge_test_stat concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: Output: default@src_orc_merge_test_stat
+PREHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_stat
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: analyze table src_orc_merge_test_stat compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: Output: default@src_orc_merge_test_stat
+PREHOOK: query: desc formatted src_orc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: query: desc formatted src_orc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_stat
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	1500                
+	rawDataSize         	141000              
+	totalSize           	7198                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table src_orc_merge_test_part_stat(key int, value string) partitioned by (ds string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: query: create table src_orc_merge_test_part_stat(key int, value string) partitioned by (ds string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc_merge_test_part_stat
+PREHOOK: query: alter table src_orc_merge_test_part_stat add partition (ds='2011')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: query: alter table src_orc_merge_test_part_stat add partition (ds='2011')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+PREHOOK: query: insert overwrite table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: insert overwrite table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: insert into table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: insert into table src_orc_merge_test_part_stat partition (ds='2011') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part_stat PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like `src_orc_merge_test_part_stat` partition (ds='2011')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_orc_merge_test_part_stat` partition (ds='2011')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_orc_merge_test_part_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds}
+totalNumberFiles:3
+totalFileSize:7545
+maxFileSize:2515
+minFileSize:2515
+#### A masked pattern was here ####
+
+PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2011]              	 
+Database:           	default             	 
+Table:              	src_orc_merge_test_part_stat	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	3                   
+	numRows             	1500                
+	rawDataSize         	141000              
+	totalSize           	7545                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2011]              	 
+Database:           	default             	 
+Table:              	src_orc_merge_test_part_stat	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	3                   
+	numRows             	1500                
+	rawDataSize         	141000              
+	totalSize           	7545                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table src_orc_merge_test_part_stat partition (ds='2011') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: alter table src_orc_merge_test_part_stat partition (ds='2011') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+PREHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+POSTHOOK: query: analyze table src_orc_merge_test_part_stat partition(ds='2011') compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat@ds=2011
+PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2011]              	 
+Database:           	default             	 
+Table:              	src_orc_merge_test_part_stat	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	1                   
+	numRows             	1500                
+	rawDataSize         	141000              
+	totalSize           	7198                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table src_orc_merge_test_stat
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_orc_merge_test_stat
+PREHOOK: Output: default@src_orc_merge_test_stat
+POSTHOOK: query: drop table src_orc_merge_test_stat
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: Output: default@src_orc_merge_test_stat
+PREHOOK: query: drop table src_orc_merge_test_part_stat
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_orc_merge_test_part_stat
+PREHOOK: Output: default@src_orc_merge_test_part_stat
+POSTHOOK: query: drop table src_orc_merge_test_part_stat
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: default@src_orc_merge_test_part_stat

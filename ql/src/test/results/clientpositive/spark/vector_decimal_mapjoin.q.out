@@ -1,0 +1,214 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE decimal_mapjoin STORED AS ORC AS 
+  SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
+  CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
+  cint
+  FROM alltypesorc
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_mapjoin
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE decimal_mapjoin STORED AS ORC AS 
+  SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
+  CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
+  cint
+  FROM alltypesorc
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_mapjoin
+PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
+  FROM decimal_mapjoin l
+  JOIN decimal_mapjoin r ON l.cint = r.cint
+  WHERE l.cint = 6981
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
+  FROM decimal_mapjoin l
+  JOIN decimal_mapjoin r ON l.cint = r.cint
+  WHERE l.cint = 6981
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: r
+                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cint = 6981) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 6981 (type: int)
+                        1 6981 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: l
+                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cint = 6981) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 6981 (type: int)
+                        1 6981 (type: int)
+                      outputColumnNames: _col1, _col9
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: 6981 (type: int), 6981 (type: int), _col1 (type: decimal(20,10)), _col9 (type: decimal(23,14))
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 6758 Data size: 1190783 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
+  FROM decimal_mapjoin l
+  JOIN decimal_mapjoin r ON l.cint = r.cint
+  WHERE l.cint = 6981
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
+  FROM decimal_mapjoin l
+  JOIN decimal_mapjoin r ON l.cint = r.cint
+  WHERE l.cint = 6981
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
+6981	6981	-515.621072973	-617.5607769230769
+6981	6981	-515.621072973	-617.5607769230769
+6981	6981	-515.621072973	-617.5607769230769
+6981	6981	-515.621072973	-617.5607769230769
+6981	6981	-515.621072973	6984454.211097692
+6981	6981	-515.621072973	6984454.211097692
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	-515.621072973	NULL
+6981	6981	5831542.269248378	-617.5607769230769
+6981	6981	5831542.269248378	-617.5607769230769
+6981	6981	5831542.269248378	6984454.211097692
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	5831542.269248378	NULL
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	-617.5607769230769
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	6984454.211097692
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL
+6981	6981	NULL	NULL

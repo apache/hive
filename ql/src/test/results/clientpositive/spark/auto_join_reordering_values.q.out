@@ -1,0 +1,643 @@
+PREHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
+
+create table testsrc ( `key` int,`val` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testsrc
+POSTHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
+
+create table testsrc ( `key` int,`val` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testsrc
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table testsrc
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testsrc
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table testsrc
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testsrc
+PREHOOK: query: drop table if exists orderpayment_small
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists orderpayment_small
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orderpayment_small
+POSTHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orderpayment_small
+PREHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsrc
+PREHOOK: Output: default@orderpayment_small
+POSTHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsrc
+POSTHOOK: Output: default@orderpayment_small
+POSTHOOK: Lineage: orderpayment_small.cityid SIMPLE []
+POSTHOOK: Lineage: orderpayment_small.date SIMPLE []
+POSTHOOK: Lineage: orderpayment_small.dealid SIMPLE []
+POSTHOOK: Lineage: orderpayment_small.time SIMPLE []
+POSTHOOK: Lineage: orderpayment_small.userid SIMPLE []
+PREHOOK: query: drop table if exists user_small
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists user_small
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table user_small( userid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@user_small
+POSTHOOK: query: create table user_small( userid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@user_small
+PREHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsrc
+PREHOOK: Output: default@user_small
+POSTHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsrc
+POSTHOOK: Output: default@user_small
+POSTHOOK: Lineage: user_small.userid SIMPLE [(testsrc)testsrc.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: explain extended SELECT
+     `dim_pay_date`.`date`
+    , `deal`.`dealid`
+FROM `orderpayment_small` `orderpayment`
+JOIN `orderpayment_small` `dim_pay_date` ON `dim_pay_date`.`date` = `orderpayment`.`date`
+JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
+JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
+JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
+limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended SELECT
+     `dim_pay_date`.`date`
+    , `deal`.`dealid`
+FROM `orderpayment_small` `orderpayment`
+JOIN `orderpayment_small` `dim_pay_date` ON `dim_pay_date`.`date` = `orderpayment`.`date`
+JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
+JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
+JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
+limit 5
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_JOIN
+         TOK_JOIN
+            TOK_JOIN
+               TOK_JOIN
+                  TOK_TABREF
+                     TOK_TABNAME
+                        orderpayment_small
+                     orderpayment
+                  TOK_TABREF
+                     TOK_TABNAME
+                        orderpayment_small
+                     dim_pay_date
+                  =
+                     .
+                        TOK_TABLE_OR_COL
+                           dim_pay_date
+                        date
+                     .
+                        TOK_TABLE_OR_COL
+                           orderpayment
+                        date
+               TOK_TABREF
+                  TOK_TABNAME
+                     orderpayment_small
+                  deal
+               =
+                  .
+                     TOK_TABLE_OR_COL
+                        deal
+                     dealid
+                  .
+                     TOK_TABLE_OR_COL
+                        orderpayment
+                     dealid
+            TOK_TABREF
+               TOK_TABNAME
+                  orderpayment_small
+               order_city
+            =
+               .
+                  TOK_TABLE_OR_COL
+                     order_city
+                  cityid
+               .
+                  TOK_TABLE_OR_COL
+                     orderpayment
+                  cityid
+         TOK_TABREF
+            TOK_TABNAME
+               user_small
+            user
+         =
+            .
+               TOK_TABLE_OR_COL
+                  user
+               userid
+            .
+               TOK_TABLE_OR_COL
+                  orderpayment
+               userid
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  dim_pay_date
+               date
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  deal
+               dealid
+      TOK_LIMIT
+         5
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 8 (PARTITION-LEVEL SORT, 2), Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Map 9 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orderpayment
+                  Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (((date is not null and dealid is not null) and cityid is not null) and userid is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: date (type: string)
+                      sort order: +
+                      Map-reduce partition columns: date (type: string)
+                      Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      tag: 0
+                      value expressions: dealid (type: int), cityid (type: int), userid (type: int)
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: orderpayment_small
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns dealid,date,time,cityid,userid
+                    columns.comments 
+                    columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                    name default.orderpayment_small
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 36
+                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 37
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns dealid,date,time,cityid,userid
+                      columns.comments 
+                      columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                      name default.orderpayment_small
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 36
+                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 37
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.orderpayment_small
+                  name: default.orderpayment_small
+            Truncated Path -> Alias:
+              /orderpayment_small [orderpayment]
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: dim_pay_date
+                  Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: date is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: date (type: string)
+                      sort order: +
+                      Map-reduce partition columns: date (type: string)
+                      Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: orderpayment_small
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns dealid,date,time,cityid,userid
+                    columns.comments 
+                    columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                    name default.orderpayment_small
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 36
+                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 37
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns dealid,date,time,cityid,userid
+                      columns.comments 
+                      columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                      name default.orderpayment_small
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 36
+                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 37
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.orderpayment_small
+                  name: default.orderpayment_small
+            Truncated Path -> Alias:
+              /orderpayment_small [dim_pay_date]
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: deal
+                  Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: dealid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: dealid (type: int)
+                      sort order: +
+                      Map-reduce partition columns: dealid (type: int)
+                      Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: orderpayment_small
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns dealid,date,time,cityid,userid
+                    columns.comments 
+                    columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                    name default.orderpayment_small
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 36
+                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 37
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns dealid,date,time,cityid,userid
+                      columns.comments 
+                      columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                      name default.orderpayment_small
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 36
+                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 37
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.orderpayment_small
+                  name: default.orderpayment_small
+            Truncated Path -> Alias:
+              /orderpayment_small [deal]
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: order_city
+                  Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: cityid is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: cityid (type: int)
+                      sort order: +
+                      Map-reduce partition columns: cityid (type: int)
+                      Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: orderpayment_small
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns dealid,date,time,cityid,userid
+                    columns.comments 
+                    columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                    name default.orderpayment_small
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 36
+                    serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 37
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns dealid,date,time,cityid,userid
+                      columns.comments 
+                      columns.types int:string:string:int:int
+#### A masked pattern was here ####
+                      name default.orderpayment_small
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 36
+                      serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 37
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.orderpayment_small
+                  name: default.orderpayment_small
+            Truncated Path -> Alias:
+              /orderpayment_small [order_city]
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: user
+                  Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: userid is not null (type: boolean)
+                    Statistics: Num rows: 50 Data size: 144 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: userid (type: int)
+                      sort order: +
+                      Map-reduce partition columns: userid (type: int)
+                      Statistics: Num rows: 50 Data size: 144 Basic stats: COMPLETE Column stats: NONE
+                      tag: 1
+                      auto parallelism: false
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: user_small
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE true
+                    bucket_count -1
+                    columns userid
+                    columns.comments 
+                    columns.types int
+#### A masked pattern was here ####
+                    name default.user_small
+                    numFiles 1
+                    numRows 100
+                    rawDataSize 288
+                    serialization.ddl struct user_small { i32 userid}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 388
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE true
+                      bucket_count -1
+                      columns userid
+                      columns.comments 
+                      columns.types int
+#### A masked pattern was here ####
+                      name default.user_small
+                      numFiles 1
+                      numRows 100
+                      rawDataSize 288
+                      serialization.ddl struct user_small { i32 userid}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 388
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.user_small
+                  name: default.user_small
+            Truncated Path -> Alias:
+              /user_small [user]
+        Reducer 2 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 date (type: string)
+                  1 date (type: string)
+                outputColumnNames: _col0, _col3, _col4, _col9
+                Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col3 (type: int), _col4 (type: int), _col9 (type: string)
+                  auto parallelism: false
+        Reducer 3 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 dealid (type: int)
+                outputColumnNames: _col3, _col4, _col9, _col16
+                Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col3 (type: int)
+                  Statistics: Num rows: 1 Data size: 42 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col4 (type: int), _col9 (type: string), _col16 (type: int)
+                  auto parallelism: false
+        Reducer 4 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col3 (type: int)
+                  1 cityid (type: int)
+                outputColumnNames: _col4, _col9, _col16
+                Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col4 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col4 (type: int)
+                  Statistics: Num rows: 1 Data size: 46 Basic stats: COMPLETE Column stats: NONE
+                  tag: 0
+                  value expressions: _col9 (type: string), _col16 (type: int)
+                  auto parallelism: false
+        Reducer 5 
+            Needs Tagging: true
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col4 (type: int)
+                  1 userid (type: int)
+                outputColumnNames: _col9, _col16
+                Statistics: Num rows: 55 Data size: 158 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col9 (type: string), _col16 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 55 Data size: 158 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 5
+                    Statistics: Num rows: 5 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 5 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            columns _col0,_col1
+                            columns.types string:int
+                            escape.delim \
+                            hive.serialization.extend.nesting.levels true
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 5
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+     `dim_pay_date`.`date`
+    , `deal`.`dealid`
+FROM `orderpayment_small` `orderpayment`
+JOIN `orderpayment_small` `dim_pay_date` ON `dim_pay_date`.`date` = `orderpayment`.`date`
+JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
+JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
+JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orderpayment_small
+PREHOOK: Input: default@user_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+     `dim_pay_date`.`date`
+    , `deal`.`dealid`
+FROM `orderpayment_small` `orderpayment`
+JOIN `orderpayment_small` `dim_pay_date` ON `dim_pay_date`.`date` = `orderpayment`.`date`
+JOIN `orderpayment_small` `deal` ON `deal`.`dealid` = `orderpayment`.`dealid`
+JOIN `orderpayment_small` `order_city` ON `order_city`.`cityid` = `orderpayment`.`cityid`
+JOIN `user_small` `user` ON `user`.`userid` = `orderpayment`.`userid`
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orderpayment_small
+POSTHOOK: Input: default@user_small
+#### A masked pattern was here ####

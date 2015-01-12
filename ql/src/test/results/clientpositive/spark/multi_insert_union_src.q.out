@@ -1,0 +1,372 @@
+PREHOOK: query: drop table if exists src2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists src2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists src_multi1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists src_multi1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists src_multi1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists src_multi1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE src2 as SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src2
+POSTHOOK: query: CREATE TABLE src2 as SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src2
+PREHOOK: query: create table src_multi1 like src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_multi1
+POSTHOOK: query: create table src_multi1 like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_multi1
+PREHOOK: query: create table src_multi2 like src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_multi2
+POSTHOOK: query: create table src_multi2 like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_multi2
+PREHOOK: query: explain
+from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
+insert overwrite table src_multi1 select key, value where key < 150 order by key
+insert overwrite table src_multi2 select key, value where key > 400 order by value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
+insert overwrite table src_multi1 select key, value where key < 150 order by key
+insert overwrite table src_multi2 select key, value where key > 400 order by value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 5 (SORT, 1), Map 7 (SORT, 1)
+        Reducer 3 <- Map 6 (SORT, 1), Map 8 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Filter Operator
+                    predicate: (key < 10) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Filter Operator
+                        predicate: (_col0 < 150) (type: boolean)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          value expressions: _col1 (type: string)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Filter Operator
+                    predicate: (key < 10) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Filter Operator
+                        predicate: (_col0 > 400) (type: boolean)
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          value expressions: _col0 (type: string)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Filter Operator
+                    predicate: (key > 100) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Filter Operator
+                        predicate: (_col0 < 150) (type: boolean)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          value expressions: _col1 (type: string)
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Filter Operator
+                    predicate: (key > 100) (type: boolean)
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Filter Operator
+                        predicate: (_col0 > 400) (type: boolean)
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          value expressions: _col0 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 58 Data size: 608 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 58 Data size: 608 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.src_multi1
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 58 Data size: 608 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 58 Data size: 608 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.src_multi2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_multi2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
+insert overwrite table src_multi1 select key, value where key < 150 order by key
+insert overwrite table src_multi2 select key, value where key > 400 order by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@src2
+PREHOOK: Output: default@src_multi1
+PREHOOK: Output: default@src_multi2
+POSTHOOK: query: from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
+insert overwrite table src_multi1 select key, value where key < 150 order by key
+insert overwrite table src_multi2 select key, value where key > 400 order by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@src2
+POSTHOOK: Output: default@src_multi1
+POSTHOOK: Output: default@src_multi2
+POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2)src2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2)src2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2)src2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2)src2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from src_multi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi1
+#### A masked pattern was here ####
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+PREHOOK: query: select * from src_multi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_multi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_multi2
+#### A masked pattern was here ####
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+402	val_402
+403	val_403
+403	val_403
+403	val_403
+404	val_404
+404	val_404
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+407	val_407
+409	val_409
+409	val_409
+409	val_409
+411	val_411
+413	val_413
+413	val_413
+414	val_414
+414	val_414
+417	val_417
+417	val_417
+417	val_417
+418	val_418
+419	val_419
+421	val_421
+424	val_424
+424	val_424
+427	val_427
+429	val_429
+429	val_429
+430	val_430
+430	val_430
+430	val_430
+431	val_431
+431	val_431
+431	val_431
+432	val_432
+435	val_435
+436	val_436
+437	val_437
+438	val_438
+438	val_438
+438	val_438
+439	val_439
+439	val_439
+443	val_443
+444	val_444
+446	val_446
+448	val_448
+449	val_449
+452	val_452
+453	val_453
+454	val_454
+454	val_454
+454	val_454
+455	val_455
+457	val_457
+458	val_458
+458	val_458
+459	val_459
+459	val_459
+460	val_460
+462	val_462
+462	val_462
+463	val_463
+463	val_463
+466	val_466
+466	val_466
+466	val_466
+467	val_467
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+470	val_470
+472	val_472
+475	val_475
+477	val_477
+478	val_478
+478	val_478
+479	val_479
+480	val_480
+480	val_480
+480	val_480
+481	val_481
+482	val_482
+483	val_483
+484	val_484
+485	val_485
+487	val_487
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+490	val_490
+491	val_491
+492	val_492
+492	val_492
+493	val_493
+494	val_494
+495	val_495
+496	val_496
+497	val_497
+498	val_498
+498	val_498
+498	val_498
