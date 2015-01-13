@@ -40,6 +40,7 @@ import com.google.common.base.Splitter;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
+import jline.console.history.PersistentHistory;
 import jline.console.completer.StringsCompleter;
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
@@ -721,10 +722,12 @@ public class CliDriver {
     String line;
     final String HISTORYFILE = ".hivehistory";
     String historyDirectory = System.getProperty("user.home");
+    PersistentHistory history = null;
     try {
       if ((new File(historyDirectory)).exists()) {
         String historyFile = historyDirectory + File.separator + HISTORYFILE;
-        reader.setHistory(new FileHistory(new File(historyFile)));
+        history = new FileHistory(new File(historyFile));
+        reader.setHistory(history);
       } else {
         System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
                            " does not exist.   History will not be available during this session.");
@@ -758,6 +761,10 @@ public class CliDriver {
         curPrompt = prompt2 + dbSpaces;
         continue;
       }
+    }
+
+    if (history != null) {
+      history.flush();
     }
     return ret;
   }
