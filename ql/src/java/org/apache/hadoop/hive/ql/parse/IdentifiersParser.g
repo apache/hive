@@ -66,13 +66,13 @@ groupingSetExpression
 @init {gParent.pushMsg("grouping set expression", state); }
 @after {gParent.popMsg(state); }
    :
-   groupByExpression
-   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression)
-   |
    LPAREN 
    groupByExpression (COMMA groupByExpression)*
    RPAREN
    -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression+)
+   |
+   groupByExpression
+   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression)
    |
    LPAREN
    RPAREN
