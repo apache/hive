@@ -124,6 +124,7 @@ public class SparkTask extends Task<SparkWork> {
       LOG.error(msg, e);
       rc = 1;
     } finally {
+      Utilities.clearWork(conf);
       if (sparkSession != null && sparkSessionManager != null) {
         rc = close(rc);
         try {
