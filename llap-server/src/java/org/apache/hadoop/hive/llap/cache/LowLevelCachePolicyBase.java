@@ -32,7 +32,7 @@ public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy {
   }
 
   @Override
-  public void reserveMemory(long memoryToReserve) {
+  public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     while (memoryToReserve > 0) {
       long usedMem = usedMemory.get(), newUsedMem = usedMem + memoryToReserve;
@@ -42,16 +42,18 @@ public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy {
       }
       // TODO: for one-block case, we could move notification for the last block out of the loop.
       long evicted = evictSomeBlocks(memoryToReserve, evictionListener);
+      if (!waitForEviction && evicted == 0) return false;
       // Adjust the memory - we have to account for what we have just evicted.
       while (true) {
         long reserveWithEviction = Math.min(memoryToReserve, maxSize - usedMem + evicted);
-        if (usedMemory.compareAndSet(usedMem, usedMem + reserveWithEviction)) {
+        if (usedMemory.compareAndSet(usedMem, usedMem - evicted + reserveWithEviction)) {
           memoryToReserve -= reserveWithEviction;
           break;
         }
         usedMem = usedMemory.get();
       }
     }
+    return true;
   }
 
   protected abstract long evictSomeBlocks(long memoryToReserve, EvictionListener listener);

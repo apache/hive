@@ -1969,10 +1969,11 @@ public class HiveConf extends Configuration {
         "Updates tez job execution progress in-place in the terminal."),
 
     LLAP_ENABLED("hive.llap.enabled", true, ""),
-    LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.cache.orc.minalloc", 128 * 1024, ""),
-    LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.cache.orc.minalloc", 16 * 1024 * 1024, ""),
-    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.cache.orc.minalloc", 128L * 1024 * 1024, ""),
-    LLAP_ORC_CACHE_MAX_SIZE("hive.llap.cache.orc.minalloc", 1024L * 1024 * 1024, ""),
+    LLAP_LOW_LEVEL_CACHE("hive.llap.use.lowlevel.cache", true, ""),
+    LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.cache.orc.alloc.min", 128 * 1024, ""),
+    LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.cache.orc.alloc.max", 16 * 1024 * 1024, ""),
+    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.cache.orc.arena.size", 128 * 1024 * 1024, ""),
+    LLAP_ORC_CACHE_MAX_SIZE("hive.llap.cache.orc.size", 1024L * 1024 * 1024, ""),
     LLAP_REQUEST_THREAD_COUNT("hive.llap.request.thread.count", 16, ""),
     LLAP_USE_LRFU("hive.llap.use.lrfu", true, ""),
     LLAP_LRFU_LAMBDA("hive.llap.lrfu.lambda", 0.01f, "")

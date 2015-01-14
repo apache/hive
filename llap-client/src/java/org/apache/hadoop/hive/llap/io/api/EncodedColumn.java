@@ -18,10 +18,17 @@
 
 package org.apache.hadoop.hive.llap.io.api;
 
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+
 public class EncodedColumn<BatchKey> {
   // TODO: temporary class. Will be filled in when reading (ORC) is implemented. Need to balance
   //       generality, and ability to not copy data from underlying low-level cached buffers.
-  public static class ColumnBuffer {}
+  public static class ColumnBuffer {
+    // TODO: given how ORC will allocate, it might make sense to share array between all
+    //       returned encodedColumn-s, and store index and length in the array.
+    public LlapMemoryBuffer[] cacheBuffers;
+    public int firstOffset, lastLength;
+  }
   public EncodedColumn(BatchKey batchKey, int columnIndex, ColumnBuffer columnData) {
     this.batchKey = batchKey;
     this.columnIndex = columnIndex;

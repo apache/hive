@@ -48,10 +48,11 @@ import org.apache.hadoop.mapred.InputSplit;
 
 public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> {
   private FileSystem cachedFs = null;
-  private final LowLevelCache lowLevelCache;
   private Configuration conf;
   private OrcMetadataCache metadataCache;
+  // TODO: it makes zero sense to have both at the same time and duplicate data. Add "cache mode".
   private final Cache<OrcCacheKey> cache;
+  private final LowLevelCache lowLevelCache;
 
   private class OrcEncodedDataReader implements EncodedDataReader<OrcBatchKey>,
     Consumer<EncodedColumn<OrcBatchKey>> {
@@ -112,11 +113,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       }
       determineWhatToRead(stripes);
       if (isStopped) return;
-      List<Integer>[] stripeColumnsToRead = produceDataFromCache();
+      List<Integer>[] stripeColsToRead = produceDataFromCache();
       // readState now contains some 1s for column x rgs that were fetched from cache.
       // TODO: I/O threadpool would be here; for now, linear and inefficient
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
-        List<Integer> colsToRead = stripeColumnsToRead[stripeIxMod];
+        List<Integer> colsToRead = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
         long[][] colRgs = readState[stripeIxMod];
         if (colsToRead == null) {
           colsToRead = columnIds;
@@ -139,8 +140,10 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
           orcReader = createOrcReader(split);
         }
         RecordReader stripeReader = orcReader.rows(si.getOffset(), si.getLength(), includes);
-        // We pass in the already-filtered RGs, as well as sarg. ORC can apply additional filtering.
-        stripeReader.readEncodedColumns(colRgs, rgCount, sarg, this, lowLevelCache);
+        // In case if we have high-level cache, we will intercept the data and add it there;
+        // otherwise just pass the data directly to the consumer.
+        Consumer<EncodedColumn<OrcBatchKey>> consumer = (cache == null) ? this.consumer : this;
+        stripeReader.readEncodedColumns(colRgs, rgCount, consumer, lowLevelCache);
         stripeReader.close();
       }
 
@@ -152,13 +155,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
     @Override
     public void returnData(ColumnBuffer data) {
-      // TODO#: return the data to cache (unlock)
+      lowLevelCache.releaseBuffers(data.cacheBuffers);
     }
 
     private void determineWhatToRead(List<StripeInformation> stripes) {
-      // The unit of caching for ORC is (stripe x column) (see OrcBatchKey). Note that we do not use
-      // SARG anywhere, because file-level filtering on sarg is already performed during split
-      // generation, and stripe-level filtering to get row groups is not very helpful right now.
+      // The unit of caching for ORC is (stripe x column) (see OrcBatchKey).
       long offset = split.getStart(), maxOffset = offset + split.getLength();
       stripeIxFrom = stripeIxTo = -1;
       int stripeIx = 0;
@@ -208,6 +209,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
           readState[i][j] = new long[bitmaskSize];
         }
       }
+      // TODO: HERE, we need to apply sargs and mark RGs that are filtered as 1s
       rgsPerStripe = new int[stripeRgCounts.size()];
       for (int i = 0; i < rgsPerStripe.length; ++i) {
          rgsPerStripe[i] = stripeRgCounts.get(i);
@@ -215,11 +217,10 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     }
 
     // TODO: split by stripe? we do everything by stripe, and it might be faster
-    // TODO: return type provisional depending on ORC API
     private List<Integer>[] produceDataFromCache() {
-      // Assumes none of the columns are fetched, because we always do this before reading.
+      if (cache == null) return null;
       OrcCacheKey key = new OrcCacheKey(internedFilePath, -1, -1, -1);
-      @SuppressWarnings("unchecked") // Grr, no generics arrays, "J" in "Java" stands for "joke".
+      @SuppressWarnings("unchecked") // No generics arrays - "J" in "Java" stands for "joke".
       List<Integer>[] stripeColsNotInCache = new List[readState.length];
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
         key.stripeIx = stripeIxFrom + stripeIxMod;
@@ -230,6 +231,8 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
           long[] doneMask = cols[colIxMod];
           boolean areAllRgsInCache = true;
           for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
+            int maskIndex = rgIx >>> 6, maskBit = 1 << (rgIx & 63);
+            if ((doneMask[maskIndex] & maskBit) != 0) continue; // RG eliminated by SARG
             key.rgIx = rgIx;
             ColumnBuffer cached = cache.get(key);
             if (cached == null) {
@@ -240,7 +243,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
             EncodedColumn<OrcBatchKey> col = new EncodedColumn<OrcBatchKey>(
                 key.copyToPureBatchKey(), key.colIx, cached);
             consumer.consumeData(col);
-            doneMask[rgIx >>> 6] |= 1 << (rgIx & 63);
+            doneMask[maskIndex] = doneMask[maskIndex] | maskBit;
           }
           boolean hasFetchList = stripeColsNotInCache[stripeIxMod] != null;
           if (areAllRgsInCache) {
@@ -273,10 +276,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     @Override
     public void consumeData(EncodedColumn<OrcBatchKey> data) {
       // Store object in cache; create new key object - cannot be reused.
+      assert cache != null;
       OrcCacheKey key = new OrcCacheKey(data.batchKey, data.columnIndex);
       ColumnBuffer cached = cache.cacheOrGet(key, data.columnData);
       if (data.columnData != cached) {
-        // TODO: deallocate columnData
+        lowLevelCache.releaseBuffers(data.columnData.cacheBuffers);
         data.columnData = cached;
       }
       consumer.consumeData(data);

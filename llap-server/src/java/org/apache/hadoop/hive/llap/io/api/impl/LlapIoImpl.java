@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.Cache;
 import org.apache.hadoop.hive.llap.cache.LowLevelBuddyCache;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
@@ -52,8 +53,11 @@ public class LlapIoImpl implements LlapIo, Configurable {
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.conf = conf;
-    Cache<OrcCacheKey> cache = new NoopCache<OrcCacheKey>(); // High-level cache not supported yet.
-    this.edp = new OrcEncodedDataProducer(new LowLevelBuddyCache(conf), cache, conf);
+    boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
+    // High-level cache not supported yet.
+    Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
+    LowLevelBuddyCache orcCache = useLowLevelCache ? new LowLevelBuddyCache(conf) : null;
+    this.edp = new OrcEncodedDataProducer(orcCache, cache, conf);
     this.cvp = new OrcColumnVectorProducer(edp, conf);
   }
 

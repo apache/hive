@@ -33,8 +33,9 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
+// TODO: refactor the cache and allocator parts?
 public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
-  private final ArrayList<arena> arenas;
+  private final ArrayList<Arena> arenas;
   private AtomicInteger newEvictions = new AtomicInteger(0);
   private final Thread cleanupThread;
   private final ConcurrentHashMap<String, FileCache> cache =
@@ -44,21 +45,21 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
   // Config settings
   private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas;
 
-  private final int minAllocation, maxAllocation;
-  private final long maxSize, arenaSize;
-  
+  private final int minAllocation, maxAllocation, arenaSize;
+  private final long maxSize;
+
   public LowLevelBuddyCache(Configuration conf) {
     minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     maxAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_ALLOC);
-    arenaSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
+    arenaSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_ARENA_SIZE);
     maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
-    if (maxSize < arenaSize || arenaSize > maxAllocation || maxAllocation < minAllocation) {
+    if (maxSize < arenaSize || arenaSize < maxAllocation || maxAllocation < minAllocation) {
       throw new AssertionError("Inconsistent sizes of cache, arena and allocations: "
           + minAllocation + ", " + maxAllocation + ", " + arenaSize + ", " + maxSize);
     }
     if ((Integer.bitCount(minAllocation) != 1) || (Integer.bitCount(maxAllocation) != 1)
         || (Long.bitCount(arenaSize) != 1) || (minAllocation == 1)) {
-      // TODO: technically, arena size is not required to be so; needs to be divisible by maxAlloc
+      // TODO: technically, arena size only needs to be divisible by maxAlloc
       throw new AssertionError("Allocation and arena sizes must be powers of two > 1: "
           + minAllocation + ", " + maxAllocation + ", " + arenaSize);
     }
@@ -70,11 +71,11 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     maxAllocLog2 = 31 - Integer.numberOfLeadingZeros(maxAllocation);
     arenaSizeLog2 = 31 - Long.numberOfLeadingZeros(arenaSize);
     maxArenas = (int)(maxSize / arenaSize);
-    arenas = new ArrayList<arena>(maxArenas);
+    arenas = new ArrayList<Arena>(maxArenas);
     for (int i = 0; i < maxArenas; ++i) {
-      arenas.add(new arena());
+      arenas.add(new Arena());
     }
-    arenas.get(0).init();
+    arenas.get(0).init(arenaSize, maxAllocation, arenaSizeLog2, minAllocLog2, maxAllocLog2);
     cachePolicy = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU)
         ? new LowLevelLrfuCachePolicy(conf, minAllocation, maxSize, this)
         : new LowLevelFifoCachePolicy(minAllocation, maxSize, this);
@@ -91,7 +92,7 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     freeListIndex = Math.max(freeListIndex - minAllocLog2, 0);
     int allocationSize = 1 << (freeListIndex + minAllocLog2);
     int total = dest.length * allocationSize;
-    cachePolicy.reserveMemory(total);
+    cachePolicy.reserveMemory(total, true);
 
     int ix = 0;
     for (int i = 0; i < dest.length; ++i) {
@@ -99,27 +100,27 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
       dest[i] = new LlapCacheableBuffer(null, -1, -1); // TODO: pool of objects?
     }
     // TODO: instead of waiting, loop only ones we haven't tried w/tryLock?
-    for (arena block : arenas) {
+    for (Arena block : arenas) {
       int newIx = allocateFast(block, freeListIndex, dest, ix, allocationSize);
       if (newIx == -1) break;
       if (newIx == dest.length) return;
       ix = newIx;
     }
     // Then try to split bigger blocks.
-    for (arena block : arenas) {
+    for (Arena block : arenas) {
       int newIx = allocateWithSplit(block, freeListIndex, dest, ix, allocationSize);
       if (newIx == -1) break;
       if (newIx == dest.length) return;
       ix = newIx;
     }
     // Then try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-    for (arena block : arenas) {
+    for (Arena block : arenas) {
       ix = allocateWithExpand(block, freeListIndex, dest, ix, allocationSize);
       if (ix == dest.length) return;
     }
   }
 
-  private int allocateFast(arena block,
+  private int allocateFast(Arena block,
       int freeListIndex, LlapMemoryBuffer[] dest, int ix, int size) {
     if (block.data == null) return -1; // not allocated yet
     FreeList freeList = block.freeLists[freeListIndex];
@@ -133,7 +134,7 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
   }
 
   private int allocateWithSplit(
-      arena arena, int freeListIndex, LlapMemoryBuffer[] dest, int ix, int allocationSize) {
+      Arena arena, int freeListIndex, LlapMemoryBuffer[] dest, int ix, int allocationSize) {
     if (arena.data == null) return -1; // not allocated yet
     FreeList freeList = arena.freeLists[freeListIndex];
     int remaining = -1;
@@ -206,7 +207,7 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     return lastSplitNextHeader << minAllocLog2;
   }
 
-  public int allocateFromFreeListUnderLock(arena block, FreeList freeList,
+  public int allocateFromFreeListUnderLock(Arena block, FreeList freeList,
       int freeListIndex, LlapMemoryBuffer[] dest, int ix, int size) {
     int current = freeList.listHead;
     while (current >= 0 && ix < dest.length) {
@@ -222,15 +223,15 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
   }
 
   private int allocateWithExpand(
-      arena block, int freeListIndex, LlapMemoryBuffer[] dest, int ix, int size) {
-    if (block.data != null) return ix; // already allocated
-    synchronized (block) {
+      Arena arena, int freeListIndex, LlapMemoryBuffer[] dest, int ix, int size) {
+    if (arena.data != null) return ix; // already allocated
+    synchronized (arena) {
       // Never goes from non-null to null, so this is the only place we need sync.
-      if (block.data == null) {
-        block.init();
+      if (arena.data == null) {
+        arena.init(arenaSize, maxAllocation, arenaSizeLog2, minAllocLog2, maxAllocLog2);
       }
     }
-    return allocateWithSplit(block, freeListIndex, dest, ix, size);
+    return allocateWithSplit(arena, freeListIndex, dest, ix, size);
   }
 
   @Override
@@ -262,8 +263,8 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
   }
 
   private boolean lockBuffer(LlapCacheableBuffer buffer) {
-    int rc = buffer.lock();
-    if (rc == 0) {
+    int rc = buffer.incRef();
+    if (rc == 1) {
       cachePolicy.notifyLock(buffer);
     }
     return rc >= 0;
@@ -282,7 +283,11 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
         assert buffer.isLocked();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapCacheableBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
-          if (oldVal == null) break; // Cached successfully.
+          if (oldVal == null) {
+            // Cached successfully, add to policy.
+            cachePolicy.cache(buffer);
+            break;
+          }
           if (DebugUtils.isTraceCachingEnabled()) {
             LlapIoImpl.LOG.info("Trying to cache when the chunk is already cached for "
                 + fileName + "@" + offset  + "; old " + oldVal + ", new " + buffer);
@@ -297,7 +302,7 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
             result[i >>> 6] |= (1 << (i & 63)); // indicate that we've replaced the value
             break;
           }
-          // We found some old value but couldn't lock it; remove it.
+          // We found some old value but couldn't incRef it; remove it.
           subCache.cache.remove(offset, oldVal);
         }
       }
@@ -349,15 +354,22 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     releaseBufferInternal((LlapCacheableBuffer)buffer);
   }
 
+  @Override
+  public void releaseBuffers(LlapMemoryBuffer[] cacheBuffers) {
+    for (int i = 0; i < cacheBuffers.length; ++i) {
+      releaseBufferInternal((LlapCacheableBuffer)cacheBuffers[i]);
+    }
+  }
+
   public void releaseBufferInternal(LlapCacheableBuffer buffer) {
-    if (buffer.unlock() == 0) {
+    if (buffer.decRef() == 0) {
       cachePolicy.notifyUnlock(buffer);
       unblockEviction();
     }
   }
 
   public static LlapCacheableBuffer allocateFake() {
-    return new LlapCacheableBuffer(null, -1, -1);
+    return new LlapCacheableBuffer(null, -1, 1);
   }
 
   public void unblockEviction() {
@@ -446,9 +458,9 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     }
   }
 
-  private class arena {
-    void init() {
-      data = ByteBuffer.allocateDirect(maxAllocation);
+  private static class Arena {
+    void init(int arenaSize, int maxAlloc, int arenaSizeLog2, int minAllocLog2, int maxAllocLog2) {
+      data = ByteBuffer.allocateDirect(arenaSize);
       int maxMinAllocs = 1 << (arenaSizeLog2 - minAllocLog2);
       headers = new byte[maxMinAllocs];
       int allocLog2Diff = maxAllocLog2 - minAllocLog2;
@@ -459,7 +471,7 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
       int maxMaxAllocs = 1 << (arenaSizeLog2 - maxAllocLog2),
           headerIndex = 0, headerIncrement = 1 << allocLog2Diff;
       freeLists[maxAllocLog2 - 1].listHead = 0;
-      for (int i = 0, offset = 0; i < maxMaxAllocs; ++i, offset += maxAllocation) {
+      for (int i = 0, offset = 0; i < maxMaxAllocs; ++i, offset += maxAlloc) {
         // TODO: will this cause bugs on large numbers due to some Java sign bit stupidity?
         headers[headerIndex] = (byte)(allocLog2Diff << 1); // Maximum allocation size
         data.putInt(offset, (i == 0) ? -1 : (headerIndex - headerIncrement));
@@ -482,7 +494,6 @@ public class LowLevelBuddyCache implements LowLevelCache, EvictionListener {
     //       However, we are trying to increase fragmentation now, since we cater to single-size.
   }
 
-  // TODO##: separate the classes?
   private static class FileCache {
     private static final int EVICTED_REFCOUNT = -1, EVICTING_REFCOUNT = -2;
     // TODO: given the specific data, perhaps the nested thing should not be CHM

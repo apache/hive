@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -105,6 +106,10 @@ public abstract class ColumnVectorProducer<BatchKey> {
       }
       if (0 == colsRemaining) {
         ColumnVectorProducer.this.decodeBatch(data.batchKey, targetBatch, downstreamConsumer);
+        // Batch has been decoded; unlock the buffers in cache
+        for (ColumnBuffer cb : targetBatch.columnDatas) {
+          upstreamFeedback.returnData(cb);
+        }
       }
     }
 
@@ -133,10 +138,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
 
     @Override
     public void returnData(ColumnVectorBatch data) {
-      // TODO#: this should happen earlier, when data is decoded buffers are not needed
-      for (ColumnBuffer lockedBuffer : data.lockedBuffers) {
-        upstreamFeedback.returnData(lockedBuffer);
-      }
+      // TODO: column vectors could be added to object pool here
     }
 
     private void dicardPendingData(boolean isStopped) {

@@ -33,7 +33,6 @@ public interface VectorReader {
   public static class ColumnVectorBatch {
     public ColumnVector[] cols;
     public int size;
-    public List<ColumnBuffer> lockedBuffers;
   }
   public ColumnVectorBatch next() throws InterruptedException, IOException;
   public void close() throws IOException;

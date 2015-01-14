@@ -98,7 +98,7 @@ public class LLAPRecordReaderImpl extends RecordReaderImpl implements RecordRead
   }
 
   @Override
-  public void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
+  public void readEncodedColumns(long[][] colRgs, int rgCount,
       Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache) {
 
   }

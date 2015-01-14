@@ -96,6 +96,6 @@ public interface RecordReader {
    * @param consumer Consumer to pass the results too.
    * @param allocator Allocator to allocate memory.
    */
-  void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
+  void readEncodedColumns(long[][] colRgs, int rgCount,
       Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache);
 }

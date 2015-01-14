@@ -42,4 +42,7 @@ public interface LowLevelCache {
    * Allocate dest.length new blocks of size into dest.
    */
   void allocateMultiple(LlapMemoryBuffer[] dest, int size);
+
+  void releaseBuffers(LlapMemoryBuffer[] cacheBuffers);
+
 }

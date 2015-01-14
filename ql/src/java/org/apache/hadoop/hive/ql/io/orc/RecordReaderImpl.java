@@ -3302,7 +3302,7 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   @Override
-  public void readEncodedColumns(long[][] colRgs, int rgCount, SearchArgument sarg,
+  public void readEncodedColumns(long[][] colRgs, int rgCount,
       Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache allocator) {
     // TODO: HERE read encoded data
   }

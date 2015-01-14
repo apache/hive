@@ -41,8 +41,9 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
   // TODO: Fields pertaining to cache policy. Perhaps they should live in separate object.
   public double priority;
   public long lastUpdate = -1;
-  public int indexInHeap = -1;
-  public boolean isLockedInHeap; // TODO#: this flag is invalid and not thread safe
+  public LlapCacheableBuffer prev = null, next = null;
+  public int indexInHeap = NOT_IN_CACHE;
+  public static final int IN_LIST = -2, NOT_IN_CACHE = -1;
 
   @Override
   public int hashCode() {
@@ -60,15 +61,16 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
         && this.offset == other.offset && this.length == other.length;
   }
 
-  int lock() {
-    int oldRefCount = -1;
+  int incRef() {
+    int newRefCount = -1;
     while (true) {
-      oldRefCount = refCount.get();
+      int oldRefCount = refCount.get();
       if (oldRefCount == EVICTED_REFCOUNT) return -1;
       assert oldRefCount >= 0;
-      if (refCount.compareAndSet(oldRefCount, oldRefCount + 1)) break;
+      newRefCount = oldRefCount + 1;
+      if (refCount.compareAndSet(oldRefCount, newRefCount)) break;
     }
-    return oldRefCount;
+    return newRefCount;
   }
 
   public boolean isLocked() {
@@ -81,7 +83,7 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
     return refCount.get() == EVICTED_REFCOUNT;
   }
 
-  int unlock() {
+  int decRef() {
     int newRefCount = refCount.decrementAndGet();
     if (newRefCount < 0) {
       throw new AssertionError("Unexpected refCount " + newRefCount);
