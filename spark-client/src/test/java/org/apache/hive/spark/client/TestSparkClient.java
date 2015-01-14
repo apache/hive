@@ -50,7 +50,7 @@ import com.google.common.io.ByteStreams;
 public class TestSparkClient {
 
   // Timeouts are bad... mmmkay.
-  private static final long TIMEOUT = 10;
+  private static final long TIMEOUT = 20;
 
   private Map<String, String> createConf(boolean local) {
     Map<String, String> conf = new HashMap<String, String>();
