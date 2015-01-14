@@ -165,7 +165,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
             + " failed with exit code= " + ecode);
       }
 
-      String cmd = "select key from " + tblName;
+      String cmd = "select key*1 from " + tblName;
       ecode = drv.compile(cmd);
       if (ecode != 0) {
         throw new Exception("Select compile: " + cmd
