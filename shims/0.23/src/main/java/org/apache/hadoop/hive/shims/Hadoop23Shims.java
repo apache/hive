@@ -1048,9 +1048,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public void createKey(String keyName, int bitLength)
       throws IOException, NoSuchAlgorithmException {
 
-      if (keyProvider == null) {
-        throw new IOException("HDFS security key provider is not configured on your server.");
-      }
+      checkKeyProvider();
 
       if (keyProvider.getMetadata(keyName) == null) {
         final KeyProvider.Options options = new Options(this.conf);
@@ -1065,15 +1063,25 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public void deleteKey(String keyName) throws IOException {
-      if (keyProvider == null) {
-        throw new IOException("HDFS security key provider is not configured on your server.");
-      }
+      checkKeyProvider();
 
       if (keyProvider.getMetadata(keyName) != null) {
         keyProvider.deleteKey(keyName);
         keyProvider.flush();
       } else {
         throw new IOException("key '" + keyName + "' does not exist.");
+      }
+    }
+
+    @Override
+    public List<String> getKeys() throws IOException {
+      checkKeyProvider();
+      return keyProvider.getKeys();
+    }
+
+    private void checkKeyProvider() throws IOException {
+      if (keyProvider == null) {
+        throw new IOException("HDFS security key provider is not configured on your server.");
       }
     }
 

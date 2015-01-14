@@ -618,6 +618,19 @@ public class QTestUtil {
     setup.postTest(conf);
   }
 
+  public void clearKeysCreatedInTests() {
+    if (hes == null) {
+      return;
+    }
+    try {
+      for (String keyAlias : hes.getKeys()) {
+        hes.deleteKey(keyAlias);
+      }
+    } catch (IOException e) {
+      LOG.error("Fail to clean the keys created in test due to the error", e);
+    }
+  }
+
   /**
    * Clear out any side effects of running tests
    */
@@ -688,6 +701,7 @@ public class QTestUtil {
     }
 
     clearTablesCreatedDuringTests();
+    clearKeysCreatedInTests();
 
     if (clusterType != MiniClusterType.encrypted) {
       // allocate and initialize a new conf since a test can
@@ -697,6 +711,7 @@ public class QTestUtil {
       // renew the metastore since the cluster type is unencrypted
       db = Hive.get(conf);  // propagate new conf to meta store
     }
+
     setup.preTest(conf);
   }
 
@@ -709,6 +724,7 @@ public class QTestUtil {
     }
 
     clearTablesCreatedDuringTests();
+    clearKeysCreatedInTests();
 
     SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
 

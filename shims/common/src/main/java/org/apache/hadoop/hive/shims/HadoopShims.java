@@ -612,6 +612,9 @@ public interface HadoopShims {
 
     @VisibleForTesting
     public void deleteKey(String keyName) throws IOException;
+
+    @VisibleForTesting
+    public List<String> getKeys() throws IOException;
   }
 
   /**
@@ -649,7 +652,13 @@ public interface HadoopShims {
     @Override
     public void deleteKey(String keyName) throws IOException {
     /* not supported */
-    };
+    }
+
+    @Override
+    public List<String> getKeys() throws IOException{
+    /* not supported */
+      return null;
+    }
   }
 
   /**
