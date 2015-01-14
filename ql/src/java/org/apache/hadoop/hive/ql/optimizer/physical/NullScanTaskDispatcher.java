@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,9 +60,10 @@ import org.apache.hadoop.hive.serde2.NullStructSerDe;
  */
 public class NullScanTaskDispatcher implements Dispatcher {
 
-  private final PhysicalContext physicalContext;
-  private final  Map<Rule, NodeProcessor> rules;
   static final Log LOG = LogFactory.getLog(NullScanTaskDispatcher.class.getName());
+  
+  private final PhysicalContext physicalContext;
+  private final Map<Rule, NodeProcessor> rules;
 
   public NullScanTaskDispatcher(PhysicalContext context,  Map<Rule, NodeProcessor> rules) {
     super();
@@ -91,18 +94,6 @@ public class NullScanTaskDispatcher implements Dispatcher {
     return desc;
   }
 
-  private List<String> getPathsForAlias(MapWork work, String alias) {
-    List<String> paths = new ArrayList<String>();
-
-    for (Map.Entry<String, ArrayList<String>> entry : work.getPathToAliases().entrySet()) {
-      if (entry.getValue().contains(alias)) {
-        paths.add(entry.getKey());
-      }
-    }
-
-    return paths;
-  }
-  
   private void processAlias(MapWork work, String path, ArrayList<String> aliasesAffected,
       ArrayList<String> aliases) {
     // the aliases that are allowed to map to a null scan.
@@ -164,7 +155,15 @@ public class NullScanTaskDispatcher implements Dispatcher {
     ParseContext parseContext = physicalContext.getParseContext();
     WalkerCtx walkerCtx = new WalkerCtx();
 
-    for (MapWork mapWork: task.getMapWork()) {
+    List<MapWork> mapWorks = new ArrayList<MapWork>(task.getMapWork());
+    Collections.sort(mapWorks, new Comparator<MapWork>() {
+      @Override
+      public int compare(MapWork o1, MapWork o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+
+    for (MapWork mapWork : mapWorks) {
       LOG.debug("Looking at: "+mapWork.getName());
       Collection<Operator<? extends OperatorDesc>> topOperators
         = mapWork.getAliasToWork().values();
