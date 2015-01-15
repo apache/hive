@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
@@ -106,6 +107,17 @@ public class TestSparkClient {
         } catch (ExecutionException ee) {
           assertTrue(ee.getCause() instanceof IllegalStateException);
         }
+      }
+    });
+  }
+
+  @Test
+  public void testSyncRpc() throws Exception {
+    runTest(true, new TestFunction() {
+      @Override
+      public void call(SparkClient client) throws Exception {
+        Future<String> result = client.run(new SyncRpc());
+        assertEquals("Hello", result.get(TIMEOUT, TimeUnit.SECONDS));
       }
     });
   }
@@ -329,6 +341,15 @@ public class TestSparkClient {
     public void call(Integer l) throws Exception {
       counters.getCounter("group1", "counter1").increment(l.longValue());
       counters.getCounter("group2", "counter2").increment(l.longValue());
+    }
+
+  }
+
+  private static class SyncRpc implements Job<String> {
+
+    @Override
+    public String call(JobContext jc) {
+      return "Hello";
     }
 
   }

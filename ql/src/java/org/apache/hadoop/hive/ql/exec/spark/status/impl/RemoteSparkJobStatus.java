@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -145,7 +146,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         return getDefaultJobInfo(sparkJobId, JobExecutionStatus.FAILED);
       }
     }
-    JobHandle<SparkJobInfo> getJobInfo = sparkClient.submit(
+    Future<SparkJobInfo> getJobInfo = sparkClient.run(
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
       return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
@@ -156,7 +157,7 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   private SparkStageInfo getSparkStageInfo(int stageId) {
-    JobHandle<SparkStageInfo> getStageInfo = sparkClient.submit(new GetStageInfoJob(stageId));
+    Future<SparkStageInfo> getStageInfo = sparkClient.run(new GetStageInfoJob(stageId));
     try {
       return getStageInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Throwable t) {
