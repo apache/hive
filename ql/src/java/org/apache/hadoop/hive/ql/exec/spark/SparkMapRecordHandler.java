@@ -39,7 +39,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -57,9 +56,9 @@ import java.util.List;
  *
  */
 public class SparkMapRecordHandler extends SparkRecordHandler {
+  private static final Log LOG = LogFactory.getLog(SparkMapRecordHandler.class);
   private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
-  public static final Log LOG = LogFactory.getLog(SparkMapRecordHandler.class);
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
   private ExecMapperContext execContext;
@@ -125,7 +124,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        throw new RuntimeException("Map operator initialization failed", e);
+        throw new RuntimeException("Map operator initialization failed: " + e, e);
       }
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
@@ -149,8 +148,9 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.fatal(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
+        String msg = "Error processing row: " + e;
+        LOG.fatal(msg, e);
+        throw new RuntimeException(msg, e);
       }
     }
   }
@@ -196,8 +196,9 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
     } catch (Exception e) {
       if (!abort) {
         // signal new failure to map-reduce
-        LOG.error("Hit error while closing operators - failing tree");
-        throw new IllegalStateException("Error while closing operators", e);
+        String msg = "Hit error while closing operators - failing tree: " + e;
+        LOG.error(msg, e);
+        throw new IllegalStateException(msg, e);
       }
     } finally {
       MapredContext.close();

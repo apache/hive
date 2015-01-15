@@ -42,7 +42,7 @@ public class SparkEdgeProperty {
   public boolean isShuffleNone() {
     return edgeType == SHUFFLE_NONE;
   }
-  
+
   public void setShuffleNone() {
     edgeType = SHUFFLE_NONE;
   }
@@ -80,7 +80,7 @@ public class SparkEdgeProperty {
     if (isShuffleNone()) {
       return "NONE";
     }
-    
+
     StringBuilder sb = new StringBuilder();
     if (isShuffleGroup()) {
       sb.append("GROUP");
