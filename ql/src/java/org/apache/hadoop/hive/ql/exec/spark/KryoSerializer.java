@@ -55,13 +55,13 @@ public class KryoSerializer {
     try {
       jobConf.write(new DataOutputStream(out));
     } catch (IOException e) {
-      LOG.error("Error serializing job configuration", e);
+      LOG.error("Error serializing job configuration: " + e, e);
       return null;
     } finally {
       try {
         out.close();
       } catch (IOException e) {
-        LOG.error("Error closing output stream", e);
+        LOG.error("Error closing output stream: " + e, e);
       }
     }
 
@@ -74,8 +74,8 @@ public class KryoSerializer {
     try {
       conf.readFields(new DataInputStream(new ByteArrayInputStream(buffer)));
     } catch (IOException e) {
-      LOG.error("Error de-serializing job configuration");
-      return null;
+      String msg = "Error de-serializing job configuration: " + e;
+      throw new IllegalStateException(msg, e);
     }
     return conf;
   }

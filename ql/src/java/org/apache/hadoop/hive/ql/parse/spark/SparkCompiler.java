@@ -98,11 +98,6 @@ public class SparkCompiler extends TaskCompiler {
   }
 
   @Override
-  public void init(HiveConf conf, LogHelper console, Hive db) {
-    super.init(conf, console, db);
-  }
-
-  @Override
   protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs) throws SemanticException {
     PERF_LOGGER.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);

@@ -322,10 +322,6 @@ public class GenSparkSkewJoinProcessor {
         }
       }
 
-      // keep it as reference in case we need fetch work
-//        localPlan.getAliasToFetchWork().put(small_alias.toString(),
-//            new FetchWork(tblDir, tableDescList.get(small_alias)));
-
       listWorks.add(skewJoinMapJoinTask.getWork());
       listTasks.add(skewJoinMapJoinTask);
     }
