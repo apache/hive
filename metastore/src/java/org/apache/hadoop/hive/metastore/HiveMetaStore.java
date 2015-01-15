@@ -3125,9 +3125,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         oldPart = alterHandler.alterPartition(getMS(), wh, db_name, tbl_name, part_vals, new_part);
 
+        // Only fetch the table if we actually have a listener
+        Table table = null;
         for (MetaStoreEventListener listener : listeners) {
+          if (table == null) {
+            table = getMS().getTable(db_name, tbl_name);
+          }
           AlterPartitionEvent alterPartitionEvent =
-              new AlterPartitionEvent(oldPart, new_part, true, this);
+              new AlterPartitionEvent(oldPart, new_part, table, true, this);
           alterPartitionEvent.setEnvironmentContext(envContext);
           listener.onAlterPartition(alterPartitionEvent);
         }
@@ -3178,6 +3183,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         oldParts = alterHandler.alterPartitions(getMS(), wh, db_name, tbl_name, new_parts);
 
         Iterator<Partition> olditr = oldParts.iterator();
+        // Only fetch the table if we have a listener that needs it.
+        Table table = null;
         for (Partition tmpPart : new_parts) {
           Partition oldTmpPart = null;
           if (olditr.hasNext()) {
@@ -3187,8 +3194,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new InvalidOperationException("failed to alterpartitions");
           }
           for (MetaStoreEventListener listener : listeners) {
+            if (table == null) {
+              table = getMS().getTable(db_name, tbl_name);
+            }
             AlterPartitionEvent alterPartitionEvent =
-                new AlterPartitionEvent(oldTmpPart, tmpPart, true, this);
+                new AlterPartitionEvent(oldTmpPart, tmpPart, table, true, this);
             listener.onAlterPartition(alterPartitionEvent);
           }
         }

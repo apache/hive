@@ -19,7 +19,10 @@
 
 package org.apache.hive.hcatalog.messaging.json;
 
+import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
+import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
@@ -71,6 +74,17 @@ public class JSONMessageDeserializer extends MessageDeserializer {
   }
 
   @Override
+  public AlterTableMessage getAlterTableMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAlterTableMessage.class);
+    }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not construct appropriate alter table type.",
+          exception);
+    }
+  }
+
+  @Override
   public DropTableMessage getDropTableMessage(String messageBody) {
     try {
       return mapper.readValue(messageBody, JSONDropTableMessage.class);
@@ -87,6 +101,15 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct AddPartitionMessage.", exception);
+    }
+  }
+
+  @Override
+  public AlterPartitionMessage getAlterPartitionMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAlterPartitionMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AlterPartitionMessage.", e);
     }
   }
 

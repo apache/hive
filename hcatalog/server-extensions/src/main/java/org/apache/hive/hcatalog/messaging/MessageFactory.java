@@ -119,6 +119,17 @@ public abstract class MessageFactory {
   public abstract CreateTableMessage buildCreateTableMessage(Table table);
 
   /**
+   * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
+   * which means no message should be sent.  This is because there are many flavors of alter
+   * table (add column, add partition, etc.).  Some are covered elsewhere (like add partition)
+   * and some are not yet supported.
+   * @param before The table before the alter
+   * @param after The table after the alter
+   * @return
+   */
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after);
+
+  /**
    * Factory method for DropTableMessage.
    * @param table The Table being dropped.
    * @return DropTableMessage instance.
@@ -142,6 +153,15 @@ public abstract class MessageFactory {
   @InterfaceAudience.LimitedPrivate({"Hive"})
   @InterfaceStability.Evolving
   public abstract AddPartitionMessage buildAddPartitionMessage(Table table, PartitionSpecProxy partitionSpec);
+
+  /**
+   * Factory method for building AlterPartitionMessage
+   * @param before The partition before it was altered
+   * @param after The partition after it was altered
+   * @return a new AlterPartitionMessage
+   */
+  public abstract AlterPartitionMessage buildAlterPartitionMessage(Partition before,
+                                                                   Partition after);
 
   /**
    * Factory method for DropPartitionMessage.

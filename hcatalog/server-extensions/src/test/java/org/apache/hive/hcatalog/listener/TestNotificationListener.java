@@ -46,6 +46,8 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
+import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
@@ -104,7 +106,9 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         HCatConstants.HCAT_CREATE_DATABASE_EVENT,
         HCatConstants.HCAT_CREATE_TABLE_EVENT,
         HCatConstants.HCAT_ADD_PARTITION_EVENT,
+        HCatConstants.HCAT_ALTER_PARTITION_EVENT,
         HCatConstants.HCAT_DROP_PARTITION_EVENT,
+        HCatConstants.HCAT_ALTER_TABLE_EVENT,
         HCatConstants.HCAT_DROP_TABLE_EVENT,
         HCatConstants.HCAT_DROP_DATABASE_EVENT);
     Assert.assertEquals(expectedMessages, actualMessages);
@@ -120,7 +124,9 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
     kvs.put("b", "2011");
     client.markPartitionForEvent("mydb", "mytbl", kvs,
         PartitionEventType.LOAD_DONE);
+    driver.run("alter table mytbl partition (b='2011') set fileformat orc");
     driver.run("alter table mytbl drop partition(b='2011')");
+    driver.run("alter table mytbl add columns (c int comment 'this is an int', d decimal(3,2))");
     driver.run("drop table mytbl");
     driver.run("drop database mydb");
   }
@@ -170,6 +176,20 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         Assert.assertEquals("mytbl", ((AddPartitionMessage) message2).getTable());
         Assert.assertEquals(1, ((AddPartitionMessage) message2).getPartitions().size());
         Assert.assertEquals("2011", ((AddPartitionMessage) message2).getPartitions().get(0).get("b"));
+      } else if (event.equals(HCatConstants.HCAT_ALTER_PARTITION_EVENT)) {
+        Assert.assertEquals("topic://hcat.mydb.mytbl", msg.getJMSDestination().toString());
+        // for alter partition events
+        AlterPartitionMessage message = deserializer.getAlterPartitionMessage(messageBody);
+        Assert.assertEquals("mytbl", message.getTable());
+        Assert.assertEquals("mydb", message.getDB());
+        Assert.assertEquals(1, message.getValues().size());
+        Assert.assertEquals("2011", message.getValues().get(0));
+        HCatEventMessage message2 = MessagingUtils.getMessage(msg);
+        Assert.assertTrue("Unexpected message-type.", message2 instanceof AlterPartitionMessage);
+        Assert.assertEquals("mydb", message2.getDB());
+        Assert.assertEquals("mytbl", ((AlterPartitionMessage) message2).getTable());
+        Assert.assertEquals(1, ((AlterPartitionMessage) message2).getValues().size());
+        Assert.assertEquals("2011", ((AlterPartitionMessage) message2).getValues().get(0));
       } else if (event.equals(HCatConstants.HCAT_DROP_PARTITION_EVENT)) {
 
         Assert.assertEquals("topic://hcat.mydb.mytbl", msg.getJMSDestination()
@@ -184,7 +204,8 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
         Assert.assertEquals("mydb", message2.getDB());
         Assert.assertEquals("mytbl", ((DropPartitionMessage) message2).getTable());
         Assert.assertEquals(1, ((DropPartitionMessage) message2).getPartitions().size());
-        Assert.assertEquals("2011", ((DropPartitionMessage) message2).getPartitions().get(0).get("b"));
+        Assert.assertEquals("2011", ((DropPartitionMessage) message2).getPartitions().get(0).get(
+            "b"));
       } else if (event.equals(HCatConstants.HCAT_DROP_TABLE_EVENT)) {
 
         Assert.assertEquals("topic://hcat.mydb", msg.getJMSDestination().toString());
@@ -199,11 +220,20 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
 
         Assert.assertEquals("topic://" + HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX, msg
             .getJMSDestination().toString());
-        DropDatabaseMessage message =  deserializer.getDropDatabaseMessage(messageBody);
+        DropDatabaseMessage message = deserializer.getDropDatabaseMessage(messageBody);
         Assert.assertEquals("mydb", message.getDB());
         HCatEventMessage message2 = MessagingUtils.getMessage(msg);
         Assert.assertTrue("Unexpected message-type.", message2 instanceof DropDatabaseMessage);
         Assert.assertEquals("mydb", message2.getDB());
+      } else if (event.equals(HCatConstants.HCAT_ALTER_TABLE_EVENT)) {
+        Assert.assertEquals("topic://hcat.mydb", msg.getJMSDestination().toString());
+        AlterTableMessage message = deserializer.getAlterTableMessage(messageBody);
+        Assert.assertEquals("mytbl", message.getTable());
+        Assert.assertEquals("mydb", message.getDB());
+        HCatEventMessage message2 = MessagingUtils.getMessage(msg);
+        Assert.assertTrue("Unexpected message-type.", message2 instanceof AlterTableMessage);
+        Assert.assertEquals("mydb", message2.getDB());
+        Assert.assertEquals("mytbl", ((AlterTableMessage) message2).getTable());
       } else if (event.equals(HCatConstants.HCAT_PARTITION_DONE_EVENT)) {
         // TODO: Fill in when PARTITION_DONE_EVENT is supported.
         Assert.assertTrue("Unexpected: HCAT_PARTITION_DONE_EVENT not supported (yet).", false);
