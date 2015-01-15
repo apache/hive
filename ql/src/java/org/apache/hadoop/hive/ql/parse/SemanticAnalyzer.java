@@ -395,8 +395,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
         topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, topToTableProps,
-        fsopToTable, loadTableWork,
-        loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput,
@@ -6334,7 +6333,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           + dest_path + " row schema: " + inputRR.toString());
     }
 
-    fsopToTable.put((FileSinkOperator) output, dest_tab);
+    FileSinkOperator fso = (FileSinkOperator) output;
+    fso.getConf().setTable(dest_tab);
+    fsopToTable.put(fso, dest_tab);
     return output;
   }
 
@@ -9966,7 +9967,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 4. Generate Parse Context for Optimizer & Physical compiler
     ParseContext pCtx = new ParseContext(conf, qb, plannerCtx.child, opToPartPruner, opToPartList,
         topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, topToTableProps,
-        fsopToTable, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * FileSinkDesc.
@@ -88,6 +89,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
   private long txnId = 0;  // transaction id for this operation
+
+  private transient Table table;
 
   public FileSinkDesc() {
   }
@@ -420,5 +423,13 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public long getTransactionId() {
     return txnId;
+  }
+
+  public Table getTable() {
+    return table;
+  }
+
+  public void setTable(Table table) {
+    this.table = table;
   }
 }
