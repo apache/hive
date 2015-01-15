@@ -57,8 +57,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private ExecMapperContext context;
   private Configuration hconf;
   private MapJoinDesc desc;
-  private MapJoinKey lastKey = null;
-  private int rowCount = 0;
 
   @Override
   public void init(ExecMapperContext context, Configuration hconf, MapJoinOperator joinOp) {
@@ -111,8 +109,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
             : new HashMapWrapper(hconf, keyCount);
 
         while (kvReader.next()) {
-          rowCount++;
-          lastKey = tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
+          tableContainer.putRow(keyCtx, (Writable)kvReader.getCurrentKey(),
               valCtx, (Writable)kvReader.getCurrentValue());
         }
 
