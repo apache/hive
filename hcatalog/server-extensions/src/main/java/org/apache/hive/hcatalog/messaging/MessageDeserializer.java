@@ -36,10 +36,14 @@ public abstract class MessageDeserializer {
       return getDropDatabaseMessage(messageBody);
     case CREATE_TABLE:
       return getCreateTableMessage(messageBody);
+    case ALTER_TABLE:
+      return getAlterTableMessage(messageBody);
     case DROP_TABLE:
       return getDropTableMessage(messageBody);
     case ADD_PARTITION:
       return getAddPartitionMessage(messageBody);
+    case ALTER_PARTITION:
+      return getAlterPartitionMessage(messageBody);
     case DROP_PARTITION:
       return getDropPartitionMessage(messageBody);
 
@@ -64,6 +68,13 @@ public abstract class MessageDeserializer {
   public abstract CreateTableMessage getCreateTableMessage(String messageBody);
 
   /**
+   * Method to de-serialize AlterTableMessge
+   * @param messageBody string message
+   * @return object message
+   */
+  public abstract AlterTableMessage getAlterTableMessage(String messageBody);
+
+  /**
    * Method to de-serialize DropTableMessage instance.
    */
   public abstract DropTableMessage getDropTableMessage(String messageBody);
@@ -72,6 +83,13 @@ public abstract class MessageDeserializer {
    * Method to de-serialize AddPartitionMessage instance.
    */
   public abstract AddPartitionMessage getAddPartitionMessage(String messageBody);
+
+  /**
+   * Method to deserialize AlterPartitionMessage
+   * @param messageBody the message in serialized form
+   * @return message in object form
+   */
+  public abstract AlterPartitionMessage getAlterPartitionMessage(String messageBody);
 
   /**
    * Method to de-serialize DropPartitionMessage instance.

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -140,7 +141,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @throws MetaException
    */
   public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
-    /*Table before = tableEvent.getOldTable();
+    Table before = tableEvent.getOldTable();
     Table after = tableEvent.getNewTable();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ALTER_TABLE_EVENT,
@@ -149,8 +150,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
       event.setDbName(after.getDbName());
       event.setTableName(after.getTableName());
       enqueue(event);
-    }*/
-    // TODO - once HIVE-9175 is committed
+    }
   }
 
   /**
@@ -187,7 +187,16 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @throws MetaException
    */
   public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
-    // TODO, MessageFactory doesn't support Alter Partition yet.
+    Partition before = partitionEvent.getOldPartition();
+    Partition after = partitionEvent.getNewPartition();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_ALTER_PARTITION_EVENT,
+        msgFactory.buildAlterPartitionMessage(before, after).toString());
+    if (event != null) {
+      event.setDbName(before.getDbName());
+      event.setTableName(before.getTableName());
+      enqueue(event);
+    }
   }
 
   /**
