@@ -48,6 +48,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private String compressCodec;
   private String compressType;
   private boolean multiFileSpray;
+  private boolean temporary;
   // Whether the files output by this FileSink can be merged, e.g. if they are to be put into a
   // bucketed or sorted table/partition they cannot be merged.
   private boolean canBeMerged;
@@ -220,6 +221,21 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setMultiFileSpray(boolean multiFileSpray) {
     this.multiFileSpray = multiFileSpray;
   }
+  
+  /**
+   * @return destination is temporary
+   */
+  public boolean isTemporary() {
+    return temporary;
+  }
+
+  /**
+   * @param totalFiles the totalFiles to set
+   */
+  public void setTemporary(boolean temporary) {
+    this.temporary = temporary;
+  }
+
 
   public boolean canBeMerged() {
     return canBeMerged;

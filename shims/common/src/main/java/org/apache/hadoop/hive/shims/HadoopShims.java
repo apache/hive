@@ -26,6 +26,7 @@ import java.security.AccessControlException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
@@ -388,6 +390,33 @@ public interface HadoopShims {
   public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 
   public Map<String, String> getHadoopConfNames();
+  
+  /**
+   * Create a shim for DFS storage policy.
+   */
+  
+  public enum StoragePolicyValue {
+    MEMORY, /* 1-replica memory */
+    SSD, /* 3-replica ssd */
+    DEFAULT /* system defaults (usually 3-replica disk) */;
+
+    public static StoragePolicyValue lookup(String name) {
+      if (name == null) {
+        return DEFAULT;
+      }
+      return StoragePolicyValue.valueOf(name.toUpperCase().trim());
+    }
+  };
+  
+  public interface StoragePolicyShim {
+    void setStoragePolicy(Path path, StoragePolicyValue policy) throws IOException;
+  }
+  
+  /**
+   *  obtain a storage policy shim associated with the filesystem.
+   *  Returns null when the filesystem has no storage policies.
+   */
+  public StoragePolicyShim getStoragePolicyShim(FileSystem fs);
 
   /**
    * a hadoop.io ByteBufferPool shim.
