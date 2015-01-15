@@ -950,7 +950,11 @@ public class QTestUtil {
         command += StringUtils.chop(oneCmd) + "\\;";
         continue;
       } else {
-        command += oneCmd;
+        if (isHiveCommand(oneCmd)) {
+          command = oneCmd;
+        } else {
+          command += oneCmd;
+        }
       }
       if (StringUtils.isBlank(command)) {
         continue;
@@ -969,6 +973,17 @@ public class QTestUtil {
     }
 
     return rc;
+  }
+
+  private boolean isHiveCommand(String command) {
+    String[] cmd = command.trim().split("\\s+");
+    if (HiveCommand.find(cmd) != null) {
+      return true;
+    } else if (HiveCommand.find(cmd, HiveCommand.ONLY_FOR_TESTING) != null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private int executeTestCommand(final String command) {

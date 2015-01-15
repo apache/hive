@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS encrypted_table;
 
 CREATE TABLE encrypted_table (key STRING, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_table';
 
+-- Create encryption key and zone;
 crypto create_key --keyName key1;
 crypto create_zone --keyName key1 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table;
 
