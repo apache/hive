@@ -699,13 +699,6 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
         "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
         "because memory-optimized hashtable cannot be serialized."),
-    HIVEMAPJOINUSEOPTIMIZEDKEYS("hive.mapjoin.optimized.keys", true,
-        "Whether MapJoin hashtable should use optimized (size-wise), keys, allowing the table to take less\n" +
-        "memory. Depending on key, the memory savings for entire table can be 5-15% or so."),
-    HIVEMAPJOINLAZYHASHTABLE("hive.mapjoin.lazy.hashtable", true,
-        "Whether MapJoin hashtable should deserialize values on demand. Depending on how many values in\n" +
-        "the table the join will actually touch, it can save a lot of memory by not creating objects for\n" +
-        "rows that are not needed. If all rows are needed obviously there's no gain."),
     HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024,
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
