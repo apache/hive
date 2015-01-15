@@ -60,6 +60,12 @@ public final class FileUtils {
     }
   };
 
+  public static final PathFilter STAGING_DIR_PATH_FILTER = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith(".");
+    }
+  };
 
   /**
    * Variant of Path.makeQualified that qualifies the input path against the default file system
