@@ -606,4 +606,9 @@ public class Hadoop20SShims extends HadoopShimsSecure {
       return kerberosName.getShortName();
     }
   }
+  
+  @Override
+  public StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
+    return null;
+  }
 }

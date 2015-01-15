@@ -1615,6 +1615,10 @@ public class HiveConf extends Configuration {
         "inheriting the permission of the warehouse or database directory."),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
         "whether insert into external tables is allowed"),
+    HIVE_TEMPORARY_TABLE_STORAGE(
+        "hive.exec.temporary.table.storage", "default", new StringSet("memory",
+         "ssd", "default"), "Define the storage policy for temporary tables." +
+         "Choices between memory, ssd and default"),
 
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
