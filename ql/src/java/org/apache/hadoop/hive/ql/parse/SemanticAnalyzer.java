@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.antlr.runtime.ClassicToken;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeWizard;
@@ -8752,6 +8753,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 // insert a select operator here used by the ColumnPruner to reduce
                 // the data to shuffle
                 curr = insertSelectAllPlanForGroupBy(curr);
+                // Check and transform group by *. This will only happen for select distinct *.
+                // Here the "genSelectPlan" is being leveraged.
+                // The main benefits are (1) remove virtual columns that should
+                // not be included in the group by; (2) add the fully qualified column names to unParseTranslator
+                // so that view is supported. The drawback is that an additional SEL op is added. If it is
+                // not necessary, it will be removed by NonBlockingOpDeDupProc Optimizer because it will match
+                // SEL%SEL% rule.
+                ASTNode selExprList = qbp.getSelForClause(dest);
+                if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
+                    && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
+                  ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
+                  if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+                    curr = genSelectPlan(dest, qb, curr, curr);
+                    RowResolver rr = opParseCtx.get(curr).getRowResolver();
+                    qbp.setSelExprForClause(dest, SemanticAnalyzer.genSelectDIAST(rr));
+                  }
+                }
                 if (conf.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
                   if (!conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
                     curr = genGroupByPlanMapAggrNoSkew(dest, qb, curr);
@@ -12207,5 +12225,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected boolean deleting() {
     return false;
+  }
+  public static ASTNode genSelectDIAST(RowResolver rr) {
+    HashMap<String, LinkedHashMap<String, ColumnInfo>> map = rr.getRslvMap();
+    ASTNode selectDI = new ASTNode(new CommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI"));
+    for (String tabAlias : map.keySet()) {
+      for (Entry<String, ColumnInfo> entry : map.get(tabAlias).entrySet()) {
+        selectDI.addChild(buildSelExprSubTree(tabAlias, entry.getKey()));
+      }
+    }
+    return selectDI;
+  }
+  private static ASTNode buildSelExprSubTree(String tableAlias, String col) {
+    ASTNode selexpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
+    ASTNode tableOrCol = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL,
+        "TOK_TABLE_OR_COL"));
+    ASTNode dot = new ASTNode(new CommonToken(HiveParser.DOT, "."));
+    tableOrCol.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, tableAlias)));
+    dot.addChild(tableOrCol);
+    dot.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, col)));
+    selexpr.addChild(dot);
+    return selexpr;
   }
 }
