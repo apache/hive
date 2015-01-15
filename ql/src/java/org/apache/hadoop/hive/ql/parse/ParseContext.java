@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
@@ -43,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
@@ -79,7 +77,6 @@ public class ParseContext {
   private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
   private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private HashMap<TableScanOperator, Table> topToTable;
-  private Map<FileSinkOperator, Table> fsopToTable;
   private List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private HashMap<TableScanOperator, Map<String, String>> topToProps;
   private HashMap<String, SplitSample> nameToSplitSample;
@@ -169,7 +166,6 @@ public class ParseContext {
       Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext,
       HashMap<TableScanOperator, Table> topToTable,
       HashMap<TableScanOperator, Map<String, String>> topToProps,
-      Map<FileSinkOperator, Table> fsopToTable,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
@@ -191,7 +187,6 @@ public class ParseContext {
     this.joinContext = joinContext;
     this.smbMapJoinContext = smbMapJoinContext;
     this.topToTable = topToTable;
-    this.fsopToTable = fsopToTable;
     this.topToProps = topToProps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
@@ -310,14 +305,6 @@ public class ParseContext {
    */
   public void setTopToTable(HashMap<TableScanOperator, Table> topToTable) {
     this.topToTable = topToTable;
-  }
-
-  public Map<FileSinkOperator, Table> getFsopToTable() {
-    return fsopToTable;
-  }
-
-  public void setFsopToTable(Map<FileSinkOperator, Table> fsopToTable) {
-    this.fsopToTable = fsopToTable;
   }
 
   public List<ReduceSinkOperator> getReduceSinkOperatorsAddedByEnforceBucketingSorting() {

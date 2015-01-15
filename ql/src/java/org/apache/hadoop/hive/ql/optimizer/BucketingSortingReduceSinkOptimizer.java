@@ -390,7 +390,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
         }
       }
 
-      Table destTable = pGraphContext.getFsopToTable().get(fsOp);
+      Table destTable = fsOp.getConf().getTable();
       if (destTable == null) {
         return null;
       }
