@@ -138,4 +138,18 @@ abstract class BaseProtocol extends RpcDispatcher {
     }
   }
 
+  protected static class SyncJobRequest<T extends Serializable> implements Serializable {
+
+    final Job<T> job;
+
+    SyncJobRequest(Job<T> job) {
+      this.job = job;
+    }
+
+    SyncJobRequest() {
+      this(null);
+    }
+
+  }
+
 }

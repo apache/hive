@@ -116,6 +116,11 @@ class SparkClientImpl implements SparkClient {
   }
 
   @Override
+  public <T extends Serializable> Future<T> run(Job<T> job) {
+    return protocol.run(job);
+  }
+
+  @Override
   public void stop() {
     if (isAlive) {
       isAlive = false;
@@ -144,22 +149,22 @@ class SparkClientImpl implements SparkClient {
 
   @Override
   public Future<?> addJar(URL url) {
-    return submit(new AddJarJob(url.toString()));
+    return run(new AddJarJob(url.toString()));
   }
 
   @Override
   public Future<?> addFile(URL url) {
-    return submit(new AddFileJob(url.toString()));
+    return run(new AddFileJob(url.toString()));
   }
 
   @Override
   public Future<Integer> getExecutorCount() {
-    return submit(new GetExecutorCountJob());
+    return run(new GetExecutorCountJob());
   }
 
   @Override
   public Future<Integer> getDefaultParallelism() {
-    return submit(new GetDefaultParallelismJob());
+    return run(new GetDefaultParallelismJob());
   }
 
   void cancel(String jobId) {
@@ -379,14 +384,22 @@ class SparkClientImpl implements SparkClient {
       promise.addListener(new GenericFutureListener<Promise<T>>() {
         @Override
         public void operationComplete(Promise<T> p) {
-          jobs.remove(jobId);
+          if (jobId != null) {
+            jobs.remove(jobId);
+          }
           if (p.isCancelled() && !rpc.isDone()) {
             rpc.cancel(true);
           }
         }
       });
-
       return handle;
+    }
+
+    <T extends Serializable> Future<T> run(Job<T> job) {
+      @SuppressWarnings("unchecked")
+      final io.netty.util.concurrent.Future<T> rpc = (io.netty.util.concurrent.Future<T>)
+        driverRpc.call(new SyncJobRequest(job), Serializable.class);
+      return rpc;
     }
 
     void cancel(String jobId) {
