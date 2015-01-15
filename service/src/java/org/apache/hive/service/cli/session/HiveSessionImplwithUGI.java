@@ -91,18 +91,20 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   }
 
   /**
-   * close the file systems for the session
-   * cancel the session's delegation token and close the metastore connection
+   * Close the file systems for the session and remove it from the FileSystem cache.
+   * Cancel the session's delegation token and close the metastore connection
    */
   @Override
   public void close() throws HiveSQLException {
     try {
-    acquire(true);
-    ShimLoader.getHadoopShims().closeAllForUGI(sessionUgi);
-    cancelDelegationToken();
+      acquire(true);
+      cancelDelegationToken();
     } finally {
-      release(true);
-      super.close();
+      try {
+        super.close();
+      } finally {
+        ShimLoader.getHadoopShims().closeAllForUGI(sessionUgi);
+      }
     }
   }
 
