@@ -125,9 +125,7 @@ class SparkClientImpl implements SparkClient {
     if (isAlive) {
       isAlive = false;
       try {
-        protocol.endSession().get(10, TimeUnit.SECONDS);
-      } catch (TimeoutException te) {
-        LOG.warn("Timed out waiting for driver to respond to stop request.");
+        protocol.endSession();
       } catch (Exception e) {
         LOG.warn("Exception while waiting for end session reply.", e);
       } finally {
@@ -142,7 +140,7 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Interrupted before driver thread was finished.");
     }
     if (endTime - System.currentTimeMillis() <= 0) {
-      LOG.debug("Shut down time out.");
+      LOG.warn("Timed out shutting down remote driver, interrupting...");
       driverThread.interrupt();
     }
   }
