@@ -96,6 +96,19 @@ public final class HCatConstants {
   public static final String HCAT_DESIRED_PARTITION_NUM_SPLITS =
     "hcat.desired.partition.num.splits";
 
+  /**
+   * hcat.append.limit allows a hcat user to specify a custom append limit.
+   * By default, while appending to an existing directory, hcat will attempt
+   * to avoid naming clashes and try to append _a_NNN where NNN is a number to
+   * the desired filename to avoid clashes. However, by default, it only tries
+   * for NNN from 0 to 999 before giving up. This can cause an issue for some
+   * tables with an extraordinarily large number of files. Ideally, this should
+   * be fixed by the user changing their usage pattern and doing some manner of
+   * compaction, but in the meanwhile, until they can, setting this parameter
+   * can be used to bump that limit.
+   */
+  public static final String HCAT_APPEND_LIMIT = "hcat.append.limit";
+
   // IMPORTANT IMPORTANT IMPORTANT!!!!!
   //The keys used to store info into the job Configuration.
   //If any new keys are added, the HCatStorer needs to be updated. The HCatStorer
