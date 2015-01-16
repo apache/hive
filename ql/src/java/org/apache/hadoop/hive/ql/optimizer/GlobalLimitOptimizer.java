@@ -62,10 +62,8 @@ public class GlobalLimitOptimizer implements Transform {
     GlobalLimitCtx globalLimitCtx = pctx.getGlobalLimitCtx();
     Map<TableScanOperator, ExprNodeDesc> opToPartPruner = pctx.getOpToPartPruner();
     Map<String, SplitSample> nameToSplitSample = pctx.getNameToSplitSample();
-    Map<TableScanOperator, Table> topToTable = pctx.getTopToTable();
 
     QB qb = pctx.getQB();
-    HiveConf conf = pctx.getConf();
     QBParseInfo qbParseInfo = qb.getParseInfo();
 
     // determine the query qualifies reduce input size for LIMIT
@@ -93,7 +91,7 @@ public class GlobalLimitOptimizer implements Transform {
       // query qualify for the optimization
       if (tempGlobalLimit != null && tempGlobalLimit != 0) {
         TableScanOperator ts = (TableScanOperator) topOps.values().toArray()[0];
-        Table tab = topToTable.get(ts);
+        Table tab = ts.getConf().getTableMetadata();
 
         if (!tab.isPartitioned()) {
           if (qbParseInfo.getDestToWhereExpr().isEmpty()) {

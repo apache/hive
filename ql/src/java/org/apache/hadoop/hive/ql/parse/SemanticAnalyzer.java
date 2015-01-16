@@ -375,7 +375,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartList = pctx.getOpToPartList();
     opToSamplePruner = pctx.getOpToSamplePruner();
     topOps = pctx.getTopOps();
-    topSelOps = pctx.getTopSelOps();
     opParseCtx = pctx.getOpParseCtx();
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
@@ -394,14 +393,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ParseContext getParseContext() {
-    return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
-        topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, topToTableProps,
-        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+    return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList,
+        topOps, opParseCtx, joinContext, smbMapJoinContext, loadTableWork,
+        loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput,
-        reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        queryProperties);
+        reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
   }
 
   @SuppressWarnings("nls")
@@ -9273,7 +9271,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // Create the root of the operator tree
-      TableScanDesc tsDesc = new TableScanDesc(alias, vcList);
+      TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
       SplitSample sample = nameToSplitSample.get(alias_id);
@@ -9295,6 +9293,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, String> props = qb.getTabPropsForAlias(alias);
       if (props != null) {
         topToTableProps.put((TableScanOperator) top, props);
+        tsDesc.setOpProps(props);
       }
     } else {
       rwsch = opParseCtx.get(top).getRowResolver();
@@ -9988,12 +9987,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
-    ParseContext pCtx = new ParseContext(conf, qb, plannerCtx.child, opToPartPruner, opToPartList,
-        topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, topToTableProps,
-        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-        listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions, opToSamplePruner,
-        globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
-        viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
+    ParseContext pCtx = new ParseContext(conf, qb, plannerCtx.child,
+        opToPartPruner, opToPartList, topOps, opParseCtx, joinContext,
+        smbMapJoinContext, loadTableWork, loadFileWork, ctx, idToTableNameMap,
+        destTableId, uCtx, listMapJoinOpsNoReducer, groupOpToInputTables,
+        prunedPartitions, opToSamplePruner, globalLimitCtx, nameToSplitSample,
+        inputs, rootTasks, opToPartToSkewedPruner, viewAliasToInput,
+        reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
 
     // 5. Take care of view creation
     if (createVwDesc != null) {

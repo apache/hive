@@ -699,15 +699,13 @@ public class Driver implements CommandProcessor {
         || op.equals(HiveOperation.QUERY)) {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
-      Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
 
       for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
           .getParseContext().getTopOps().entrySet()) {
         Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-        if (topOp instanceof TableScanOperator
-            && tsoTopMap.containsKey(topOp)) {
+        if (topOp instanceof TableScanOperator) {
           TableScanOperator tableScanOp = (TableScanOperator) topOp;
-          Table tbl = tsoTopMap.get(tableScanOp);
+          Table tbl = tableScanOp.getConf().getTableMetadata();
           List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
           List<FieldSchema> columns = tbl.getCols();
           List<String> cols = new ArrayList<String>();

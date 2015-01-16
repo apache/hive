@@ -465,7 +465,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
           if (op instanceof TableScanOperator) {
             assert !useBucketSortPositions;
             TableScanOperator ts = (TableScanOperator) op;
-            Table srcTable = pGraphContext.getTopToTable().get(ts);
+            Table srcTable = ts.getConf().getTableMetadata();
 
             // Find the positions of the bucketed columns in the table corresponding
             // to the select list.

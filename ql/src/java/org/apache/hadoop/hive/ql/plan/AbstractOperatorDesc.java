@@ -18,12 +18,22 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+
+import java.util.Map;
+
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
+
 public class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
   protected transient Statistics statistics;
   protected transient OpTraits opTraits;
+  protected transient Map<String, String> opProps;
 
+  static {
+    PTFUtils.makeTransient(AbstractOperatorDesc.class, "opProps");
+  }
+  
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
   public Statistics getStatistics() {
@@ -50,5 +60,13 @@ public class AbstractOperatorDesc implements OperatorDesc {
   
   public void setOpTraits(OpTraits opTraits) {
     this.opTraits = opTraits;
+  }
+
+  public Map<String, String> getOpProps() {
+    return opProps;
+  }
+
+  public void setOpProps(Map<String, String> props) {
+    this.opProps = props;
   }
 }

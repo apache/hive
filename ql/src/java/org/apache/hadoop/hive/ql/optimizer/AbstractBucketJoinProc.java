@@ -203,7 +203,6 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         new LinkedHashMap<String, List<List<String>>>();
 
     HashMap<String, Operator<? extends OperatorDesc>> topOps = pGraphContext.getTopOps();
-    Map<TableScanOperator, Table> topToTable = pGraphContext.getTopToTable();
 
     HashMap<String, String> aliasToNewAliasMap = new HashMap<String, String>();
 
@@ -270,7 +269,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         joinKeyOrder = new Integer[keys.size()];
       }
 
-      Table tbl = topToTable.get(tso);
+      Table tbl = tso.getConf().getTableMetadata();
       if (tbl.isPartitioned()) {
         PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
         List<Partition> partitions = prunedParts.getNotDeniedPartns();

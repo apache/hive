@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 /**
@@ -36,7 +37,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   static {
-    PTFUtils.makeTransient(TableScanDesc.class, "filterObject", "referencedColumns");
+    PTFUtils.makeTransient(TableScanDesc.class, "filterObject", "referencedColumns", "tableMetadata");
   }
 
   private String alias;
@@ -93,23 +94,32 @@ public class TableScanDesc extends AbstractOperatorDesc {
   
   private boolean isMetadataOnly = false;
 
-  @SuppressWarnings("nls")
+  private transient final Table tableMetadata;
+
+
   public TableScanDesc() {
+    this(null, null);
   }
 
-  public TableScanDesc(final String alias) {
-    this.alias = alias;
+  @SuppressWarnings("nls")
+  public TableScanDesc(Table tblMetadata) {
+    this(null, tblMetadata);
   }
 
-  public TableScanDesc(final String alias, List<VirtualColumn> vcs) {
+  public TableScanDesc(final String alias, Table tblMetadata) {
+    this(alias, null, tblMetadata);
+  }
+
+  public TableScanDesc(final String alias, List<VirtualColumn> vcs, Table tblMetadata) {
     this.alias = alias;
     this.virtualCols = vcs;
+    this.tableMetadata = tblMetadata;
   }
 
   @Override
   public Object clone() {
     List<VirtualColumn> vcs = new ArrayList<VirtualColumn>(getVirtualCols());
-    return new TableScanDesc(getAlias(), vcs);
+    return new TableScanDesc(getAlias(), vcs, this.tableMetadata);
   }
 
   @Explain(displayName = "alias")
@@ -250,8 +260,12 @@ public class TableScanDesc extends AbstractOperatorDesc {
   public void setIsMetadataOnly(boolean metadata_only) {
     isMetadataOnly = metadata_only;
   }
-  
+
   public boolean getIsMetadataOnly() {
     return isMetadataOnly;
+  }
+
+  public Table getTableMetadata() {
+    return tableMetadata;
   }
 }

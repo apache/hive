@@ -249,8 +249,6 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     int pos,
     List<Order> sortColumnsFirstTable) throws SemanticException {
     String alias = aliases[pos];
-    Map<TableScanOperator, Table> topToTable = this.pGraphContext
-      .getTopToTable();
 
     /*
      * Consider a query like:
@@ -313,7 +311,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       return false;
     }
 
-    Table tbl = topToTable.get(tso);
+    Table tbl = tso.getConf().getTableMetadata();
     if (tbl.isPartitioned()) {
       PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
       List<Partition> partitions = prunedParts.getNotDeniedPartns();

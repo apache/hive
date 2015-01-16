@@ -228,7 +228,7 @@ public class StatsOptimizer implements Transform {
           return null;
         }
 
-        Table tbl = pctx.getTopToTable().get(tsOp);
+        Table tbl = tsOp.getConf().getTableMetadata();
         List<Object> oneRow = new ArrayList<Object>();
         List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
 

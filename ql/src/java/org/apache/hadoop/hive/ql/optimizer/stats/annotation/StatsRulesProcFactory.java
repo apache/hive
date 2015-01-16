@@ -103,7 +103,7 @@ public class StatsRulesProcFactory {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       PrunedPartitionList partList =
           aspCtx.getParseContext().getPrunedPartitions(tsop.getName(), tsop);
-      Table table = aspCtx.getParseContext().getTopToTable().get(tsop);
+      Table table = tsop.getConf().getTableMetadata();
 
       try {
         // gather statistics for the first time and the attach it to table scan operator

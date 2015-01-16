@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -71,14 +70,11 @@ public class ParseContext {
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
   private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
   private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
   private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
-  private HashMap<TableScanOperator, Table> topToTable;
   private List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
-  private HashMap<TableScanOperator, Map<String, String>> topToProps;
   private HashMap<String, SplitSample> nameToSplitSample;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -125,15 +121,11 @@ public class ParseContext {
    * @param opToPartList
    * @param topOps
    *          list of operators for the top query
-   * @param topSelOps
-   *          list of operators for the selects introduced for column pruning
    * @param opParseCtx
    *          operator parse context - contains a mapping from operator to
    *          operator parse state (row resolver etc.)
    * @param joinContext
    *          context needed join processing (map join specifically)
-   * @param topToTable
-   *          the top tables being processed
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
@@ -160,12 +152,9 @@ public class ParseContext {
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends OperatorDesc>> topOps,
-      HashMap<String, Operator<? extends OperatorDesc>> topSelOps,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
       Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext,
-      HashMap<TableScanOperator, Table> topToTable,
-      HashMap<TableScanOperator, Map<String, String>> topToProps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
@@ -186,13 +175,10 @@ public class ParseContext {
     this.opToPartList = opToPartList;
     this.joinContext = joinContext;
     this.smbMapJoinContext = smbMapJoinContext;
-    this.topToTable = topToTable;
-    this.topToProps = topToProps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
     this.opParseCtx = opParseCtx;
     this.topOps = topOps;
-    this.topSelOps = topSelOps;
     this.ctx = ctx;
     this.idToTableNameMap = idToTableNameMap;
     this.destTableId = destTableId;
@@ -292,21 +278,6 @@ public class ParseContext {
     return opToPartList;
   }
 
-  /**
-   * @return the topToTable
-   */
-  public HashMap<TableScanOperator, Table> getTopToTable() {
-    return topToTable;
-  }
-
-  /**
-   * @param topToTable
-   *          the topToTable to set
-   */
-  public void setTopToTable(HashMap<TableScanOperator, Table> topToTable) {
-    this.topToTable = topToTable;
-  }
-
   public List<ReduceSinkOperator> getReduceSinkOperatorsAddedByEnforceBucketingSorting() {
     return reduceSinkOperatorsAddedByEnforceBucketingSorting;
   }
@@ -315,21 +286,6 @@ public class ParseContext {
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting) {
     this.reduceSinkOperatorsAddedByEnforceBucketingSorting =
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
-  }
-
-  /**
-   * @return the topToProps
-   */
-  public HashMap<TableScanOperator, Map<String, String>> getTopToProps() {
-    return topToProps;
-  }
-
-  /**
-   * @param topToProps
-   *          the topToProps to set
-   */
-  public void setTopToProps(HashMap<TableScanOperator, Map<String, String>> topToProps) {
-    this.topToProps = topToProps;
   }
 
   /**
@@ -345,22 +301,6 @@ public class ParseContext {
    */
   public void setTopOps(HashMap<String, Operator<? extends OperatorDesc>> topOps) {
     this.topOps = topOps;
-  }
-
-  /**
-   * @return the topSelOps
-   */
-  public HashMap<String, Operator<? extends OperatorDesc>> getTopSelOps() {
-    return topSelOps;
-  }
-
-  /**
-   * @param topSelOps
-   *          the topSelOps to set
-   */
-  public void setTopSelOps(
-      HashMap<String, Operator<? extends OperatorDesc>> topSelOps) {
-    this.topSelOps = topSelOps;
   }
 
   /**
