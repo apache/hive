@@ -503,7 +503,38 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
-      int buckets) {
+      int buckets) throws SemanticException {
+    /*
+     * HIVE-9038: Join tests fail in tez when we have more than 1 join on the same key and there is
+     * an outer join down the join tree that requires filterTag. We disable this conversion to map
+     * join here now. We need to emulate the behavior of HashTableSinkOperator as in MR or create a
+     * new operation to be able to support this. This seems like a corner case enough to special
+     * case this for now.
+     */
+    if (joinOp.getConf().getConds().length > 1) {
+      boolean hasOuter = false;
+      for (JoinCondDesc joinCondDesc : joinOp.getConf().getConds()) {
+        switch (joinCondDesc.getType()) {
+        case JoinDesc.INNER_JOIN:
+        case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.UNIQUE_JOIN:
+          hasOuter = false;
+          break;
+
+        case JoinDesc.FULL_OUTER_JOIN:
+        case JoinDesc.LEFT_OUTER_JOIN:
+        case JoinDesc.RIGHT_OUTER_JOIN:
+          hasOuter = true;
+          break;
+
+        default:
+          throw new SemanticException("Unknown join type " + joinCondDesc.getType());
+        }
+      }
+      if (hasOuter) {
+        return -1;
+      }
+    }
     Set<Integer> bigTableCandidateSet =
         MapJoinProcessor.getBigTableCandidates(joinOp.getConf().getConds());
 
