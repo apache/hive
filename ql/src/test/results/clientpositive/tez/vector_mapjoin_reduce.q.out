@@ -200,14 +200,14 @@ STAGE PLANS:
                     predicate: (((l_linenumber = 1) and l_orderkey is not null) and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
-                      outputColumnNames: _col0, _col1, _col2
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 13 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
                         keys:
-                          0 _col0 (type: int), 1 (type: int)
+                          0 _col0 (type: int), _col3 (type: int)
                           1 _col0 (type: int), _col1 (type: int)
                         outputColumnNames: _col1, _col2
                         input vertices:

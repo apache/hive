@@ -1525,7 +1525,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: null (type: void)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: null (type: void)
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: int)
           TableScan
@@ -1537,7 +1537,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: null (type: void)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: null (type: void)
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 value expressions: key (type: int)
       Reduce Operator Tree:
