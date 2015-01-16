@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public interface LowLevelCachePolicy {
-  void cache(LlapCacheableBuffer buffer);
-  void notifyLock(LlapCacheableBuffer buffer);
-  void notifyUnlock(LlapCacheableBuffer buffer);
+public interface MemoryManager {
+  boolean reserveMemory(long memoryToReserve, boolean waitForEviction);
 }

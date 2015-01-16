@@ -26,8 +26,12 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
 public final class LlapCacheableBuffer extends LlapMemoryBuffer {
-  public LlapCacheableBuffer(ByteBuffer byteBuffer, int offset, int length) {
-    super(byteBuffer, offset, length);
+  private static final int EVICTED_REFCOUNT = -1;
+  static final int IN_LIST = -2, NOT_IN_CACHE = -1;
+
+  public void initialize(int arenaIndex, ByteBuffer byteBuffer, int offset, int length) {
+    super.initialize(byteBuffer, offset, length);
+    this.arenaIndex = arenaIndex;
   }
 
   public String toStringForCache() {
@@ -35,15 +39,13 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
 
-  private static final int EVICTED_REFCOUNT = -1;
   private final AtomicInteger refCount = new AtomicInteger(0);
 
-  // TODO: Fields pertaining to cache policy. Perhaps they should live in separate object.
+  public int arenaIndex = -1;
   public double priority;
   public long lastUpdate = -1;
   public LlapCacheableBuffer prev = null, next = null;
   public int indexInHeap = NOT_IN_CACHE;
-  public static final int IN_LIST = -2, NOT_IN_CACHE = -1;
 
   @Override
   public int hashCode() {

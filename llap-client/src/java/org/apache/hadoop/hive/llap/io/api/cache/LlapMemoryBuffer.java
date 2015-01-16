@@ -24,7 +24,9 @@ public abstract class LlapMemoryBuffer {
   protected LlapMemoryBuffer(ByteBuffer byteBuffer, int offset, int length) {
     initialize(byteBuffer, offset, length);
   }
-  public void initialize(ByteBuffer byteBuffer, int offset, int length) {
+  protected LlapMemoryBuffer() {
+  }
+  protected void initialize(ByteBuffer byteBuffer, int offset, int length) {
     this.byteBuffer = byteBuffer;
     this.offset = offset;
     this.length = length;
@@ -32,5 +34,4 @@ public abstract class LlapMemoryBuffer {
   public ByteBuffer byteBuffer;
   public int offset;
   public int length;
-
 }

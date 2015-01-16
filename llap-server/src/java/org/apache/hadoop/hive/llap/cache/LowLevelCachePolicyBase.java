@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy {
+public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, MemoryManager {
   private final AtomicLong usedMemory;
   private final long maxSize;
   private EvictionListener evictionListener;

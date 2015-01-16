@@ -38,11 +38,6 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   @Test
-  public void testHeapSize7() {
-    testHeapSize(7);
-  }
-
-  @Test
   public void testHeapSize8() {
     testHeapSize(8);
   }
@@ -50,6 +45,11 @@ public class TestLowLevelLrfuCachePolicy {
   @Test
   public void testHeapSize30() {
     testHeapSize(30);
+  }
+
+  @Test
+  public void testHeapSize64() {
+    testHeapSize(64);
   }
 
   private class EvictionTracker implements EvictionListener {
@@ -72,7 +72,7 @@ public class TestLowLevelLrfuCachePolicy {
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelBuddyCache.allocateFake();
+      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lfu, et, buffer));
       inserted.add(buffer);
     }
@@ -99,7 +99,7 @@ public class TestLowLevelLrfuCachePolicy {
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelBuddyCache.allocateFake();
+      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lru, et, buffer));
       inserted.add(buffer);
     }
@@ -122,7 +122,7 @@ public class TestLowLevelLrfuCachePolicy {
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(new HiveConf(), 1, heapSize, et);
     for (int i = 0; i < heapSize; ++i) {
-      LlapCacheableBuffer buffer = LowLevelBuddyCache.allocateFake();
+      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lrfu, et, buffer));
       inserted.add(buffer);
     }
@@ -137,7 +137,7 @@ public class TestLowLevelLrfuCachePolicy {
     unlock(lrfu, locked);
   }
 
-  private static final LlapCacheableBuffer CANNOT_EVICT = LowLevelBuddyCache.allocateFake();
+  private static final LlapCacheableBuffer CANNOT_EVICT = LowLevelCacheImpl.allocateFake();
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
   public boolean cache(
       LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapCacheableBuffer buffer) {
@@ -172,7 +172,7 @@ public class TestLowLevelLrfuCachePolicy {
     LOG.info("Testing heap size " + heapSize);
     Random rdm = new Random(1234);
     HiveConf conf = new HiveConf();
-    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.05f); // very small heap? TODO#
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f); // very small heap, 14 elements
     EvictionTracker et = new EvictionTracker();
     LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
     // Insert the number of elements plus 2, to trigger 2 evictions.
@@ -181,7 +181,7 @@ public class TestLowLevelLrfuCachePolicy {
     LlapCacheableBuffer[] evicted = new LlapCacheableBuffer[toEvict];
     Assume.assumeTrue(toEvict <= heapSize);
     for (int i = 0; i < heapSize + toEvict; ++i) {
-      LlapCacheableBuffer buffer = LowLevelBuddyCache.allocateFake();
+      LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lrfu, et, buffer));
       LlapCacheableBuffer evictedBuf = getOneEvictedBuffer(et);
       if (i < toEvict) {

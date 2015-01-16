@@ -15,11 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.llap.cache;
 
-public interface LowLevelCachePolicy {
-  void cache(LlapCacheableBuffer buffer);
-  void notifyLock(LlapCacheableBuffer buffer);
-  void notifyUnlock(LlapCacheableBuffer buffer);
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.junit.Assume;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class TestLowLevelCacheImpl {
+  private static final Log LOG = LogFactory.getLog(TestLowLevelCacheImpl.class);
 }

@@ -23,11 +23,13 @@ public interface LowLevelCache {
 
   /**
    * Gets file data for particular offsets. Null entries mean no data.
+   * @param file File name; MUST be interned.
    */
   LlapMemoryBuffer[] getFileData(String fileName, long[] offsets);
 
   /**
    * Puts file data into cache.
+   * @param file File name; MUST be interned.
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
