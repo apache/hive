@@ -143,7 +143,7 @@ public class TableAccessAnalyzer {
 
       // Must be deterministic order map for consistent q-test output across Java versions
       Map<String, List<String>> tableToKeysMap = new LinkedHashMap<String, List<String>>();
-      Table tbl = pGraphContext.getTopToTable().get(tso);
+      Table tbl = tso.getConf().getTableMetadata();
       tableToKeysMap.put(tbl.getCompleteName(), keyColNames);
       tableAccessCtx.addOperatorTableAccess(op, tableToKeysMap);
 
@@ -203,7 +203,7 @@ public class TableAccessAnalyzer {
             return null;
           }
 
-          Table tbl = pGraphContext.getTopToTable().get(tso);
+          Table tbl = tso.getConf().getTableMetadata();
           tableToKeysMap.put(tbl.getCompleteName(), keyColNames);
         } else {
           return null;

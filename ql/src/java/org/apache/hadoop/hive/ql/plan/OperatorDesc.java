@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public interface OperatorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
@@ -26,4 +27,5 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setStatistics(Statistics statistics);
   public OpTraits getOpTraits();
   public void setOpTraits(OpTraits opTraits);
+  public Map<String, String> getOpProps();
 }

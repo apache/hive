@@ -82,7 +82,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
 
     @SuppressWarnings("rawtypes")
-    Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
+    Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
         .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();

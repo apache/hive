@@ -70,7 +70,7 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Class<? extends InputFormat> inputFormat = parseCtx.getTopToTable().get(op)
+    Class<? extends InputFormat> inputFormat = op.getConf().getTableMetadata()
         .getInputFormatClass();
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 

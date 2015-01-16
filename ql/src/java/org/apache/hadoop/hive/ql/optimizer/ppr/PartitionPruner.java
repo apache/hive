@@ -138,7 +138,7 @@ public class PartitionPruner implements Transform {
    */
   public static PrunedPartitionList prune(TableScanOperator ts, ParseContext parseCtx,
       String alias) throws SemanticException {
-    return prune(parseCtx.getTopToTable().get(ts), parseCtx.getOpToPartPruner().get(ts),
+    return prune(ts.getConf().getTableMetadata(), parseCtx.getOpToPartPruner().get(ts),
         parseCtx.getConf(), alias, parseCtx.getPrunedPartitions());
   }
 

@@ -124,7 +124,7 @@ public class CorrelationOptimizer implements Transform {
 
         Set<String> aliases = new LinkedHashSet<String>();
         for (TableScanOperator tsop : topOps) {
-          Table table = pCtx.getTopToTable().get(tsop);
+          Table table = tsop.getConf().getTableMetadata();
           if (table == null) {
             // table should not be null.
             throw new SemanticException("The table of " +

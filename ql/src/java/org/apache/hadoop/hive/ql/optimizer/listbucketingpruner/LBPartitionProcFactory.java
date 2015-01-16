@@ -52,7 +52,7 @@ public class LBPartitionProcFactory extends PrunerOperatorFactory {
     protected void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
         TableScanOperator top) throws SemanticException, UDFArgumentException {
       LBOpPartitionWalkerCtx owc = (LBOpPartitionWalkerCtx) procCtx;
-      Table tbl = owc.getParseContext().getTopToTable().get(top);
+      Table tbl = top.getConf().getTableMetadata();
       if (tbl.isPartitioned()) {
         // Run partition pruner to get partitions
         ParseContext parseCtx = owc.getParseContext();

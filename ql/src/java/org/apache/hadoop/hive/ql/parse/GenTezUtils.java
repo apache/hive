@@ -191,10 +191,7 @@ public class GenTezUtils {
 
     setupMapWork(mapWork, context, partitions, root, alias);
 
-    if (context.parseContext != null
-        && context.parseContext.getTopToTable() != null
-        && context.parseContext.getTopToTable().containsKey(ts)
-        && context.parseContext.getTopToTable().get(ts).isDummyTable()) {
+    if (ts.getConf().getTableMetadata() != null && ts.getConf().getTableMetadata().isDummyTable()) {
       mapWork.setDummyTableScan(true);
     }
 

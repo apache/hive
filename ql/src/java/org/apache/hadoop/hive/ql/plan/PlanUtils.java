@@ -956,7 +956,7 @@ public final class PlanUtils {
       ReadEntity parentViewInfo = getParentViewInfo(alias, parseCtx.getViewAliasToInput());
 
       // Adds tables only for create view (PPD filter can be appended by outer query)
-      Table table = parseCtx.getTopToTable().get(topOp);
+      Table table = topOp.getConf().getTableMetadata();
       PlanUtils.addInput(inputs, new ReadEntity(table, parentViewInfo));
     }
   }

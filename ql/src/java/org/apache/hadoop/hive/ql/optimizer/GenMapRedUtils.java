@@ -521,12 +521,11 @@ public final class GenMapRedUtils {
 
     // The table does not have any partitions
     if (aliasPartnDesc == null) {
-      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(parseCtx
-          .getTopToTable().get(topOp)), null);
-
+      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(((TableScanOperator) topOp)
+          .getConf().getTableMetadata()), null);
     }
 
-    Map<String, String> props = parseCtx.getTopToProps().get(topOp);
+    Map<String, String> props = topOp.getConf().getOpProps();
     if (props != null) {
       Properties target = aliasPartnDesc.getProperties();
       if (target == null) {
@@ -955,7 +954,7 @@ public final class GenMapRedUtils {
 
   public static TableScanOperator createTemporaryTableScanOperator(RowSchema rowSchema) {
     TableScanOperator tableScanOp =
-        (TableScanOperator) OperatorFactory.get(new TableScanDesc(), rowSchema);
+        (TableScanOperator) OperatorFactory.get(new TableScanDesc(null), rowSchema);
     // Set needed columns for this dummy TableScanOperator
     List<Integer> neededColumnIds = new ArrayList<Integer>();
     List<String> neededColumnNames = new ArrayList<String>();

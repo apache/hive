@@ -176,7 +176,7 @@ public class SimpleFetchOptimizer implements Transform {
     if (!aggressive && qb.hasTableSample(alias)) {
       return null;
     }
-    Table table = pctx.getTopToTable().get(ts);
+    Table table = ts.getConf().getTableMetadata();
     if (table == null) {
       return null;
     }

@@ -75,7 +75,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     TableScanOperator tableScan = (TableScanOperator) nd;
 
     ParseContext parseContext = context.parseContext;
-    Class<? extends InputFormat> inputFormat = parseContext.getTopToTable().get(tableScan)
+    Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
         .getInputFormatClass();
     QB queryBlock = parseContext.getQB();
     QBParseInfo parseInfo = parseContext.getQB().getParseInfo();
