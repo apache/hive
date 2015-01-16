@@ -140,6 +140,17 @@ public class GenericUDFInFile extends GenericUDF {
   }
 
   @Override
+  public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
+    super.copyToNewInstance(newInstance); // Asserts the class invariant. (Same types.)
+    GenericUDFInFile that = (GenericUDFInFile)newInstance;
+    if (that != this) {
+      that.set = (this.set == null ? null : (HashSet<String>)this.set.clone());
+      that.strObjectInspector = this.strObjectInspector;
+      that.fileObjectInspector = this.fileObjectInspector;
+    }
+  }
+
+  @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 2);
     return "in_file(" + children[0] + ", " + children[1] + ")";
