@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
-final class BuddyAllocator {
+public final class BuddyAllocator implements Allocator {
   private static final Log LOG = LogFactory.getLog(BuddyAllocator.class);
 
   private final Arena[] arenas;
@@ -77,6 +77,7 @@ final class BuddyAllocator {
   }
 
   // TODO: would it make sense to return buffers asynchronously?
+  @Override
   public boolean allocateMultiple(LlapMemoryBuffer[] dest, int size) {
     assert size > 0 : "size is " + size;
     if (size > maxAllocation) {
@@ -133,12 +134,15 @@ final class BuddyAllocator {
     return fake;
   }
 
-  public void deallocate(LlapCacheableBuffer buffer) {
-    arenas[buffer.arenaIndex].deallocate(buffer);
+  @Override
+  public void deallocate(LlapMemoryBuffer buffer) {
+    LlapCacheableBuffer buf = (LlapCacheableBuffer)buffer;
+    arenas[buf.arenaIndex].deallocate(buf);
   }
 
   public String debugDump() {
-    StringBuilder result = new StringBuilder();
+    StringBuilder result = new StringBuilder(
+        "NOTE: with multiple threads the dump is not guaranteed to be consistent");
     for (Arena arena : arenas) {
       arena.debugDump(result);
     }
@@ -168,7 +172,6 @@ final class BuddyAllocator {
       for (int i = 0, offset = 0; i < maxMaxAllocs; ++i, offset += maxAllocation) {
         // TODO: will this cause bugs on large numbers due to some Java sign bit stupidity?
         headers[headerIndex] = makeHeader(allocLog2Diff, false);
-        LOG.info("TODO# 1 mucking with " + System.identityHashCode(data) + ":" + offset);
         data.putInt(offset, (i == 0) ? -1 : (headerIndex - headerStep));
         data.putInt(offset + 4, (i == maxMaxAllocs - 1) ? -1 : (headerIndex + headerStep));
         headerIndex += headerStep;
@@ -181,26 +184,36 @@ final class BuddyAllocator {
         result.append(" not allocated");
         return;
       }
+      // Try to get as consistent view as we can; make copy of the headers.
+      byte[] headers = new byte[this.headers.length];
+      System.arraycopy(this.headers, 0, headers, 0, headers.length);
       for (int i = 0; i < headers.length; ++i) {
         byte header = headers[i];
         if (header == 0) continue;
         int freeListIx = (header >> 1) - 1, offset = offsetFromHeaderIndex(i);
         boolean isFree = (header & 1) == 0;
-        result.append("\n  block " + i + " at " + offset + ": size " + (1 << (freeListIx + minAllocLog2))
-            + ", " + (isFree ? "free" : "allocated"));
+        result.append("\n  block " + i + " at " + offset + ": size "
+        + (1 << (freeListIx + minAllocLog2)) + ", " + (isFree ? "free" : "allocated"));
       }
       int allocSize = minAllocation;
       for (int i = 0; i < freeLists.length; ++i, allocSize <<= 1) {
         result.append("\n  free list for size " + allocSize + ": ");
-        int nextItem = freeLists[i].listHead;
-        while (nextItem >= 0) {
-          result.append(nextItem + ", ");
-          nextItem = data.getInt(offsetFromHeaderIndex(nextItem));
+        FreeList freeList = freeLists[i];
+        freeList.lock.lock();
+        try {
+          int nextHeaderIx = freeList.listHead;
+          while (nextHeaderIx >= 0) {
+            result.append(nextHeaderIx + ", ");
+            nextHeaderIx = data.getInt(offsetFromHeaderIndex(nextHeaderIx));
+          }
+        } finally {
+          freeList.lock.unlock();
         }
       }
     }
 
-    private int allocateFast(int arenaIx, int freeListIx, LlapMemoryBuffer[] dest, int ix, int size) {
+    private int allocateFast(
+        int arenaIx, int freeListIx, LlapMemoryBuffer[] dest, int ix, int size) {
       if (data == null) return -1; // not allocated yet
       FreeList freeList = freeLists[freeListIx];
       if (!freeList.lock.tryLock()) return ix;
@@ -281,7 +294,6 @@ final class BuddyAllocator {
       if (headerIx == freeList.listHead) return;
       if (headerIx >= 0) {
         int newHeadOffset = offsetFromHeaderIndex(headerIx);
-        LOG.info("TODO# 3 mucking with " + System.identityHashCode(data) + ":" + newHeadOffset);
         data.putInt(newHeadOffset, -1); // Remove backlink.
       }
       freeList.listHead = headerIx;
@@ -356,11 +368,9 @@ final class BuddyAllocator {
       if (freeList.listHead >= 0) {
         int oldHeadOffset = offsetFromHeaderIndex(freeList.listHead);
         assert data.getInt(oldHeadOffset) == -1;
-        LOG.info("TODO# 4 mucking with " + System.identityHashCode(data) + ":" + oldHeadOffset);
         data.putInt(oldHeadOffset, headerIx);
       }
       int offset = offsetFromHeaderIndex(headerIx);
-      LOG.info("TODO# 5 mucking with " + System.identityHashCode(data) + ":" + offset);
       data.putInt(offset, -1);
       data.putInt(offset + 4, freeList.listHead);
       freeList.listHead = headerIx;
@@ -375,11 +385,9 @@ final class BuddyAllocator {
       }
       if (bpHeaderIx != -1) {
         data.putInt(offsetFromHeaderIndex(bpHeaderIx) + 4, bnHeaderIx);
-        LOG.info("TODO# 6 mucking with " + System.identityHashCode(data) + ":" + offsetFromHeaderIndex(bpHeaderIx) + " + 4");
       }
       if (bnHeaderIx != -1) {
         data.putInt(offsetFromHeaderIndex(bnHeaderIx), bpHeaderIx);
-        LOG.info("TODO# 7 mucking with " + System.identityHashCode(data) + ":" + offsetFromHeaderIndex(bnHeaderIx));
       }
     }
   }

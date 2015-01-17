@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public final class LlapCacheableBuffer extends LlapMemoryBuffer {
   private static final int EVICTED_REFCOUNT = -1;
   static final int IN_LIST = -2, NOT_IN_CACHE = -1;
@@ -46,6 +48,11 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
   public long lastUpdate = -1;
   public LlapCacheableBuffer prev = null, next = null;
   public int indexInHeap = NOT_IN_CACHE;
+
+  @VisibleForTesting
+  int getRefCount() {
+    return refCount.get();
+  }
 
   @Override
   public int hashCode() {

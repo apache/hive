@@ -24,6 +24,7 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assume;
 import org.junit.Test;
@@ -66,11 +67,12 @@ public class TestLowLevelLrfuCachePolicy {
     int heapSize = 4;
     LOG.info("Testing lambda 0 (LFU)");
     Random rdm = new Random(1234);
-    HiveConf conf = new HiveConf();
+    Configuration conf = createConf(1, heapSize);
     ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.0f);
     EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
+    LowLevelLrfuCachePolicy lfu = new LowLevelLrfuCachePolicy(conf);
+    lfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lfu, et, buffer));
@@ -88,16 +90,24 @@ public class TestLowLevelLrfuCachePolicy {
     verifyOrder(lfu, et, inserted);
   }
 
+  private Configuration createConf(int min, int heapSize) {
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MIN_ALLOC.varname, min);
+    conf.setInt(HiveConf.ConfVars.LLAP_ORC_CACHE_MAX_SIZE.varname, heapSize);
+    return conf;
+  }
+
   @Test
   public void testLruExtreme() {
     int heapSize = 4;
     LOG.info("Testing lambda 1 (LRU)");
     Random rdm = new Random(1234);
-    HiveConf conf = new HiveConf();
+    Configuration conf = createConf(1, heapSize);
     ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 1.0f);
     EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
+    LowLevelLrfuCachePolicy lru = new LowLevelLrfuCachePolicy(conf);
+    lru.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lru, et, buffer));
@@ -120,7 +130,8 @@ public class TestLowLevelLrfuCachePolicy {
     LOG.info("Testing deadlock resolution");
     ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);
     EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(new HiveConf(), 1, heapSize, et);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(createConf(1, heapSize));
+    lrfu.setEvictionListener(et);
     for (int i = 0; i < heapSize; ++i) {
       LlapCacheableBuffer buffer = LowLevelCacheImpl.allocateFake();
       assertTrue(cache(lrfu, et, buffer));
@@ -171,10 +182,11 @@ public class TestLowLevelLrfuCachePolicy {
   private void testHeapSize(int heapSize) {
     LOG.info("Testing heap size " + heapSize);
     Random rdm = new Random(1234);
-    HiveConf conf = new HiveConf();
+    Configuration conf = createConf(1, heapSize);
     conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f); // very small heap, 14 elements
     EvictionTracker et = new EvictionTracker();
-    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf, 1, heapSize, et);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(conf);
+    lrfu.setEvictionListener(et);
     // Insert the number of elements plus 2, to trigger 2 evictions.
     int toEvict = 2;
     ArrayList<LlapCacheableBuffer> inserted = new ArrayList<LlapCacheableBuffer>(heapSize);

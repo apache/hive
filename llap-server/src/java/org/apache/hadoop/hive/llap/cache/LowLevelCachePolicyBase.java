@@ -22,13 +22,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, MemoryManager {
   private final AtomicLong usedMemory;
-  private final long maxSize;
+  protected final long maxSize;
   private EvictionListener evictionListener;
 
-  public LowLevelCachePolicyBase(long maxSize, EvictionListener listener) {
+  public LowLevelCachePolicyBase(long maxSize) {
     this.maxSize = maxSize;
     this.usedMemory = new AtomicLong(0);
-    this.evictionListener = listener;
   }
 
   @Override
@@ -57,4 +56,8 @@ public abstract class LowLevelCachePolicyBase implements LowLevelCachePolicy, Me
   }
 
   protected abstract long evictSomeBlocks(long memoryToReserve, EvictionListener listener);
+
+  public void setEvictionListener(EvictionListener evictionListener) {
+    this.evictionListener = evictionListener;
+  }
 }

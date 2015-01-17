@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -57,7 +58,7 @@ public class TestBuddyAllocator {
     int min = 3, max = 8, maxAlloc = 1 << max;
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc, maxAlloc);
     BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
-    for (int i = min; i <= max; i <<= 1) {
+    for (int i = min; i <= max; ++i) {
       allocSameSize(a, 1 << (max - i), i);
     }
   }
@@ -76,19 +77,23 @@ public class TestBuddyAllocator {
     Configuration conf = createConf(1 << min, maxAlloc, maxAlloc * 8, maxAlloc * 24);
     final BuddyAllocator a = new BuddyAllocator(conf, new DummyMemoryManager());
     ExecutorService executor = Executors.newFixedThreadPool(3);
+    final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Object> upTask = new FutureTask<Object>(new Runnable() {
       public void run() {
+        syncThreadStart(cdlIn, cdlOut);
         allocateUp(a, min, max, allocsPerSize, false);
         allocateUp(a, min, max, allocsPerSize, true);
       }
     }, null), downTask = new FutureTask<Object>(new Runnable() {
       public void run() {
+        syncThreadStart(cdlIn, cdlOut);
         allocateDown(a, min, max, allocsPerSize, false);
         allocateDown(a, min, max, allocsPerSize, true);
       }
     }, null), sameTask = new FutureTask<Object>(new Runnable() {
       public void run() {
-        for (int i = min; i <= max; i <<= 1) {
+        syncThreadStart(cdlIn, cdlOut);
+        for (int i = min; i <= max; ++i) {
           allocSameSize(a, (1 << (max - i)) * allocsPerSize, i);
         }
       }
@@ -97,11 +102,22 @@ public class TestBuddyAllocator {
     executor.execute(upTask);
     executor.execute(downTask);
     try {
+      cdlIn.await(); // Wait for all threads to be ready.
+      cdlOut.countDown(); // Release them at the same time.
       upTask.get();
       downTask.get();
       sameTask.get();
     } catch (Throwable t) {
       throw new RuntimeException(t);
+    }
+  }
+
+  private void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
+    cdlIn.countDown();
+    try {
+      cdlOut.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 

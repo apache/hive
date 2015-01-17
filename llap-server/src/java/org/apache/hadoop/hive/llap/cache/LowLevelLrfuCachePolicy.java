@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -62,11 +63,11 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
   /** Number of elements. */
   private int heapSize = 0;
 
-  public LowLevelLrfuCachePolicy(Configuration conf,
-      long minBufferSize, long maxCacheSize, EvictionListener listener) {
-    super(maxCacheSize, listener);
+  public LowLevelLrfuCachePolicy(Configuration conf) {
+    super(HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
+    int minBufferSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
-    int maxBuffers = (int)Math.ceil((maxCacheSize * 1.0) / minBufferSize);
+    int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
     int maxHeapSize = -1;
     if (lambda == 0) {
       maxHeapSize = maxBuffers; // lrfuThreshold is +inf in this case

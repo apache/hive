@@ -30,8 +30,10 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
-  private final BuddyAllocator allocator;
+  private final Allocator allocator;
 
   private AtomicInteger newEvictions = new AtomicInteger(0);
   private final Thread cleanupThread;
@@ -39,15 +41,23 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       new ConcurrentHashMap<String, FileCache>();
   private final LowLevelCachePolicyBase cachePolicy;
 
-  public LowLevelCacheImpl(Configuration conf) {
-    int minAllocation = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
-    long maxSize = HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE);
-    cachePolicy = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU)
-        ? new LowLevelLrfuCachePolicy(conf, minAllocation, maxSize, this)
-        : new LowLevelFifoCachePolicy(minAllocation, maxSize, this);
-    allocator = new BuddyAllocator(conf, cachePolicy);
-    cleanupThread = new CleanupThread();
-    cleanupThread.start();
+  public LowLevelCacheImpl(
+      Configuration conf, LowLevelCachePolicyBase cachePolicy, Allocator allocator) {
+    this(conf, cachePolicy, allocator, 600);
+  }
+
+  @VisibleForTesting
+  LowLevelCacheImpl(Configuration conf,
+      LowLevelCachePolicyBase cachePolicy, Allocator allocator, long cleanupInterval) {
+    this.cachePolicy = cachePolicy;
+    this.cachePolicy.setEvictionListener(this);
+    this.allocator = allocator;
+    if (cleanupInterval >= 0) {
+      cleanupThread = new CleanupThread(cleanupInterval);
+      cleanupThread.start();
+    } else {
+      cleanupThread = null;
+    }
   }
 
   @Override
@@ -242,10 +252,11 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   private final class CleanupThread extends Thread {
-    private int APPROX_CLEANUP_INTERVAL_SEC = 600;
+    private final long approxCleanupIntervalSec;
 
-    public CleanupThread() {
+    public CleanupThread(long cleanupInterval) {
       super("Llap low level cache cleanup thread");
+      this.approxCleanupIntervalSec = cleanupInterval;
       setDaemon(true);
       setPriority(1);
     }
@@ -275,7 +286,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         }
       }
       // Duration is an estimate; if the size of the map changes, it can be very different.
-      long endTime = System.nanoTime() + APPROX_CLEANUP_INTERVAL_SEC * 1000000000L;
+      long endTime = System.nanoTime() + approxCleanupIntervalSec * 1000000000L;
       int leftToCheck = 0; // approximate
       for (FileCache fc : cache.values()) {
         leftToCheck += fc.cache.size();

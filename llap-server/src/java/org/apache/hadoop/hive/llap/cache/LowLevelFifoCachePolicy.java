@@ -24,14 +24,18 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
   private final Lock lock = new ReentrantLock();
   private final LinkedHashSet<LlapCacheableBuffer> buffers;
 
-  public LowLevelFifoCachePolicy(
-      int expectedBufferSize, long maxCacheSize, EvictionListener listener) {
-    super(maxCacheSize, listener);
-    int expectedBuffers = (int)Math.ceil((maxCacheSize * 1.0) / expectedBufferSize);
+  public LowLevelFifoCachePolicy(Configuration conf) {
+    super(HiveConf.getLongVar(conf, ConfVars.LLAP_ORC_CACHE_MAX_SIZE));
+    int expectedBufferSize = HiveConf.getIntVar(conf, ConfVars.LLAP_ORC_CACHE_MIN_ALLOC);
+    int expectedBuffers = (int)Math.ceil((maxSize * 1.0) / expectedBufferSize);
     buffers = new LinkedHashSet<LlapCacheableBuffer>((int)(expectedBuffers / 0.75f));
   }
 
