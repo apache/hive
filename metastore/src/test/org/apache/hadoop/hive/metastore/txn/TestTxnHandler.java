@@ -1124,11 +1124,11 @@ public class TestTxnHandler {
                 LOG.debug("no exception, no deadlock");
               } catch (SQLException e) {
                 try {
-                  txnHandler.detectDeadlock(conn1, e, "thread t1");
+                  txnHandler.checkRetryable(conn1, e, "thread t1");
                   LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                       e.getSQLState() + " class of exception is " + e.getClass().getName() +
                       " msg is <" + e.getMessage() + ">");
-                } catch (TxnHandler.DeadlockException de) {
+                } catch (TxnHandler.RetryException de) {
                   LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
                       "exception is " + e.getClass().getName() + " msg is <" + e
                       .getMessage() + ">");
@@ -1154,11 +1154,11 @@ public class TestTxnHandler {
                 LOG.debug("no exception, no deadlock");
               } catch (SQLException e) {
                 try {
-                  txnHandler.detectDeadlock(conn2, e, "thread t2");
+                  txnHandler.checkRetryable(conn2, e, "thread t2");
                   LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                       e.getSQLState() + " class of exception is " + e.getClass().getName() +
                       " msg is <" + e.getMessage() + ">");
-                } catch (TxnHandler.DeadlockException de) {
+                } catch (TxnHandler.RetryException de) {
                   LOG.debug("Forced a deadlock, SQLState is " + e.getSQLState() + " class of " +
                       "exception is " + e.getClass().getName() + " msg is <" + e
                       .getMessage() + ">");
