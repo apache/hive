@@ -21,6 +21,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 ^
 abs
 acos
+add_months
 and
 array
 array_contains
