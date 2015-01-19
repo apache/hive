@@ -40,7 +40,7 @@ import org.apache.hadoop.io.Text;
 @Description(name = "month",
     value = "_FUNC_(date) - Returns the month of date",
     extended = "Example:\n"
-    + "  > SELECT _FUNC_('2009-30-07') FROM src LIMIT 1;\n" + "  7")
+    + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  7")
 @VectorizedExpressions({VectorUDFMonthLong.class, VectorUDFMonthString.class})
 public class UDFMonth extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
