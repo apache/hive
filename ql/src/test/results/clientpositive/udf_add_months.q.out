@@ -1,0 +1,14 @@
+PREHOOK: query: DESCRIBE FUNCTION add_months
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION add_months
+POSTHOOK: type: DESCFUNCTION
+add_months(start_date, num_months) - Returns the date that is num_months after start_date.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED add_months
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED add_months
+POSTHOOK: type: DESCFUNCTION
+add_months(start_date, num_months) - Returns the date that is num_months after start_date.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_months is a number. The time part of start_date is ignored.
+Example:
+  > SELECT add_months('2009-08-31', 1) FROM src LIMIT 1;
+ '2009-09-30'
