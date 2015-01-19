@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,8 +46,10 @@ import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -201,9 +204,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -1667,7 +1673,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 throw new SemanticException(e);
               }
               try {
-                fname = ctx.getExternalTmpPath(
+                fname = ctx.getExtTmpPathRelTo(
                     FileUtils.makeQualified(location, conf)).toString();
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
@@ -1683,8 +1689,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             } else {
               // This is the only place where isQuery is set to true; it defaults to false.
               qb.setIsQuery(true);
-              fname = ctx.getMRTmpPath().toString();
-              ctx.setResDir(new Path(fname));
+              Path stagingPath = getStagingDirectoryPathname(qb);
+              fname = stagingPath.toString();
+              ctx.setResDir(stagingPath);
             }
           }
           qb.getMetaData().setDestForAlias(name, fname,
@@ -1738,6 +1745,160 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Checks if a given path is encrypted (valid only for HDFS files)
+   * @param path The path to check for encryption
+   * @return True if the path is encrypted; False if it is not encrypted
+   * @throws HiveException If an error occurs while checking for encryption
+   */
+  private boolean isPathEncrypted(Path path) throws HiveException {
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+
+    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+    if (hdfsEncryptionShim != null) {
+      try {
+        if (hdfsEncryptionShim.isPathEncrypted(path)) {
+          return true;
+        }
+      } catch (Exception e) {
+        throw new HiveException("Unable to determine if " + path + "is encrypted: " + e, e);
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Compares to path key encryption strenghts.
+   *
+   * @param p1 Path to an HDFS file system
+   * @param p2 Path to an HDFS file system
+   * @return -1 if strength is weak; 0 if is equals; 1 if it is stronger
+   * @throws HiveException If an error occurs while comparing key strengths.
+   */
+  private int comparePathKeyStrength(Path p1, Path p2) throws HiveException {
+    HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+
+    hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim();
+    if (hdfsEncryptionShim != null) {
+      try {
+        return hdfsEncryptionShim.comparePathKeyStrength(p1, p2);
+      } catch (Exception e) {
+        throw new HiveException("Unable to compare key strength for " + p1 + " and " + p2 + " : " + e, e);
+      }
+    }
+
+    return 0; // Non-encrypted path (or equals strength)
+  }
+
+  /**
+   * Checks if a given path has read-only access permissions.
+   *
+   * @param path The path to check for read-only permissions.
+   * @return True if the path is read-only; False otherwise.
+   * @throws HiveException If an error occurs while checking file permissions.
+   */
+  private boolean isPathReadOnly(Path path) throws HiveException {
+    HiveConf conf = SessionState.get().getConf();
+    try {
+      FileSystem fs = path.getFileSystem(conf);
+      UserGroupInformation ugi = Utils.getUGI();
+      FileStatus status = fs.getFileStatus(path);
+
+      // We just check for writing permissions. If it fails with AccessControException, then it
+      // means the location may be read-only.
+      FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName());
+
+      // Path has writing permissions
+      return false;
+    } catch (AccessControlException e) {
+      // An AccessControlException may be caused for other different errors,
+      // but we take it as if our path is read-only
+      return true;
+    } catch (Exception e) {
+      throw new HiveException("Unable to determine if " + path + " is read only: " + e, e);
+    }
+  }
+
+  /**
+   * Gets the strongest encrypted table path.
+   *
+   * @param qb The QB object that contains a list of all table locations.
+   * @return The strongest encrypted path
+   * @throws HiveException if an error occurred attempting to compare the encryption strength
+   */
+  private Path getStrongestEncryptedTablePath(QB qb) throws HiveException {
+    List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
+    Path strongestPath = null;
+
+    /* Walk through all found table locations to get the most encrypted table */
+    for (String alias : tabAliases) {
+      Table tab = qb.getMetaData().getTableForAlias(alias);
+      if (tab != null) {
+        Path tablePath = tab.getDataLocation();
+        if (tablePath != null) {
+          try {
+            if (strongestPath == null) {
+              strongestPath = tablePath;
+            } else if ("hdfs".equals(tablePath.toUri().getScheme())
+                && isPathEncrypted(tablePath)
+                && comparePathKeyStrength(tablePath, strongestPath) > 0)
+            {
+              strongestPath = tablePath;
+            }
+          } catch (HiveException e) {
+            throw new HiveException("Unable to find the most secure table path: " + e, e);
+          }
+        }
+      }
+    }
+
+    return strongestPath;
+  }
+
+  /**
+   * Gets the staging directory where MR files will be stored temporary.
+   * It walks through the QB plan to find the correct location where save temporary files. This
+   * temporary location (or staging directory) may be created inside encrypted tables locations for
+   * security reasons. If the QB has read-only tables, then the older scratch directory will be used,
+   * or a permission error will be thrown if the requested query table is encrypted and the old scratch
+   * directory is not.
+   *
+   * @param qb The QB object that contains a list of all table locations.
+   * @return The path to the staging directory.
+   * @throws HiveException If an error occurs while identifying the correct staging location.
+   */
+  private Path getStagingDirectoryPathname(QB qb) throws HiveException {
+    Path stagingPath = null, tablePath;
+
+    // Looks for the most encrypted table location (if there is one)
+    tablePath = getStrongestEncryptedTablePath(qb);
+    if (tablePath != null && isPathEncrypted(tablePath)) {
+      // Only HDFS paths can be checked for encryption
+      if ("hdfs".equals(tablePath.toUri().getScheme())) {
+        if (isPathReadOnly(tablePath)) {
+          Path tmpPath = ctx.getMRTmpPath();
+          if (comparePathKeyStrength(tablePath, tmpPath) < 0) {
+            throw new HiveException("Read-only encrypted tables cannot be read " +
+                "if the scratch directory is not encrypted (or encryption is weak)");
+          } else {
+            stagingPath = tmpPath;
+          }
+        }
+      } else {
+        LOG.debug("Encryption is not applicable to table path " + tablePath.toString());
+      }
+
+      if (stagingPath == null) {
+        stagingPath = ctx.getMRTmpPath(tablePath.toUri());
+      }
+    } else {
+      stagingPath = ctx.getMRTmpPath();
+    }
+
+    return stagingPath;
   }
 
   private void replaceViewReferenceWithDefinition(QB qb, Table tab,
@@ -5950,7 +6111,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-        queryTmpdir = ctx.getExternalTmpPath(dest_path);
+        queryTmpdir = ctx.getExtTmpPathRelTo(dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -6131,7 +6292,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExternalTmpPath(qPath);
+          queryTmpdir = ctx.getExtTmpPathRelTo(qPath);
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -6312,7 +6473,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getExternalTmpPath(queryTmpdir).toString();
+      String statsTmpLoc = ctx.getExtTmpPathRelTo(queryTmpdir).toString();
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }
@@ -9460,7 +9621,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getExternalTmpPath(tab.getPath()).toString();
+        String statsTmpLoc = ctx.getExtTmpPathRelTo(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
         conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
       }

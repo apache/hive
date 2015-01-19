@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
@@ -636,7 +637,7 @@ public class Table implements Serializable {
   protected void replaceFiles(Path srcf, boolean isSrcLocal)
       throws HiveException {
     Path tableDest = getPath();
-    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf(),
+    Hive.replaceFiles(tableDest, srcf, tableDest, tableDest, Hive.get().getConf(),
         isSrcLocal);
   }
 
@@ -951,7 +952,7 @@ public class Table implements Serializable {
         pathPattern = pathPattern + "/*";
       }
       LOG.info("Path pattern = " + pathPattern);
-      FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
+      FileStatus srcs[] = fs.globStatus(new Path(pathPattern), FileUtils.HIDDEN_FILES_PATH_FILTER);
       Arrays.sort(srcs);
       for (FileStatus src : srcs) {
         LOG.info("Got file: " + src.getPath());

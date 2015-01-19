@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
+import java.lang.Override;
+import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -63,6 +65,7 @@ import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.security.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.VersionInfo;
 
 
@@ -606,9 +609,39 @@ public class Hadoop20SShims extends HadoopShimsSecure {
       return kerberosName.getShortName();
     }
   }
-  
+
   @Override
   public StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
     return null;
+  }
+
+  @Override
+  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
+    int rc;
+
+    // Creates the command-line parameters for distcp
+    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
+
+    try {
+      Class clazzDistCp = Class.forName("org.apache.hadoop.tools.distcp2");
+      Constructor c = clazzDistCp.getConstructor();
+      c.setAccessible(true);
+      Tool distcp = (Tool)c.newInstance();
+      distcp.setConf(conf);
+      rc = distcp.run(params);
+    } catch (ClassNotFoundException e) {
+      throw new IOException("Cannot find DistCp class package: " + e.getMessage());
+    } catch (NoSuchMethodException e) {
+      throw new IOException("Cannot get DistCp constructor: " + e.getMessage());
+    } catch (Exception e) {
+      throw new IOException("Cannot execute DistCp process: " + e, e);
+    }
+
+    return (0 == rc) ? true : false;
+  }
+
+  @Override
+  public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
+    return new HadoopShims.NoopHdfsEncryptionShim();
   }
 }

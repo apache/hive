@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -397,7 +398,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
           while (dirs.peek() != null) {
             Path tstPath = dirs.remove();
-            FileStatus[] fStatus = inpFs.listStatus(tstPath);
+            FileStatus[] fStatus = inpFs.listStatus(tstPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
             for (int idx = 0; idx < fStatus.length; idx++) {
               if (fStatus[idx].isDir()) {
                 dirs.offer(fStatus[idx].getPath());

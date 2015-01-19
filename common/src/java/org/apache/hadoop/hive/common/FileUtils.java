@@ -53,17 +53,19 @@ import org.apache.hadoop.util.Shell;
 public final class FileUtils {
   private static final Log LOG = LogFactory.getLog(FileUtils.class.getName());
 
-  /**
-   * Accept all paths.
-   */
-  private static class AcceptAllPathFilter implements PathFilter {
-    @Override
-    public boolean accept(Path path) {
-      return true;
+  public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
     }
-  }
+  };
 
-  private static final PathFilter allPathFilter = new AcceptAllPathFilter();
+  public static final PathFilter STAGING_DIR_PATH_FILTER = new PathFilter() {
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith(".");
+    }
+  };
 
   /**
    * Variant of Path.makeQualified that qualifies the input path against the default file system
@@ -319,14 +321,7 @@ public final class FileUtils {
       List<FileStatus> results) throws IOException {
 
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), new PathFilter() {
-
-        @Override
-        public boolean accept(Path p) {
-          String name = p.getName();
-          return !name.startsWith("_") && !name.startsWith(".");
-        }
-      })) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
         listStatusRecursively(fs, stat, results);
       }
     } else {
@@ -366,7 +361,6 @@ public final class FileUtils {
    *             check will be performed within a doAs() block to use the access privileges
    *             of this user. In this case the user must be configured to impersonate other
    *             users, otherwise this check will fail with error.
-   * @param groups  List of groups for the user
    * @throws IOException
    * @throws AccessControlException
    * @throws InterruptedException
@@ -547,10 +541,25 @@ public final class FileUtils {
     boolean deleteSource,
     boolean overwrite,
     HiveConf conf) throws IOException {
-    boolean copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+
+    HadoopShims shims = ShimLoader.getHadoopShims();
+    boolean copied;
+
+    /* Run distcp if source file/dir is too big */
+    if (srcFS.getUri().getScheme().equals("hdfs") &&
+        srcFS.getFileStatus(src).getLen() > conf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE)) {
+      LOG.info("Source is " + srcFS.getFileStatus(src).getLen() + " bytes. (MAX: " + conf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE) + ")");
+      LOG.info("Launch distributed copy (distcp) job.");
+      copied = shims.runDistCp(src, dst, conf);
+      if (copied && deleteSource) {
+        srcFS.delete(src, true);
+      }
+    } else {
+      copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+    }
+
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
-      HadoopShims shims = ShimLoader.getHadoopShims();
       HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, dstFS, dst);
       try {
         shims.setFullFileStatus(conf, fullFileStatus, dstFS, dst);
@@ -571,7 +580,7 @@ public final class FileUtils {
    * @throws IOException
    */
   public static boolean trashFilesUnderDir(FileSystem fs, Path f, Configuration conf) throws FileNotFoundException, IOException {
-    FileStatus[] statuses = fs.listStatus(f, allPathFilter);
+    FileStatus[] statuses = fs.listStatus(f, HIDDEN_FILES_PATH_FILTER);
     boolean result = true;
     for (FileStatus status : statuses) {
       result = result & moveToTrash(fs, status.getPath(), conf);
@@ -601,6 +610,25 @@ public final class FileUtils {
       LOG.error("Failed to delete " + f);
     }
     return result;
+  }
+
+  /**
+   * Check if first path is a subdirectory of second path.
+   * Both paths must belong to the same filesystem.
+   *
+   * @param p1 first path
+   * @param p2 second path
+   * @param fs FileSystem, both paths must belong to the same filesystem
+   * @return
+   */
+  public static boolean isSubDir(Path p1, Path p2, FileSystem fs) {
+    String path1 = fs.makeQualified(p1).toString();
+    String path2 = fs.makeQualified(p2).toString();
+    if (path1.startsWith(path2)) {
+      return true;
+    }
+
+    return false;
   }
 
   public static boolean renameWithPerms(FileSystem fs, Path sourcePath,

@@ -70,7 +70,7 @@ public class HiveStatsUtils {
       sb.append(Path.SEPARATOR).append("*");
     }
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern);
+    return fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
   }
 
 }
