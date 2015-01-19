@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -62,7 +61,6 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
@@ -104,28 +102,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
   final boolean zeroCopy;
-  final boolean storagePolicy;
 
   public Hadoop23Shims() {
     boolean zcr = false;
-    boolean storage = false;
     try {
       Class.forName("org.apache.hadoop.fs.CacheFlag", false,
           ShimLoader.class.getClassLoader());
       zcr = true;
     } catch (ClassNotFoundException ce) {
     }
-    
-    if (zcr) {
-      // in-memory HDFS is only available after zcr
-      try {
-        Class.forName("org.apache.hadoop.hdfs.protocol.BlockStoragePolicy",
-            false, ShimLoader.class.getClassLoader());
-        storage = true;
-      } catch (ClassNotFoundException ce) {
-      }
-    }
-    this.storagePolicy = storage;
     this.zeroCopy = zcr;
   }
 
@@ -1109,50 +1094,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
-    }
-  }
-
-
-  public static class StoragePolicyShim implements HadoopShims.StoragePolicyShim {
-
-    private final DistributedFileSystem dfs;
-
-    public StoragePolicyShim(DistributedFileSystem fs) {
-      this.dfs = fs;
-    }
-
-    @Override
-    public void setStoragePolicy(Path path, StoragePolicyValue policy)
-        throws IOException {
-      switch (policy) {
-      case MEMORY: {
-        dfs.setStoragePolicy(path, HdfsConstants.MEMORY_STORAGE_POLICY_NAME);
-        break;
-      }
-      case SSD: {
-        dfs.setStoragePolicy(path, HdfsConstants.ALLSSD_STORAGE_POLICY_NAME);
-        break;
-      }
-      case DEFAULT: {
-        /* do nothing */
-        break;
-      }
-      default:
-        throw new IllegalArgumentException("Unknown storage policy " + policy);
-      }
-    }
-  }
-    
-
-  @Override
-  public HadoopShims.StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
-    if (!storagePolicy) {
-      return null;
-    }
-    try {
-      return new StoragePolicyShim((DistributedFileSystem) fs);
-    } catch (ClassCastException ce) {
-      return null;
     }
   }
 

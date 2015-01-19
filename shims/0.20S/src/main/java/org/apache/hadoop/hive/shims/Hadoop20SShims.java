@@ -654,11 +654,6 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
-  public StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
-    return null;
-  }
-
-  @Override
   public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
     int rc;
 

@@ -6017,7 +6017,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Table dest_tab = null; // destination table if any
     boolean destTableIsAcid = false; // should the destination table be written to using ACID
-    boolean destTableIsTemporary = false;
     Partition dest_part = null;// destination partition if any
     Path queryTmpdir = null; // the intermediate destination directory
     Path dest_path = null; // the final destination directory
@@ -6035,7 +6034,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_tab = qbm.getDestTableForAlias(dest);
       destTableIsAcid = isAcidTable(dest_tab);
-      destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
       if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
@@ -6305,7 +6303,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       CreateTableDesc tblDesc = qb.getTableDesc();
       if (tblDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
-        destTableIsTemporary = tblDesc.isTemporary();
       }
 
       boolean first = true;
@@ -6450,8 +6447,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fileSinkDesc.setWriteType(wt);
       acidFileSinks.add(fileSinkDesc);
     }
-    
-    fileSinkDesc.setTemporary(destTableIsTemporary);
 
     /* Set List Bucketing context. */
     if (lbCtx != null) {
