@@ -1,0 +1,14 @@
+PREHOOK: query: DESCRIBE FUNCTION last_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION last_day
+POSTHOOK: type: DESCFUNCTION
+last_day(date) - Returns the last day of the month which the date belongs to.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED last_day
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED last_day
+POSTHOOK: type: DESCFUNCTION
+last_day(date) - Returns the last day of the month which the date belongs to.
+date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time part of date is ignored.
+Example:
+  > SELECT last_day('2009-01-12') FROM src LIMIT 1;
+ '2009-01-31'
