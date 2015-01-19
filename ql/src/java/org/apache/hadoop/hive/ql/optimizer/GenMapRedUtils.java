@@ -18,7 +18,20 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import com.google.common.collect.Interner;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -67,7 +80,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -102,19 +114,7 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import com.google.common.collect.Interner;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -1066,17 +1066,23 @@ public final class GenMapRedUtils {
 
     if (needsTagging(cplan.getReduceWork())) {
       Operator<? extends OperatorDesc> reducerOp = cplan.getReduceWork().getReducer();
-      QBJoinTree joinTree = null;
+      String id = null;
       if (reducerOp instanceof JoinOperator) {
-        joinTree = parseCtx.getJoinContext().get(reducerOp);
+        if (parseCtx.getJoinOps().contains(reducerOp)) {
+          id = ((JoinOperator)reducerOp).getConf().getId();
+        }
       } else if (reducerOp instanceof MapJoinOperator) {
-        joinTree = parseCtx.getMapJoinContext().get(reducerOp);
+        if (parseCtx.getMapJoinOps().contains(reducerOp)) {
+          id = ((MapJoinOperator)reducerOp).getConf().getId();
+        }
       } else if (reducerOp instanceof SMBMapJoinOperator) {
-        joinTree = parseCtx.getSmbMapJoinContext().get(reducerOp);
+        if (parseCtx.getSmbMapJoinOps().contains(reducerOp)) {
+          id = ((SMBMapJoinOperator)reducerOp).getConf().getId();
+        }
       }
 
-      if (joinTree != null && joinTree.getId() != null) {
-        streamDesc = joinTree.getId() + ":$INTNAME";
+      if (id != null) {
+        streamDesc = id + ":$INTNAME";
       } else {
         streamDesc = "$INTNAME";
       }

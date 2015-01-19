@@ -60,7 +60,7 @@ public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements
     }
 
     if (convert) {
-      convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext, pGraphContext);
+      convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext);
     }
     return null;
   }

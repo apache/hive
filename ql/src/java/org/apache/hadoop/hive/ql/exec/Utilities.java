@@ -1067,7 +1067,6 @@ public final class Utilities {
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
       removeField(kryo, MapWork.class, "opParseCtxMap");
-      removeField(kryo, MapWork.class, "joinTree");
       return kryo;
     };
   };

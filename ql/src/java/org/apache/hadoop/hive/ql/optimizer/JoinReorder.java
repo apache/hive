@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -95,9 +94,9 @@ public class JoinReorder implements Transform {
   private Set<String> getBigTables(ParseContext joinCtx) {
     Set<String> bigTables = new HashSet<String>();
 
-    for (QBJoinTree qbJoin : joinCtx.getJoinContext().values()) {
-      if (qbJoin.getStreamAliases() != null) {
-        bigTables.addAll(qbJoin.getStreamAliases());
+    for (JoinOperator joinOp : joinCtx.getJoinOps()) {
+      if (joinOp.getConf().getStreamAliases() != null) {
+        bigTables.addAll(joinOp.getConf().getStreamAliases());
       }
     }
 
@@ -155,7 +154,7 @@ public class JoinReorder implements Transform {
   public ParseContext transform(ParseContext pactx) throws SemanticException {
     Set<String> bigTables = getBigTables(pactx);
 
-    for (JoinOperator joinOp : pactx.getJoinContext().keySet()) {
+    for (JoinOperator joinOp : pactx.getJoinOps()) {
       reorder(joinOp, bigTables);
     }
 

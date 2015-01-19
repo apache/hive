@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 
 /**
  * Join operator Descriptor implementation.
@@ -88,12 +90,26 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   // used only for explain.
   private transient ExprNodeDesc [][] joinKeys;
+
+  // Data structures coming originally from QBJoinTree
+  private transient String leftAlias;
+  private transient String[] leftAliases;
+  private transient String[] rightAliases;
+  private transient String[] baseSrc;
+  private transient String id;
+  private transient boolean mapSideJoin;
+  private transient List<String> mapAliases; //map-side join aliases
+  private transient Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
+  private transient boolean leftInputJoin;
+  private transient List<String> streamAliases;
+
   public JoinDesc() {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters, ExprNodeDesc[][] joinKeys) {
+      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
+      ExprNodeDesc[][] joinKeys) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
@@ -509,4 +525,88 @@ public class JoinDesc extends AbstractOperatorDesc {
   public void setFixedAsSorted(boolean fixedAsSorted) {
     this.fixedAsSorted = fixedAsSorted;
   }
+
+  public String[] getLeftAliases() {
+    return leftAliases;
+  }
+
+  public String[] getBaseSrc() {
+    return baseSrc;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public List<String> getMapAliases() {
+    return mapAliases;
+  }
+
+  public Map<String, Operator<? extends OperatorDesc>> getAliasToOpInfo() {
+    return aliasToOpInfo;
+  }
+
+  public boolean isLeftInputJoin() {
+    return leftInputJoin;
+  }
+
+  public String getLeftAlias() {
+    return leftAlias;
+  }
+
+  public void setLeftAlias(String leftAlias) {
+    this.leftAlias = leftAlias;
+  }
+
+  public String[] getRightAliases() {
+    return rightAliases;
+  }
+
+  public List<String> getStreamAliases() {
+    return streamAliases;
+  }
+
+  public boolean isMapSideJoin() {
+    return mapSideJoin;
+  }
+
+  public void setQBJoinTreeProps(JoinDesc joinDesc) {
+    leftAlias = joinDesc.leftAlias;
+    leftAliases = joinDesc.leftAliases;
+    rightAliases = joinDesc.rightAliases;
+    baseSrc = joinDesc.baseSrc;
+    id = joinDesc.id;
+    mapSideJoin = joinDesc.mapSideJoin;
+    mapAliases = joinDesc.mapAliases;
+    aliasToOpInfo = joinDesc.aliasToOpInfo;
+    leftInputJoin = joinDesc.leftInputJoin;
+    streamAliases = joinDesc.streamAliases;
+  }
+
+  public void setQBJoinTreeProps(QBJoinTree joinTree) {
+    leftAlias = joinTree.getLeftAlias();
+    leftAliases = joinTree.getLeftAliases();
+    rightAliases = joinTree.getRightAliases();
+    baseSrc = joinTree.getBaseSrc();
+    id = joinTree.getId();
+    mapSideJoin = joinTree.isMapSideJoin();
+    mapAliases = joinTree.getMapAliases();
+    aliasToOpInfo = joinTree.getAliasToOpInfo();
+    leftInputJoin = joinTree.getJoinSrc() != null;
+    streamAliases = joinTree.getStreamAliases();
+  }
+
+  public void cloneQBJoinTreeProps(JoinDesc joinDesc) {
+    leftAlias = joinDesc.leftAlias;
+    leftAliases = joinDesc.leftAliases == null ? null : joinDesc.leftAliases.clone();
+    rightAliases = joinDesc.rightAliases == null ? null : joinDesc.rightAliases.clone();
+    baseSrc = joinDesc.baseSrc == null ? null : joinDesc.baseSrc.clone();
+    id = joinDesc.id;
+    mapSideJoin = joinDesc.mapSideJoin;
+    mapAliases = joinDesc.mapAliases == null ? null : new ArrayList<String>(joinDesc.mapAliases);
+    aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>(joinDesc.aliasToOpInfo);
+    leftInputJoin = joinDesc.leftInputJoin;
+    streamAliases = joinDesc.streamAliases == null ? null : new ArrayList<String>(joinDesc.streamAliases);
+  }
+
 }

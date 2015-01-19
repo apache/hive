@@ -384,8 +384,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx = pctx.getOpParseCtx();
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
-    joinContext = pctx.getJoinContext();
-    smbMapJoinContext = pctx.getSmbMapJoinContext();
     ctx = pctx.getContext();
     destTableId = pctx.getDestTableId();
     idToTableNameMap = pctx.getIdToTableNameMap();
@@ -400,8 +398,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList,
-        topOps, opParseCtx, joinContext, smbMapJoinContext, loadTableWork,
-        loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        topOps, opParseCtx,
+        new HashSet<JoinOperator>(joinContext.keySet()),
+        new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput,
@@ -7521,6 +7521,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
       joinSrcOp, srcOps, omitOpts, joinKeys);
+    joinOp.getConf().setQBJoinTreeProps(joinTree);
     joinContext.put(joinOp, joinTree);
 
     Operator op = joinOp;
@@ -10163,12 +10164,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
     ParseContext pCtx = new ParseContext(conf, qb, plannerCtx.child,
-        opToPartPruner, opToPartList, topOps, opParseCtx, joinContext,
-        smbMapJoinContext, loadTableWork, loadFileWork, ctx, idToTableNameMap,
-        destTableId, uCtx, listMapJoinOpsNoReducer, groupOpToInputTables,
-        prunedPartitions, opToSamplePruner, globalLimitCtx, nameToSplitSample,
-        inputs, rootTasks, opToPartToSkewedPruner, viewAliasToInput,
-        reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
+        opToPartPruner, opToPartList, topOps, opParseCtx,
+        new HashSet<JoinOperator>(joinContext.keySet()),
+        new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions, opToSamplePruner,
+        globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
+        viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting, queryProperties);
 
     // 5. Take care of view creation
     if (createVwDesc != null) {
