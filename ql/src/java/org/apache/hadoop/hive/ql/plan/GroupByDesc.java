@@ -61,7 +61,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private ArrayList<ExprNodeDesc> keys;
   private List<Integer> listGroupingSets;
   private boolean groupingSetsPresent;
-  private int groupingSetPosition;
+  private int groupingSetPosition = -1;
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
@@ -175,6 +175,12 @@ public class GroupByDesc extends AbstractOperatorDesc {
   @Explain(displayName = "outputColumnNames")
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
+  }
+
+  @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  public boolean pruneGroupingSetId() {
+    return groupingSetPosition >= 0 && 
+        outputColumnNames.size() != keys.size() + aggregators.size();
   }
 
   public void setOutputColumnNames(

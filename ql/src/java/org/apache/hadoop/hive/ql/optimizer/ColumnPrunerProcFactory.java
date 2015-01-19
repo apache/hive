@@ -141,6 +141,17 @@ public final class ColumnPrunerProcFactory {
           colLists = Utilities.mergeUniqElems(colLists, param.getCols());
         }
       }
+      int groupingSetPosition = conf.getGroupingSetPosition();
+      if (groupingSetPosition >= 0) {
+        List<String> cols = cppCtx.genColLists(op);
+        String groupingColumn = conf.getOutputColumnNames().get(groupingSetPosition);
+        if (!cols.contains(groupingColumn)) {
+          conf.getOutputColumnNames().remove(groupingSetPosition);
+          if (op.getSchema() != null) {
+            op.getSchema().getSignature().remove(groupingSetPosition);
+          }
+        }
+      }
 
       cppCtx.getPrunedColLists().put(op, colLists);
       return null;
