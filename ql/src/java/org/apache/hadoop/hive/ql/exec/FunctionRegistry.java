@@ -41,9 +41,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -274,6 +272,7 @@ public final class FunctionRegistry {
     registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     registerGenericUDF("to_date", GenericUDFDate.class);
     registerUDF("weekofyear", UDFWeekOfYear.class, false);
+    registerGenericUDF("last_day", GenericUDFLastDay.class);
 
     registerGenericUDF("date_add", GenericUDFDateAdd.class);
     registerGenericUDF("date_sub", GenericUDFDateSub.class);

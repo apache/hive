@@ -95,6 +95,7 @@ isnull
 java_method
 json_tuple
 lag
+last_day
 last_value
 lcase
 lead
