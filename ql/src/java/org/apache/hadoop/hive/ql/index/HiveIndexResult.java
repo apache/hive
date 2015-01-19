@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
@@ -98,7 +99,7 @@ public class HiveIndexResult {
         FileSystem fs = indexFilePath.getFileSystem(conf);
         FileStatus indexStat = fs.getFileStatus(indexFilePath);
         if (indexStat.isDir()) {
-          FileStatus[] fss = fs.listStatus(indexFilePath);
+          FileStatus[] fss = fs.listStatus(indexFilePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
           for (FileStatus f : fss) {
             paths.add(f.getPath());
           }

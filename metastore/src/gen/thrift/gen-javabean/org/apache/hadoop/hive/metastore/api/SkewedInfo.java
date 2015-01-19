@@ -184,7 +184,7 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
 
         __this__skewedColValueLocationMaps.put(__this__skewedColValueLocationMaps_copy_key, __this__skewedColValueLocationMaps_copy_value);
       }
-      this.skewedColValueLocationMaps = __this__skewedColValueLocationMaps;
+        this.skewedColValueLocationMaps = __this__skewedColValueLocationMaps;
     }
   }
 

@@ -41,6 +41,7 @@ import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -149,7 +150,7 @@ public class HiveHFileOutputFormat extends
           fs.mkdirs(columnFamilyPath);
           Path srcDir = outputdir;
           for (;;) {
-            FileStatus [] files = fs.listStatus(srcDir);
+            FileStatus [] files = fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER);
             if ((files == null) || (files.length == 0)) {
               throw new IOException("No family directories found in " + srcDir);
             }
@@ -161,7 +162,7 @@ public class HiveHFileOutputFormat extends
               break;
             }
           }
-          for (FileStatus regionFile : fs.listStatus(srcDir)) {
+          for (FileStatus regionFile : fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER)) {
             fs.rename(
               regionFile.getPath(),
               new Path(
