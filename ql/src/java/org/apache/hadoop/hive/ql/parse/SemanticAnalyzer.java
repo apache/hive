@@ -7037,12 +7037,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   }
 
-  @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
       int numReducers) throws SemanticException {
-
+    
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-
+    
     // First generate the expression for the partition and sort keys
     // The cluster by clause / distribute by clause has the aliases for
     // partition function
@@ -7050,15 +7049,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (partitionExprs == null) {
       partitionExprs = qb.getParseInfo().getDistributeByForClause(dest);
     }
-    ArrayList<ExprNodeDesc> partitionCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
     if (partitionExprs != null) {
       int ccount = partitionExprs.getChildCount();
       for (int i = 0; i < ccount; ++i) {
         ASTNode cl = (ASTNode) partitionExprs.getChild(i);
-        partitionCols.add(genExprNodeDesc(cl, inputRR));
+        partCols.add(genExprNodeDesc(cl, inputRR));
       }
     }
-
     ASTNode sortExprs = qb.getParseInfo().getClusterByForClause(dest);
     if (sortExprs == null) {
       sortExprs = qb.getParseInfo().getSortByForClause(dest);
@@ -7078,11 +7076,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    Operator dummy = Operator.createDummy();
-    dummy.setParentOperators(Arrays.asList(input));
-
     ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> sortColsBack = new ArrayList<ExprNodeDesc>();
     StringBuilder order = new StringBuilder();
     if (sortExprs != null) {
       int ccount = sortExprs.getChildCount();
@@ -7103,8 +7097,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ExprNodeDesc exprNode = genExprNodeDesc(cl, inputRR);
         sortCols.add(exprNode);
-        sortColsBack.add(ExprNodeDescUtils.backtrack(exprNode, dummy, input));
       }
+    }
+    return genReduceSinkPlan(input, partCols, sortCols, order.toString(), numReducers);
+  }
+  
+  @SuppressWarnings("nls")
+  private Operator genReduceSinkPlan(Operator<?> input,
+      ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols, 
+      String sortOrder, int numReducers) throws SemanticException {
+
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+    
+    Operator dummy = Operator.createDummy();
+    dummy.setParentOperators(Arrays.asList(input));
+
+    ArrayList<ExprNodeDesc> sortColsBack = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc sortCol : sortCols) {
+      sortColsBack.add(ExprNodeDescUtils.backtrack(sortCol, dummy, input));
     }
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
@@ -7163,7 +7173,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // TODO Not 100% sure NOT_ACID is always right here.
     ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(sortCols, valueCols, outputColumns,
-        false, -1, partitionCols, order.toString(), numReducers, AcidUtils.Operation.NOT_ACID);
+        false, -1, partitionCols, sortOrder, numReducers, AcidUtils.Operation.NOT_ACID);
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input), rsRR);
 
@@ -12137,129 +12147,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genReduceSinkPlanForWindowing(WindowingSpec spec,
-      RowResolver inputRR,
-      Operator input) throws SemanticException{
+      RowResolver inputRR, Operator input) throws SemanticException{
+    
     ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    List<String> outputColumnNames = new ArrayList<String>();
-    StringBuilder orderString = new StringBuilder();
+    StringBuilder order = new StringBuilder();
 
-    ArrayList<PartitionExpression> partColList = spec.getQueryPartitionSpec().getExpressions();
-    for (PartitionExpression partCol : partColList) {
+    for (PartitionExpression partCol : spec.getQueryPartitionSpec().getExpressions()) {
       ExprNodeDesc partExpr = genExprNodeDesc(partCol.getExpression(), inputRR);
       partCols.add(partExpr);
       orderCols.add(partExpr);
-      orderString.append('+');
+      order.append('+');
     }
 
-    ArrayList<OrderExpression> orderColList = spec.getQueryOrderSpec() == null ?
-        new ArrayList<PTFInvocationSpec.OrderExpression>() :
-          spec.getQueryOrderSpec().getExpressions();
-    for (int i = 0; i < orderColList.size(); i++) {
-      OrderExpression orderCol = orderColList.get(i);
-      org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = orderCol.getOrder();
-      if (order.name().equals("ASC")) {
-        orderString.append('+');
-      } else {
-        orderString.append('-');
-      }
-      ExprNodeDesc orderExpr = genExprNodeDesc(orderCol.getExpression(), inputRR);
-      orderCols.add(orderExpr);
-    }
-
-    ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
-    RowResolver rsNewRR = new RowResolver();
-    int pos = 0;
-    for (ColumnInfo colInfo : colInfoList) {
-        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo);
-        valueCols.add(valueColExpr);
-        String internalName = SemanticAnalyzer.getColumnInternalName(pos++);
-        outputColumnNames.add(internalName);
-        colExprMap.put(internalName, valueColExpr);
-
-        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-        ColumnInfo newColInfo = new ColumnInfo(
-            internalName, colInfo.getType(), alias[0],
-            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-        rsNewRR.put(alias[0], alias[1], newColInfo);
-        String[] altMapping = inputRR.getAlternateMappings(colInfo.getInternalName());
-        if ( altMapping != null ) {
-          rsNewRR.put(altMapping[0], altMapping[1], newColInfo);
+    if (spec.getQueryOrderSpec() != null) {
+      for (OrderExpression orderCol : spec.getQueryOrderSpec().getExpressions()) {
+        String orderString = orderCol.getOrder().name();
+        if (orderString.equals("ASC")) {
+          order.append('+');
+        } else {
+          order.append('-');
         }
-    }
-
-    input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
-        .getReduceSinkDesc(orderCols,
-            valueCols, outputColumnNames, false,
-            -1, partCols, orderString.toString(), -1, AcidUtils.Operation.NOT_ACID),
-        new RowSchema(rsNewRR.getColumnInfos()), input), rsNewRR);
-    input.setColumnExprMap(colExprMap);
-
-
- // Construct the RR for extract operator
-    RowResolver extractRR = new RowResolver();
-    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
-        new LinkedHashMap<String[], ColumnInfo>();
-    pos = 0;
-
-    for (ColumnInfo colInfo : colInfoList) {
-      String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-      /*
-       * if we have already encountered this colInfo internalName.
-       * We encounter it again because it must be put for the Having clause.
-       * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
-       */
-      if ( colsAddedByHaving.containsKey(alias)) {
-        continue;
-      }
-      ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
-      ColumnInfo eColInfo = new ColumnInfo(
-          SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
-          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-
-      if ( astNode == null ) {
-        extractRR.put(alias[0], alias[1], eColInfo);
-      }
-      else {
-        /*
-         * in case having clause refers to this column may have been added twice;
-         * once with the ASTNode.toStringTree as the alias
-         * and then with the real alias.
-         */
-        extractRR.putExpression(astNode, eColInfo);
-        if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
-          colsAddedByHaving.put(alias, eColInfo);
-        }
-      }
-      String[] altMapping = inputRR.getAlternateMappings(colInfo.getInternalName());
-      if ( altMapping != null ) {
-        extractRR.put(altMapping[0], altMapping[1], eColInfo);
+        orderCols.add(genExprNodeDesc(orderCol.getExpression(), inputRR));
       }
     }
 
-    for(Map.Entry<String[], ColumnInfo> columnAddedByHaving : colsAddedByHaving.entrySet() ) {
-      String[] alias = columnAddedByHaving.getKey();
-      ColumnInfo eColInfo = columnAddedByHaving.getValue();
-      extractRR.put(alias[0], alias[1], eColInfo);
-    }
-
-    /*
-     * b. Construct Extract Operator.
-     */
-    input = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new ExtractDesc(
-            new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-                Utilities.ReduceField.VALUE
-                .toString(), "", false)),
-        new RowSchema(inputRR.getColumnInfos()),
-        input), extractRR);
-
-
-    return input;
+    return genReduceSinkPlan(input, partCols, orderCols, order.toString(), -1);
   }
-
 
   public static ArrayList<WindowExpressionSpec> parseSelect(String selectExprStr)
       throws SemanticException
