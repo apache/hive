@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -669,7 +670,7 @@ public class BucketingSortingOpProcFactory {
 
       processGroupByReduceSink((ReduceSinkOperator) rop, gop, bctx);
 
-      return processGroupBy((ReduceSinkOperator)rop , gop, bctx);
+      return processGroupBy(rop , gop, bctx);
     }
 
     /**
@@ -683,12 +684,16 @@ public class BucketingSortingOpProcFactory {
     protected void processGroupByReduceSink(ReduceSinkOperator rop, GroupByOperator gop,
         BucketingSortingCtx bctx){
 
+      GroupByDesc groupByDesc = gop.getConf();
       String sortOrder = rop.getConf().getOrder();
       List<BucketCol> bucketCols = new ArrayList<BucketCol>();
       List<SortCol> sortCols = new ArrayList<SortCol>();
       assert rop.getConf().getKeyCols().size() <= rop.getSchema().getSignature().size();
       // Group by operators select the key cols, so no need to find them in the values
       for (int i = 0; i < rop.getConf().getKeyCols().size(); i++) {
+        if (groupByDesc.pruneGroupingSetId() && groupByDesc.getGroupingSetPosition() == i) {
+          continue;
+        }
         String colName = rop.getSchema().getSignature().get(i).getInternalName();
         bucketCols.add(new BucketCol(colName, i));
         sortCols.add(new SortCol(colName, i, sortOrder.charAt(i)));

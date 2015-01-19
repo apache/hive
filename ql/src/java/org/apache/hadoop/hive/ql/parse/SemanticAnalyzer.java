@@ -2640,7 +2640,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   // TODO: make aliases unique, otherwise needless rewriting takes place
- Integer genColListRegex(String colRegex, String tabAlias, ASTNode sel,
+  Integer genColListRegex(String colRegex, String tabAlias, ASTNode sel,
     ArrayList<ExprNodeDesc> col_list, HashSet<ColumnInfo> excludeCols, RowResolver input,
     RowResolver colSrcRR, Integer pos, RowResolver output, List<String> aliases,
     boolean ensureUniqueCols) throws SemanticException {
@@ -3936,7 +3936,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false, 0, numDistinctUDFs > 0),
+            false, groupByMemoryUsage, memoryThreshold, null, false, -1, numDistinctUDFs > 0),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
@@ -4061,10 +4061,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // This is only needed if a new grouping set key is being created
-    int groupingSetsPosition = 0;
+    int groupingSetsPosition = -1;
 
     // For grouping sets, add a dummy grouping key
     if (groupingSetsPresent) {
+      groupingSetsPosition = groupByKeys.size();
       // Consider the query: select a,b, count(1) from T group by a,b with cube;
       // where it is being executed in a single map-reduce job
       // The plan is TableScan -> GroupBy1 -> ReduceSink -> GroupBy2 -> FileSink
@@ -4079,7 +4080,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colExprMap);
       }
       else {
-        groupingSetsPosition = groupByKeys.size();
         // The grouping set has not yet been processed. Create a new grouping key
         // Consider the query: select a,b, count(1) from T group by a,b with cube;
         // where it is being executed in 2 map-reduce jobs
@@ -4295,7 +4295,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // The grouping set key is present after the grouping keys, before the distinct keys
-    int groupingSetsPosition = groupByKeys.size();
+    int groupingSetsPosition = -1;
 
     // For grouping sets, add a dummy grouping key
     // This dummy key needs to be added as a reduce key
@@ -4307,6 +4307,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // This function is called for GroupBy1 to create an additional grouping key
     // for the grouping set (corresponding to the rollup).
     if (groupingSetsPresent) {
+      groupingSetsPosition = groupByKeys.size();
       createNewGroupingKey(groupByKeys,
           outputColumnNames,
           groupByOutputRowResolver,
@@ -4863,8 +4864,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
 
+    int groupingSetsPosition = -1;
     // For grouping sets, add a dummy grouping key
     if (groupingSetsPresent) {
+      groupingSetsPosition = groupByKeys.size();
       addGroupingSetKey(
           groupByKeys,
           groupByInputRowResolver2,
@@ -4920,7 +4923,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false, 0, containsDistinctAggr),
+            false, groupByMemoryUsage, memoryThreshold, null, false,
+            groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
         reduceSinkOperatorInfo2), groupByOutputRowResolver2);
     op.setColumnExprMap(colExprMap);
@@ -7439,7 +7443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, null, false, 0, false),
+            false, groupByMemoryUsage, memoryThreshold, null, false, -1, false),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
 
