@@ -8,7 +8,7 @@ Saving all output to "!!{outputDirectory}!!/udf_to_date.q.raw". Enter "record" w
 'tab_name'
 'to_date(expr) - Extracts the date part of the date or datetime expression expr'
 'Example:'
-'   > SELECT to_date('2009-30-07 04:17:52') FROM src LIMIT 1;'
-'  '2009-30-07''
+'   > SELECT to_date('2009-07-30 04:17:52') FROM src LIMIT 1;'
+'  '2009-07-30''
 4 rows selected 
 >>>  !record
