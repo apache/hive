@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QB;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -133,23 +132,21 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
   protected boolean canConvertMapJoinToBucketMapJoin(
       MapJoinOperator mapJoinOp,
-      ParseContext pGraphContext,
       BucketJoinProcCtx context) throws SemanticException {
 
-    QBJoinTree joinCtx = pGraphContext.getMapJoinContext().get(mapJoinOp);
-    if (joinCtx == null) {
+    if (!this.pGraphContext.getMapJoinOps().contains(mapJoinOp)) {
       return false;
     }
 
     List<String> joinAliases = new ArrayList<String>();
-    String[] srcs = joinCtx.getBaseSrc();
-    String[] left = joinCtx.getLeftAliases();
-    List<String> mapAlias = joinCtx.getMapAliases();
+    String[] srcs = mapJoinOp.getConf().getBaseSrc();
+    String[] left = mapJoinOp.getConf().getLeftAliases();
+    List<String> mapAlias = mapJoinOp.getConf().getMapAliases();
     String baseBigAlias = null;
 
     for (String s : left) {
       if (s != null) {
-        String subQueryAlias = QB.getAppendedAliasFromId(joinCtx.getId(), s);
+        String subQueryAlias = QB.getAppendedAliasFromId(mapJoinOp.getConf().getId(), s);
         if (!joinAliases.contains(subQueryAlias)) {
           joinAliases.add(subQueryAlias);
           if (!mapAlias.contains(s)) {
@@ -161,7 +158,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
     for (String s : srcs) {
       if (s != null) {
-        String subQueryAlias = QB.getAppendedAliasFromId(joinCtx.getId(), s);
+        String subQueryAlias = QB.getAppendedAliasFromId(mapJoinOp.getConf().getId(), s);
         if (!joinAliases.contains(subQueryAlias)) {
           joinAliases.add(subQueryAlias);
           if (!mapAlias.contains(s)) {
@@ -174,9 +171,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     Map<Byte, List<ExprNodeDesc>> keysMap = mapJoinOp.getConf().getKeys();
 
     return checkConvertBucketMapJoin(
-        pGraphContext,
         context,
-        joinCtx,
+        mapJoinOp.getConf().getAliasToOpInfo(),
         keysMap,
         baseBigAlias,
         joinAliases);
@@ -191,9 +187,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
    * d. The number of buckets in the big table can be divided by no of buckets in small tables.
    */
   protected boolean checkConvertBucketMapJoin(
-      ParseContext pGraphContext,
       BucketJoinProcCtx context,
-      QBJoinTree joinCtx,
+      Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo,
       Map<Byte, List<ExprNodeDesc>> keysMap,
       String baseBigAlias,
       List<String> joinAliases) throws SemanticException {
@@ -218,7 +213,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     boolean bigTablePartitioned = true;
     for (int index = 0; index < joinAliases.size(); index++) {
       String alias = joinAliases.get(index);
-      Operator<? extends OperatorDesc> topOp = joinCtx.getAliasToOpInfo().get(alias);
+      Operator<? extends OperatorDesc> topOp = aliasToOpInfo.get(alias);
       // The alias may not be present in case of a sub-query
       if (topOp == null) {
         return false;
@@ -459,7 +454,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   }
 
   // convert partition to partition spec string
-  private static Map<String, List<String>> convert(Map<Partition, List<String>> mapping) {
+  private Map<String, List<String>> convert(Map<Partition, List<String>> mapping) {
     Map<String, List<String>> converted = new HashMap<String, List<String>>();
     for (Map.Entry<Partition, List<String>> entry : mapping.entrySet()) {
       converted.put(entry.getKey().getName(), entry.getValue());
@@ -488,7 +483,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   }
 
   // called for each partition of big table and populates mapping for each file in the partition
-  private static void fillMappingBigTableBucketFileNameToSmallTableBucketFileNames(
+  private void fillMappingBigTableBucketFileNameToSmallTableBucketFileNames(
       List<Integer> smallTblBucketNums,
       List<List<String>> smallTblFilesList,
       Map<String, List<String>> bigTableBucketFileNameToSmallTableBucketFileNames,

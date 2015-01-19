@@ -387,8 +387,7 @@ public abstract class TaskCompiler {
     ParseContext clone = new ParseContext(conf,
         pCtx.getQB(), pCtx.getParseTree(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
-        pCtx.getOpParseCtx(), pCtx.getJoinContext(),
-        pCtx.getSmbMapJoinContext(),
+        pCtx.getOpParseCtx(), pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
         pCtx.getListMapJoinOpsNoReducer(), pCtx.getGroupOpToInputTables(),
@@ -399,7 +398,7 @@ public abstract class TaskCompiler {
         pCtx.getQueryProperties());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
-    clone.setMapJoinContext(pCtx.getMapJoinContext());
+    clone.setMapJoinOps(pCtx.getMapJoinOps());
     return clone;
   }
 }

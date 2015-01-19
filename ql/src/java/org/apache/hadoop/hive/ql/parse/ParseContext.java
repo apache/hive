@@ -71,9 +71,9 @@ public class ParseContext {
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
   private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
-  private Map<JoinOperator, QBJoinTree> joinContext;
-  private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
-  private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
+  private Set<JoinOperator> joinOps;
+  private Set<MapJoinOperator> mapJoinOps;
+  private Set<SMBMapJoinOperator> smbMapJoinOps;
   private List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private HashMap<String, SplitSample> nameToSplitSample;
   private List<LoadTableDesc> loadTableWork;
@@ -124,7 +124,7 @@ public class ParseContext {
    * @param opParseCtx
    *          operator parse context - contains a mapping from operator to
    *          operator parse state (row resolver etc.)
-   * @param joinContext
+   * @param joinOps
    *          context needed join processing (map join specifically)
    * @param loadTableWork
    *          list of destination tables being loaded
@@ -153,8 +153,8 @@ public class ParseContext {
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends OperatorDesc>> topOps,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx,
-      Map<JoinOperator, QBJoinTree> joinContext,
-      Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext,
+      Set<JoinOperator> joinOps,
+      Set<SMBMapJoinOperator> smbMapJoinOps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
@@ -173,8 +173,8 @@ public class ParseContext {
     this.ast = ast;
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
-    this.joinContext = joinContext;
-    this.smbMapJoinContext = smbMapJoinContext;
+    this.joinOps = joinOps;
+    this.smbMapJoinOps = smbMapJoinOps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
     this.opParseCtx = opParseCtx;
@@ -403,18 +403,18 @@ public class ParseContext {
   }
 
   /**
-   * @return the joinContext
+   * @return the joinOps
    */
-  public Map<JoinOperator, QBJoinTree> getJoinContext() {
-    return joinContext;
+  public Set<JoinOperator> getJoinOps() {
+    return joinOps;
   }
 
   /**
-   * @param joinContext
-   *          the joinContext to set
+   * @param joinOps
+   *          the joinOps to set
    */
-  public void setJoinContext(Map<JoinOperator, QBJoinTree> joinContext) {
-    this.joinContext = joinContext;
+  public void setJoinOps(Set<JoinOperator> joinOps) {
+    this.joinOps = joinOps;
   }
 
   /**
@@ -497,20 +497,20 @@ public class ParseContext {
     return lInfo;
   }
 
-  public Map<MapJoinOperator, QBJoinTree> getMapJoinContext() {
-    return mapJoinContext;
+  public Set<MapJoinOperator> getMapJoinOps() {
+    return mapJoinOps;
   }
 
-  public void setMapJoinContext(Map<MapJoinOperator, QBJoinTree> mapJoinContext) {
-    this.mapJoinContext = mapJoinContext;
+  public void setMapJoinOps(Set<MapJoinOperator> mapJoinOps) {
+    this.mapJoinOps = mapJoinOps;
   }
 
-  public Map<SMBMapJoinOperator, QBJoinTree> getSmbMapJoinContext() {
-    return smbMapJoinContext;
+  public Set<SMBMapJoinOperator> getSmbMapJoinOps() {
+    return smbMapJoinOps;
   }
 
-  public void setSmbMapJoinContext(Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext) {
-    this.smbMapJoinContext = smbMapJoinContext;
+  public void setSmbMapJoinOps(Set<SMBMapJoinOperator> smbMapJoinOps) {
+    this.smbMapJoinOps = smbMapJoinOps;
   }
 
   public GlobalLimitCtx getGlobalLimitCtx() {

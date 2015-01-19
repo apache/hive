@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.GenSparkSkewJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.physical.SkewJoinProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.GenSparkUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -138,16 +137,22 @@ public class SparkSkewJoinProcFactory {
       String streamDesc = taskTmpDir.toUri().toString();
       if (GenMapRedUtils.needsTagging((ReduceWork) childWork)) {
         Operator<? extends OperatorDesc> childReducer = ((ReduceWork) childWork).getReducer();
-        QBJoinTree joinTree = null;
+        String id = null;
         if (childReducer instanceof JoinOperator) {
-          joinTree = parseContext.getJoinContext().get(childReducer);
+          if (parseContext.getJoinOps().contains(childReducer)) {
+            id = ((JoinOperator)childReducer).getConf().getId();
+          }
         } else if (childReducer instanceof MapJoinOperator) {
-          joinTree = parseContext.getMapJoinContext().get(childReducer);
+          if (parseContext.getMapJoinOps().contains(childReducer)) {
+            id = ((MapJoinOperator)childReducer).getConf().getId();
+          }
         } else if (childReducer instanceof SMBMapJoinOperator) {
-          joinTree = parseContext.getSmbMapJoinContext().get(childReducer);
+          if (parseContext.getSmbMapJoinOps().contains(childReducer)) {
+            id = ((SMBMapJoinOperator)childReducer).getConf().getId();
+          }
         }
-        if (joinTree != null && joinTree.getId() != null) {
-          streamDesc = joinTree.getId() + ":$INTNAME";
+        if (id != null) {
+          streamDesc = id + ":$INTNAME";
         } else {
           streamDesc = "$INTNAME";
         }

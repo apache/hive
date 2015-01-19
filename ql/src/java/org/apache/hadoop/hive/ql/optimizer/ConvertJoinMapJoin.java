@@ -47,8 +47,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -231,13 +231,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     MapJoinDesc mapJoinDesc = null;
     if (adjustParentsChildren) {
-        mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
-            joinOp, parseContext.getJoinContext().get(joinOp), mapJoinConversionPos, true);
+      mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
+            joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
+            mapJoinConversionPos, true);
     } else {
       JoinDesc joinDesc = joinOp.getConf();
       // retain the original join desc in the map join.
       mapJoinDesc =
-          new MapJoinDesc(MapJoinProcessor.getKeys(parseContext.getJoinContext().get(joinOp), joinOp).getSecond(),
+          new MapJoinDesc(
+                  MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
               null, joinDesc.getExprs(), null, null,
               joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
               joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
@@ -606,7 +609,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     MapJoinOperator mapJoinOp =
         MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, parseContext.getOpParseCtx(), joinOp,
-            parseContext.getJoinContext().get(joinOp), bigTablePosition, true);
+                joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
+                bigTablePosition, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
