@@ -299,6 +299,25 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
+      if (master.equals("yarn-cluster")) {
+        String executorCores = conf.get("spark.executor.cores");
+        if (executorCores != null) {
+          argv.add("--executor-cores");
+          argv.add(executorCores);
+        }
+
+        String executorMemory = conf.get("spark.executor.memory");
+        if (executorMemory != null) {
+          argv.add("--executor-memory");
+          argv.add(executorMemory);
+        }
+
+        String numOfExecutors = conf.get("spark.executor.instances");
+        if (numOfExecutors != null) {
+          argv.add("--num-executors");
+          argv.add(numOfExecutors);
+        }
+      }
 
       argv.add("--properties-file");
       argv.add(properties.getAbsolutePath());
