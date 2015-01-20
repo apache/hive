@@ -902,7 +902,7 @@ public class TxnHandler {
     // so I've tried to capture the different error messages (there appear to be fewer different
     // error messages than SQL states).
     // Derby and newer MySQL driver use the new SQLTransactionRollbackException
-    if (dbProduct == null) {
+    if (dbProduct == null && conn != null) {
       determineDatabaseProduct(conn);
     }
     if (e instanceof SQLTransactionRollbackException ||
