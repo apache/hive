@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -36,6 +36,12 @@ import org.apache.hadoop.mapred.InputSplit;
 
 /** Middle layer - gets encoded blocks, produces proto-VRBs */
 public abstract class ColumnVectorProducer<BatchKey> {
+  private final ExecutorService executor;
+
+  public ColumnVectorProducer(ExecutorService executor) {
+    this.executor = executor;
+  }
+
   static class EncodedColumnBatch {
     public EncodedColumnBatch(int colCount) {
       columnDatas = new ColumnBuffer[colCount];
@@ -131,12 +137,6 @@ public abstract class ColumnVectorProducer<BatchKey> {
     }
 
     @Override
-    public void stop() {
-      upstreamFeedback.stop();
-      dicardPendingData(true);
-    }
-
-    @Override
     public void returnData(ColumnVectorBatch data) {
       // TODO: column vectors could be added to object pool here
     }
@@ -163,6 +163,24 @@ public abstract class ColumnVectorProducer<BatchKey> {
         upstreamFeedback.returnData(data);
       }
     }
+
+    @Override
+    public void stop() {
+      upstreamFeedback.stop();
+      dicardPendingData(true);
+    }
+
+    @Override
+    public void pause() {
+      // We are just a relay; send pause to encoded data producer.
+      upstreamFeedback.pause();
+    }
+
+    @Override
+    public void unpause() {
+      // We are just a relay; send unpause to encoded data producer.
+      upstreamFeedback.unpause();
+    }
   }
 
   /**
@@ -182,7 +200,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     EncodedDataReader<BatchKey> reader = edp.getReader(split, columnIds, sarg, edc);
     // Set the encoded data reader as upstream feedback for encoded data consumer, and start.
     edc.init(reader);
-    reader.start();
+    executor.submit(reader);
     return edc;
   }
 

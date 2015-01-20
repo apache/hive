@@ -17,8 +17,14 @@
  */
 package org.apache.hadoop.hive.llap;
 
+/**
+ * Data consumer; an equivalent of a data queue for an asynchronous data producer.
+ */
 public interface Consumer<T> {
-  public void setDone();
+  /** Some data has been produced. */
   public void consumeData(T data);
+  /** No more data will be produced; done */
+  public void setDone();
+  /** No more data will be produced; error during production */
   public void setError(Throwable t);
 }

@@ -38,11 +38,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapIoProxy;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -197,11 +200,33 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     this.job = job;
   }
 
+  public static InputFormat<WritableComparable, Writable> wrapForLlap(
+      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_ENABLED)) {
+      return inputFormat; // LLAP not enabled, no-op.
+    }
+    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
+        isVector = Utilities.isVectorMode(conf);
+    if (!isSupported || !isVector) {
+      LOG.info("Not using llap for " + inputFormat + ": " + isSupported + ", " + isVector);
+      return inputFormat;
+    }
+    LOG.info("Wrapping " + inputFormat);
+    @SuppressWarnings("unchecked")
+    // TODO: should be LlapIoProxy.getIo eventually
+    LlapIo<VectorizedRowBatch> llapIo = LlapIoProxy.getOrCreateIo(conf);
+    return castInputFormat(llapIo.getInputFormat(inputFormat));
+  }
+
   @SuppressWarnings("unchecked")
-  private static <T, U, V> InputFormat<T, V> castInputFormat(InputFormat<U, V> from) {
-    // We assume that LlapWrappableInputFormatInterface has NullWritable as first parameter.
-    // Since we are using Java and not, say, a programming language, there's no way to check.
-    return (InputFormat<T, V>)from;
+  private static <T, U, V, W> InputFormat<T, U> castInputFormat(InputFormat<V, W> from) {
+    // This is ugly in two ways...
+    // 1) We assume that LlapWrappableInputFormatInterface has NullWritable as first parameter.
+    //    Since we are using Java and not, say, a programming language, there's no way to check.
+    // 2) We ignore the fact that 2nd arg is completely incompatible (VRB -> Writable), because
+    //    vectorization currently works by magic, getting VRB from IF with non-VRB value param.
+    // So we just cast blindly and hope for the best (which is obviously what happens).
+    return (InputFormat<T, U>)from;
   }
 
 
@@ -222,7 +247,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return instance;
+    return wrapForLlap(instance, job);
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,

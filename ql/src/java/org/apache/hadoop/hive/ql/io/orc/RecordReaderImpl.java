@@ -3304,7 +3304,7 @@ public class RecordReaderImpl implements RecordReader {
   @Override
   public void readEncodedColumns(long[][] colRgs, int rgCount,
       Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache allocator) {
-    // TODO: HERE read encoded data
+    throw new UnsupportedOperationException("not implemented");
   }
 
   /* Old prototype code to read stripes one column at a time, with limited output space.

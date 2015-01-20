@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.Allocator;
@@ -45,19 +46,13 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 
-public class LlapIoImpl implements LlapIo, Configurable {
+public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Log LOG = LogFactory.getLog(LlapIoImpl.class);
-  private final Configuration conf;
-  // TODO: For now, keep I/O subsystem here as singleton.
-  //       When overall code becomes more clear it can be created during server initialization.
-  private static final Object instanceLock = new Object();
-  private static LlapIoImpl ioImpl = null;
 
   private final OrcColumnVectorProducer cvp;
   private final OrcEncodedDataProducer edp;
 
   private LlapIoImpl(Configuration conf) throws IOException {
-    this.conf = conf;
     boolean useLowLevelCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_LOW_LEVEL_CACHE);
     // High-level cache not supported yet.
     Cache<OrcCacheKey> cache = useLowLevelCache ? null : new NoopCache<OrcCacheKey>();
@@ -69,40 +64,20 @@ public class LlapIoImpl implements LlapIo, Configurable {
       Allocator allocator = new BuddyAllocator(conf, cachePolicy);
       orcCache = new LowLevelCacheImpl(conf, cachePolicy, allocator);
     }
+    // TODO: arbitrary thread pool
+    ExecutorService threadPool = Executors.newFixedThreadPool(10);
+    // TODO: this should depends on input format and be in a map, or something.
     this.edp = new OrcEncodedDataProducer(orcCache, cache, conf);
-    this.cvp = new OrcColumnVectorProducer(edp, conf);
+    this.cvp = new OrcColumnVectorProducer(threadPool, edp, conf);
   }
 
-  @Override
-  public void setConf(Configuration conf) {
-    getOrCreateInstance(conf);
-  }
-
-  // TODO: Add "create" method in a well-defined place when server is started
-  public static LlapIo getOrCreateInstance(Configuration conf) {
-    if (ioImpl != null) return ioImpl;
-    synchronized (instanceLock) {
-      if (ioImpl != null) return ioImpl;
-      try {
-        return (ioImpl = new LlapIoImpl(conf));
-      } catch (IOException e) {
-        throw new RuntimeException("Cannot initialize local server", e);
-      }
-    }
-  }
-
-  @Override
-  public Configuration getConf() {
-    return ioImpl == null ? null : ioImpl.conf;
-  }
-
-  @Override
-  public VectorReader getReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg) {
+  VectorReader getReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg) {
     return new VectorReaderImpl(split, columnIds, sarg, cvp);
   }
 
   @Override
-  public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat() {
-    return new LlapInputFormat(this);
+  public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
+      InputFormat sourceInputFormat) {
+    return new LlapInputFormat(this, sourceInputFormat);
   }
 }

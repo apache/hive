@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.io.decode;
 
+import java.util.concurrent.ExecutorService;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
@@ -28,8 +30,9 @@ import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
 public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer edp;
 
-  public OrcColumnVectorProducer(OrcEncodedDataProducer edp, Configuration conf) {
-    super();
+  public OrcColumnVectorProducer(
+      ExecutorService executor, OrcEncodedDataProducer edp, Configuration conf) {
+    super(executor);
     this.edp = edp;
   }
 
@@ -41,11 +44,11 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   @Override
   protected void decodeBatch(OrcBatchKey batchKey,
       EncodedColumnBatch batch, Consumer<ColumnVectorBatch> downstreamConsumer) {
+    throw new UnsupportedOperationException("not implemented");
     // TODO:  HERE decode EncodedColumn-s into ColumnVector-s
     //        sarg columns first, apply sarg, then decode others if needed; can cols skip values?
     //        fill lockedBuffers from batch as we go and lock multiple times /after first/;
     //        the way unlocking would work is that consumer returns CVB and we unlock lockedBuffer,
     //        so we must either lock for each CVB or have extra refcount here and a map.
   }
-
 }

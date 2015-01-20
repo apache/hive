@@ -15,19 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap;
 
-/**
- * Consumer feedback typically used by Consumer<T>;
- * allows consumer to influence production of data.
- */
-public interface ConsumerFeedback<T> {
-  /** Pause data production. */
-  public void pause();
-  /** Unpause data production. */
-  public void unpause();
-  /** Stop data production, the external operation has been cancelled. */
-  public void stop();
-  /** Returns processed data back to producer; necessary if e.g. data is locked in cache. */
-  public void returnData(T data);
-}
+package org.apache.hadoop.hive.ql.io;
+
+/** Marker interface for LLAP; serves no other purpose. */
+public interface LlapWrappableInputFormatInterface {}

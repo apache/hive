@@ -19,10 +19,8 @@
 
 package org.apache.hadoop.hive.llap.io.api;
 
-import java.util.List;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
 public interface VectorReader {

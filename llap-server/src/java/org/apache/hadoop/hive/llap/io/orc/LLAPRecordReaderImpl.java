@@ -100,6 +100,6 @@ public class LLAPRecordReaderImpl extends RecordReaderImpl implements RecordRead
   @Override
   public void readEncodedColumns(long[][] colRgs, int rgCount,
       Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache) {
-
+    throw new UnsupportedOperationException("not implemented");
   }
 }

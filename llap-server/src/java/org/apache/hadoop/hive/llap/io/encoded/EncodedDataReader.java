@@ -18,11 +18,16 @@
 
 package org.apache.hadoop.hive.llap.io.encoded;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
 
-public interface EncodedDataReader<BatchKey> extends ConsumerFeedback<ColumnBuffer> {
-  public void start() throws IOException;
+/**
+ * Interface for encoded data readers to implement.
+ * For now, has to implement callable for threadpool execution.
+ * The final threading design will probably change.
+ */
+public interface EncodedDataReader<BatchKey>
+  extends ConsumerFeedback<ColumnBuffer>, Callable<Void> {
 }

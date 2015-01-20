@@ -61,6 +61,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     private final SearchArgument sarg;
     private final Consumer<EncodedColumn<OrcBatchKey>> consumer;
 
+
     // Read state.
     private int stripeIxFrom, stripeIxTo;
     private Reader orcReader;
@@ -72,7 +73,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      */
     private long[][][] readState;
     private int[] rgsPerStripe = null;
-    private boolean isStopped = false;
+    private boolean isStopped = false, isPaused = false;
 
     public OrcEncodedDataReader(InputSplit split, List<Integer> columnIds,
         SearchArgument sarg, Consumer<EncodedColumn<OrcBatchKey>> consumer) {
@@ -93,9 +94,21 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     }
 
     @Override
-    public void start() throws IOException {
+    public void pause() {
+      isPaused = true;
+      // TODO: pause fetching
+    }
+
+    @Override
+    public void unpause() {
+      isPaused = false;
+      // TODO: unpause fetching
+    }
+
+    @Override
+    public Void call() throws IOException {
       LlapIoImpl.LOG.info("Processing split for " + internedFilePath);
-      if (isStopped) return;
+      if (isStopped) return null;
       List<StripeInformation> stripes = metadataCache.getStripes(internedFilePath);
       List<Type> types = metadataCache.getTypes(internedFilePath);
       orcReader = null;
@@ -112,10 +125,10 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         }
       }
       determineWhatToRead(stripes);
-      if (isStopped) return;
+      if (isStopped) return null;
       List<Integer>[] stripeColsToRead = produceDataFromCache();
       // readState now contains some 1s for column x rgs that were fetched from cache.
-      // TODO: I/O threadpool would be here; for now, linear and inefficient
+      // TODO: I/O threadpool would be here (or below); for now, linear
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
         List<Integer> colsToRead = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
         long[][] colRgs = readState[stripeIxMod];
@@ -151,6 +164,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       if (DebugUtils.isTraceMttEnabled()) {
         LlapIoImpl.LOG.info("done processing " + split);
       }
+      return null;
     }
 
     @Override

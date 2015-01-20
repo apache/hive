@@ -15,19 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap.cache;
 
-package org.apache.hadoop.hive.llap.io.api;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-
-public interface LlapIo {
-  public VectorReader getReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg);
-  // TODO: alternative, decide later based on execution layer
-  public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat();
+public interface Allocator {
+  boolean allocateMultiple(LlapMemoryBuffer[] dest, int size);
+  void deallocate(LlapMemoryBuffer buffer);
 }

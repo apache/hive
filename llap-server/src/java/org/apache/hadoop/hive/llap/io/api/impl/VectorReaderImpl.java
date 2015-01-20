@@ -35,7 +35,7 @@ public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatc
   private final InputSplit split;
   private final List<Integer> columnIds;
   private final SearchArgument sarg;
-  private final ColumnVectorProducer cvp;
+  private final ColumnVectorProducer<?> cvp;
 
   private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
   private Throwable pendingError = null;
@@ -44,7 +44,7 @@ public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatc
   private ConsumerFeedback<ColumnVectorBatch> feedback;
 
   public VectorReaderImpl(InputSplit split, List<Integer> columnIds, SearchArgument sarg,
-      ColumnVectorProducer cvp) {
+      ColumnVectorProducer<?> cvp) {
     this.split = split;
     this.columnIds = columnIds;
     this.sarg = sarg;

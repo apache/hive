@@ -24,14 +24,13 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.io.api.VectorReader;
 import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -45,11 +44,13 @@ import org.apache.hadoop.mapred.Reporter;
 
 public class LlapInputFormat
   implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface {
-  /** See RequestFactory class documentation on why this is necessary */
   private static final Log LOG = LogFactory.getLog(LlapInputFormat.class);
-  private final LlapIo llapIo;
+  private final LlapIoImpl llapIo;
 
-  LlapInputFormat(LlapIo llapIo) {
+  LlapInputFormat(LlapIoImpl llapIo, InputFormat sourceInputFormat) {
+    // TODO: right now, we do nothing with source input format, ORC-only in the first cut.
+    //       We'd need to plumb it thru and use it to get data to cache/etc.
+    assert sourceInputFormat instanceof OrcInputFormat;
     this.llapIo = llapIo;
   }
 
@@ -58,9 +59,8 @@ public class LlapInputFormat
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean isVectorMode = Utilities.isVectorMode(job);
     if (!isVectorMode) {
-      LOG.error("No llap in non-vectorized mode; falling back to original");
+      LOG.error("No llap in non-vectorized mode");
       throw new UnsupportedOperationException("No llap in non-vectorized mode");
-      // return realInputFormat.getRecordReader(split, job, reporter);
     }
     FileSplit fileSplit = (FileSplit)split;
     reporter.setStatus(fileSplit.toString());

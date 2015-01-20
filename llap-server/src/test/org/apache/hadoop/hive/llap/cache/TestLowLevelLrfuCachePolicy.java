@@ -148,7 +148,6 @@ public class TestLowLevelLrfuCachePolicy {
     unlock(lrfu, locked);
   }
 
-  private static final LlapCacheableBuffer CANNOT_EVICT = LowLevelCacheImpl.allocateFake();
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
   public boolean cache(
       LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapCacheableBuffer buffer) {
