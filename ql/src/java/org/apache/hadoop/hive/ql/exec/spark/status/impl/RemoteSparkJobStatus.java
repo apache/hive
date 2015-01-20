@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
@@ -50,11 +51,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteSparkJobStatus implements SparkJobStatus {
   private static final Log LOG = LogFactory.getLog(RemoteSparkJobStatus.class.getName());
-  // time (in milliseconds) to wait for a spark job to be submitted on remote cluster
-  // after this period, we decide the job submission has failed so that client won't hang forever
-  private static final long WAIT_SUBMISSION_TIMEOUT = 30000;
-  // remember when the monitor starts
-  private final long startTime;
   private final SparkClient sparkClient;
   private final JobHandle<Serializable> jobHandle;
   private final transient long sparkClientTimeoutInSeconds;
@@ -63,7 +59,6 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     this.sparkClient = sparkClient;
     this.jobHandle = jobHandle;
     this.sparkClientTimeoutInSeconds = timeoutInSeconds;
-    startTime = System.nanoTime();
   }
 
   @Override
@@ -72,19 +67,19 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public JobExecutionStatus getState() {
+  public JobExecutionStatus getState() throws HiveException {
     SparkJobInfo sparkJobInfo = getSparkJobInfo();
     return sparkJobInfo != null ? sparkJobInfo.status() : null;
   }
 
   @Override
-  public int[] getStageIds() {
+  public int[] getStageIds() throws HiveException {
     SparkJobInfo sparkJobInfo = getSparkJobInfo();
     return sparkJobInfo != null ? sparkJobInfo.stageIds() : new int[0];
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() {
+  public Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException {
     Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
     for (int stageId : getStageIds()) {
       SparkStageInfo sparkStageInfo = getSparkStageInfo(stageId);
@@ -132,27 +127,19 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   }
 
-  private SparkJobInfo getSparkJobInfo() {
+  private SparkJobInfo getSparkJobInfo() throws HiveException {
     Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1
       ? jobHandle.getSparkJobIds().get(0) : null;
     if (sparkJobId == null) {
-      long duration = TimeUnit.MILLISECONDS.convert(
-          System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-      if (duration <= WAIT_SUBMISSION_TIMEOUT) {
-        return null;
-      } else {
-        LOG.info("Job hasn't been submitted after " + duration / 1000 + "s. Aborting it.");
-        jobHandle.cancel(false);
-        return getDefaultJobInfo(sparkJobId, JobExecutionStatus.FAILED);
-      }
+      return null;
     }
     Future<SparkJobInfo> getJobInfo = sparkClient.run(
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
       return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
-    } catch (Throwable t) {
-      LOG.warn("Error getting job info", t);
-      return null;
+    } catch (Exception e) {
+      LOG.warn("Failed to get job info.", e);
+      throw new HiveException(e);
     }
   }
 

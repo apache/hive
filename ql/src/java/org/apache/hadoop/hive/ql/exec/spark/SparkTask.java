@@ -104,14 +104,18 @@ public class SparkTask extends Task<SparkWork> {
 
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (sparkJobStatus != null) {
-        SparkJobMonitor monitor = new SparkJobMonitor(sparkJobStatus);
+        SparkJobMonitor monitor = new SparkJobMonitor(conf, sparkJobStatus);
         rc = monitor.startMonitor();
-        // for RSC, we should get the counters after job has finished
         sparkCounters = sparkJobStatus.getCounter();
-        SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
-        if (LOG.isInfoEnabled() && sparkStatistics != null) {
-          LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
-          logSparkStatistic(sparkStatistics);
+        if (rc == 0 ) {
+          // for RSC, we should get the counters after job has finished
+          SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
+          if (LOG.isInfoEnabled() && sparkStatistics != null) {
+            LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
+            logSparkStatistic(sparkStatistics);
+          }
+        } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
+          jobRef.cancelJob();
         }
         sparkJobStatus.cleanup();
       }
