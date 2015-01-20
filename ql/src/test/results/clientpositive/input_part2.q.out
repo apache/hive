@@ -14,12 +14,16 @@ POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING, hr STRING, ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
@@ -714,13 +718,6 @@ POSTHOOK: Input: default@dest1
 0	val_0	12	2008-04-08
 0	val_0	12	2008-04-08
 0	val_0	12	2008-04-08
-2	val_2	12	2008-04-08
-4	val_4	12	2008-04-08
-5	val_5	12	2008-04-08
-5	val_5	12	2008-04-08
-5	val_5	12	2008-04-08
-8	val_8	12	2008-04-08
-9	val_9	12	2008-04-08
 10	val_10	12	2008-04-08
 11	val_11	12	2008-04-08
 12	val_12	12	2008-04-08
@@ -731,6 +728,7 @@ POSTHOOK: Input: default@dest1
 18	val_18	12	2008-04-08
 18	val_18	12	2008-04-08
 19	val_19	12	2008-04-08
+2	val_2	12	2008-04-08
 20	val_20	12	2008-04-08
 24	val_24	12	2008-04-08
 24	val_24	12	2008-04-08
@@ -746,12 +744,16 @@ POSTHOOK: Input: default@dest1
 35	val_35	12	2008-04-08
 37	val_37	12	2008-04-08
 37	val_37	12	2008-04-08
+4	val_4	12	2008-04-08
 41	val_41	12	2008-04-08
 42	val_42	12	2008-04-08
 42	val_42	12	2008-04-08
 43	val_43	12	2008-04-08
 44	val_44	12	2008-04-08
 47	val_47	12	2008-04-08
+5	val_5	12	2008-04-08
+5	val_5	12	2008-04-08
+5	val_5	12	2008-04-08
 51	val_51	12	2008-04-08
 51	val_51	12	2008-04-08
 53	val_53	12	2008-04-08
@@ -775,6 +777,7 @@ POSTHOOK: Input: default@dest1
 76	val_76	12	2008-04-08
 77	val_77	12	2008-04-08
 78	val_78	12	2008-04-08
+8	val_8	12	2008-04-08
 80	val_80	12	2008-04-08
 82	val_82	12	2008-04-08
 83	val_83	12	2008-04-08
@@ -784,6 +787,7 @@ POSTHOOK: Input: default@dest1
 85	val_85	12	2008-04-08
 86	val_86	12	2008-04-08
 87	val_87	12	2008-04-08
+9	val_9	12	2008-04-08
 90	val_90	12	2008-04-08
 90	val_90	12	2008-04-08
 90	val_90	12	2008-04-08
@@ -806,13 +810,6 @@ POSTHOOK: Input: default@dest2
 0	val_0	12	2008-04-09
 0	val_0	12	2008-04-09
 0	val_0	12	2008-04-09
-2	val_2	12	2008-04-09
-4	val_4	12	2008-04-09
-5	val_5	12	2008-04-09
-5	val_5	12	2008-04-09
-5	val_5	12	2008-04-09
-8	val_8	12	2008-04-09
-9	val_9	12	2008-04-09
 10	val_10	12	2008-04-09
 11	val_11	12	2008-04-09
 12	val_12	12	2008-04-09
@@ -823,6 +820,7 @@ POSTHOOK: Input: default@dest2
 18	val_18	12	2008-04-09
 18	val_18	12	2008-04-09
 19	val_19	12	2008-04-09
+2	val_2	12	2008-04-09
 20	val_20	12	2008-04-09
 24	val_24	12	2008-04-09
 24	val_24	12	2008-04-09
@@ -838,12 +836,16 @@ POSTHOOK: Input: default@dest2
 35	val_35	12	2008-04-09
 37	val_37	12	2008-04-09
 37	val_37	12	2008-04-09
+4	val_4	12	2008-04-09
 41	val_41	12	2008-04-09
 42	val_42	12	2008-04-09
 42	val_42	12	2008-04-09
 43	val_43	12	2008-04-09
 44	val_44	12	2008-04-09
 47	val_47	12	2008-04-09
+5	val_5	12	2008-04-09
+5	val_5	12	2008-04-09
+5	val_5	12	2008-04-09
 51	val_51	12	2008-04-09
 51	val_51	12	2008-04-09
 53	val_53	12	2008-04-09
@@ -867,6 +869,7 @@ POSTHOOK: Input: default@dest2
 76	val_76	12	2008-04-09
 77	val_77	12	2008-04-09
 78	val_78	12	2008-04-09
+8	val_8	12	2008-04-09
 80	val_80	12	2008-04-09
 82	val_82	12	2008-04-09
 83	val_83	12	2008-04-09
@@ -876,6 +879,7 @@ POSTHOOK: Input: default@dest2
 85	val_85	12	2008-04-09
 86	val_86	12	2008-04-09
 87	val_87	12	2008-04-09
+9	val_9	12	2008-04-09
 90	val_90	12	2008-04-09
 90	val_90	12	2008-04-09
 90	val_90	12	2008-04-09

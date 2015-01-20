@@ -102,15 +102,18 @@ POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-NULL	NULL
 -1461153966	{"myint":49,"mystring":"343","underscore_int":7}
 -1952710705	{"myint":25,"mystring":"125","underscore_int":5}
 -734328905	{"myint":16,"mystring":"64","underscore_int":4}
@@ -121,3 +124,4 @@ NULL	NULL
 336964422	{"myint":81,"mystring":"729","underscore_int":9}
 465985201	{"myint":1,"mystring":"1","underscore_int":1}
 477111225	{"myint":9,"mystring":"27","underscore_int":3}
+NULL	NULL
