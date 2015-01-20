@@ -1,5 +1,6 @@
 Warning: Shuffle Join JOIN[8][tables = [src1, src2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+-- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 
@@ -10,6 +11,7 @@ SELECT src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2
 PREHOOK: type: QUERY
 POSTHOOK: query: -- JAVA_VERSION_SPECIFIC_OUTPUT
+-- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key as k1, src1.value as v1, 

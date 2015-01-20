@@ -1,4 +1,6 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -7,7 +9,9 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)

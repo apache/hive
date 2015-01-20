@@ -1,7 +1,11 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key) SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key) SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

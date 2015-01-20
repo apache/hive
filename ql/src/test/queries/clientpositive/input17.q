@@ -17,4 +17,6 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue;
 
+-- SORT_QUERY_RESULTS
+
 SELECT dest1.* FROM dest1;

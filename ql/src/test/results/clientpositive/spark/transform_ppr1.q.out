@@ -1,4 +1,6 @@
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN EXTENDED
 FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
@@ -7,7 +9,9 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN EXTENDED
 FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
