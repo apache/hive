@@ -1986,7 +1986,12 @@ public class HiveConf extends Configuration {
         "hive.spark.client.future.timeout",
         "60s",
         new TimeValidator(TimeUnit.SECONDS),
-        "remote spark client JobHandle future timeout value in seconds.")
+        "Remote Spark client JobHandle future timeout value in seconds."),
+    SPARK_JOB_MONITOR_TIMEOUT(
+        "hive.spark.job.monitor.timeout",
+        "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Spark job monitor timeout if could not get job state in specified time interval.")
     ;
 
     public final String varname;
