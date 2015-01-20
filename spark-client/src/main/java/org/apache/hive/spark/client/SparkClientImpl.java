@@ -382,7 +382,7 @@ class SparkClientImpl implements SparkClient {
     <T extends Serializable> JobHandleImpl<T> submit(Job<T> job) {
       final String jobId = UUID.randomUUID().toString();
       final Promise<T> promise = driverRpc.createPromise();
-      JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
+      final JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
       jobs.put(jobId, handle);
 
       final io.netty.util.concurrent.Future<Void> rpc = driverRpc.call(new JobRequest(jobId, job));
@@ -393,7 +393,9 @@ class SparkClientImpl implements SparkClient {
       rpc.addListener(new GenericFutureListener<io.netty.util.concurrent.Future<Void>>() {
         @Override
         public void operationComplete(io.netty.util.concurrent.Future<Void> f) {
-          if (!f.isSuccess() && !promise.isDone()) {
+          if (f.isSuccess()) {
+            handle.changeState(JobHandle.State.QUEUED);
+          } else if (!promise.isDone()) {
             promise.setFailure(f.cause());
           }
         }
@@ -456,11 +458,20 @@ class SparkClientImpl implements SparkClient {
       }
     }
 
+    private void handle(ChannelHandlerContext ctx, JobStarted msg) {
+      JobHandleImpl<?> handle = jobs.get(msg.id);
+      if (handle != null) {
+        handle.changeState(JobHandle.State.STARTED);
+      } else {
+        LOG.warn("Received event for unknown job {}", msg.id);
+      }
+    }
+
     private void handle(ChannelHandlerContext ctx, JobSubmitted msg) {
       JobHandleImpl<?> handle = jobs.get(msg.clientJobId);
       if (handle != null) {
         LOG.info("Received spark job ID: {} for {}", msg.sparkJobId, msg.clientJobId);
-        handle.getSparkJobIds().add(msg.sparkJobId);
+        handle.addSparkJobId(msg.sparkJobId);
       } else {
         LOG.warn("Received spark job ID: {} for unknown job {}", msg.sparkJobId, msg.clientJobId);
       }

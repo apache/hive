@@ -245,6 +245,10 @@ public class RemoteDriver {
       clientRpc.call(new JobResult(jobId, result, error, counters));
     }
 
+    void jobStarted(String jobId) {
+      clientRpc.call(new JobStarted(jobId));
+    }
+
     void jobSubmitted(String jobId, int sparkJobId) {
       LOG.debug("Send job({}/{}) submitted to Client.", jobId, sparkJobId);
       clientRpc.call(new JobSubmitted(jobId, sparkJobId));
@@ -325,6 +329,8 @@ public class RemoteDriver {
 
     @Override
     public Void call() throws Exception {
+      protocol.jobStarted(req.id);
+
       try {
         jc.setMonitorCb(new MonitorCallback() {
           @Override

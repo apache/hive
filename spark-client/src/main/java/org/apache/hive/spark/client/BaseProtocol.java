@@ -121,6 +121,20 @@ abstract class BaseProtocol extends RpcDispatcher {
 
   }
 
+  protected static class JobStarted implements Serializable {
+
+    final String id;
+
+    JobStarted(String id) {
+      this.id = id;
+    }
+
+    JobStarted() {
+      this(null);
+    }
+
+  }
+
   /**
    * Inform the client that a new spark job has been submitted for the client job.
    */
