@@ -25,13 +25,14 @@ import java.util.List;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
-import org.apache.hadoop.hive.llap.io.api.VectorReader.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.VectorReader;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
-public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatch> {
+/** This used to be the main LLAP interface (next and close). However, since inputformat
+ * is used instead at present time, this class is just an extra layer. It could be merged
+ * into RecordReader of LlapInputFormat. */
+public class VectorReader implements Consumer<ColumnVectorBatch> {
   private final InputSplit split;
   private final List<Integer> columnIds;
   private final SearchArgument sarg;
@@ -43,7 +44,7 @@ public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatc
   private boolean isDone = false, isClosed = false;
   private ConsumerFeedback<ColumnVectorBatch> feedback;
 
-  public VectorReaderImpl(InputSplit split, List<Integer> columnIds, SearchArgument sarg,
+  public VectorReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg,
       ColumnVectorProducer<?> cvp) {
     this.split = split;
     this.columnIds = columnIds;
@@ -51,7 +52,6 @@ public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatc
     this.cvp = cvp;
   }
 
-  @Override
   public ColumnVectorBatch next() throws InterruptedException, IOException {
     // TODO: if some collection is needed, return previous ColumnVectorBatch here
     ColumnVectorBatch current = null;
@@ -96,7 +96,6 @@ public class VectorReaderImpl implements VectorReader, Consumer<ColumnVectorBatc
     throw new IOException(pendingError);
   }
 
-  @Override
   public void close() throws IOException {
     if (DebugUtils.isTraceEnabled()) {
       LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone

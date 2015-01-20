@@ -16,22 +16,15 @@
  * limitations under the License.
  */
 
-
-package org.apache.hadoop.hive.llap.io.api;
-
-import java.io.IOException;
+package org.apache.hadoop.hive.llap.io.api.impl;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
-public interface VectorReader {
-  /**
-   * Unlike VRB, doesn't have some fields, and doesn't have all columns
-   * (non-selected, partition cols, cols for downstream ops, etc.)
-   */
-  public static class ColumnVectorBatch {
-    public ColumnVector[] cols;
-    public int size;
-  }
-  public ColumnVectorBatch next() throws InterruptedException, IOException;
-  public void close() throws IOException;
+/**
+ * Unlike VRB, doesn't have some fields, and doesn't have all columns
+ * (non-selected, partition cols, cols for downstream ops, etc.)
+ */
+public class ColumnVectorBatch {
+  public ColumnVector[] cols;
+  public int size;
 }

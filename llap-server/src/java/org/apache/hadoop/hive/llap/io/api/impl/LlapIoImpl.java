@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.llap.cache.LowLevelFifoCachePolicy;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
-import org.apache.hadoop.hive.llap.io.api.VectorReader;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
@@ -72,7 +71,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   }
 
   VectorReader getReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg) {
-    return new VectorReaderImpl(split, columnIds, sarg, cvp);
+    return new VectorReader(split, columnIds, sarg, cvp);
   }
 
   @Override
