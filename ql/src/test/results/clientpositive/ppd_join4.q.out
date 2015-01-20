@@ -87,13 +87,13 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: 'a' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: 'a' (type: string)
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: 'a' (type: string)
               sort order: +
-              Map-reduce partition columns: '' (type: string)
+              Map-reduce partition columns: 'a' (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
       Reduce Operator Tree:
         Join Operator

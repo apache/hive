@@ -355,7 +355,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: x
@@ -366,7 +366,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
       Reduce Operator Tree:
