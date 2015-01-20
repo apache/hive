@@ -52,7 +52,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 6981 (type: int)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: 6981 (type: int)
                       Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
                       value expressions: cdecimal2 (type: decimal(23,14))
             Execution mode: vectorized

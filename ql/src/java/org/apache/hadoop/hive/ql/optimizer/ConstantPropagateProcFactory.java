@@ -862,7 +862,7 @@ public final class ConstantPropagateProcFactory {
       if (op.getChildOperators().size() == 1
           && op.getChildOperators().get(0) instanceof JoinOperator) {
         JoinOperator joinOp = (JoinOperator) op.getChildOperators().get(0);
-        if (skipFolding(joinOp.getConf(), rsDesc.getTag())) {
+        if (skipFolding(joinOp.getConf())) {
           LOG.debug("Skip folding in outer join " + op);
           cppCtx.getOpToConstantExprs().put(op, new HashMap<ColumnInfo, ExprNodeDesc>());
           return null;
@@ -888,22 +888,16 @@ public final class ConstantPropagateProcFactory {
       rsDesc.setKeyCols(newKeyEpxrs);
 
       // partition columns
-      if (!rsDesc.getPartitionCols().isEmpty()) {
-        ArrayList<ExprNodeDesc> newPartExprs = new ArrayList<ExprNodeDesc>();
-        for (ExprNodeDesc desc : rsDesc.getPartitionCols()) {
-          ExprNodeDesc expr = foldExpr(desc, constants, cppCtx, op, 0, false);
-          if (expr instanceof ExprNodeConstantDesc || expr instanceof ExprNodeNullDesc) {
-            continue;
-          }
-          newPartExprs.add(expr);
+      ArrayList<ExprNodeDesc> newPartExprs = new ArrayList<ExprNodeDesc>();
+      for (ExprNodeDesc desc : rsDesc.getPartitionCols()) {
+        ExprNodeDesc expr = foldExpr(desc, constants, cppCtx, op, 0, false);
+        if (expr != desc && desc instanceof ExprNodeColumnDesc
+            && expr instanceof ExprNodeConstantDesc) {
+          ((ExprNodeConstantDesc) expr).setFoldedFromCol(((ExprNodeColumnDesc) desc).getColumn());
         }
-        if (newPartExprs.isEmpty()) {
-          // If all partition columns are removed because of constant, insert an extra column to avoid
-          // random partitioning.
-          newPartExprs.add(new ExprNodeConstantDesc(""));
-        }
-        rsDesc.setPartitionCols(newPartExprs);
+        newPartExprs.add(expr);
       }
+      rsDesc.setPartitionCols(newPartExprs);
 
       // value columns
       ArrayList<ExprNodeDesc> newValExprs = new ArrayList<ExprNodeDesc>();
@@ -915,28 +909,19 @@ public final class ConstantPropagateProcFactory {
       return null;
     }
 
-    private boolean skipFolding(JoinDesc joinDesc, int tag) {
-      JoinCondDesc[] conds = joinDesc.getConds();
-      int i;
-      for (i = conds.length - 1; i >= 0; i--) {
-        if (conds[i].getType() == JoinDesc.INNER_JOIN) {
-          if (tag == i + 1)
-            return false;
-        } else if (conds[i].getType() == JoinDesc.FULL_OUTER_JOIN) {
-          return true;
-        } else if (conds[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
-          if (tag == i + 1)
-            return false;
-          return true;
-        } else if (conds[i].getType() == JoinDesc.LEFT_OUTER_JOIN) {
-          if (tag == i + 1)
-            return true;
+    /**
+     * Skip folding constants if there is outer join in join tree.
+     * @param joinDesc
+     * @return true if to skip.
+     */
+    private boolean skipFolding(JoinDesc joinDesc) {
+      for (JoinCondDesc cond : joinDesc.getConds()) {
+        if (cond.getType() == JoinDesc.INNER_JOIN || cond.getType() == JoinDesc.UNIQUE_JOIN) {
+          continue;
         }
+        return true;
       }
-      if (tag == 0) {
-        return false;
-      }
-      return true;
+      return false;
     }
 
   }

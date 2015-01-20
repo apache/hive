@@ -2577,7 +2577,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: '11' (type: string)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: '11' (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: '11' (type: string)
@@ -2635,7 +2635,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: '11' (type: string)
                   sort order: +
-                  Map-reduce partition columns: '' (type: string)
+                  Map-reduce partition columns: '11' (type: string)
                   Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
@@ -2733,7 +2733,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: '13' (type: string)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: '13' (type: string)
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
         Map 6 
             Map Operator Tree:
@@ -2761,7 +2761,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: '13' (type: string)
                   sort order: +
-                  Map-reduce partition columns: '' (type: string)
+                  Map-reduce partition columns: '13' (type: string)
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
@@ -4793,7 +4793,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: '11' (type: string)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: '11' (type: string)
                       Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
                     Select Operator
                       expressions: '11' (type: string)
