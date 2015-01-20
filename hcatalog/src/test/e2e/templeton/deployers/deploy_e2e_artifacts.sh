@@ -32,6 +32,8 @@ ${HADOOP_HOME}/bin/hdfs dfs -put ${PROJ_HOME}/hcatalog/src/test/e2e/templeton/in
 
 #For hadoop2 there are 2 separate jars
 ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/mapreduce/hadoop-mapreduce-examples-${HADOOP_VERSION}.jar  webhcate2e/hexamples.jar
+#For utf8 test(for mapreduce) we need a jar with utf-8 characters in the name
+${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/mapreduce/hadoop-mapreduce-examples-${HADOOP_VERSION}.jar  webhcate2e/hadoop_examples_䶴ㄩ鼾丄狜〇_2_2_0.jar
 ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-${HADOOP_VERSION}.jar webhcate2e/hclient.jar
 ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-streaming-${HADOOP_VERSION}.jar  /user/templeton/hadoop-streaming.jar
 
