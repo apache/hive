@@ -17,15 +17,11 @@
 
 package org.apache.hive.spark.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,17 +32,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.io.ByteStreams;
 import org.apache.hive.spark.counter.SparkCounters;
+import org.apache.spark.SparkException;
 import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.junit.Test;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.io.ByteStreams;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class TestSparkClient {
 
@@ -79,8 +77,19 @@ public class TestSparkClient {
     runTest(true, new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
+        JobHandle.Listener<String> listener = newListener();
         JobHandle<String> handle = client.submit(new SimpleJob());
+        handle.addListener(listener);
         assertEquals("hello", handle.get(TIMEOUT, TimeUnit.SECONDS));
+
+        // Try an invalid state transition on the handle. This ensures that the actual state
+        // change we're interested in actually happened, since internally the handle serializes
+        // state changes.
+        assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
+
+        verify(listener).onJobQueued(handle);
+        verify(listener).onJobStarted(handle);
+        verify(listener).onJobSucceeded(same(handle), eq(handle.get()));
       }
     });
   }
@@ -101,12 +110,25 @@ public class TestSparkClient {
     runTest(true, new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
-      JobHandle<String> handle = client.submit(new SimpleJob());
+        JobHandle.Listener<String> listener = newListener();
+        JobHandle<String> handle = client.submit(new ErrorJob());
+        handle.addListener(listener);
         try {
           handle.get(TIMEOUT, TimeUnit.SECONDS);
+          fail("Should have thrown an exception.");
         } catch (ExecutionException ee) {
-          assertTrue(ee.getCause() instanceof IllegalStateException);
+          assertTrue(ee.getCause() instanceof SparkException);
+          assertTrue(ee.getCause().getMessage().contains("IllegalStateException: Hello"));
         }
+
+        // Try an invalid state transition on the handle. This ensures that the actual state
+        // change we're interested in actually happened, since internally the handle serializes
+        // state changes.
+        assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
+
+        verify(listener).onJobQueued(handle);
+        verify(listener).onJobStarted(handle);
+        verify(listener).onJobFailed(same(handle), any(Throwable.class));
       }
     });
   }
@@ -138,18 +160,26 @@ public class TestSparkClient {
     runTest(true, new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
+        JobHandle.Listener<Integer> listener = newListener();
         JobHandle<Integer> future = client.submit(new AsyncSparkJob());
+        future.addListener(listener);
         future.get(TIMEOUT, TimeUnit.SECONDS);
         MetricsCollection metrics = future.getMetrics();
         assertEquals(1, metrics.getJobIds().size());
         assertTrue(metrics.getAllMetrics().executorRunTime > 0L);
+        verify(listener).onSparkJobStarted(same(future),
+          eq(metrics.getJobIds().iterator().next()));
 
+        JobHandle.Listener<Integer> listener2 = newListener();
         JobHandle<Integer> future2 = client.submit(new AsyncSparkJob());
+        future2.addListener(listener2);
         future2.get(TIMEOUT, TimeUnit.SECONDS);
         MetricsCollection metrics2 = future2.getMetrics();
         assertEquals(1, metrics2.getJobIds().size());
         assertFalse(Objects.equal(metrics.getJobIds(), metrics2.getJobIds()));
         assertTrue(metrics2.getAllMetrics().executorRunTime > 0L);
+        verify(listener2).onSparkJobStarted(same(future2),
+          eq(metrics2.getJobIds().iterator().next()));
       }
     });
   }
@@ -226,6 +256,13 @@ public class TestSparkClient {
     });
   }
 
+  private <T extends Serializable> JobHandle.Listener<T> newListener() {
+    @SuppressWarnings("unchecked")
+    JobHandle.Listener<T> listener =
+      (JobHandle.Listener<T>) mock(JobHandle.Listener.class);
+    return listener;
+  }
+
   private void runTest(boolean local, TestFunction test) throws Exception {
     Map<String, String> conf = createConf(local);
     SparkClientFactory.initialize(conf);
@@ -247,6 +284,15 @@ public class TestSparkClient {
     @Override
     public String call(JobContext jc) {
       return "hello";
+    }
+
+  }
+
+  private static class ErrorJob implements Job<String> {
+
+    @Override
+    public String call(JobContext jc) {
+      throw new IllegalStateException("Hello");
     }
 
   }

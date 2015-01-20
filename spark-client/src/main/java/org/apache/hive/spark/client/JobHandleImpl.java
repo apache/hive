@@ -17,15 +17,16 @@
 
 package org.apache.hive.spark.client;
 
-import io.netty.util.concurrent.Promise;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import io.netty.util.concurrent.Promise;
 
 import org.apache.hive.spark.counter.SparkCounters;
 
@@ -34,28 +35,30 @@ import org.apache.hive.spark.counter.SparkCounters;
  */
 class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
 
-  private final AtomicBoolean cancelled;
   private final SparkClientImpl client;
   private final String jobId;
   private final MetricsCollection metrics;
   private final Promise<T> promise;
   private final List<Integer> sparkJobIds;
+  private final List<Listener> listeners;
+  private volatile State state;
   private volatile SparkCounters sparkCounters;
 
   JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId) {
-    this.cancelled = new AtomicBoolean();
     this.client = client;
     this.jobId = jobId;
     this.promise = promise;
+    this.listeners = Lists.newLinkedList();
     this.metrics = new MetricsCollection();
     this.sparkJobIds = new CopyOnWriteArrayList<Integer>();
+    this.state = State.SENT;
     this.sparkCounters = null;
   }
 
   /** Requests a running job to be cancelled. */
   @Override
   public boolean cancel(boolean mayInterrupt) {
-    if (cancelled.compareAndSet(false, true)) {
+    if (changeState(State.CANCELLED)) {
       client.cancel(jobId);
       promise.cancel(mayInterrupt);
       return true;
@@ -114,20 +117,116 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     return sparkCounters;
   }
 
+  @Override
+  public State getState() {
+    return state;
+  }
+
+  @Override
+  public void addListener(Listener l) {
+    synchronized (listeners) {
+      listeners.add(l);
+      // If current state is a final state, notify of Spark job IDs before notifying about the
+      // state transition.
+      if (state.ordinal() >= State.CANCELLED.ordinal()) {
+        for (Integer i : sparkJobIds) {
+          l.onSparkJobStarted(this, i);
+        }
+      }
+
+      fireStateChange(state, l);
+
+      // Otherwise, notify about Spark jobs after the state notification.
+      if (state.ordinal() < State.CANCELLED.ordinal()) {
+        for (Integer i : sparkJobIds) {
+          l.onSparkJobStarted(this, i);
+        }
+      }
+    }
+  }
+
   public void setSparkCounters(SparkCounters sparkCounters) {
     this.sparkCounters = sparkCounters;
   }
 
   @SuppressWarnings("unchecked")
   void setSuccess(Object result) {
-    promise.setSuccess((T) result);
+    // The synchronization here is not necessary, but tests depend on it.
+    synchronized (listeners) {
+      promise.setSuccess((T) result);
+      changeState(State.SUCCEEDED);
+    }
   }
 
   void setFailure(Throwable error) {
-    promise.setFailure(error);
+    // The synchronization here is not necessary, but tests depend on it.
+    synchronized (listeners) {
+      promise.setFailure(error);
+      changeState(State.FAILED);
+    }
   }
 
-  /** Last attempt resort at preventing stray jobs from accumulating in SparkClientImpl. */
+  /**
+   * Changes the state of this job handle, making sure that illegal state transitions are ignored.
+   * Fires events appropriately.
+   *
+   * As a rule, state transitions can only occur if the current state is "higher" than the current
+   * state (i.e., has a higher ordinal number) and is not a "final" state. "Final" states are
+   * CANCELLED, FAILED and SUCCEEDED, defined here in the code as having an ordinal number higher
+   * than the CANCELLED enum constant.
+   */
+  boolean changeState(State newState) {
+    synchronized (listeners) {
+      if (newState.ordinal() > state.ordinal() && state.ordinal() < State.CANCELLED.ordinal()) {
+        state = newState;
+        for (Listener l : listeners) {
+          fireStateChange(newState, l);
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+
+  void addSparkJobId(int sparkJobId) {
+    synchronized (listeners) {
+      sparkJobIds.add(sparkJobId);
+      for (Listener l : listeners) {
+        l.onSparkJobStarted(this, sparkJobId);
+      }
+    }
+  }
+
+  private void fireStateChange(State s, Listener l) {
+    switch (s) {
+    case SENT:
+      break;
+    case QUEUED:
+      l.onJobQueued(this);
+      break;
+    case STARTED:
+      l.onJobStarted(this);
+      break;
+    case CANCELLED:
+      l.onJobCancelled(this);
+      break;
+    case FAILED:
+      l.onJobFailed(this, promise.cause());
+      break;
+    case SUCCEEDED:
+      try {
+        l.onJobSucceeded(this, promise.get());
+      } catch (Exception e) {
+        // Shouldn't really happen.
+        throw new IllegalStateException(e);
+      }
+      break;
+    default:
+      throw new IllegalStateException();
+    }
+  }
+
+  /** Last attempt at preventing stray jobs from accumulating in SparkClientImpl. */
   @Override
   protected void finalize() {
     if (!isDone()) {
