@@ -80,7 +80,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws IOException, SparkException {
     this.hiveConf = hiveConf;
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
-    remoteClient = SparkClientFactory.createClient(conf);
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf);
   }
 
   @Override

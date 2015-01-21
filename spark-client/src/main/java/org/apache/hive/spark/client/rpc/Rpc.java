@@ -84,7 +84,7 @@ public class Rpc implements Closeable {
       final String secret,
       final RpcDispatcher dispatcher) throws Exception {
     final RpcConfiguration rpcConf = new RpcConfiguration(config);
-    int connectTimeoutMs = rpcConf.getConnectTimeoutMs();
+    int connectTimeoutMs = (int) rpcConf.getConnectTimeoutMs();
 
     final ChannelFuture cf = new Bootstrap()
         .group(eloop)

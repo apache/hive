@@ -124,6 +124,7 @@ public class RemoteDriver {
     Map<String, String> mapConf = Maps.newHashMap();
     for (Tuple2<String, String> e : conf.getAll()) {
       mapConf.put(e._1(), e._2());
+      LOG.debug("Remote Driver configured with: " + e._1() + "=" + e._2());
     }
 
     String secret = mapConf.get(SparkClientFactory.CONF_KEY_SECRET);
