@@ -120,7 +120,6 @@
             <arg value="${basedir}/tests/ddl.conf"/>
             <arg value="${basedir}/tests/jobsubmission.conf"/>
             <arg value="${basedir}/tests/jobsubmission2.conf"/>
-            <arg value="${basedir}/tests/utf8.conf"/>
         </exec>
     </target>
 
