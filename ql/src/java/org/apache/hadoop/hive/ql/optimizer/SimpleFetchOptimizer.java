@@ -136,8 +136,15 @@ public class SimpleFetchOptimizer implements Transform {
   }
 
   private boolean checkThreshold(FetchData data, int limit, ParseContext pctx) throws Exception {
-    if (limit > 0 && data.hasOnlyPruningFilter()) {
-      return true;
+    if (limit > 0) {
+      if (data.hasOnlyPruningFilter()) {
+        /* partitioned table + query has only pruning filters */
+        return true;
+      } else if (data.isPartitioned() == false && data.isFiltered() == false) {
+        /* partitioned table + query has only pruning filters */
+        return true;
+      }
+      /* fall through */
     }
     long threshold = HiveConf.getLongVar(pctx.getConf(),
         HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
@@ -222,6 +229,10 @@ public class SimpleFetchOptimizer implements Transform {
       if (op.getChildOperators() == null || op.getChildOperators().size() != 1) {
         return null;
       }
+
+      if (op instanceof FilterOperator) {
+        fetch.setFiltered(true);
+      }
     }
 
     if (op instanceof FileSinkOperator) {
@@ -274,6 +285,7 @@ public class SimpleFetchOptimizer implements Transform {
 
     // this is always non-null when conversion is completed
     private Operator<?> fileSink;
+    private boolean filtered;
 
     private FetchData(ReadEntity parent, Table table, SplitSample splitSample) {
       this.parent = parent;
@@ -295,8 +307,21 @@ public class SimpleFetchOptimizer implements Transform {
     /*
      * all filters were executed during partition pruning
      */
-    public boolean hasOnlyPruningFilter() {
+    public final boolean hasOnlyPruningFilter() {
       return this.onlyPruningFilter;
+    }
+
+    public final boolean isPartitioned() {
+      return this.table.isPartitioned();
+    }
+
+    /* there are filter operators in the pipeline */
+    public final boolean isFiltered() {
+      return this.filtered;
+    }
+
+    public final void setFiltered(boolean filtered) {
+      this.filtered = filtered;
     }
 
     private FetchWork convertToWork() throws HiveException {
