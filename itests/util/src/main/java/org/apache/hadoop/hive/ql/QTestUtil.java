@@ -138,7 +138,7 @@ public class QTestUtil {
   private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
   protected Hive db;
-  static protected HiveConf conf;
+  protected HiveConf conf;
   private Driver drv;
   private BaseSemanticAnalyzer sem;
   protected final boolean overWrite;
