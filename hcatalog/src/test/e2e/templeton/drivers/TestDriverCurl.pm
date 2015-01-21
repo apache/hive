@@ -37,7 +37,6 @@ use English;
 use Storable qw(dclone);
 use File::Glob ':glob';
 use JSON::Path;
-use utf8;
 
 my $passedStr = 'passed';
 my $failedStr = 'failed';
@@ -923,38 +922,12 @@ sub compare
               $result = 0;
               next;
             }
-            my $exp_userargsvalue;
-            my $r_userargsvalue;
-            if(ref($exp_userargs{$key}) eq "ARRAY"){
-              my @values = $exp_userargs{$key};
-              my $num_values = @values;
-
-              for(my $i=0;$i<=$num_values;$i++){
-                if (utf8::is_utf8($exp_userargs{$key}[$i])){
-                  $exp_userargs{$key}[$i] = utf8::decode($exp_userargs{$key}[$i]);
-                  $r_userargs{$key}[$i] = utf8::decode($r_userargs{$key}[$i]);
-                }
-              }
-              $exp_userargsvalue = $exp_userargs{$key};
-              $r_userargsvalue = $r_userargs{$key};
-            }
-            else {
-              if (utf8::is_utf8($exp_userargs{$key}))
-              {
-                $exp_userargsvalue = utf8::decode($exp_userargs{$key});
-                $r_userargsvalue = utf8::decode($r_userargs{$key});
-              } 
-              else 
-              {
-                $exp_userargsvalue = $exp_userargs{$key};
-                $r_userargsvalue = $r_userargs{$key};
-              }
-            }
+              
             print $log "$0::$subName DEBUG comparing expected " 
                 . " $key ->" . dump($exp_userargs{$key})
                 . " With result $key ->" . dump($r_userargs{$key}) . "\n";
 
-            if (!Compare($exp_userargsvalue, $r_userargsvalue)) {
+            if (!Compare($exp_userargs{$key}, $r_userargs{$key})) {
               print $log "$0::$subName WARN check failed:" 
                   . " json compare failed. For field "
                   . "$key, regex <" . dump($r_userargs{$key})
