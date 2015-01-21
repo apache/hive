@@ -1982,17 +1982,27 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.inplace.progress",
         true,
         "Updates tez job execution progress in-place in the terminal."),
-    SPARK_CLIENT_FUTURE_TIMEOUT(
-        "hive.spark.client.future.timeout",
-        "60s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Remote Spark client JobHandle future timeout value in seconds."),
-    SPARK_JOB_MONITOR_TIMEOUT(
-        "hive.spark.job.monitor.timeout",
-        "60s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Spark job monitor timeout if could not get job state in specified time interval.")
-    ;
+    SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
+      "60s", new TimeValidator(TimeUnit.SECONDS),
+      "Timeout for requests from Hive client to remote Spark driver."),
+    SPARK_JOB_MONITOR_TIMEOUT("hive.spark.job.monitor.timeout",
+      "60s", new TimeValidator(TimeUnit.SECONDS),
+      "Timeout for job monitor to get Spark job state."),
+    SPARK_RPC_CLIENT_CONNECT_TIMEOUT("hive.spark.client.connect.timeout",
+      "1000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "Timeout for remote Spark driver in connecting back to Hive client."),
+    SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT("hive.spark.client.server.connect.timeout",
+      "20000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "Timeout for handshake between Hive client and remote Spark driver.  Checked by both processes."),
+    SPARK_RPC_SECRET_RANDOM_BITS("hive.spark.client.secret.bits", "256",
+      "Number of bits of randomness in the generated secret for communication between Hive client and remote Spark driver. " +
+      "Rounded down to the nearest multiple of 8."),
+    SPARK_RPC_MAX_THREADS("hive.spark.client.rpc.threads", 8,
+      "Maximum number of threads for remote Spark driver's RPC event loop."),
+    SPARK_RPC_MAX_MESSAGE_SIZE("hive.spark.client.rpc.max.size", 50 * 1024 * 1024,
+      "Maximum message size in bytes for communication between Hive client and remote Spark driver. Default is 50MB."),
+    SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
+      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}.");
 
     public final String varname;
     private final String defaultExpr;

@@ -40,7 +40,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.Rpc;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkException;
@@ -67,6 +69,7 @@ class SparkClientImpl implements SparkClient {
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
 
   private final Map<String, String> conf;
+  private final HiveConf hiveConf;
   private final AtomicInteger childIdGenerator;
   private final Thread driverThread;
   private final Map<String, JobHandleImpl<?>> jobs;
@@ -74,8 +77,9 @@ class SparkClientImpl implements SparkClient {
   private final ClientProtocol protocol;
   private volatile boolean isAlive;
 
-  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf) throws IOException, SparkException {
+  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf) throws IOException, SparkException {
     this.conf = conf;
+    this.hiveConf = hiveConf;
     this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
@@ -334,6 +338,14 @@ class SparkClientImpl implements SparkClient {
       argv.add(serverAddress);
       argv.add("--remote-port");
       argv.add(serverPort);
+
+      //hive.spark.* keys are passed down to the RemoteDriver via --conf,
+      //as --properties-file contains the spark.* keys that are meant for SparkConf object.
+      for (String hiveSparkConfKey : RpcConfiguration.HIVE_SPARK_RSC_CONFIGS) {
+        String value = RpcConfiguration.getValue(hiveConf, hiveSparkConfKey);
+        argv.add("--conf");
+        argv.add(String.format("%s=%s", hiveSparkConfKey, value));
+      }
 
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
