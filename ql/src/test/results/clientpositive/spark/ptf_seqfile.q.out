@@ -38,7 +38,9 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite in
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part_seq
-PREHOOK: query: -- testWindowingPTFWithPartSeqFile
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- testWindowingPTFWithPartSeqFile
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -49,7 +51,9 @@ order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_seq
 #### A masked pattern was here ####
-POSTHOOK: query: -- testWindowingPTFWithPartSeqFile
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- testWindowingPTFWithPartSeqFile
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 

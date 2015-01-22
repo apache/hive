@@ -20,17 +20,20 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 public class AlterPartitionEvent extends ListenerEvent {
 
   private final Partition oldPart;
   private final Partition newPart;
+  private final Table table;
 
-  public AlterPartitionEvent(Partition oldPart, Partition newPart,
+  public AlterPartitionEvent(Partition oldPart, Partition newPart, Table table,
       boolean status, HMSHandler handler) {
     super(status, handler);
     this.oldPart = oldPart;
     this.newPart = newPart;
+    this.table = table;
   }
 
   /**
@@ -46,5 +49,13 @@ public class AlterPartitionEvent extends ListenerEvent {
    */
   public Partition getNewPartition() {
     return newPart;
+  }
+
+  /**
+   * Get the table this partition is in
+   * @return
+   */
+  public Table getTable() {
+    return table;
   }
 }

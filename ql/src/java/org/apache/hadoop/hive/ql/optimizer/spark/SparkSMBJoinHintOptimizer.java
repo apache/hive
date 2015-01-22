@@ -70,7 +70,7 @@ public class SparkSMBJoinHintOptimizer extends AbstractSMBJoinProc implements No
 
     if (convert) {
       removeSmallTableReduceSink(mapJoinOp);
-      convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext, pGraphContext);
+      convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext);
     }
     return null;
   }

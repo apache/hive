@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /**
  * UDFUpper.
@@ -52,7 +51,7 @@ public class GenericUDFUpper extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length < 0) {
+    if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
           "UPPER requires 1 argument, got " + arguments.length);
     }

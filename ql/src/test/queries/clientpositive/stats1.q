@@ -4,6 +4,8 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.map.aggr=true;
 
+-- SORT_QUERY_RESULTS
+
 create table tmptable(key string, value string);
 
 EXPLAIN

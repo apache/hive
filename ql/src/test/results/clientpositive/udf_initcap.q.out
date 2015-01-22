@@ -1,0 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION initcap
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION initcap
+POSTHOOK: type: DESCFUNCTION
+initcap(str) - Returns str, with the first letter of each word in uppercase, all other letters in lowercase. Words are delimited by white space.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED initcap
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED initcap
+POSTHOOK: type: DESCFUNCTION
+initcap(str) - Returns str, with the first letter of each word in uppercase, all other letters in lowercase. Words are delimited by white space.
+Example:
+ > SELECT initcap('tHe soap') FROM src LIMIT 1;
+ 'The Soap'

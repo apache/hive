@@ -1,0 +1,15 @@
+Saving all output to "!!{outputDirectory}!!/udf_add_months.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_add_months.q
+>>>  DESCRIBE FUNCTION add_months;
+'tab_name'
+'date_add(start_date, num_months) - Returns the date that is num_months after start_date.'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED add_months;
+'tab_name'
+'date_add(start_date, num_months) - Returns the date that is num_months after start_date.'
+'start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_months is a number. The time part of start_date is ignored.'
+'Example:'
+'   > SELECT add_months('2009-08-31', 1) FROM src LIMIT 1;'
+'  '2009-09-30''
+5 rows selected 
+>>>  !record

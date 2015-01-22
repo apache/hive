@@ -95,7 +95,7 @@ public class TestGenTezWork {
     rs = new ReduceSinkOperator();
     rs.setConf(new ReduceSinkDesc());
     ts = new TableScanOperator();
-    ts.setConf(new TableScanDesc());
+    ts.setConf(new TableScanDesc(null));
     ts.getChildOperators().add(rs);
     rs.getParentOperators().add(ts);
     rs.getChildOperators().add(fs);

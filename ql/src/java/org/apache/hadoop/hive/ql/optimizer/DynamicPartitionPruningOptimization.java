@@ -186,7 +186,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       String column = extractColName(ctx.parent);
 
       if (ts != null && column != null) {
-        Table table = parseContext.getTopToTable().get(ts);
+        Table table = ts.getConf().getTableMetadata();
 
         if (table != null && table.isPartitionKey(column)) {
           String alias = ts.getConf().getAlias();

@@ -113,7 +113,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
         cachedObjectInspector, notSkipIDs, serdeParams.getNullSequence());
 
     super.initialize(size);
-    LOG.info("ColumnarSerDe initialized with: columnNames="
+    LOG.debug("ColumnarSerDe initialized with: columnNames="
         + serdeParams.getColumnNames() + " columnTypes="
         + serdeParams.getColumnTypes() + " separator="
         + Arrays.asList(serdeParams.getSeparators()) + " nullstring="

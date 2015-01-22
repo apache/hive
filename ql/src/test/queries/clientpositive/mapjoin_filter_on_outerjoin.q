@@ -1,4 +1,7 @@
 set hive.auto.convert.join = false;
+
+-- SORT_QUERY_RESULTS
+
 --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 SELECT * FROM src1

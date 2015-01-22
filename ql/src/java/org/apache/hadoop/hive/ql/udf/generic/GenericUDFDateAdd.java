@@ -61,8 +61,8 @@ import org.apache.hadoop.io.IntWritable;
         + " 'yyyy-MM-dd'. num_days is a number. The time part of start_date is "
         + "ignored.\n"
         + "Example:\n "
-        + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n"
-        + "  '2009-31-07'")
+        + "  > SELECT _FUNC_('2009-07-30', 1) FROM src LIMIT 1;\n"
+        + "  '2009-07-31'")
 @VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");

@@ -91,18 +91,25 @@ public class HDFSCleanup extends Thread {
    *
    */
   public void run() {
-    FileSystem fs = null;
     while (!stop) {
       try {
         // Put each check in a separate try/catch, so if that particular
         // cycle fails, it'll try again on the next cycle.
+        FileSystem fs=null;
         try {
-          if (fs == null) {
-            fs = new Path(storage_root).getFileSystem(appConf);
-          }
+          fs = new Path(storage_root).getFileSystem(appConf);
           checkFiles(fs);
         } catch (Exception e) {
           LOG.error("Cleanup cycle failed: " + e.getMessage());
+        } finally {
+          if(fs != null) {
+            try {
+              fs.close();
+            }
+            catch (Exception e) {
+              LOG.error("Closing file system failed: " + e.getMessage());
+            }
+          }
         }
 
         long sleepMillis = (long) (Math.random() * interval);

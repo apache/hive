@@ -195,9 +195,11 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: _col2 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           PTF Operator
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
@@ -278,9 +280,11 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: _col2 (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              value expressions: _col0 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           PTF Operator
             Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE

@@ -161,7 +161,7 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator ts = (TableScanOperator)nd;
       AnnotateOpTraitsProcCtx opTraitsCtx = (AnnotateOpTraitsProcCtx)procCtx;
-      Table table = opTraitsCtx.getParseContext().getTopToTable().get(ts);
+      Table table = ts.getConf().getTableMetadata();
       PrunedPartitionList prunedPartList = null;
       try {
         prunedPartList =

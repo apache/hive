@@ -178,7 +178,8 @@ public class HiveSchemaTool {
         getConnectionToMetastore(false));
     // verify that the new version is added to schema
     if (!MetaStoreSchemaInfo.getHiveSchemaVersion().equalsIgnoreCase(newSchemaVersion)) {
-      throw new HiveMetaException("Found unexpected schema version " + newSchemaVersion);
+      throw new HiveMetaException("Expected schema version " + MetaStoreSchemaInfo.getHiveSchemaVersion() +
+        ", found version " + newSchemaVersion);
     }
   }
 

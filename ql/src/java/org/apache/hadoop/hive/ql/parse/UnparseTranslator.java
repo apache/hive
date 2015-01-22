@@ -97,6 +97,10 @@ class UnparseTranslator {
 
     int tokenStartIndex = node.getTokenStartIndex();
     int tokenStopIndex = node.getTokenStopIndex();
+    if (tokenStopIndex < 0) {
+      // this is for artificially added tokens
+      return;
+    }
     Translation translation = new Translation();
     translation.tokenStopIndex = tokenStopIndex;
     translation.replacementText = replacementText;

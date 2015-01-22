@@ -45,7 +45,7 @@ public class BucketMapjoinProc extends AbstractBucketJoinProc implements NodePro
 
     // can the mapjoin present be converted to a bucketed mapjoin
     boolean convert = canConvertMapJoinToBucketMapJoin(
-        mapJoinOperator, pGraphContext, context);
+        mapJoinOperator, context);
     HiveConf conf = context.getConf();
 
     // Throw an error if the user asked for bucketed mapjoin to be enforced and
@@ -67,13 +67,13 @@ public class BucketMapjoinProc extends AbstractBucketJoinProc implements NodePro
    * and do the version if possible.
    */
   public static void checkAndConvertBucketMapJoin(ParseContext pGraphContext,
-      MapJoinOperator mapJoinOp, QBJoinTree joinCtx, String baseBigAlias,
+      MapJoinOperator mapJoinOp, String baseBigAlias,
       List<String> joinAliases) throws SemanticException {
     BucketJoinProcCtx ctx = new BucketJoinProcCtx(pGraphContext.getConf());
     BucketMapjoinProc proc = new BucketMapjoinProc(pGraphContext);
     Map<Byte, List<ExprNodeDesc>> keysMap = mapJoinOp.getConf().getKeys();
-    if (proc.checkConvertBucketMapJoin(pGraphContext, ctx,
-        joinCtx, keysMap, baseBigAlias, joinAliases)) {
+    if (proc.checkConvertBucketMapJoin(ctx, mapJoinOp.getConf().getAliasToOpInfo(),
+        keysMap, baseBigAlias, joinAliases)) {
       proc.convertMapJoinToBucketMapJoin(mapJoinOp, ctx);
     }
   }

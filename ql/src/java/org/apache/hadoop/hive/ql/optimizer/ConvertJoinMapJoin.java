@@ -47,8 +47,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -231,13 +231,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     MapJoinDesc mapJoinDesc = null;
     if (adjustParentsChildren) {
-        mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
-            joinOp, parseContext.getJoinContext().get(joinOp), mapJoinConversionPos, true);
+      mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
+            joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
+            mapJoinConversionPos, true);
     } else {
       JoinDesc joinDesc = joinOp.getConf();
       // retain the original join desc in the map join.
       mapJoinDesc =
-          new MapJoinDesc(MapJoinProcessor.getKeys(parseContext.getJoinContext().get(joinOp), joinOp).getSecond(),
+          new MapJoinDesc(
+                  MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
               null, joinDesc.getExprs(), null, null,
               joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
               joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
@@ -504,7 +507,38 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
-      int buckets) {
+      int buckets) throws SemanticException {
+    /*
+     * HIVE-9038: Join tests fail in tez when we have more than 1 join on the same key and there is
+     * an outer join down the join tree that requires filterTag. We disable this conversion to map
+     * join here now. We need to emulate the behavior of HashTableSinkOperator as in MR or create a
+     * new operation to be able to support this. This seems like a corner case enough to special
+     * case this for now.
+     */
+    if (joinOp.getConf().getConds().length > 1) {
+      boolean hasOuter = false;
+      for (JoinCondDesc joinCondDesc : joinOp.getConf().getConds()) {
+        switch (joinCondDesc.getType()) {
+        case JoinDesc.INNER_JOIN:
+        case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.UNIQUE_JOIN:
+          hasOuter = false;
+          break;
+
+        case JoinDesc.FULL_OUTER_JOIN:
+        case JoinDesc.LEFT_OUTER_JOIN:
+        case JoinDesc.RIGHT_OUTER_JOIN:
+          hasOuter = true;
+          break;
+
+        default:
+          throw new SemanticException("Unknown join type " + joinCondDesc.getType());
+        }
+      }
+      if (hasOuter) {
+        return -1;
+      }
+    }
     Set<Integer> bigTableCandidateSet =
         MapJoinProcessor.getBigTableCandidates(joinOp.getConf().getConds());
 
@@ -606,7 +640,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ParseContext parseContext = context.parseContext;
     MapJoinOperator mapJoinOp =
         MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, parseContext.getOpParseCtx(), joinOp,
-            parseContext.getJoinContext().get(joinOp), bigTablePosition, true);
+                joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
+                bigTablePosition, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

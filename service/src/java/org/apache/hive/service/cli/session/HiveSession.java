@@ -27,7 +27,7 @@ import org.apache.hive.service.cli.*;
 
 public interface HiveSession extends HiveSessionBase {
 
-  void open();
+  void open(Map<String, String> sessionConfMap) throws Exception;
 
   IMetaStoreClient getMetaStoreClient() throws HiveSQLException;
 

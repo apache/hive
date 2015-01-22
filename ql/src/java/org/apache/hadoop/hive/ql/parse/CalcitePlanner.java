@@ -1734,6 +1734,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
+      // Check and transform group by *. This will only happen for select distinct *.
+      // Here the "genSelectPlan" is being leveraged.
+      // The main benefits are (1) remove virtual columns that should
+      // not be included in the group by; (2) add the fully qualified column names to unParseTranslator
+      // so that view is supported. The drawback is that an additional SEL op is added. If it is
+      // not necessary, it will be removed by NonBlockingOpDeDupProc Optimizer because it will match
+      // SEL%SEL% rule.
+      ASTNode selExprList = qb.getParseInfo().getSelForClause(detsClauseName);
+      if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
+          && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
+        ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
+        if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel);
+          RowResolver rr = this.relToHiveRR.get(srcRel);
+          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
+        }
+      }
       List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
       HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;

@@ -79,11 +79,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class SkewJoinOptimizer implements Transform {
 
   private static final Log LOG = LogFactory.getLog(SkewJoinOptimizer.class.getName());
-  private static ParseContext parseContext;
 
   public static class SkewJoinProc implements NodeProcessor {
-    public SkewJoinProc() {
+    private ParseContext parseContext;
+
+    public SkewJoinProc(ParseContext parseContext) {
       super();
+      this.parseContext = parseContext;
     }
 
     @Override
@@ -165,23 +167,14 @@ public class SkewJoinOptimizer implements Transform {
         return null;
       }
 
-      // have to create a QBJoinTree for the cloned join operator
-      QBJoinTree originJoinTree = parseContext.getJoinContext().get(joinOp);
-      QBJoinTree newJoinTree;
-      try {
-        newJoinTree = originJoinTree.clone();
-      } catch (CloneNotSupportedException e) {
-        LOG.debug("QBJoinTree could not be cloned: ", e);
-        return null;
-      }
-
       JoinOperator joinOpClone;
       if (processSelect) {
         joinOpClone = (JoinOperator)(currOpClone.getParentOperators().get(0));
       } else {
         joinOpClone = (JoinOperator)currOpClone;
       }
-      parseContext.getJoinContext().put(joinOpClone, newJoinTree);
+      joinOpClone.getConf().cloneQBJoinTreeProps(joinOp.getConf());
+      parseContext.getJoinOps().add(joinOpClone);
 
       List<TableScanOperator> tableScanCloneOpsForJoin =
           new ArrayList<TableScanOperator>();
@@ -202,9 +195,7 @@ public class SkewJoinOptimizer implements Transform {
 
       for (Entry<String, Operator<? extends OperatorDesc>> topOp : topOps.entrySet()) {
         TableScanOperator tso = (TableScanOperator) topOp.getValue();
-        Table origTable = parseContext.getTopToTable().get(ctx.getCloneTSOpMap().get(tso));
         String tabAlias = tso.getConf().getAlias();
-        parseContext.getTopToTable().put(tso, origTable);
         int initCnt = 1;
         String newAlias = "subquery" + initCnt + ":" + tabAlias;
         while (origTopOps.containsKey(newAlias)) {
@@ -213,7 +204,7 @@ public class SkewJoinOptimizer implements Transform {
         }
 
         parseContext.getTopOps().put(newAlias, tso);
-        setUpAlias(originJoinTree, newJoinTree, tabAlias, newAlias, tso);
+        setUpAlias(joinOp, joinOpClone, tabAlias, newAlias, tso);
       }
 
       // Now do a union of the select operators: selectOp and selectOpClone
@@ -410,7 +401,7 @@ public class SkewJoinOptimizer implements Transform {
         if (op instanceof TableScanOperator) {
           TableScanOperator tsOp = (TableScanOperator)op;
           if (tableScanOpsForJoin.contains(tsOp)) {
-            return parseContext.getTopToTable().get(tsOp);
+            return tsOp.getConf().getTableMetadata();
           }
         }
         if ((op.getParentOperators() == null) || (op.getParentOperators().isEmpty()) || 
@@ -629,19 +620,19 @@ public class SkewJoinOptimizer implements Transform {
     /**
      * Set alias in the cloned join tree
      */
-    private static void setUpAlias(QBJoinTree origin, QBJoinTree cloned, String origAlias,
+    private static void setUpAlias(JoinOperator origin, JoinOperator cloned, String origAlias,
         String newAlias, Operator<? extends OperatorDesc> topOp) {
-      cloned.getAliasToOpInfo().remove(origAlias);
-      cloned.getAliasToOpInfo().put(newAlias, topOp);
-      if (origin.getLeftAlias().equals(origAlias)) {
-        cloned.setLeftAlias(null);
-        cloned.setLeftAlias(newAlias);
+      cloned.getConf().getAliasToOpInfo().remove(origAlias);
+      cloned.getConf().getAliasToOpInfo().put(newAlias, topOp);
+      if (origin.getConf().getLeftAlias().equals(origAlias)) {
+        cloned.getConf().setLeftAlias(null);
+        cloned.getConf().setLeftAlias(newAlias);
       }
-      replaceAlias(origin.getLeftAliases(), cloned.getLeftAliases(), origAlias, newAlias);
-      replaceAlias(origin.getRightAliases(), cloned.getRightAliases(), origAlias, newAlias);
-      replaceAlias(origin.getBaseSrc(), cloned.getBaseSrc(), origAlias, newAlias);
-      replaceAlias(origin.getMapAliases(), cloned.getMapAliases(), origAlias, newAlias);
-      replaceAlias(origin.getStreamAliases(), cloned.getStreamAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getLeftAliases(), cloned.getConf().getLeftAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getRightAliases(), cloned.getConf().getRightAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getBaseSrc(), cloned.getConf().getBaseSrc(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getMapAliases(), cloned.getConf().getMapAliases(), origAlias, newAlias);
+      replaceAlias(origin.getConf().getStreamAliases(), cloned.getConf().getStreamAliases(), origAlias, newAlias);
     }
 
     private static void replaceAlias(String[] origin, String[] cloned,
@@ -677,7 +668,7 @@ public class SkewJoinOptimizer implements Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    opRules.put(new RuleRegExp("R1", "TS%.*RS%JOIN%"), getSkewJoinProc());
+    opRules.put(new RuleRegExp("R1", "TS%.*RS%JOIN%"), getSkewJoinProc(pctx));
     SkewJoinOptProcCtx skewJoinOptProcCtx = new SkewJoinOptProcCtx(pctx);
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -692,8 +683,8 @@ public class SkewJoinOptimizer implements Transform {
     return pctx;
   }
 
-  private NodeProcessor getSkewJoinProc() {
-    return new SkewJoinProc();
+  private NodeProcessor getSkewJoinProc(ParseContext parseContext) {
+    return new SkewJoinProc(parseContext);
   }
 
   /**

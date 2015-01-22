@@ -101,7 +101,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
   }
 
   /**
-   * Test combine symlink text input file. Two input dir, and each contails one
+   * Test combine symlink text input file. Two input dir, and each contains one
    * file, and then create one symlink file containing these 2 files. Normally
    * without combine, it will return at least 2 splits
    */
@@ -166,7 +166,11 @@ public class TestSymlinkTextInputFormat extends TestCase {
       }
 
       String cmd = "select key*1 from " + tblName;
-      drv.compile(cmd);
+      ecode = drv.compile(cmd);
+      if (ecode != 0) {
+        throw new Exception("Select compile: " + cmd
+            + " failed with exit code= " + ecode);
+      }
 
       //create scratch dir
       Context ctx = new Context(newJob);

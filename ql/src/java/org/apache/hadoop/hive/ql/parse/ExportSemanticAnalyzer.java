@@ -28,6 +28,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -68,7 +69,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
                     "Target is not a directory : " + toURI));
         } else {
-          FileStatus[] files = fs.listStatus(toPath);
+          FileStatus[] files = fs.listStatus(toPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
           if (files != null && files.length != 0) {
             throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
                           "Target is not an empty directory : " + toURI));

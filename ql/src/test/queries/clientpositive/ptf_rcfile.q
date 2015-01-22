@@ -14,6 +14,8 @@ CREATE TABLE part_rc(
 
 LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite into table part_rc;
 
+-- SORT_QUERY_RESULTS
+
 -- testWindowingPTFWithPartRC
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 

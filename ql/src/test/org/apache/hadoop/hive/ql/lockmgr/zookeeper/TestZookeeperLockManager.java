@@ -18,70 +18,82 @@
 
 package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
-import static org.mockito.Mockito.*;
-
-import java.util.Collections;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.RetryOneTime;
+import org.apache.curator.test.TestingServer;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
-
-import com.google.common.base.Joiner;
 
 public class TestZookeeperLockManager {
 
-  private static final Joiner SLASH = Joiner.on("/");
-  private static final String PARENT = "hive";
-  private static final String TABLE = "t1";
-  private static final String PARENT_LOCK_PATH = SLASH.join("", PARENT, TABLE);
-  private static final String TABLE_LOCK_PATH =  SLASH.join("", PARENT, TABLE, "00001");
   private HiveConf conf;
-  private ZooKeeper zooKeeper;
+  private TestingServer server;
+  private CuratorFramework client;
   private HiveLockObject hiveLock;
   private ZooKeeperHiveLock zLock;
+  private HiveLockObjectData lockObjData;
+  private static final String PARENT = "hive";
+  private static final String TABLE = "t1";
+  private static final String PARENT_LOCK_PATH = "/hive/t1";
+  private static final String TABLE_LOCK_PATH = "/hive/t1/00001";
 
   @Before
   public void setup() {
     conf = new HiveConf();
-    zooKeeper = mock(ZooKeeper.class);
-    hiveLock = mock(HiveLockObject.class);
-    when(hiveLock.getName()).thenReturn(TABLE);
+    lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables");
+    hiveLock = new HiveLockObject(TABLE, lockObjData);
     zLock = new ZooKeeperHiveLock(TABLE_LOCK_PATH, hiveLock, HiveLockMode.SHARED);
+
+    while (server == null)
+    {
+      try {
+        server = new TestingServer();
+        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder();
+        client = builder.connectString(server.getConnectString()).retryPolicy(new RetryOneTime(1)).build();
+        client.start();
+      } catch (Exception e) {
+        System.err.println("Getting bind exception - retrying to allocate server");
+        server = null;
+      }
+    }
+  }
+
+  @After
+  public void teardown() throws Exception
+  {
+    client.close();
+    server.close();
+    server = null;
   }
 
   @Test
-  public void testDeleteNoChildren() throws Exception {
-    ZooKeeperHiveLockManager.unlockPrimitive(conf, zooKeeper, zLock, PARENT);
-    verify(zooKeeper).delete(TABLE_LOCK_PATH, -1);
-    verify(zooKeeper).getChildren(PARENT_LOCK_PATH, false);
-    verify(zooKeeper).delete(PARENT_LOCK_PATH, -1);
-    verifyNoMoreInteractions(zooKeeper);
-  }
-  /**
-   * Tests two threads racing to delete PARENT_LOCK_PATH
-   */
-  @Test
-  public void testDeleteNoChildrenNodeDoesNotExist() throws Exception {
-    doThrow(new KeeperException.NoNodeException()).when(zooKeeper).delete(PARENT_LOCK_PATH, -1);
-    ZooKeeperHiveLockManager.unlockPrimitive(conf, zooKeeper, zLock, PARENT);
-    verify(zooKeeper).delete(TABLE_LOCK_PATH, -1);
-    verify(zooKeeper).getChildren(PARENT_LOCK_PATH, false);
-    verify(zooKeeper).delete(PARENT_LOCK_PATH, -1);
-    verifyNoMoreInteractions(zooKeeper);
-  }
-  @Test
-  public void testDeleteWithChildren() throws Exception {
-    when(zooKeeper.getChildren(PARENT_LOCK_PATH, false)).thenReturn(Collections.singletonList("somechild"));
-    ZooKeeperHiveLockManager.unlockPrimitive(conf, zooKeeper, zLock, PARENT);
-    verify(zooKeeper).delete(TABLE_LOCK_PATH, -1);
-    verify(zooKeeper).getChildren(PARENT_LOCK_PATH, false);
-    verifyNoMoreInteractions(zooKeeper);
+  public void testDeleteNoChildren() throws Exception
+  {
+    client.create().creatingParentsIfNeeded().forPath(TABLE_LOCK_PATH, lockObjData.toString().getBytes());
+    byte[] data = client.getData().forPath(TABLE_LOCK_PATH);
+    Assert.assertArrayEquals(lockObjData.toString().getBytes(), data);
+    ZooKeeperHiveLockManager.unlockPrimitive(zLock, PARENT, client);
+    try {
+      data = client.getData().forPath(TABLE_LOCK_PATH);
+      Assert.fail();
+    } catch (Exception e) {
+      Assert.assertEquals( e instanceof KeeperException.NoNodeException, true);
+    }
+    try {
+      data = client.getData().forPath(PARENT_LOCK_PATH);
+      Assert.fail();
+    } catch (Exception e) {
+      Assert.assertEquals( e instanceof KeeperException.NoNodeException, true);
+    }
   }
 
   @Test
@@ -99,3 +111,4 @@ public class TestZookeeperLockManager {
     Assert.assertEquals("node1:5666,node2:9999,node3:9999", ZooKeeperHiveHelper.getQuorumServers(conf));
   }
 }
+

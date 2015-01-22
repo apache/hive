@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.BucketMapjoinProc;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -130,7 +129,6 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
   private int convertJoinBucketMapJoin(JoinOperator joinOp, MapJoinOperator mapJoinOp,
       OptimizeSparkProcContext context, int bigTablePosition) throws SemanticException {
     ParseContext parseContext = context.getParseContext();
-    QBJoinTree joinTree = parseContext.getJoinContext().get(joinOp);
     List<String> joinAliases = new ArrayList<String>();
     String baseBigAlias = null;
     Map<Integer, Set<String>> posToAliasMap = joinOp.getPosToAliasMap();
@@ -146,7 +144,10 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
     mapJoinOp.setPosToAliasMap(posToAliasMap);
     BucketMapjoinProc.checkAndConvertBucketMapJoin(
-      parseContext, mapJoinOp, joinTree, baseBigAlias, joinAliases);
+      parseContext,
+      mapJoinOp,
+      baseBigAlias,
+      joinAliases);
     MapJoinDesc joinDesc = mapJoinOp.getConf();
     return joinDesc.isBucketMapJoin()
       ? joinDesc.getBigTableBucketNumMapping().size() : -1;
@@ -374,7 +375,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     ParseContext parseContext = context.getParseContext();
     MapJoinOperator mapJoinOp =
         MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), parseContext.getOpParseCtx(), joinOp,
-            parseContext.getJoinContext().get(joinOp), bigTablePosition, true);
+            joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
+            bigTablePosition, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
@@ -392,6 +394,9 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         op.getChildOperators().remove(joinOp);
       }
     }
+
+    // Data structures
+    mapJoinOp.getConf().setQBJoinTreeProps(joinOp.getConf());
 
     return mapJoinOp;
   }

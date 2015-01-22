@@ -1,4 +1,6 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  FROM 
   (
@@ -11,7 +13,9 @@ PREHOOK: query: EXPLAIN
  ) b 
  ON (a.key = b.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  FROM 
   (
@@ -176,7 +180,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL
 100	2	NULL	NULL
@@ -486,3 +489,4 @@ NULL	NULL		7
 96	1	NULL	NULL
 97	2	NULL	NULL
 98	2	98	1
+NULL	NULL		7

@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -58,7 +59,7 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
         if (!fStatus.isDir()) {
           symlinks = new FileStatus[] { fStatus };
         } else {
-          symlinks = fileSystem.listStatus(symlinkDir);
+          symlinks = fileSystem.listStatus(symlinkDir, FileUtils.HIDDEN_FILES_PATH_FILTER);
         }
         toRemovePaths.add(path);
         ArrayList<String> aliases = pathToAliases.remove(path);

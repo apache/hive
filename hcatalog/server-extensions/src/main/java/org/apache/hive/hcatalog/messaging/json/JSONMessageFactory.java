@@ -24,13 +24,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
-// TODO, once HIVE-9175 is committed
-// import org.apache.hive.hcatalog.messaging.AlterTableMessage;
+import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
+import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
@@ -85,14 +84,11 @@ public class JSONMessageFactory extends MessageFactory {
         table.getTableName(), now());
   }
 
-  // TODO Once HIVE-9175 is committed
-  /*
   @Override
   public AlterTableMessage buildAlterTableMessage(Table before, Table after) {
     return new JSONAlterTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, before.getDbName(),
         before.getTableName(), now());
   }
-  */
 
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
@@ -111,7 +107,13 @@ public class JSONMessageFactory extends MessageFactory {
   @InterfaceStability.Evolving
   public AddPartitionMessage buildAddPartitionMessage(Table table, PartitionSpecProxy partitionSpec) {
     return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitionSpec), System.currentTimeMillis()/1000);
+        table.getTableName(), getPartitionKeyValues(table, partitionSpec), now());
+  }
+
+  @Override
+  public AlterPartitionMessage buildAlterPartitionMessage(Partition before, Partition after) {
+    return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
+        before.getDbName(), before.getTableName(), before.getValues(), now());
   }
 
   @Override

@@ -68,10 +68,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyShim;
+import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
 /**
  * File Sink operator implementation.
@@ -88,6 +93,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient List<String> dpColNames;
   protected transient DynamicPartitionCtx dpCtx;
   protected transient boolean isCompressed;
+  protected transient boolean isTemporary;
   protected transient Path parent;
   protected transient HiveOutputFormat<?, ?> hiveOutputFormat;
   protected transient Path specPath;
@@ -318,6 +324,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       this.hconf = hconf;
       filesCreated = false;
       isNativeTable = !conf.getTableInfo().isNonNative();
+      isTemporary = conf.isTemporary();
       multiFileSpray = conf.isMultiFileSpray();
       totalFiles = conf.getTotalFiles();
       numFiles = conf.getNumFiles();
@@ -382,6 +389,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // createBucketFiles(fsp);
         if (!this.isSkewedStoredAsSubDirectories) {
           valToPaths.put("", fsp); // special entry for non-DP case
+        }
+      }
+      
+      final StoragePolicyValue tmpStorage = StoragePolicyValue.lookup(HiveConf
+                                            .getVar(hconf, HIVE_TEMPORARY_TABLE_STORAGE));
+      if (isTemporary && fsp != null
+          && tmpStorage != StoragePolicyValue.DEFAULT) {
+        final Path outputPath = fsp.taskOutputTempPath;
+        StoragePolicyShim shim = ShimLoader.getHadoopShims()
+            .getStoragePolicyShim(fs);
+        if (shim != null) {
+          // directory creation is otherwise within the writers
+          fs.mkdirs(outputPath);
+          shim.setStoragePolicy(outputPath, tmpStorage);
         }
       }
 

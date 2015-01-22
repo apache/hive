@@ -161,11 +161,10 @@ public class RewriteGBUsingIndex implements Transform {
      * if the optimization can be applied. If yes, we add the name of the top table to
      * the tsOpToProcess to apply rewrite later on.
      * */
-    Map<TableScanOperator, Table> topToTable = parseContext.getTopToTable();
     for (Map.Entry<String, Operator<?>> entry : parseContext.getTopOps().entrySet()) {
       String alias = entry.getKey();
       TableScanOperator topOp = (TableScanOperator) entry.getValue();
-      Table table = topToTable.get(topOp);
+      Table table = topOp.getConf().getTableMetadata();
       List<Index> indexes = tableToIndex.get(table);
       if (indexes.isEmpty()) {
         continue;
@@ -232,12 +231,16 @@ public class RewriteGBUsingIndex implements Transform {
     supportedIndexes.add(AggregateIndexHandler.class.getName());
 
     // query the metastore to know what columns we have indexed
-    Collection<Table> topTables = parseContext.getTopToTable().values();
+    Collection<Operator<? extends OperatorDesc>> topTables = parseContext.getTopOps().values();
     Map<Table, List<Index>> indexes = new HashMap<Table, List<Index>>();
-    for (Table tbl : topTables){
-      List<Index> tblIndexes = IndexUtils.getIndexes(tbl, supportedIndexes);
-      if (tblIndexes.size() > 0) {
-        indexes.put(tbl, tblIndexes);
+    for (Operator<? extends OperatorDesc> op : topTables) {
+      if (op instanceof TableScanOperator) {
+        TableScanOperator tsOP = (TableScanOperator) op;
+        List<Index> tblIndexes = IndexUtils.getIndexes(tsOP.getConf().getTableMetadata(),
+            supportedIndexes);
+        if (tblIndexes.size() > 0) {
+          indexes.put(tsOP.getConf().getTableMetadata(), tblIndexes);
+        }
       }
     }
 
