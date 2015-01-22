@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Redactor;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -439,6 +440,11 @@ public class Driver implements CommandProcessor {
         SessionState.get().getCommandType());
 
       String queryStr = plan.getQueryStr();
+      List<Redactor> queryRedactors = getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
+      for (Redactor redactor : queryRedactors) {
+        redactor.setConf(conf);
+        queryStr = redactor.redactQuery(queryStr);
+      }
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
