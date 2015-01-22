@@ -50,7 +50,7 @@ import static org.mockito.Mockito.*;
 public class TestSparkClient {
 
   // Timeouts are bad... mmmkay.
-  private static final long TIMEOUT = 10;
+  private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
 
   private Map<String, String> createConf(boolean local) {

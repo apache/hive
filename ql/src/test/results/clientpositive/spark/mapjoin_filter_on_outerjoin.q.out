@@ -1,4 +1,6 @@
-PREHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
@@ -8,7 +10,9 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+--HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
 
 SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)

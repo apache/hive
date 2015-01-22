@@ -267,22 +267,19 @@ public class SessionManager extends CompositeService {
     session.setSessionManager(this);
     session.setOperationManager(operationManager);
     try {
-      session.initialize(sessionConf);
-      if (isOperationLogEnabled) {
-        session.setOperationLogSessionDir(operationLogRootDir);
-      }
-      session.open();
+      session.open(sessionConf);
     } catch (Exception e) {
-      throw new HiveSQLException("Failed to open new session", e);
+      throw new HiveSQLException("Failed to open new session: " + e, e);
+    }
+    if (isOperationLogEnabled) {
+      session.setOperationLogSessionDir(operationLogRootDir);
     }
     try {
       executeSessionHooks(session);
     } catch (Exception e) {
       throw new HiveSQLException("Failed to execute session hooks", e);
     }
-
     handleToSession.put(session.getSessionHandle(), session);
-
     return session.getSessionHandle();
   }
 

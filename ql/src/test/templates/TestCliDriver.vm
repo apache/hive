@@ -52,7 +52,7 @@ public class $className extends TestCase {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization"+e.getMessage());
+      fail("Unexpected exception in static initialization: "+e.getMessage());
     }
   }
 

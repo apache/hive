@@ -21,17 +21,17 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+
+import com.google.common.base.Preconditions;
 
 public class SparkMapJoinProcessor extends MapJoinProcessor {
 
@@ -50,8 +50,8 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
   @Override
   public MapJoinOperator convertMapJoin(HiveConf conf,
                                         LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-                                        JoinOperator op, QBJoinTree joinTree, int bigTablePos,
-                                        boolean noCheckOuterJoin,
+                                        JoinOperator op, boolean leftSrc, String[] baseSrc, List<String> mapAliases,
+                                        int bigTablePos, boolean noCheckOuterJoin,
                                         boolean validateMapJoinTree) throws SemanticException {
 
     // outer join cannot be performed on a table which is being cached
@@ -65,7 +65,8 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
 
     // create the map-join operator
     MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
-        op, joinTree, bigTablePos, noCheckOuterJoin);
+        op, op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(),
+        op.getConf().getMapAliases(), bigTablePos, noCheckOuterJoin);
 
     // 1. remove RS as parent for the big table branch
     // 2. remove old join op from child set of all the RSs

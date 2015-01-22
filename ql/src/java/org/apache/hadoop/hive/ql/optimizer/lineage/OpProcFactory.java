@@ -139,7 +139,7 @@ public class OpProcFactory {
 
       // Table scan operator.
       TableScanOperator top = (TableScanOperator)nd;
-      org.apache.hadoop.hive.ql.metadata.Table t = pctx.getTopToTable().get(top);
+      org.apache.hadoop.hive.ql.metadata.Table t = top.getConf().getTableMetadata();
       Table tab = t.getTTable();
 
       // Generate the mappings

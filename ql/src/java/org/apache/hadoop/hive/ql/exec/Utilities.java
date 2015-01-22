@@ -93,6 +93,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -1068,7 +1069,6 @@ public final class Utilities {
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
       removeField(kryo, MapWork.class, "opParseCtxMap");
-      removeField(kryo, MapWork.class, "joinTree");
       return kryo;
     };
   };
@@ -1803,7 +1803,7 @@ public final class Utilities {
    */
   public static FileStatus[] listStatusIfExists(Path path, FileSystem fs) throws IOException {
     try {
-      return fs.listStatus(path);
+      return fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
     } catch (FileNotFoundException e) {
       // FS in hadoop 2.0 throws FNF instead of returning null
       return null;
@@ -2639,7 +2639,7 @@ public final class Utilities {
     FileSystem inpFs = dirPath.getFileSystem(job);
 
     if (inpFs.exists(dirPath)) {
-      FileStatus[] fStats = inpFs.listStatus(dirPath);
+      FileStatus[] fStats = inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       if (fStats.length > 0) {
         return false;
       }

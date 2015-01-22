@@ -6,7 +6,7 @@ CREATE TABLE NOTIFICATION_LOG
     EVENT_TYPE varchar(32) NOT NULL,
     DB_NAME varchar(128) NULL,
     TBL_NAME varchar(128) NULL,
-    MESSAGE varchar(1024) NOT NULL
+    MESSAGE text NULL
 );
 GO
 

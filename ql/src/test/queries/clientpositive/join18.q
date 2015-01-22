@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  FROM 

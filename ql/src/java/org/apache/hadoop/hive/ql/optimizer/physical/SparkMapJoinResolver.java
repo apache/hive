@@ -74,12 +74,12 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   // Check whether the specified BaseWork's operator tree contains a operator
   // of the specified operator class
   private boolean containsOp(BaseWork work, Class<?> clazz) {
-    Set<Operator<? extends OperatorDesc>> matchingOps = getOp(work, clazz);
+    Set<Operator<?>> matchingOps = getOp(work, clazz);
     return matchingOps != null && !matchingOps.isEmpty();
   }
 
-  public static Set<Operator<? extends OperatorDesc>> getOp(BaseWork work, Class<?> clazz) {
-    Set<Operator<? extends OperatorDesc>> ops = new HashSet<Operator<? extends OperatorDesc>>();
+  public static Set<Operator<?>> getOp(BaseWork work, Class<?> clazz) {
+    Set<Operator<?>> ops = new HashSet<Operator<?>>();
     if (work instanceof MapWork) {
       Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
       Stack<Operator<?>> opStack = new Stack<Operator<?>>();
@@ -184,7 +184,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
       Context ctx = physicalContext.getContext();
 
       for (BaseWork work : allBaseWorks) {
-        Set<Operator<? extends OperatorDesc>> ops = getOp(work, MapJoinOperator.class);
+        Set<Operator<?>> ops = getOp(work, MapJoinOperator.class);
         if (ops == null || ops.isEmpty()) {
           continue;
         }
@@ -213,7 +213,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         }
 
         for (BaseWork parentWork : originalWork.getParents(work)) {
-          Set<Operator<? extends OperatorDesc>> hashTableSinkOps =
+          Set<Operator<?>> hashTableSinkOps =
             getOp(parentWork, SparkHashTableSinkOperator.class);
           if (hashTableSinkOps == null || hashTableSinkOps.isEmpty()) {
             continue;

@@ -131,7 +131,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
     }
     builder.append("127.0.1.1,");
     builder.append(InetAddress.getLocalHost().getCanonicalHostName());
-    conf.setStrings(DefaultImpersonationProvider.getProxySuperuserIpConfKey(superUserShortName),
+    conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
 
@@ -294,7 +294,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
   private void setGroupsInConf(String[] groupNames, String proxyUserName)
   throws IOException {
    conf.set(
-      DefaultImpersonationProvider.getProxySuperuserGroupConfKey(proxyUserName),
+      DefaultImpersonationProvider.getTestProvider().getProxySuperuserGroupConfKey(proxyUserName),
       StringUtils.join(",", Arrays.asList(groupNames)));
     configureSuperUserIPAddresses(conf, proxyUserName);
     ProxyUsers.refreshSuperUserGroupsConfiguration(conf);

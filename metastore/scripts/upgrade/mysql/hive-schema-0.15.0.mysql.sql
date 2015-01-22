@@ -803,7 +803,7 @@ CREATE TABLE IF NOT EXISTS `NOTIFICATION_LOG`
     `EVENT_TYPE` varchar(32) NOT NULL,
     `DB_NAME` varchar(128),
     `TBL_NAME` varchar(128),
-    `MESSAGE` varchar(1024) NOT NULL,
+    `MESSAGE` mediumtext,
     PRIMARY KEY (`NL_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

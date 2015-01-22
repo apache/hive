@@ -25,7 +25,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: '10' (type: string)
                   sort order: +
-                  Map-reduce partition columns: '' (type: string)
+                  Map-reduce partition columns: '10' (type: string)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
@@ -80,7 +80,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
           TableScan
@@ -92,7 +92,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
@@ -174,7 +174,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: '10' (type: string)
                   sort order: +
-                  Map-reduce partition columns: '' (type: string)
+                  Map-reduce partition columns: '10' (type: string)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
@@ -229,7 +229,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
           TableScan
@@ -241,7 +241,7 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: '20' (type: string)
                 sort order: +
-                Map-reduce partition columns: '' (type: string)
+                Map-reduce partition columns: '20' (type: string)
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator

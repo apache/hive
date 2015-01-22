@@ -76,7 +76,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: 5 (type: int)
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -89,7 +89,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: 5 (type: int)
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 5 
             Map Operator Tree:
@@ -102,7 +102,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: 5 (type: int)
                       Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
@@ -115,7 +115,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: 5 (type: int)
                       sort order: +
-                      Map-reduce partition columns: '' (type: string)
+                      Map-reduce partition columns: 5 (type: int)
                       Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:

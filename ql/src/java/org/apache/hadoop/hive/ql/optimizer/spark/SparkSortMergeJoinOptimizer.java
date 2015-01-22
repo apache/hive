@@ -65,7 +65,7 @@ public class SparkSortMergeJoinOptimizer extends AbstractSMBJoinProc implements 
                     joinOp, smbJoinContext, pGraphContext, stack);
 
     if (convert) {
-      return convertJoinToSMBJoinAndReturn(joinOp, smbJoinContext, pGraphContext);
+      return convertJoinToSMBJoinAndReturn(joinOp, smbJoinContext);
     }
     return null;
   }
@@ -76,7 +76,7 @@ public class SparkSortMergeJoinOptimizer extends AbstractSMBJoinProc implements 
     if (!supportBucketMapJoin(stack)) {
       return false;
     }
-    return canConvertJoinToSMBJoin(joinOperator, smbJoinContext, pGraphContext);
+    return canConvertJoinToSMBJoin(joinOperator, smbJoinContext);
   }
 
   //Preliminary checks.  In the MR version of the code, these used to be done via another walk,
@@ -102,11 +102,10 @@ public class SparkSortMergeJoinOptimizer extends AbstractSMBJoinProc implements 
 
   protected SMBMapJoinOperator convertJoinToSMBJoinAndReturn(
           JoinOperator joinOp,
-          SortBucketJoinProcCtx smbJoinContext,
-          ParseContext parseContext) throws SemanticException {
-    MapJoinOperator mapJoinOp = convertJoinToBucketMapJoin(joinOp, smbJoinContext, parseContext);
+          SortBucketJoinProcCtx smbJoinContext) throws SemanticException {
+    MapJoinOperator mapJoinOp = convertJoinToBucketMapJoin(joinOp, smbJoinContext);
     SMBMapJoinOperator smbMapJoinOp =
-            convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext, parseContext);
+            convertBucketMapJoinToSMBJoin(mapJoinOp, smbJoinContext);
     smbMapJoinOp.setConvertedAutomaticallySMBJoin(true);
     return smbMapJoinOp;
   }

@@ -58,8 +58,6 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   private static final float LOADFACTOR = 0.75f;
   private final HashMap<MapJoinKey, MapJoinRowContainer> mHash; // main memory HashMap
   private MapJoinKey lastKey = null;
-  private final boolean useLazyRows;
-  private final boolean useOptimizedKeys;
   private Output output = new Output(0); // Reusable output for serialization
 
   public HashMapWrapper(Map<String, String> metaData) {
@@ -67,30 +65,24 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     int threshold = Integer.parseInt(metaData.get(THESHOLD_NAME));
     float loadFactor = Float.parseFloat(metaData.get(LOAD_NAME));
     mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, loadFactor);
-    useLazyRows = useOptimizedKeys = false;
   }
 
   public HashMapWrapper() {
     this(HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT.defaultFloatVal,
         HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD.defaultIntVal,
-        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal, false, false, -1);
+        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal, -1);
   }
 
   public HashMapWrapper(Configuration hconf, long keyCount) {
     this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINLAZYHASHTABLE),
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDKEYS), keyCount);
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR), keyCount);
   }
 
-  private HashMapWrapper(float keyCountAdj, int threshold, float loadFactor,
-      boolean useLazyRows, boolean useOptimizedKeys, long keyCount) {
+  private HashMapWrapper(float keyCountAdj, int threshold, float loadFactor, long keyCount) {
     super(createConstructorMetaData(threshold, loadFactor));
     threshold = calculateTableSize(keyCountAdj, threshold, loadFactor, keyCount);
     mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, loadFactor);
-    this.useLazyRows = useLazyRows;
-    this.useOptimizedKeys = useOptimizedKeys;
   }
 
   public static int calculateTableSize(
@@ -131,21 +123,14 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   public MapJoinKey putRow(MapJoinObjectSerDeContext keyContext, Writable currentKey,
       MapJoinObjectSerDeContext valueContext, Writable currentValue)
           throws SerDeException, HiveException {
-    // We pass key in as reference, to find out quickly if optimized keys can be used.
-    // However, we do not reuse the object since we are putting them into the hashmap.
-    // Later, we don't create optimized keys in MapJoin if hash map doesn't have optimized keys.
-    if (lastKey == null && !useOptimizedKeys) {
-      lastKey = new MapJoinKeyObject();
-    }
-
-    lastKey = MapJoinKey.read(output, lastKey, keyContext, currentKey, false);
-    LazyFlatRowContainer values = (LazyFlatRowContainer)get(lastKey);
+    MapJoinKey key = MapJoinKey.read(output, keyContext, currentKey);
+    FlatRowContainer values = (FlatRowContainer)get(key);
     if (values == null) {
-      values = new LazyFlatRowContainer();
-      put(lastKey, values);
+      values = new FlatRowContainer();
+      put(key, values);
     }
-    values.add(valueContext, (BytesWritable)currentValue, useLazyRows);
-    return lastKey;
+    values.add(valueContext, (BytesWritable)currentValue);
+    return key;
   }
 
   @Override

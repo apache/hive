@@ -1,0 +1,134 @@
+PREHOOK: query: create table t(category int, live int, comments int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(category int, live int, comments int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.category EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t.comments SIMPLE []
+POSTHOOK: Lineage: t.live SIMPLE []
+PREHOOK: query: explain
+select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
+FROM t
+GROUP BY category
+GROUPING SETS ((), (category))
+HAVING max(comments) > 0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
+FROM t
+GROUP BY category
+GROUPING SETS ((), (category))
+HAVING max(comments) > 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t
+            Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: category (type: int), live (type: int), comments (type: int)
+              outputColumnNames: category, live, comments
+              Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(live), max(comments)
+                keys: category (type: int), '0' (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                  Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: int), _col3 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0), max(VALUE._col1)
+          keys: KEY._col0 (type: int), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col2, _col3
+          Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+          pruneGroupingSetId: true
+          Filter Operator
+            predicate: (_col3 > 0) (type: boolean)
+            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int), _col3 (type: int)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col2 (type: int)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey1 (type: int)
+          outputColumnNames: _col0, _col2, _col3
+          Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+          PTF Operator
+            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int), _wcol0 (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
+FROM t
+GROUP BY category
+GROUPING SETS ((), (category))
+HAVING max(comments) > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
+FROM t
+GROUP BY category
+GROUPING SETS ((), (category))
+HAVING max(comments) > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL	0	2	1
+86	0	2	1
+238	0	2	1
+311	0	2	1

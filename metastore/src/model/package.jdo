@@ -1005,7 +1005,7 @@
         <column name="TBL_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="message">
-        <column name="MESSAGE" length="1024" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="MESSAGE" jdbc-type="LONGVARCHAR"/>
       </field>
     </class>
 

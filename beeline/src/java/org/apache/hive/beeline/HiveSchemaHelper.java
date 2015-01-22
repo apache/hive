@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -97,55 +98,65 @@ public class HiveSchemaHelper {
     }
 
     static final String DEFAUTL_DELIMITER = ";";
-    /***
+
+    /**
      * Find the type of given command
+     *
      * @param dbCommand
      * @return
      */
     public boolean isPartialCommand(String dbCommand) throws IllegalArgumentException;
 
-    /** Parse the DB specific nesting format and extract the inner script name if any
+    /**
+     * Parse the DB specific nesting format and extract the inner script name if any
+     *
      * @param dbCommand command from parent script
      * @return
      * @throws IllegalFormatException
      */
     public String getScriptName(String dbCommand) throws IllegalArgumentException;
 
-    /***
+    /**
      * Find if the given command is a nested script execution
+     *
      * @param dbCommand
      * @return
      */
     public boolean isNestedScript(String dbCommand);
 
-    /***
+    /**
      * Find if the given command should not be passed to DB
+     *
      * @param dbCommand
      * @return
      */
     public boolean isNonExecCommand(String dbCommand);
 
-    /***
+    /**
      * Get the SQL statement delimiter
+     *
      * @return
      */
     public String getDelimiter();
 
-    /***
+    /**
      * Clear any client specific tags
+     *
      * @return
      */
     public String cleanseCommand(String dbCommand);
 
-    /***
+    /**
      * Does the DB required table/column names quoted
+     *
      * @return
      */
     public boolean needsQuotedIdentifier();
 
-    /***
+    /**
      * Flatten the nested upgrade script into a buffer
-     * @param scriptDir upgrade script directory
+     *
+     * @param scriptDir  upgrade script directory
      * @param scriptFile upgrade script file
      * @return string of sql commands
      */
@@ -258,6 +269,8 @@ public class HiveSchemaHelper {
     private void setDbOpts(String dbOpts) {
       if (dbOpts != null) {
         this.dbOpts = Lists.newArrayList(dbOpts.split(","));
+      } else {
+        this.dbOpts = Lists.newArrayList();
       }
     }
 
@@ -369,6 +382,10 @@ public class HiveSchemaHelper {
   // Postgres specific parser
   public static class PostgresCommandParser extends AbstractCommandParser {
     private static String POSTGRES_NESTING_TOKEN = "\\i";
+    @VisibleForTesting
+    public static String POSTGRES_STANDARD_STRINGS_OPT = "SET standard_conforming_strings";
+    @VisibleForTesting
+    public static String POSTGRES_SKIP_STANDARD_STRINGS_DBOPT = "postgres.filter.81";
 
     public PostgresCommandParser(String dbOpts, String msUsername, String msPassword,
         HiveConf hiveConf) {
@@ -393,6 +410,19 @@ public class HiveSchemaHelper {
     @Override
     public boolean needsQuotedIdentifier() {
       return true;
+    }
+
+    @Override
+    public boolean isNonExecCommand(String dbCommand) {
+      // Skip "standard_conforming_strings" command which is read-only in older
+      // Postgres versions like 8.1
+      // See: http://www.postgresql.org/docs/8.2/static/release-8-1.html
+      if (getDbOpts().contains(POSTGRES_SKIP_STANDARD_STRINGS_DBOPT)) {
+        if (dbCommand.startsWith(POSTGRES_STANDARD_STRINGS_OPT)) {
+          return true;
+        }
+      }
+      return super.isNonExecCommand(dbCommand);
     }
   }
 

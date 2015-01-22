@@ -143,7 +143,7 @@ public class SortedDynPartitionOptimizer implements Transform {
         return null;
       }
 
-      Table destTable = parseCtx.getFsopToTable().get(fsOp);
+      Table destTable = fsOp.getConf().getTable();
       if (destTable == null) {
         LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
         return null;

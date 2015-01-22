@@ -140,7 +140,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -265,9 +265,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 2)
         Reducer 5 <- Reducer 4 (GROUP, 1)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Reducer 5 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -294,7 +294,6 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: p_mfgr (type: string), p_size (type: int)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -318,7 +317,9 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col2, _col5
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -413,9 +414,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 3)
-        Reducer 5 <- Reducer 4 (GROUP, 3)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Reducer 5 (PARTITION-LEVEL SORT, 3)
+        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Reducer 4 (GROUP, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -442,7 +443,6 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: p_mfgr (type: string), p_size (type: int)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -466,7 +466,9 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col2, _col5
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -573,8 +575,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 3)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 3), Reducer 4 (PARTITION-LEVEL SORT, 3)
+        Reducer 4 <- Map 3 (GROUP, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -728,9 +730,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 3)
-        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 3), Reducer 2 (PARTITION-LEVEL SORT, 3)
-        Reducer 4 <- Map 6 (PARTITION-LEVEL SORT, 3), Reducer 3 (PARTITION-LEVEL SORT, 3)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 4 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

@@ -223,3 +223,14 @@ enough map slots (10?) (mapred.tasktracker.map.tasks.maximum), otherwise test pa
 Adding Tests
 ------------
 ToDo: add some guidelines
+
+Running on Tez
+1. set up Tez as in http://tez.apache.org/install.html
+2. set hive.execution.engine=tez in hive-site.xml (actually is this needed?)
+3. add hive.execution.engine=tez to templeton.hive.properties in webhcat-site.xml
+4. add to mapred-env.sh/yarn-env.sh (as you defined these in step 1)
+export TEZ_VERSION=0.5.3
+export TEZ_JARS=/Users/ekoifman/dev/apache-tez-client-${TEZ_VERSION}
+export TEZ_CONF_DIR=${TEZ_JARS}/conf
+export HADOOP_CLASSPATH=${TEZ_CONF_DIR}:${TEZ_JARS}/*:${TEZ_JARS}/lib/*:${HADOOP_CLASSPATH}
+(w/o this you'll see something like "java.lang.NoClassDefFoundError: org/apache/tez/dag/api/SessionNotRunning")

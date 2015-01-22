@@ -35,6 +35,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -357,7 +358,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throws IOException, SemanticException {
     LOG.debug("checking emptiness of " + targetPath.toString());
     if (fs.exists(targetPath)) {
-      FileStatus[] status = fs.listStatus(targetPath);
+      FileStatus[] status = fs.listStatus(targetPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       if (status.length > 0) {
         LOG.debug("Files inc. " + status[0].getPath().toString()
             + " found in path : " + targetPath.toString());

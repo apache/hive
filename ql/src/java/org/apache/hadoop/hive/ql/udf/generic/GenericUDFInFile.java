@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.IOUtils;
 
 /**
  * IN_FILE(str, filename) returns true if 'str' appears in the file specified
@@ -106,29 +107,37 @@ public class GenericUDFInFile extends GenericUDF {
         arguments[0].get(), strObjectInspector).toString();
 
     if (set == null) {
-      String fileName = (String)ObjectInspectorUtils.copyToStandardJavaObject(
+      String filePath = (String)ObjectInspectorUtils.copyToStandardJavaObject(
         arguments[1].get(), fileObjectInspector);
-      try {
-        load(new FileInputStream((new File(fileName)).getName()));
-      } catch (FileNotFoundException e) {
-        throw new HiveException(e);
-      }
+      loadFromFile(filePath);
     }
 
-    return Boolean.valueOf(set.contains(str));
+    return set.contains(str);
   }
 
-  /**
-   * Load the file from an InputStream.
-   * @param is The InputStream contains the file data.
-   * @throws HiveException
-   */
-  public void load(InputStream is) throws HiveException {
-    BufferedReader reader =
-      new BufferedReader(new InputStreamReader(is));
+  private BufferedReader getReaderFor(String filePath) throws HiveException {
+    try {
+      Path fullFilePath = FileSystems.getDefault().getPath(filePath);
+      Path fileName = fullFilePath.getFileName();
+      if (Files.exists(fileName)) {
+        return Files.newBufferedReader(fileName, Charset.defaultCharset());
+      }
+      else
+      if (Files.exists(fullFilePath)) {
+        return Files.newBufferedReader(fullFilePath, Charset.defaultCharset());
+      }
+      else {
+        throw new HiveException("Could not find \"" + fileName + "\" or \"" + fullFilePath + "\" in IN_FILE() UDF.");
+      }
+    }
+    catch(IOException exception) {
+      throw new HiveException(exception);
+    }
+  }
 
+  private void loadFromFile(String filePath) throws HiveException {
     set = new HashSet<String>();
-
+    BufferedReader reader = getReaderFor(filePath);
     try {
       String line;
       while((line = reader.readLine()) != null) {
@@ -136,6 +145,20 @@ public class GenericUDFInFile extends GenericUDF {
       }
     } catch (Exception e) {
       throw new HiveException(e);
+    }
+    finally {
+      IOUtils.closeStream(reader);
+    }
+  }
+
+  @Override
+  public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
+    super.copyToNewInstance(newInstance); // Asserts the class invariant. (Same types.)
+    GenericUDFInFile that = (GenericUDFInFile)newInstance;
+    if (that != this) {
+      that.set = (this.set == null ? null : (HashSet<String>)this.set.clone());
+      that.strObjectInspector = this.strObjectInspector;
+      that.fileObjectInspector = this.fileObjectInspector;
     }
   }
 

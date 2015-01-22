@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * FileSinkDesc.
@@ -47,6 +48,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private String compressCodec;
   private String compressType;
   private boolean multiFileSpray;
+  private boolean temporary;
   // Whether the files output by this FileSink can be merged, e.g. if they are to be put into a
   // bucketed or sorted table/partition they cannot be merged.
   private boolean canBeMerged;
@@ -88,6 +90,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
   private long txnId = 0;  // transaction id for this operation
+
+  private transient Table table;
 
   public FileSinkDesc() {
   }
@@ -217,6 +221,21 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setMultiFileSpray(boolean multiFileSpray) {
     this.multiFileSpray = multiFileSpray;
   }
+  
+  /**
+   * @return destination is temporary
+   */
+  public boolean isTemporary() {
+    return temporary;
+  }
+
+  /**
+   * @param totalFiles the totalFiles to set
+   */
+  public void setTemporary(boolean temporary) {
+    this.temporary = temporary;
+  }
+
 
   public boolean canBeMerged() {
     return canBeMerged;
@@ -420,5 +439,13 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public long getTransactionId() {
     return txnId;
+  }
+
+  public Table getTable() {
+    return table;
+  }
+
+  public void setTable(Table table) {
+    this.table = table;
   }
 }

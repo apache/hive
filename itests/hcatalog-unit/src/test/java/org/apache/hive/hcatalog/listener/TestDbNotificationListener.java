@@ -138,8 +138,6 @@ public class TestDbNotificationListener {
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"mytable\",\"timestamp\":[0-9]+}"));
   }
 
-  // TODO After HIVE-9175 is committed
-  /*
   @Test
   public void alterTable() throws Exception {
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
@@ -147,12 +145,12 @@ public class TestDbNotificationListener {
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
         serde, null, null, emptyParameters);
-    Table table = new Table("alttable", "default", "me", startTime, startTime, 0, sd, null,
-        emptyParameters, null, null, null);
+    Table table = new Table("alttable", "default", "me", startTime, startTime, 0, sd,
+        new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
     msClient.createTable(table);
 
-    table = new Table("alttable", "default", "me", startTime, startTime + 1, 0, sd, null,
-        emptyParameters, null, null, null);
+    table = new Table("alttable", "default", "me", startTime, startTime + 1, 0, sd,
+        new ArrayList<FieldSchema>(), emptyParameters, null, null, null);
     msClient.alter_table("default", "alttable", table);
 
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
@@ -168,7 +166,6 @@ public class TestDbNotificationListener {
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"alttable\"," +
         "\"timestamp\":[0-9]+}"));
   }
-  */
 
   @Test
   public void dropTable() throws Exception {
@@ -225,6 +222,41 @@ public class TestDbNotificationListener {
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"ADD_PARTITION\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
         "\"addparttable\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"ds\":\"today\"}]}"));
+  }
+
+  @Test
+  public void alterPartition() throws Exception {
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("ds", "string", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table table = new Table("alterparttable", "default", "me", startTime, startTime, 0, sd,
+        partCols, emptyParameters, null, null, null);
+    msClient.createTable(table);
+
+    Partition partition = new Partition(Arrays.asList("today"), "default", "alterparttable",
+        startTime, startTime, sd, emptyParameters);
+    msClient.add_partition(partition);
+
+    Partition newPart = new Partition(Arrays.asList("today"), "default", "alterparttable",
+        startTime, startTime + 1, sd, emptyParameters);
+    msClient.alter_partition("default", "alterparttable", newPart);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(2);
+    assertEquals(firstEventId + 3, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(HCatConstants.HCAT_ALTER_PARTITION_EVENT, event.getEventType());
+    assertEquals("default", event.getDbName());
+    assertEquals("alterparttable", event.getTableName());
+    assertTrue(event.getMessage().matches( "\\{\"eventType\":\"ALTER_PARTITION\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"alterparttable\"," +
+        "\"timestamp\":[0-9]+,\"values\":\\[\"today\"]}"));
   }
 
   @Test

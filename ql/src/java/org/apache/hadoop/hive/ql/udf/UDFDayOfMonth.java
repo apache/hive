@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
     extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
     + "'yyyy-MM-dd'.\n"
     + "Example:\n "
-    + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" + "  30")
+    + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  30")
 @VectorizedExpressions({VectorUDFDayOfMonthLong.class, VectorUDFDayOfMonthString.class})
 public class UDFDayOfMonth extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");

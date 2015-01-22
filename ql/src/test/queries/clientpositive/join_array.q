@@ -4,6 +4,8 @@ create table tinyB(a bigint, bList array<int>) stored as textfile;
 load data local inpath '../../data/files/tiny_a.txt' into table tinyA;
 load data local inpath '../../data/files/tiny_b.txt' into table tinyB;
 
+-- SORT_QUERY_RESULTS
+
 select * from tinyA;
 select * from tinyB;
 

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
 
 public class TestSchemaTool extends TestCase {
   private HiveSchemaTool schemaTool;
@@ -404,6 +405,56 @@ public class TestSchemaTool extends TestCase {
     assertTrue(flattenedSql.contains(childTab1));
     assertTrue(flattenedSql.contains(childTab2));
     assertTrue(flattenedSql.contains(parentTab));
+  }
+
+  /**
+   * Test script formatting
+   * @throws Exception
+   */
+  public void testPostgresFilter() throws Exception {
+    String testScript[] = {
+        "-- this is a comment",
+        "DROP TABLE IF EXISTS fooTab;",
+        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT + ";",
+        "CREATE TABLE fooTab(id INTEGER);",
+        "DROP TABLE footab;",
+        "-- ending comment"
+    };
+
+    String expectedScriptWithOptionPresent[] = {
+        "DROP TABLE IF EXISTS fooTab",
+        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT,
+        "CREATE TABLE fooTab(id INTEGER)",
+        "DROP TABLE footab",
+    };
+
+    NestedScriptParser noDbOptParser = HiveSchemaHelper
+        .getDbCommandParser("postgres");
+    String expectedSQL = StringUtils.join(
+        expectedScriptWithOptionPresent, System.getProperty("line.separator")) +
+            System.getProperty("line.separator");
+    File testScriptFile = generateTestScript(testScript);
+    String flattenedSql = noDbOptParser.buildCommand(
+        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    assertEquals(expectedSQL, flattenedSql);
+
+    String expectedScriptWithOptionAbsent[] = {
+        "DROP TABLE IF EXISTS fooTab",
+        "CREATE TABLE fooTab(id INTEGER)",
+        "DROP TABLE footab",
+    };
+
+    NestedScriptParser dbOptParser = HiveSchemaHelper.getDbCommandParser(
+        "postgres",
+        PostgresCommandParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT,
+        null, null, null);
+    expectedSQL = StringUtils.join(
+        expectedScriptWithOptionAbsent, System.getProperty("line.separator")) +
+            System.getProperty("line.separator");
+    testScriptFile = generateTestScript(testScript);
+    flattenedSql = dbOptParser.buildCommand(
+        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    assertEquals(expectedSQL, flattenedSql);
   }
 
   private File generateTestScript(String [] stmts) throws IOException {

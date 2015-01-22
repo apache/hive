@@ -70,6 +70,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    * Key vector expressions.
    */
   private VectorExpression[] keyExpressions;
+  private int outputKeyLength;
 
   private boolean isVectorOutput;
 
@@ -768,9 +769,16 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     List<ExprNodeDesc> keysDesc = conf.getKeys();
     try {
 
-      keyOutputWriters = new VectorExpressionWriter[keyExpressions.length];
+      List<String> outputFieldNames = conf.getOutputColumnNames();
 
-      for(int i = 0; i < keyExpressions.length; ++i) {
+      // grouping id should be pruned, which is the last of key columns
+      // see ColumnPrunerGroupByProc
+      outputKeyLength = 
+          conf.pruneGroupingSetId() ? keyExpressions.length - 1 : keyExpressions.length;
+      
+      keyOutputWriters = new VectorExpressionWriter[outputKeyLength];
+
+      for(int i = 0; i < outputKeyLength; ++i) {
         keyOutputWriters[i] = VectorExpressionWriterFactory.
             genVectorExpressionWritable(keysDesc.get(i));
         objectInspectors.add(keyOutputWriters[i].getObjectInspector());
@@ -788,7 +796,6 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
         aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
       }
       LOG.warn("VectorGroupByOperator is vector output " + isVectorOutput);
-      List<String> outputFieldNames = conf.getOutputColumnNames();
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
       if (isVectorOutput) {
@@ -807,9 +814,9 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
 
     initializeChildren(hconf);
 
-    forwardCache = new Object[keyExpressions.length + aggregators.length];
+    forwardCache = new Object[outputKeyLength + aggregators.length];
 
-    if (keyExpressions.length == 0) {
+    if (outputKeyLength == 0) {
         processingMode = this.new ProcessingModeGlobalAggregate();
     } else if (conf.getVectorDesc().isVectorGroupBatches()) {
       // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
@@ -872,7 +879,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
     int fi = 0;
     if (!isVectorOutput) {
       // Output row.
-      for (int i = 0; i < keyExpressions.length; ++i) {
+      for (int i = 0; i < outputKeyLength; ++i) {
         forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
             kw, i, keyOutputWriters[i]);
       }
@@ -886,7 +893,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
       forward(forwardCache, outputObjInspector);
     } else {
       // Output keys and aggregates into the output batch.
-      for (int i = 0; i < keyExpressions.length; ++i) {
+      for (int i = 0; i < outputKeyLength; ++i) {
         vectorColumnAssign[fi++].assignObjectValue(keyWrappersBatch.getWritableKeyValue (
                   kw, i, keyOutputWriters[i]), outputBatch.size);
       }
@@ -910,7 +917,7 @@ public class VectorGroupByOperator extends GroupByOperator implements Vectorizat
    */
   private void writeGroupRow(VectorAggregationBufferRow agg, DataOutputBuffer buffer)
       throws HiveException {
-    int fi = keyExpressions.length;   // Start after group keys.
+    int fi = outputKeyLength;   // Start after group keys.
     for (int i = 0; i < aggregators.length; ++i) {
       vectorColumnAssign[fi++].assignObjectValue(aggregators[i].evaluateOutput(
                 agg.getAggregationBuffer(i)), outputBatch.size);

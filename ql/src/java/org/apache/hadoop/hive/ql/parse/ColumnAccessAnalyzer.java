@@ -17,16 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 public class ColumnAccessAnalyzer {
-  private static final Log LOG = LogFactory.getLog(ColumnAccessAnalyzer.class.getName());
+  private static final Log   LOG = LogFactory.getLog(ColumnAccessAnalyzer.class.getName());
   private final ParseContext pGraphContext;
 
   public ColumnAccessAnalyzer() {
@@ -39,19 +43,22 @@ public class ColumnAccessAnalyzer {
 
   public ColumnAccessInfo analyzeColumnAccess() throws SemanticException {
     ColumnAccessInfo columnAccessInfo = new ColumnAccessInfo();
-    Map<TableScanOperator, Table> topOps = pGraphContext.getTopToTable();
-    for (TableScanOperator op : topOps.keySet()) {
-      Table table = topOps.get(op);
-      String tableName = table.getCompleteName();
-      List<String> referenced = op.getReferencedColumns();
-      for (String column : referenced) {
-        columnAccessInfo.add(tableName, column);
-      }
-      if (table.isPartitioned()) {
-        PrunedPartitionList parts = pGraphContext.getPrunedPartitions(table.getTableName(), op);
-        if (parts.getReferredPartCols() != null) {
-          for (String partKey : parts.getReferredPartCols()) {
-            columnAccessInfo.add(tableName, partKey);
+    Collection<Operator<? extends OperatorDesc>> topOps = pGraphContext.getTopOps().values();
+    for (Operator<? extends OperatorDesc> op : topOps) {
+      if (op instanceof TableScanOperator) {
+        TableScanOperator top = (TableScanOperator) op;
+        Table table = top.getConf().getTableMetadata();
+        String tableName = table.getCompleteName();
+        List<String> referenced = top.getReferencedColumns();
+        for (String column : referenced) {
+          columnAccessInfo.add(tableName, column);
+        }
+        if (table.isPartitioned()) {
+          PrunedPartitionList parts = pGraphContext.getPrunedPartitions(table.getTableName(), top);
+          if (parts.getReferredPartCols() != null) {
+            for (String partKey : parts.getReferredPartCols()) {
+              columnAccessInfo.add(tableName, partKey);
+            }
           }
         }
       }

@@ -1,9 +1,13 @@
-PREHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table t1 as select cast(key as int) key, value from src where key <= 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table t1 as select cast(key as int) key, value from src where key <= 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -19,6 +23,7 @@ POSTHOOK: Input: default@t1
 0	val_0
 0	val_0
 0	val_0
+10	val_10
 2	val_2
 4	val_4
 5	val_5
@@ -26,7 +31,6 @@ POSTHOOK: Input: default@t1
 5	val_5
 8	val_8
 9	val_9
-10	val_10
 PREHOOK: query: create table t2 as select cast(2*key as int) key, value from t1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
@@ -48,14 +52,14 @@ POSTHOOK: Input: default@t2
 0	val_0
 0	val_0
 0	val_0
-4	val_2
-8	val_4
 10	val_5
 10	val_5
 10	val_5
 16	val_8
 18	val_9
 20	val_10
+4	val_2
+8	val_4
 PREHOOK: query: create table t3 as select * from (select * from t1 union all select * from t2) b
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
@@ -82,7 +86,14 @@ POSTHOOK: Input: default@t3
 0	val_0
 0	val_0
 0	val_0
+10	val_10
+10	val_5
+10	val_5
+10	val_5
+16	val_8
+18	val_9
 2	val_2
+20	val_10
 4	val_2
 4	val_4
 5	val_5
@@ -91,13 +102,6 @@ POSTHOOK: Input: default@t3
 8	val_4
 8	val_8
 9	val_9
-10	val_10
-10	val_5
-10	val_5
-10	val_5
-16	val_8
-18	val_9
-20	val_10
 PREHOOK: query: create table t4 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -213,9 +217,9 @@ POSTHOOK: Input: default@t2
 0	val_0
 0	val_0
 0	val_0
+10	val_10
 4	val_4
 8	val_8
-10	val_10
 PREHOOK: query: explain select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
@@ -315,11 +319,11 @@ POSTHOOK: Input: default@t2
 0	val_0
 0	val_0
 0	val_0
+10	val_5
+10	val_5
+10	val_5
 4	val_2
 8	val_4
-10	val_5
-10	val_5
-10	val_5
 PREHOOK: query: explain select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
@@ -921,11 +925,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
+10	val_5
+10	val_5
+10	val_5
 4	val_2
 8	val_4
-10	val_5
-10	val_5
-10	val_5
 PREHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
@@ -1030,6 +1034,10 @@ POSTHOOK: Input: default@t3
 0
 0
 0
+10
+10
+10
+10
 2
 4
 4
@@ -1039,10 +1047,6 @@ POSTHOOK: Input: default@t3
 8
 8
 9
-10
-10
-10
-10
 PREHOOK: query: explain select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
@@ -1271,11 +1275,11 @@ POSTHOOK: Input: default@t3
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
+10	val_10	10	val_5
+10	val_10	10	val_5
+10	val_10	10	val_5
 4	val_4	4	val_2
 8	val_8	8	val_4
-10	val_10	10	val_5
-10	val_10	10	val_5
-10	val_10	10	val_5
 PREHOOK: query: explain select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
@@ -1377,6 +1381,7 @@ POSTHOOK: Input: default@t3
 0	val_0
 0	val_0
 0	val_0
+10	val_10
 2	val_2
 4	val_4
 5	val_5
@@ -1384,7 +1389,6 @@ POSTHOOK: Input: default@t3
 5	val_5
 8	val_8
 9	val_9
-10	val_10
 PREHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
@@ -1519,14 +1523,14 @@ POSTHOOK: Input: default@t3
 0
 0
 0
+10
+10
+10
+10
 4
 4
 8
 8
-10
-10
-10
-10
 PREHOOK: query: explain select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
@@ -1648,14 +1652,14 @@ POSTHOOK: Input: default@t3
 0
 0
 0
+10
+10
+10
+10
 4
 4
 8
 8
-10
-10
-10
-10
 PREHOOK: query: explain select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
@@ -1759,9 +1763,6 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
 0
 0
 0
@@ -1780,14 +1781,17 @@ NULL
 0
 0
 0
+10
+10
+10
+10
 4
 4
 8
 8
-10
-10
-10
-10
+NULL
+NULL
+NULL
 PREHOOK: query: explain select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
@@ -1891,9 +1895,6 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
 0
 0
 0
@@ -1912,14 +1913,17 @@ NULL
 0
 0
 0
+10
+10
+10
+10
 4
 4
 8
 8
-10
-10
-10
-10
+NULL
+NULL
+NULL
 PREHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
@@ -2041,10 +2045,6 @@ POSTHOOK: Input: default@t3
 0
 0
 0
-4
-4
-8
-8
 10
 10
 10
@@ -2052,6 +2052,10 @@ POSTHOOK: Input: default@t3
 16
 18
 20
+4
+4
+8
+8
 PREHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
@@ -2155,11 +2159,6 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
-NULL
-NULL
 0
 0
 0
@@ -2178,14 +2177,19 @@ NULL
 0
 0
 0
+10
+10
+10
+10
 4
 4
 8
 8
-10
-10
-10
-10
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: explain select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
@@ -2289,9 +2293,6 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
 0
 0
 0
@@ -2310,6 +2311,18 @@ NULL
 0
 0
 0
+10
+10
+10
+10
+10
+10
+10
+10
+10
+10
+10
+10
 2
 4
 4
@@ -2319,18 +2332,9 @@ NULL
 8
 8
 9
-10
-10
-10
-10
-10
-10
-10
-10
-10
-10
-10
-10
+NULL
+NULL
+NULL
 PREHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
@@ -2474,10 +2478,6 @@ POSTHOOK: Input: default@t3
 0
 0
 0
-4
-4
-8
-8
 10
 10
 10
@@ -2491,6 +2491,10 @@ POSTHOOK: Input: default@t3
 16
 18
 20
+4
+4
+8
+8
 PREHOOK: query: explain select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100

@@ -27,7 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -92,14 +91,7 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
     List<IOException> errors = new ArrayList<IOException>();
 
     FileSystem fs = dir.getFileSystem(job);
-    FileStatus[] matches = fs.globStatus(dir, new PathFilter() {
-
-      @Override
-      public boolean accept(Path p) {
-        String name = p.getName();
-        return !name.startsWith("_") && !name.startsWith(".");
-      }
-    });
+    FileStatus[] matches = fs.globStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
     if (matches == null) {
       errors.add(new IOException("Input path does not exist: " + dir));
     } else if (matches.length == 0) {
@@ -113,7 +105,8 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
     if (!errors.isEmpty()) {
       throw new InvalidInputException(errors);
     }
-    LOG.info("Total input paths to process : " + result.size());
+    LOG.debug("Matches for " + dir + ": " + result);
+    LOG.info("Total input paths to process : " + result.size() + " from dir " + dir);
     return result.toArray(new FileStatus[result.size()]);
 
   }

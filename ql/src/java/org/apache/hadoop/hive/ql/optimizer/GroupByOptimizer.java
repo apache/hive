@@ -304,7 +304,7 @@ public class GroupByOptimizer implements Transform {
       // Create a mapping from the group by columns to the table columns
       Map<String, String> tableColsMapping = new HashMap<String, String>();
       Set<String> constantCols = new HashSet<String>();
-      Table table = pGraphContext.getTopToTable().get(currOp);
+      Table table = tableScanOp.getConf().getTableMetadata();
       for (FieldSchema col : table.getAllCols()) {
         tableColsMapping.put(col.getName(), col.getName());
       }

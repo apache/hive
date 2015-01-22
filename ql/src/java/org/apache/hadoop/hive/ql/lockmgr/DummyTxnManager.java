@@ -254,9 +254,13 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   private HiveLockMode getWriteEntityLockMode (WriteEntity we) {
     HiveLockMode lockMode = we.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED;
-    //but the writeEntity is complete in DDL operations, and we need check its writeType to
-    //to determine the lockMode
-    switch (we.getWriteType()) {
+    //but the writeEntity is complete in DDL operations, instead DDL sets the writeType, so
+    //we use it to determine its lockMode, and first we check if the writeType was set
+    WriteEntity.WriteType writeType = we.getWriteType();
+    if (writeType == null) {
+      return lockMode;
+    }
+    switch (writeType) {
       case DDL_EXCLUSIVE:
         return HiveLockMode.EXCLUSIVE;
       case DDL_SHARED:
