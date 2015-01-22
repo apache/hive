@@ -129,7 +129,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       rowsRet = work.getLimit() >= 0 ? Math.min(work.getLimit() - totalRows, maxRows) : maxRows;
     }
     try {
-      if (rowsRet <= 0) {
+      if (rowsRet <= 0 || work.getLimit() == totalRows) {
         fetch.clearFetchContext();
         return false;
       }
