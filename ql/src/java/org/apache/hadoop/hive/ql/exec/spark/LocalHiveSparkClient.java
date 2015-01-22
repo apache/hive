@@ -137,7 +137,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     int jobId = future.jobIds().get(0);
     LocalSparkJobStatus sparkJobStatus = new LocalSparkJobStatus(
       sc, jobId, jobMetricsListener, sparkCounters, plan.getCachedRDDIds(), future);
-    return new LocalSparkJobRef(Integer.toString(jobId), sparkJobStatus, sc);
+    return new LocalSparkJobRef(Integer.toString(jobId), hiveConf,  sparkJobStatus, sc);
   }
 
   /**

@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
-import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.LocalSparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
-import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.util.StringUtils;
@@ -102,23 +101,20 @@ public class SparkTask extends Task<SparkWork> {
       SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
+      rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
-      if (sparkJobStatus != null) {
-        SparkJobMonitor monitor = new SparkJobMonitor(conf, sparkJobStatus);
-        rc = monitor.startMonitor();
+      if (rc == 0) {
         sparkCounters = sparkJobStatus.getCounter();
-        if (rc == 0 ) {
-          // for RSC, we should get the counters after job has finished
-          SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
-          if (LOG.isInfoEnabled() && sparkStatistics != null) {
-            LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
-            logSparkStatistic(sparkStatistics);
-          }
-        } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
-          jobRef.cancelJob();
+        // for RSC, we should get the counters after job has finished
+        SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
+        if (LOG.isInfoEnabled() && sparkStatistics != null) {
+          LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
+          logSparkStatistic(sparkStatistics);
         }
-        sparkJobStatus.cleanup();
+      } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
+        jobRef.cancelJob();
       }
+      sparkJobStatus.cleanup();
     } catch (Exception e) {
       String msg = "Failed to execute spark task, with exception '" + Utilities.getNameMessage(e) + "'";
 

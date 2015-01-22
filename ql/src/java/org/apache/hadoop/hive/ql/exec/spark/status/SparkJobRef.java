@@ -25,4 +25,5 @@ public interface SparkJobRef {
 
   public boolean cancelJob();
 
+  public int monitorJob();
 }

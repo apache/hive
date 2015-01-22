@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.spark.status.LocalSparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -24,11 +26,18 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class LocalSparkJobRef implements SparkJobRef {
 
   private final String jobId;
-  private final SparkJobStatus sparkJobStatus;
+  private final HiveConf hiveConf;
+  private final LocalSparkJobStatus sparkJobStatus;
   private final JavaSparkContext javaSparkContext;
 
-  public LocalSparkJobRef(String jobId, SparkJobStatus sparkJobStatus, JavaSparkContext javaSparkContext) {
+  public LocalSparkJobRef(
+    String jobId,
+    HiveConf hiveConf,
+    LocalSparkJobStatus sparkJobStatus,
+    JavaSparkContext javaSparkContext) {
+
     this.jobId = jobId;
+    this.hiveConf = hiveConf;
     this.sparkJobStatus = sparkJobStatus;
     this.javaSparkContext = javaSparkContext;
   }
@@ -48,5 +57,11 @@ public class LocalSparkJobRef implements SparkJobRef {
     int id = Integer.parseInt(jobId);
     javaSparkContext.sc().cancelJob(id);
     return true;
+  }
+
+  @Override
+  public int monitorJob() {
+    LocalSparkJobMonitor localSparkJobMonitor = new LocalSparkJobMonitor(hiveConf, sparkJobStatus);
+    return localSparkJobMonitor.startMonitor();
   }
 }
