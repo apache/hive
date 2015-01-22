@@ -271,6 +271,10 @@ public class HiveConf extends Configuration {
         "Comma-separated list of on-failure hooks to be invoked for each statement. \n" +
         "An on-failure hook is specified as the name of Java class which implements the \n" +
         "org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface."),
+    QUERYREDACTORHOOKS("hive.exec.query.redactor.hooks", "",
+        "Comma-separated list of hooks to be invoked for each query which can \n" +
+        "tranform the query before it's placed in the job.xml file. Must be a Java class which \n" +
+        "extends from the org.apache.hadoop.hive.ql.hooks.Redactor abstract class."),
     CLIENTSTATSPUBLISHERS("hive.client.stats.publishers", "",
         "Comma-separated list of statistics publishers to be invoked on counters on each job. \n" +
         "A client stats publisher is specified as the name of a Java class which implements the \n" +
