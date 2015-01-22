@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.spark.status.RemoteSparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hive.spark.client.JobHandle;
@@ -26,12 +28,14 @@ import java.io.Serializable;
 public class RemoteSparkJobRef implements SparkJobRef {
 
   private final String jobId;
-  private final SparkJobStatus sparkJobStatus;
+  private final HiveConf hiveConf;
+  private final RemoteSparkJobStatus sparkJobStatus;
   private final JobHandle<Serializable> jobHandler;
 
-  public RemoteSparkJobRef(JobHandle<Serializable> jobHandler, SparkJobStatus sparkJobStatus) {
+  public RemoteSparkJobRef(HiveConf hiveConf, JobHandle<Serializable> jobHandler, RemoteSparkJobStatus sparkJobStatus) {
     this.jobHandler = jobHandler;
     this.jobId = jobHandler.getClientJobId();
+    this.hiveConf = hiveConf;
     this.sparkJobStatus = sparkJobStatus;
   }
 
@@ -48,5 +52,11 @@ public class RemoteSparkJobRef implements SparkJobRef {
   @Override
   public boolean cancelJob() {
     return jobHandler.cancel(true);
+  }
+
+  @Override
+  public int monitorJob() {
+    RemoteSparkJobMonitor remoteSparkJobMonitor = new RemoteSparkJobMonitor(hiveConf, sparkJobStatus);
+    return remoteSparkJobMonitor.startMonitor();
   }
 }

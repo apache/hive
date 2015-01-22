@@ -153,6 +153,10 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
   }
 
+  public JobHandle.State getRemoteJobState() {
+    return jobHandle.getState();
+  }
+
   private static class GetJobInfoJob implements Job<SparkJobInfo> {
     private final String clientJobId;
     private final int sparkJobId;
