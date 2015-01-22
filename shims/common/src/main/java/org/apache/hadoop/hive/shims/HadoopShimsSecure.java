@@ -58,17 +58,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
 
-  @Override
-  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
-    return new CombineFileInputFormatShim() {
-      @Override
-      public RecordReader getRecordReader(InputSplit split,
-          JobConf job, Reporter reporter) throws IOException {
-        throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
-      }
-    };
-  }
-
   public static class InputSplitShim extends CombineFileSplit {
     long shrinkedLength;
     boolean _isShrinked;
@@ -341,28 +330,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         throws IOException {
       CombineFileSplit cfSplit = split;
       return new CombineFileRecordReader(job, cfSplit, reporter, rrClass);
-    }
-
-    @Override
-    protected FileStatus[] listStatus(JobConf job) throws IOException {
-      FileStatus[] result = super.listStatus(job);
-      boolean foundDir = false;
-      for (FileStatus stat: result) {
-        if (stat.isDir()) {
-          foundDir = true;
-          break;
-        }
-      }
-      if (!foundDir) {
-        return result;
-      }
-      ArrayList<FileStatus> files = new ArrayList<FileStatus>();
-      for (FileStatus stat: result) {
-        if (!stat.isDir()) {
-          files.add(stat);
-        }
-      }
-      return files.toArray(new FileStatus[files.size()]);
     }
   }
 
