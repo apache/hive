@@ -29,7 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,8 +68,10 @@ import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
@@ -126,6 +128,30 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     this.storagePolicy = storage;
     this.zeroCopy = zcr;
+  }
+
+  @Override
+  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
+    return new CombineFileInputFormatShim() {
+      @Override
+      public RecordReader getRecordReader(InputSplit split,
+          JobConf job, Reporter reporter) throws IOException {
+        throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
+      }
+
+      @Override
+      protected List<FileStatus> listStatus(JobContext job) throws IOException {
+        List<FileStatus> result = super.listStatus(job);
+        Iterator<FileStatus> it = result.iterator();
+        while (it.hasNext()) {
+          FileStatus stat = it.next();
+          if (!stat.isFile()) {
+            it.remove();
+          }
+        }
+        return result;
+      }
+    };
   }
 
   @Override
