@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,10 +48,13 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobInProgress;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.WebHCatJTShim20S;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
@@ -73,6 +77,39 @@ import org.apache.hadoop.util.VersionInfo;
  * Implemention of shims against Hadoop 0.20 with Security.
  */
 public class Hadoop20SShims extends HadoopShimsSecure {
+
+  @Override
+  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
+    return new CombineFileInputFormatShim() {
+      @Override
+      public RecordReader getRecordReader(InputSplit split,
+          JobConf job, Reporter reporter) throws IOException {
+        throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
+      }
+
+      @Override
+      protected FileStatus[] listStatus(JobConf job) throws IOException {
+        FileStatus[] result = super.listStatus(job);
+        boolean foundDir = false;
+        for (FileStatus stat: result) {
+          if (stat.isDir()) {
+            foundDir = true;
+            break;
+          }
+        }
+        if (!foundDir) {
+          return result;
+        }
+        ArrayList<FileStatus> files = new ArrayList<FileStatus>();
+        for (FileStatus stat: result) {
+          if (!stat.isDir()) {
+            files.add(stat);
+          }
+        }
+        return files.toArray(new FileStatus[files.size()]);
+      }
+    };
+  }
 
   @Override
   public String getTaskAttemptLogUrl(JobConf conf,
