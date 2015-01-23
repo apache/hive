@@ -1,6 +1,8 @@
 set hive.optimize.ppd=true;
 set hive.entity.capture.transform=true;
 
+-- SORT_QUERY_RESULTS
+
 EXPLAIN EXTENDED
 FROM (
   FROM srcpart src

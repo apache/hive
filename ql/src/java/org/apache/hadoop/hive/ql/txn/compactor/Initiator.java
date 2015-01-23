@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -262,7 +263,7 @@ public class Initiator extends CompactorThread {
 
   private long sumDirSize(FileSystem fs, Path dir) throws IOException {
     long size = 0;
-    FileStatus[] buckets = fs.listStatus(dir);
+    FileStatus[] buckets = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
     for (int i = 0; i < buckets.length; i++) {
       size += buckets[i].getLen();
     }

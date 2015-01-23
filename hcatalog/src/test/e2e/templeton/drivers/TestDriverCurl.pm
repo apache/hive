@@ -878,7 +878,7 @@ sub compare
             if (defined($testCmd->{'check_job_percent_complete'})) {
               my $pcValue = $res_hash->{'percentComplete'};
               my $expectedPercentComplete = $testCmd->{'check_job_percent_complete'};
-              if ( (!defined $pcValue) || $pcValue ne $expectedPercentComplete ) {
+              if ( (!defined $pcValue) || $pcValue !~ m/$expectedPercentComplete/ ) {
                 print $log "check_job_percent_complete failed. got percentComplete $pcValue,  expected  $expectedPercentComplete";
                 $result = 0;
               }

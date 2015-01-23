@@ -170,7 +170,6 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
 
     // Need to remove the original TableScanOperators from these data structures
     // and add new ones
-    Map<TableScanOperator, Table> topToTable = rewriteQueryCtx.getParseContext().getTopToTable();
     Map<String, Operator<? extends OperatorDesc>> topOps = rewriteQueryCtx.getParseContext()
         .getTopOps();
     Map<Operator<? extends OperatorDesc>, OpParseContext> opParseContext = rewriteQueryCtx
@@ -181,12 +180,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
 
     // remove original TableScanOperator
     topOps.remove(alias);
-    topToTable.remove(scanOperator);
     opParseContext.remove(scanOperator);
-
-    // construct a new descriptor for the index table scan
-    TableScanDesc indexTableScanDesc = new TableScanDesc();
-    indexTableScanDesc.setGatherStats(false);
 
     String indexTableName = rewriteQueryCtx.getIndexName();
     Table indexTableHandle = null;
@@ -197,6 +191,10 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
+
+    // construct a new descriptor for the index table scan
+    TableScanDesc indexTableScanDesc = new TableScanDesc(indexTableHandle);
+    indexTableScanDesc.setGatherStats(false);
 
     String k = indexTableName + Path.SEPARATOR;
     indexTableScanDesc.setStatsAggPrefix(k);
@@ -227,12 +225,10 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     }
 
     // Scan operator now points to other table
-    topToTable.put(scanOperator, indexTableHandle);
     scanOperator.getConf().setAlias(newAlias);
     scanOperator.setAlias(indexTableName);
     topOps.put(newAlias, scanOperator);
     opParseContext.put(scanOperator, operatorContext);
-    rewriteQueryCtx.getParseContext().setTopToTable((HashMap<TableScanOperator, Table>) topToTable);
     rewriteQueryCtx.getParseContext().setTopOps(
         (HashMap<String, Operator<? extends OperatorDesc>>) topOps);
     rewriteQueryCtx.getParseContext().setOpParseCtx(

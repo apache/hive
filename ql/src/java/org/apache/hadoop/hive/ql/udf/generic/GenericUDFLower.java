@@ -51,7 +51,7 @@ public class GenericUDFLower extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length < 0) {
+    if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
           "LOWER requires 1 argument, got " + arguments.length);
     }

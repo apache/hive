@@ -985,6 +985,41 @@
       </field>
     </class>
 
+    <class name="MNotificationLog" table="NOTIFICATION_LOG" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="NL_ID"/>
+      </datastore-identity>
+      <field name="eventId">
+        <column name="EVENT_ID" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="eventTime">
+        <column name="EVENT_TIME" jdbc-type="INTEGER" allows-null="false"/>
+      </field>
+      <field name="eventType">
+        <column name="EVENT_TYPE" length="32" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="tableName">
+        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="message">
+        <column name="MESSAGE" jdbc-type="LONGVARCHAR"/>
+      </field>
+    </class>
+
+    <!-- I tried to use a sequence here but derby didn't handle it well. -->
+    <class name="MNotificationNextId" table="NOTIFICATION_SEQUENCE" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="NNI_ID"/>
+      </datastore-identity>
+      <field name="nextEventId">
+        <column name="NEXT_EVENT_ID" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+    </class>
+
+
   </package>
 </jdo>
 

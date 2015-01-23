@@ -1,0 +1,240 @@
+PREHOOK: query: drop table date_udf
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table date_udf
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table date_udf_string
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table date_udf_string
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table date_udf_flight
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table date_udf_flight
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table date_udf (d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf
+POSTHOOK: query: create table date_udf (d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_udf
+PREHOOK: query: create table date_udf_string (d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_string
+POSTHOOK: query: create table date_udf_string (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_udf_string
+PREHOOK: query: from src
+  insert overwrite table date_udf 
+    select '2011-05-06' limit 1
+  insert overwrite table date_udf_string
+    select '2011-05-06' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@date_udf
+PREHOOK: Output: default@date_udf_string
+POSTHOOK: query: from src
+  insert overwrite table date_udf 
+    select '2011-05-06' limit 1
+  insert overwrite table date_udf_string
+    select '2011-05-06' limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@date_udf
+POSTHOOK: Output: default@date_udf_string
+POSTHOOK: Lineage: date_udf.d EXPRESSION []
+POSTHOOK: Lineage: date_udf_string.d SIMPLE []
+PREHOOK: query: create table date_udf_flight (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_udf_flight
+POSTHOOK: query: create table date_udf_flight (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_udf_flight
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_udf_flight
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@date_udf_flight
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_udf_flight
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@date_udf_flight
+PREHOOK: query: -- Test UDFs with date input
+select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+    weekofyear(d), to_date(d)
+  from date_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test UDFs with date input
+select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+    weekofyear(d), to_date(d)
+  from date_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+1304665200	2011	5	6	6	18	2011-05-06
+PREHOOK: query: select date_add(d, 5), date_sub(d, 10)
+  from date_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select date_add(d, 5), date_sub(d, 10)
+  from date_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+2011-05-11	2011-04-26
+PREHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+    datediff(cast ('2002-03-21 00:00:00' as timestamp), d),
+    datediff(d, cast ('2002-03-21 00:00:00' as timestamp))
+  from date_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+    datediff(cast ('2002-03-21 00:00:00' as timestamp), d),
+    datediff(d, cast ('2002-03-21 00:00:00' as timestamp))
+  from date_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+0	3333	-3333	-3332	3332
+PREHOOK: query: -- Test UDFs with string input
+select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
+    weekofyear(d), to_date(d)
+  from date_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test UDFs with string input
+select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
+    weekofyear(d), to_date(d)
+  from date_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+NULL	2011	5	6	6	18	2011-05-06
+PREHOOK: query: select date_add(d, 5), date_sub(d, 10)  from date_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select date_add(d, 5), date_sub(d, 10)  from date_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+2011-05-11	2011-04-26
+PREHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+    datediff('2002-03-21 00:00:00', d),
+    datediff(d, '2002-03-21 00:00:00')
+  from date_udf_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+POSTHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+    datediff('2002-03-21 00:00:00', d),
+    datediff(d, '2002-03-21 00:00:00')
+  from date_udf_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_string
+#### A masked pattern was here ####
+0	3333	-3333	-3333	3333
+PREHOOK: query: select 
+    to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
+    from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
+    to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles'),
+    from_utc_timestamp(date '2013-06-19', 'America/Los_Angeles')
+  from date_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+    to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
+    from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
+    to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles'),
+    from_utc_timestamp(date '2013-06-19', 'America/Los_Angeles')
+  from date_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+1970-01-01 08:00:00	1969-12-31 16:00:00	2013-06-19 07:00:00	2013-06-18 17:00:00
+PREHOOK: query: -- should all be true
+select 
+    to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = to_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
+    from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = from_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
+    to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = to_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles'),
+    from_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = from_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles')
+  from date_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+POSTHOOK: query: -- should all be true
+select 
+    to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = to_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
+    from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = from_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
+    to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = to_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles'),
+    from_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = from_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles')
+  from date_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf
+#### A masked pattern was here ####
+true	true	true	true
+PREHOOK: query: -- Aggregation functions (min/max)
+select min(fl_date) from date_udf_flight
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight
+#### A masked pattern was here ####
+POSTHOOK: query: -- Aggregation functions (min/max)
+select min(fl_date) from date_udf_flight
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight
+#### A masked pattern was here ####
+2010-10-20
+PREHOOK: query: select max(fl_date) from date_udf_flight
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_udf_flight
+#### A masked pattern was here ####
+POSTHOOK: query: select max(fl_date) from date_udf_flight
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_udf_flight
+#### A masked pattern was here ####
+2010-10-31
+PREHOOK: query: drop table date_udf
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_udf
+PREHOOK: Output: default@date_udf
+POSTHOOK: query: drop table date_udf
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_udf
+POSTHOOK: Output: default@date_udf
+PREHOOK: query: drop table date_udf_string
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_udf_string
+PREHOOK: Output: default@date_udf_string
+POSTHOOK: query: drop table date_udf_string
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_udf_string
+POSTHOOK: Output: default@date_udf_string
+PREHOOK: query: drop table date_udf_flight
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_udf_flight
+PREHOOK: Output: default@date_udf_flight
+POSTHOOK: query: drop table date_udf_flight
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_udf_flight
+POSTHOOK: Output: default@date_udf_flight

@@ -79,6 +79,15 @@ public class HiveConf extends Configuration {
   private final List<String> restrictList = new ArrayList<String>();
 
   private Pattern modWhiteListPattern = null;
+  private boolean isSparkConfigUpdated = false;
+
+  public boolean getSparkConfigUpdated() {
+    return isSparkConfigUpdated;
+  }
+
+  public void setSparkConfigUpdated(boolean isSparkConfigUpdated) {
+    this.isSparkConfigUpdated = isSparkConfigUpdated;
+  }
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -206,6 +215,10 @@ public class HiveConf extends Configuration {
     PLAN_SERIALIZATION("hive.plan.serialization.format", "kryo",
         "Query plan format serialization between client and task nodes. \n" +
         "Two supported values are : kryo and javaXML. Kryo is default."),
+    STAGINGDIR("hive.exec.stagingdir", ".hive-staging",
+        "Directory name that will be created inside table locations in order to support HDFS encryption. " +
+        "This is replaces ${hive.exec.scratchdir} for query results with the exception of read-only tables. " +
+        "In all cases ${hive.exec.scratchdir} is still used for other temporary files, such as job plans."),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive",
         "HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
@@ -258,6 +271,10 @@ public class HiveConf extends Configuration {
         "Comma-separated list of on-failure hooks to be invoked for each statement. \n" +
         "An on-failure hook is specified as the name of Java class which implements the \n" +
         "org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface."),
+    QUERYREDACTORHOOKS("hive.exec.query.redactor.hooks", "",
+        "Comma-separated list of hooks to be invoked for each query which can \n" +
+        "tranform the query before it's placed in the job.xml file. Must be a Java class which \n" +
+        "extends from the org.apache.hadoop.hive.ql.hooks.Redactor abstract class."),
     CLIENTSTATSPUBLISHERS("hive.client.stats.publishers", "",
         "Comma-separated list of statistics publishers to be invoked on counters on each job. \n" +
         "A client stats publisher is specified as the name of a Java class which implements the \n" +
@@ -412,6 +429,9 @@ public class HiveConf extends Configuration {
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_USE_THRIFT_FRAMED_TRANSPORT("hive.metastore.thrift.framed.transport.enabled", false,
         "If true, the metastore Thrift interface will use TFramedTransport. When false (default) a standard TTransport is used."),
+    METASTORE_USE_THRIFT_COMPACT_PROTOCOL("hive.metastore.thrift.compact.protocol.enabled", false,
+        "If true, the metastore Thrift interface will use TCompactProtocol. When false (default) TBinaryProtocol will be used.\n" +
+        "Setting it to true will break compatibility with older clients running TBinaryProtocol."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS("hive.cluster.delegation.token.store.class",
         "org.apache.hadoop.hive.thrift.MemoryTokenStore",
         "The delegation token store implementation. Set to org.apache.hadoop.hive.thrift.ZooKeeperTokenStore for load-balanced cluster."),
@@ -477,6 +497,9 @@ public class HiveConf extends Configuration {
     METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", "",
         "List of comma separated listeners for metastore events."),
     METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "", ""),
+    METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "time after which events will be removed from the database listener queue"),
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false,
         "Should the metastore do authorization checks against the underlying storage (usually hdfs) \n" +
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +
@@ -684,13 +707,6 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINUSEOPTIMIZEDTABLE("hive.mapjoin.optimized.hashtable", true,
         "Whether Hive should use memory-optimized hash table for MapJoin. Only works on Tez,\n" +
         "because memory-optimized hashtable cannot be serialized."),
-    HIVEMAPJOINUSEOPTIMIZEDKEYS("hive.mapjoin.optimized.keys", true,
-        "Whether MapJoin hashtable should use optimized (size-wise), keys, allowing the table to take less\n" +
-        "memory. Depending on key, the memory savings for entire table can be 5-15% or so."),
-    HIVEMAPJOINLAZYHASHTABLE("hive.mapjoin.lazy.hashtable", true,
-        "Whether MapJoin hashtable should deserialize values on demand. Depending on how many values in\n" +
-        "the table the join will actually touch, it can save a lot of memory by not creating objects for\n" +
-        "rows that are not needed. If all rows are needed obviously there's no gain."),
     HIVEHASHTABLEWBSIZE("hive.mapjoin.optimized.hashtable.wbsize", 10 * 1024 * 1024,
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
@@ -734,6 +750,10 @@ public class HiveConf extends Configuration {
         "cardinality (4 in the example above), is more than this value, a new MR job is added under the\n" +
         "assumption that the original group by will reduce the data size."),
 
+    // Max filesize used to do a single copy (after that, distcp is used)
+    HIVE_EXEC_COPYFILE_MAXSIZE("hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
+        "Maximum file size (in Mb) that Hive uses to do single HDFS copies between directories." +
+        "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
 
     // for hive udtf operator
     HIVEUDTFAUTOPROGRESS("hive.udtf.auto.progress", false,
@@ -836,6 +856,7 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false,
         "Merge small files at the end of a map-reduce job"),
     HIVEMERGETEZFILES("hive.merge.tezfiles", false, "Merge small files at the end of a Tez DAG"),
+    HIVEMERGESPARKFILES("hive.merge.sparkfiles", false, "Merge small files at the end of a Spark DAG Transformation"),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000),
         "Size of merged files at the end of the job"),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000),
@@ -1307,13 +1328,20 @@ public class HiveConf extends Configuration {
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
-    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000,
-        "ZooKeeper client's session timeout. The client is disconnected, and as a result, all locks released, \n" +
+    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "600000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
     HIVE_ZOOKEEPER_NAMESPACE("hive.zookeeper.namespace", "hive_zookeeper_namespace",
         "The parent node under which all ZooKeeper nodes are created."),
     HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES("hive.zookeeper.clean.extra.nodes", false,
         "Clean extra nodes at the end of the session."),
+    HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES("hive.zookeeper.connection.max.retries", 3,
+        "Max number of times to retry when connecting to the ZooKeeper server."),
+    HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME("hive.zookeeper.connection.basesleeptime", "1000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Initial amount of time (in milliseconds) to wait between retries\n" +
+        "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
 
     // Transactions
     HIVE_TXN_MANAGER("hive.txn.manager",
@@ -1592,6 +1620,10 @@ public class HiveConf extends Configuration {
         "inheriting the permission of the warehouse or database directory."),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
         "whether insert into external tables is allowed"),
+    HIVE_TEMPORARY_TABLE_STORAGE(
+        "hive.exec.temporary.table.storage", "default", new StringSet("memory",
+         "ssd", "default"), "Define the storage policy for temporary tables." +
+         "Choices between memory, ssd and default"),
 
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
@@ -1849,8 +1881,8 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez"),
-        "Chooses execution engine. Options are: mr (Map reduce, default) or tez (hadoop 2 only)"),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
+        "Chooses execution engine. Options are: mr (Map reduce, default), tez (hadoop 2 only), spark"),
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
         "installed hive instance."),
@@ -1967,6 +1999,11 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.inplace.progress",
         true,
         "Updates tez job execution progress in-place in the terminal."),
+    SPARK_CLIENT_FUTURE_TIMEOUT(
+        "hive.spark.client.future.timeout",
+        "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "remote spark client JobHandle future timeout value in seconds."),
 
     LLAP_ENABLED("hive.llap.enabled", true, ""),
     LLAP_LOW_LEVEL_CACHE("hive.llap.use.lowlevel.cache", true, ""),
@@ -1977,7 +2014,6 @@ public class HiveConf extends Configuration {
     LLAP_REQUEST_THREAD_COUNT("hive.llap.request.thread.count", 16, ""),
     LLAP_USE_LRFU("hive.llap.use.lrfu", true, ""),
     LLAP_LRFU_LAMBDA("hive.llap.lrfu.lambda", 0.01f, "")
-
     ;
 
     public final String varname;
@@ -2218,6 +2254,7 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
+    isSparkConfigUpdated = name.startsWith("spark");
     set(name, value);
   }
 

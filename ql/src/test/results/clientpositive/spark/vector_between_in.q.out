@@ -1,0 +1,740 @@
+PREHOOK: query: CREATE TABLE decimal_date_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2, CAST(CAST((CAST(cint AS BIGINT) *ctinyint) AS TIMESTAMP) AS DATE) AS cdate FROM alltypesorc ORDER BY cdate
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_date_test
+POSTHOOK: query: CREATE TABLE decimal_date_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2, CAST(CAST((CAST(cint AS BIGINT) *ctinyint) AS TIMESTAMP) AS DATE) AS cdate FROM alltypesorc ORDER BY cdate
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_date_test
+PREHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (not (cdate) IN (1969-10-26, 1969-07-14, 1970-01-21)) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdecimal1 (type: decimal(20,10))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(20,10))
+                        sort order: +
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdecimal1 (type: decimal(20,10))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(20,10))
+                        sort order: +
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+                outputColumnNames: _col0
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-07-14
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+5996
+PREHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+881.0135135135
+2365.8945945946
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+9165
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1968-04-07
+1968-04-09
+1968-04-10
+1968-04-14
+1968-04-16
+1968-04-16
+1968-04-19
+1968-04-23
+1968-04-25
+1968-04-26
+1968-04-27
+1968-04-27
+1968-04-27
+1968-04-29
+1968-04-29
+1968-04-29
+1968-04-29
+1968-04-30
+1971-09-02
+1971-09-04
+1971-09-06
+1971-09-06
+1971-09-06
+1971-09-09
+1971-09-09
+1971-09-15
+1971-09-17
+1971-09-18
+1971-09-21
+1971-09-21
+1971-09-21
+1971-09-22
+1971-09-22
+1971-09-25
+PREHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+-18.5162162162
+-17.3216216216
+-16.7243243243
+-16.127027027
+-15.5297297297
+-10.7513513514
+-9.5567567568
+-8.3621621622
+-5.972972973
+-3.5837837838
+4.1810810811
+4.7783783784
+4.7783783784
+5.3756756757
+5.972972973
+5.972972973
+11.3486486486
+11.3486486486
+11.9459459459
+14.9324324324
+19.1135135135
+20.3081081081
+22.1
+24.4891891892
+33.4486486486
+34.6432432432
+40.0189189189
+42.4081081081
+43.0054054054
+44.2
+44.2
+44.7972972973
+45.9918918919
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+6172

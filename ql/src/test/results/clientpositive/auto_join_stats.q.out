@@ -1,0 +1,503 @@
+PREHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
+-- This query plan should thus not try to combine the mapjoin into a single work.
+
+create table smalltable(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
+-- This query plan should thus not try to combine the mapjoin into a single work.
+
+create table smalltable(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: analyze table smalltable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-8 is a root stage , consists of Stage-10, Stage-11, Stage-1
+  Stage-10 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-10
+  Stage-9 depends on stages: Stage-1, Stage-6, Stage-7
+  Stage-5 depends on stages: Stage-9
+  Stage-11 has a backup stage: Stage-1
+  Stage-7 depends on stages: Stage-11
+  Stage-1
+  Stage-0 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        src2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        src2 
+          TableScan
+            alias: src2
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        smalltable 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        smalltable 
+          TableScan
+            alias: smalltable
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 (_col0 + _col5) (type: double)
+                  1 UDFToDouble(key) (type: double)
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 (_col0 + _col5) (type: double)
+                1 UDFToDouble(key) (type: double)
+              outputColumnNames: _col0, _col5, _col10
+              Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), _col5 (type: string), _col10 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        src1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src2
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 key (type: string)
+            1 key (type: string)
+          outputColumnNames: _col0, _col5
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (_col0 + _col5) is not null (type: boolean)
+            Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+4	4	8
+4	4	8
+PREHOOK: query: create table smalltable2(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smalltable2
+POSTHOOK: query: create table smalltable2(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smalltable2
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@smalltable2
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@smalltable2
+PREHOOK: query: analyze table smalltable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Output: default@smalltable
+POSTHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Output: default@smalltable
+PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-11 is a root stage , consists of Stage-13, Stage-14, Stage-1
+  Stage-13 has a backup stage: Stage-1
+  Stage-9 depends on stages: Stage-13
+  Stage-12 depends on stages: Stage-1, Stage-9, Stage-10
+  Stage-7 depends on stages: Stage-12
+  Stage-14 has a backup stage: Stage-1
+  Stage-10 depends on stages: Stage-14
+  Stage-1
+  Stage-0 depends on stages: Stage-7
+
+STAGE PLANS:
+  Stage: Stage-11
+    Conditional Operator
+
+  Stage: Stage-13
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        src2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        src2 
+          TableScan
+            alias: src2
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+
+  Stage: Stage-9
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-12
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        smalltable 
+          Fetch Operator
+            limit: -1
+        smalltable2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        smalltable 
+          TableScan
+            alias: smalltable
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 (_col0 + _col5) (type: double)
+                  1 UDFToDouble(key) (type: double)
+        smalltable2 
+          TableScan
+            alias: smalltable2
+            Statistics: Num rows: 0 Data size: 30 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 (_col0 + _col5) (type: double)
+                  1 UDFToDouble(key) (type: double)
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 (_col0 + _col5) (type: double)
+                1 UDFToDouble(key) (type: double)
+              outputColumnNames: _col0, _col5, _col10
+              Statistics: Num rows: 151 Data size: 1611 Basic stats: COMPLETE Column stats: NONE
+              Filter Operator
+                predicate: (_col0 + _col5) is not null (type: boolean)
+                Statistics: Num rows: 76 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 (_col0 + _col5) (type: double)
+                    1 UDFToDouble(key) (type: double)
+                  outputColumnNames: _col0, _col5, _col10
+                  Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col5 (type: string), _col10 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 83 Data size: 891 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-14
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        src1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              HashTable Sink Operator
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+
+  Stage: Stage-10
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src2
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                outputColumnNames: _col0, _col5
+                Filter Operator
+                  predicate: (_col0 + _col5) is not null (type: boolean)
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: src2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: key (type: string)
+                sort order: +
+                Map-reduce partition columns: key (type: string)
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 key (type: string)
+            1 key (type: string)
+          outputColumnNames: _col0, _col5
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (_col0 + _col5) is not null (type: boolean)
+            Statistics: Num rows: 138 Data size: 1465 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@smalltable2
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@smalltable2
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+4	4	8
+4	4	8
+4	4	8
+4	4	8

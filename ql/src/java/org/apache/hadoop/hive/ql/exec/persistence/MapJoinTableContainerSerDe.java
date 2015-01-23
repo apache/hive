@@ -19,15 +19,20 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 
 @SuppressWarnings("deprecation")
@@ -86,6 +91,74 @@ public class MapJoinTableContainerSerDe {
       throw new HiveException("Error while trying to create table container", e);
     }
   }
+
+  /**
+   * Loads the table container from a folder. Only used on Spark path.
+   * @param fs FileSystem of the folder.
+   * @param folder The folder to load table container.
+   * @return Loaded table.
+   */
+  @SuppressWarnings("unchecked")
+  public MapJoinPersistableTableContainer load(
+      FileSystem fs, Path folder) throws HiveException {
+    try {
+      if (!fs.isDirectory(folder)) {
+        throw new HiveException("Error, not a directory: " + folder);
+      }
+      FileStatus[] fileStatuses = fs.listStatus(folder);
+      if (fileStatuses == null || fileStatuses.length == 0) {
+        return null;
+      }
+
+      SerDe keySerDe = keyContext.getSerDe();
+      SerDe valueSerDe = valueContext.getSerDe();
+      Writable keyContainer = keySerDe.getSerializedClass().newInstance();
+      Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
+
+      MapJoinPersistableTableContainer tableContainer = null;
+
+      for (FileStatus fileStatus: fileStatuses) {
+        Path filePath = fileStatus.getPath();
+        if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
+          throw new HiveException("Error, not a file: " + filePath);
+        }
+        InputStream is = null;
+        ObjectInputStream in = null;
+        try {
+          is = fs.open(filePath, 4096);
+          in = new ObjectInputStream(is);
+          String name = in.readUTF();
+          Map<String, String> metaData = (Map<String, String>) in.readObject();
+          if (tableContainer == null) {
+            tableContainer = create(name, metaData);
+          }
+          int numKeys = in.readInt();
+          for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+            MapJoinKeyObject key = new MapJoinKeyObject();
+            key.read(keyContext, in, keyContainer);
+            if (tableContainer.get(key) == null) {
+              tableContainer.put(key, new MapJoinEagerRowContainer());
+            }
+            MapJoinEagerRowContainer values = (MapJoinEagerRowContainer) tableContainer.get(key);
+            values.read(valueContext, in, valueContainer);
+            tableContainer.put(key, values);
+          }
+        } finally {
+          if (in != null) {
+            in.close();
+          } else if (is != null) {
+            is.close();
+          }
+        }
+      }
+      return tableContainer;
+    } catch (IOException e) {
+      throw new HiveException("IO error while trying to create table container", e);
+    } catch (Exception e) {
+      throw new HiveException("Error while trying to create table container", e);
+    }
+  }
+
   public void persist(ObjectOutputStream out, MapJoinPersistableTableContainer tableContainer)
       throws HiveException {
     int numKeys = tableContainer.size();

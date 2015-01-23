@@ -823,6 +823,8 @@ createTableStatement
 @after { popMsg(state); }
     : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
+         tableRowFormat?
+         tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeList RPAREN)?
@@ -2214,7 +2216,7 @@ insertClause
 @after { popMsg(state); }
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
-   | KW_INSERT KW_INTO KW_TABLE tableOrPartition
+   | KW_INSERT KW_INTO KW_TABLE? tableOrPartition
        -> ^(TOK_INSERT_INTO tableOrPartition)
    ;
 

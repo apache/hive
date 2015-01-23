@@ -103,7 +103,7 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", SelectOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getSelProc());
-      // Matches only GroupByOpeartors which are reducers, rather than map group by operators,
+      // Matches only GroupByOperators which are reducers, rather than map group by operators,
       // or multi group by optimization specific operators
       opRules.put(new RuleExactMatch("R2", GroupByOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getGroupByProc());

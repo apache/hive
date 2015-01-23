@@ -642,6 +642,29 @@ struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
 }
 
+struct NotificationEventRequest {
+    1: required i64 lastEvent,
+    2: optional i32 maxEvents,
+}
+
+struct NotificationEvent {
+    1: required i64 eventId,
+    2: required i32 eventTime,
+    3: required string eventType,
+    4: optional string dbName,
+    5: optional string tableName,
+    6: required string message,
+}
+
+struct NotificationEventResponse {
+    1: required list<NotificationEvent> events,
+}
+
+struct CurrentNotificationEventId {
+    1: required i64 eventId,
+}
+
+
 exception MetaException {
   1: string message
 }
@@ -1107,6 +1130,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+
+  // Notification logging calls
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  CurrentNotificationEventId get_current_notificationEventId()
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

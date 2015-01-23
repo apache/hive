@@ -24,7 +24,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
-Warning: Map Join MAPJOIN[12][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B

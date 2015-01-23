@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -96,18 +95,13 @@ public class MapJoinProcessor implements Transform {
   // needs to be passed. Use the string defined below for that.
   private static final String MAPJOINKEY_FIELDPREFIX = "mapjoinkey";
 
-  private ParseContext pGraphContext;
-
-  /**
-   * empty constructor.
-   */
   public MapJoinProcessor() {
-    pGraphContext = null;
   }
 
   @SuppressWarnings("nls")
-  private Operator<? extends OperatorDesc>
-    putOpInsertMap(Operator<? extends OperatorDesc> op, RowResolver rr) {
+  private static Operator<? extends OperatorDesc> putOpInsertMap (
+          ParseContext pGraphContext, Operator<? extends OperatorDesc> op,
+          RowResolver rr) {
     OpParseContext ctx = new OpParseContext(rr);
     pGraphContext.getOpParseCtx().put(op, ctx);
     return op;
@@ -232,10 +226,10 @@ public class MapJoinProcessor implements Transform {
       throws SemanticException {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
         newWork.getMapWork().getOpParseCtxMap();
-    QBJoinTree newJoinTree = newWork.getMapWork().getJoinTree();
     // generate the map join operator; already checked the map join
-    MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(conf, opParseCtxMap, op,
-        newJoinTree, mapJoinPos, true, false);
+    MapJoinOperator newMapJoinOp = new MapJoinProcessor().convertMapJoin(conf, opParseCtxMap, op,
+        newWork.getMapWork().isLeftInputJoin(), newWork.getMapWork().getBaseSrc(), newWork.getMapWork().getMapAliases(),
+        mapJoinPos, true, false);
     genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
   }
 
@@ -247,7 +241,9 @@ public class MapJoinProcessor implements Transform {
       MapJoinProcessor.genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
       // clean up the mapred work
       newWork.getMapWork().setOpParseCtxMap(null);
-      newWork.getMapWork().setJoinTree(null);
+      newWork.getMapWork().setLeftInputJoin(false);
+      newWork.getMapWork().setBaseSrc(null);
+      newWork.getMapWork().setMapAliases(null);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -303,12 +299,12 @@ public class MapJoinProcessor implements Transform {
    *          position of the source to be read as part of map-reduce framework. All other sources
    *          are cached in memory
    * @param noCheckOuterJoin
+   * @param validateMapJoinTree
    */
-  public static MapJoinOperator convertMapJoin(HiveConf conf,
+  public MapJoinOperator convertMapJoin(HiveConf conf,
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-    JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
-    boolean validateMapJoinTree)
-    throws SemanticException {
+    JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
+    int mapJoinPos, boolean noCheckOuterJoin, boolean validateMapJoinTree) throws SemanticException {
 
     // outer join cannot be performed on a table which is being cached
     JoinDesc desc = op.getConf();
@@ -323,8 +319,6 @@ public class MapJoinProcessor implements Transform {
     // Walk over all the sources (which are guaranteed to be reduce sink
     // operators).
     // The join outputs a concatenation of all the inputs.
-    QBJoinTree leftSrc = joinTree.getJoinSrc();
-
     List<Operator<? extends OperatorDesc>> parentOps = op.getParentOperators();
     List<Operator<? extends OperatorDesc>> newParentOps =
       new ArrayList<Operator<? extends OperatorDesc>>();
@@ -332,7 +326,7 @@ public class MapJoinProcessor implements Transform {
        new ArrayList<Operator<? extends OperatorDesc>>();
 
     // found a source which is not to be stored in memory
-    if (leftSrc != null) {
+    if (leftInputJoin) {
       // assert mapJoinPos == 0;
       Operator<? extends OperatorDesc> parentOp = parentOps.get(0);
       assert parentOp.getParentOperators().size() == 1;
@@ -344,7 +338,7 @@ public class MapJoinProcessor implements Transform {
 
     byte pos = 0;
     // Remove parent reduce-sink operators
-    for (String src : joinTree.getBaseSrc()) {
+    for (String src : baseSrc) {
       if (src != null) {
         Operator<? extends OperatorDesc> parentOp = parentOps.get(pos);
         assert parentOp.getParentOperators().size() == 1;
@@ -359,7 +353,7 @@ public class MapJoinProcessor implements Transform {
 
     // create the map-join operator
     MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
-        op, joinTree, mapJoinPos, noCheckOuterJoin);
+        op, leftInputJoin, baseSrc, mapAliases, mapJoinPos, noCheckOuterJoin);
 
 
     // remove old parents
@@ -381,13 +375,14 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
+  public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
-      throws SemanticException {
+      JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
+      int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
 
     MapJoinDesc mapJoinDescriptor =
-        getMapJoinDesc(hconf, opParseCtxMap, op, joinTree, mapJoinPos, noCheckOuterJoin);
+        getMapJoinDesc(hconf, opParseCtxMap, op, leftInputJoin, baseSrc, mapAliases,
+                mapJoinPos, noCheckOuterJoin);
 
     // reduce sink row resolver used to generate map join op
     RowResolver outputRS = opParseCtxMap.get(op).getRowResolver();
@@ -407,6 +402,7 @@ public class MapJoinProcessor implements Transform {
       childOp.replaceParent(op, mapJoinOp);
     }
 
+    mapJoinOp.setPosToAliasMap(op.getPosToAliasMap());
     mapJoinOp.setChildOperators(childOps);
     op.setChildOperators(null);
     op.setParentOperators(null);
@@ -439,7 +435,7 @@ public class MapJoinProcessor implements Transform {
    */
   public static MapJoinOperator convertSMBJoinToMapJoin(HiveConf hconf,
     Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-    SMBMapJoinOperator smbJoinOp, QBJoinTree joinTree, int bigTablePos, boolean noCheckOuterJoin)
+    SMBMapJoinOperator smbJoinOp, int bigTablePos, boolean noCheckOuterJoin)
     throws SemanticException {
     // Create a new map join operator
     SMBJoinDesc smbJoinDesc = smbJoinOp.getConf();
@@ -486,7 +482,7 @@ public class MapJoinProcessor implements Transform {
   }
 
   public MapJoinOperator generateMapJoinOperator(ParseContext pctx, JoinOperator op,
-      QBJoinTree joinTree, int mapJoinPos) throws SemanticException {
+      int mapJoinPos) throws SemanticException {
     HiveConf hiveConf = pctx.getConf();
     boolean noCheckOuterJoin = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)
@@ -495,7 +491,8 @@ public class MapJoinProcessor implements Transform {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap = pctx
         .getOpParseCtx();
     MapJoinOperator mapJoinOp = convertMapJoin(pctx.getConf(), opParseCtxMap, op,
-        joinTree, mapJoinPos, noCheckOuterJoin, true);
+        op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(), op.getConf().getMapAliases(),
+        mapJoinPos, noCheckOuterJoin, true);
     // create a dummy select to select all columns
     genSelectPlan(pctx, mapJoinOp);
     return mapJoinOp;
@@ -594,7 +591,7 @@ public class MapJoinProcessor implements Transform {
     return mapJoinPos;
   }
 
-  private void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
+  protected void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
     List<Operator<? extends OperatorDesc>> childOps = input.getChildOperators();
     input.setChildOperators(null);
 
@@ -624,7 +621,7 @@ public class MapJoinProcessor implements Transform {
 
     SelectDesc select = new SelectDesc(exprs, outputs, false);
 
-    SelectOperator sel = (SelectOperator) putOpInsertMap(OperatorFactory.getAndMakeChild(select,
+    SelectOperator sel = (SelectOperator) putOpInsertMap(pctx, OperatorFactory.getAndMakeChild(select,
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
 
     sel.setColumnExprMap(colExprMap);
@@ -641,24 +638,22 @@ public class MapJoinProcessor implements Transform {
    *
    * @param op
    *          join operator
-   * @param joinTree
-   *          qb join tree
    * @return -1 if it cannot be converted to a map-side join, position of the map join node
    *         otherwise
    */
-  private int mapSideJoin(JoinOperator op, QBJoinTree joinTree) throws SemanticException {
+  private int mapSideJoin(JoinOperator op) throws SemanticException {
     int mapJoinPos = -1;
-    if (joinTree.isMapSideJoin()) {
+    if (op.getConf().isMapSideJoin()) {
       int pos = 0;
       // In a map-side join, exactly one table is not present in memory.
       // The client provides the list of tables which can be cached in memory
       // via a hint.
-      if (joinTree.getJoinSrc() != null) {
+      if (op.getConf().isLeftInputJoin()) {
         mapJoinPos = pos;
       }
-      for (String src : joinTree.getBaseSrc()) {
+      for (String src : op.getConf().getBaseSrc()) {
         if (src != null) {
-          if (!joinTree.getMapAliases().contains(src)) {
+          if (!op.getConf().getMapAliases().contains(src)) {
             if (mapJoinPos >= 0) {
               return -1;
             }
@@ -673,7 +668,7 @@ public class MapJoinProcessor implements Transform {
       // leaving some table from the list of tables to be cached
       if (mapJoinPos == -1) {
         throw new SemanticException(ErrorMsg.INVALID_MAPJOIN_HINT.getMsg(
-            Arrays.toString(joinTree.getBaseSrc())));
+            Arrays.toString(op.getConf().getBaseSrc())));
       }
     }
 
@@ -689,36 +684,34 @@ public class MapJoinProcessor implements Transform {
    */
   @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
-    pGraphContext = pactx;
     List<MapJoinOperator> listMapJoinOps = new ArrayList<MapJoinOperator>();
 
     // traverse all the joins and convert them if necessary
-    if (pGraphContext.getJoinContext() != null) {
-      Map<JoinOperator, QBJoinTree> joinMap = new HashMap<JoinOperator, QBJoinTree>();
-      Map<MapJoinOperator, QBJoinTree> mapJoinMap = pGraphContext.getMapJoinContext();
+    if (pactx.getJoinOps() != null) {
+      Set<JoinOperator> joinMap = new HashSet<JoinOperator>();
+      Set<MapJoinOperator> mapJoinMap = pactx.getMapJoinOps();
       if (mapJoinMap == null) {
-        mapJoinMap = new HashMap<MapJoinOperator, QBJoinTree>();
-        pGraphContext.setMapJoinContext(mapJoinMap);
+        mapJoinMap = new HashSet<MapJoinOperator>();
+        pactx.setMapJoinOps(mapJoinMap);
       }
 
-      Set<Map.Entry<JoinOperator, QBJoinTree>> joinCtx = pGraphContext.getJoinContext().entrySet();
-      Iterator<Map.Entry<JoinOperator, QBJoinTree>> joinCtxIter = joinCtx.iterator();
+      Iterator<JoinOperator> joinCtxIter = pactx.getJoinOps().iterator();
       while (joinCtxIter.hasNext()) {
-        Map.Entry<JoinOperator, QBJoinTree> joinEntry = joinCtxIter.next();
-        JoinOperator joinOp = joinEntry.getKey();
-        QBJoinTree qbJoin = joinEntry.getValue();
-        int mapJoinPos = mapSideJoin(joinOp, qbJoin);
+        JoinOperator joinOp = joinCtxIter.next();
+        int mapJoinPos = mapSideJoin(joinOp);
         if (mapJoinPos >= 0) {
-          MapJoinOperator mapJoinOp = generateMapJoinOperator(pactx, joinOp, qbJoin, mapJoinPos);
+          MapJoinOperator mapJoinOp = generateMapJoinOperator(pactx, joinOp, mapJoinPos);
           listMapJoinOps.add(mapJoinOp);
-          mapJoinMap.put(mapJoinOp, qbJoin);
+          mapJoinOp.getConf().setQBJoinTreeProps(joinOp.getConf());
+          mapJoinMap.add(mapJoinOp);
         } else {
-          joinMap.put(joinOp, qbJoin);
+          joinOp.getConf().setQBJoinTreeProps(joinOp.getConf());
+          joinMap.add(joinOp);
         }
       }
 
       // store the new joinContext
-      pGraphContext.setJoinContext(joinMap);
+      pactx.setJoinOps(joinMap);
     }
 
     // Go over the list and find if a reducer is not needed
@@ -744,15 +737,15 @@ public class MapJoinProcessor implements Transform {
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules, new MapJoinWalkerCtx(
-        listMapJoinOpsNoRed, pGraphContext));
+        listMapJoinOpsNoRed, pactx));
 
     GraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(listMapJoinOps);
     ogw.startWalking(topNodes, null);
 
-    pGraphContext.setListMapJoinOpsNoReducer(listMapJoinOpsNoRed);
-    return pGraphContext;
+    pactx.setListMapJoinOpsNoReducer(listMapJoinOpsNoRed);
+    return pactx;
   }
 
   /**
@@ -798,7 +791,7 @@ public class MapJoinProcessor implements Transform {
         }
         Operator<? extends OperatorDesc> ch = parent.getChildOperators().get(0);
         if (ch instanceof MapJoinOperator) {
-          if (!nonSubqueryMapJoin(ctx.getpGraphContext(), (MapJoinOperator) ch, mapJoin)) {
+          if (!nonSubqueryMapJoin((MapJoinOperator) ch, mapJoin)) {
             if (ch.getParentOperators().indexOf(parent) == ((MapJoinOperator) ch).getConf()
                 .getPosBigTable()) {
               // not come from the local branch
@@ -818,11 +811,8 @@ public class MapJoinProcessor implements Transform {
       }
     }
 
-    private boolean nonSubqueryMapJoin(ParseContext pGraphContext, MapJoinOperator mapJoin,
-        MapJoinOperator parentMapJoin) {
-      QBJoinTree joinTree = pGraphContext.getMapJoinContext().get(mapJoin);
-      QBJoinTree parentJoinTree = pGraphContext.getMapJoinContext().get(parentMapJoin);
-      if (joinTree.getJoinSrc() != null && joinTree.getJoinSrc().equals(parentJoinTree)) {
+    private boolean nonSubqueryMapJoin(MapJoinOperator mapJoin, MapJoinOperator parentMapJoin) {
+      if (mapJoin.getParentOperators().contains(parentMapJoin)) {
         return true;
       }
       return false;
@@ -1026,15 +1016,15 @@ public class MapJoinProcessor implements Transform {
 
   }
 
-  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(QBJoinTree joinTree, JoinOperator op) {
+  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
+          boolean leftInputJoin, String[] baseSrc, JoinOperator op) {
 
     // Walk over all the sources (which are guaranteed to be reduce sink
     // operators).
     // The join outputs a concatenation of all the inputs.
-    QBJoinTree leftSrc = joinTree.getJoinSrc();
     List<ReduceSinkOperator> oldReduceSinkParentOps =
         new ArrayList<ReduceSinkOperator>(op.getNumParent());
-    if (leftSrc != null) {
+    if (leftInputJoin) {
       // assert mapJoinPos == 0;
       Operator<? extends OperatorDesc> parentOp = op.getParentOperators().get(0);
       assert parentOp.getParentOperators().size() == 1;
@@ -1042,7 +1032,7 @@ public class MapJoinProcessor implements Transform {
     }
 
     byte pos = 0;
-    for (String src : joinTree.getBaseSrc()) {
+    for (String src : baseSrc) {
       if (src != null) {
         Operator<? extends OperatorDesc> parentOp = op.getParentOperators().get(pos);
         assert parentOp.getParentOperators().size() == 1;
@@ -1060,12 +1050,14 @@ public class MapJoinProcessor implements Transform {
       keyExprMap.put(pos, keyCols);
     }
 
-    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(oldReduceSinkParentOps, keyExprMap);
+    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(
+            oldReduceSinkParentOps, keyExprMap);
   }
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
+      JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
+      int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
     Byte[] tagOrder = desc.getTagOrder();
@@ -1082,7 +1074,8 @@ public class MapJoinProcessor implements Transform {
     Map<Byte, List<ExprNodeDesc>> valueExprs = op.getConf().getExprs();
     Map<Byte, List<ExprNodeDesc>> newValueExprs = new HashMap<Byte, List<ExprNodeDesc>>();
 
-    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair = getKeys(joinTree, op);
+    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair =
+            getKeys(leftInputJoin, baseSrc, op);
     List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getFirst();
     for (Map.Entry<Byte, List<ExprNodeDesc>> entry : valueExprs.entrySet()) {
       byte tag = entry.getKey();
@@ -1172,8 +1165,8 @@ public class MapJoinProcessor implements Transform {
 
     // create dumpfile prefix needed to create descriptor
     String dumpFilePrefix = "";
-    if (joinTree.getMapAliases() != null) {
-      for (String mapAlias : joinTree.getMapAliases()) {
+    if (mapAliases != null) {
+      for (String mapAlias : mapAliases) {
         dumpFilePrefix = dumpFilePrefix + mapAlias;
       }
       dumpFilePrefix = dumpFilePrefix + "-" + PlanUtils.getCountForMapJoinDumpFilePrefix();

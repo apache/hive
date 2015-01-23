@@ -40,6 +40,10 @@ public class BucketJoinProcCtx implements NodeProcessorCtx {
   // The set of join operators which can be converted to a bucketed map join
   private Set<JoinOperator> convertedJoinOps = new HashSet<JoinOperator>();
 
+  // In checking if a mapjoin can be converted to bucket mapjoin,
+  // some join alias could be changed: alias -> newAlias
+  private transient Map<String, String> aliasToNewAliasMap;
+
   private Map<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition;
   private Map<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition;
   private Map<Partition, List<String>> bigTblPartsToBucketFileNames;
@@ -129,5 +133,13 @@ public class BucketJoinProcCtx implements NodeProcessorCtx {
 
   public void setBigTablePartitioned(boolean bigTablePartitioned) {
     this.bigTablePartitioned = bigTablePartitioned;
+  }
+
+  public void setAliasToNewAliasMap(Map<String, String> aliasToNewAliasMap) {
+    this.aliasToNewAliasMap = aliasToNewAliasMap;
+  }
+
+  public Map<String, String> getAliasToNewAliasMap() {
+    return aliasToNewAliasMap;
   }
 }

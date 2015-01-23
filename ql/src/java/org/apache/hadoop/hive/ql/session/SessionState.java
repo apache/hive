@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -178,6 +181,13 @@ public class SessionState {
       "hive.internal.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
+
+  private SparkSession sparkSession;
+
+  /**
+   * Gets information about HDFS encryption
+   */
+  private HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
 
   /**
    * Lineage state.
@@ -374,6 +384,23 @@ public class SessionState {
     return txnAutoCommit;
   }
 
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
+    if (hdfsEncryptionShim == null) {
+      try {
+        FileSystem fs = FileSystem.get(conf);
+        if ("hdfs".equals(fs.getUri().getScheme())) {
+          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        } else {
+          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
+        }
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
+
+    return hdfsEncryptionShim;
+  }
+
   /**
    * Singleton Session object per thread.
    *
@@ -406,7 +433,6 @@ public class SessionState {
    * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
-
     setCurrentSessionState(startSs);
 
     if (startSs.hiveHist == null){
@@ -1264,6 +1290,16 @@ public class SessionState {
       tezSessionState = null;
     }
 
+    if (sparkSession != null) {
+      try {
+        SparkSessionManagerImpl.getInstance().closeSession(sparkSession);
+      } catch (Exception ex) {
+        LOG.error("Error closing spark session.", ex);
+      } finally {
+        sparkSession = null;
+      }
+    }
+
     dropSessionPaths(conf);
   }
 
@@ -1356,6 +1392,14 @@ public class SessionState {
    */
   public void setUserIpAddress(String userIpAddress) {
     this.userIpAddress = userIpAddress;
+  }
+
+  public SparkSession getSparkSession() {
+    return sparkSession;
+  }
+
+  public void setSparkSession(SparkSession sparkSession) {
+    this.sparkSession = sparkSession;
   }
 
   /**

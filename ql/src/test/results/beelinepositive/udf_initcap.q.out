@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_initcap.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_initcap.q
+>>>  DESCRIBE FUNCTION initcap;
+'tab_name'
+'initcap(str) - Returns str, with the first letter of each word in uppercase, all other letters in lowercase. Words are delimited by white space.'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED initcap;
+'tab_name'
+'initcap(str) - Returns str, with the first letter of each word in uppercase, all other letters in lowercase. Words are delimited by white space.'
+'Example:'
+'  > SELECT initcap('tHe soap') FROM src LIMIT 1;'
+'  'The Soap''
+5 rows selected 
+>>>  !record

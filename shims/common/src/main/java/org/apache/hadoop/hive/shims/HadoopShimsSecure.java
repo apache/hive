@@ -24,10 +24,8 @@ import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.security.AccessControlException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -53,25 +51,12 @@ import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Progressable;
 
-import com.google.common.primitives.Longs;
-
 /**
  * Base implemention for shims against secure Hadoop 0.20.3/0.23.
  */
 public abstract class HadoopShimsSecure implements HadoopShims {
 
   static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
-
-  @Override
-  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
-    return new CombineFileInputFormatShim() {
-      @Override
-      public RecordReader getRecordReader(InputSplit split,
-          JobConf job, Reporter reporter) throws IOException {
-        throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
-      }
-    };
-  }
 
   public static class InputSplitShim extends CombineFileSplit {
     long shrinkedLength;
@@ -325,16 +310,9 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       ArrayList<InputSplitShim> inputSplitShims = new ArrayList<InputSplitShim>();
       for (int pos = 0; pos < splits.length; pos++) {
         CombineFileSplit split = (CombineFileSplit) splits[pos];
-        Set<Integer> dirIndices = getDirIndices(split.getPaths(), job);
-        if (dirIndices.size() != split.getPaths().length) {
-          List<Path> prunedPaths = prune(dirIndices, Arrays.asList(split.getPaths()));
-          List<Long> prunedStartOffsets = prune(dirIndices, Arrays.asList(
-            ArrayUtils.toObject(split.getStartOffsets())));
-          List<Long> prunedLengths = prune(dirIndices, Arrays.asList(
-            ArrayUtils.toObject(split.getLengths())));
-          inputSplitShims.add(new InputSplitShim(job, prunedPaths.toArray(new Path[prunedPaths.size()]),
-            Longs.toArray(prunedStartOffsets),
-            Longs.toArray(prunedLengths), split.getLocations()));
+        if (split.getPaths().length > 0) {
+          inputSplitShims.add(new InputSplitShim(job, split.getPaths(),
+            split.getStartOffsets(), split.getLengths(), split.getLocations()));
         }
       }
       return inputSplitShims.toArray(new InputSplitShim[inputSplitShims.size()]);
@@ -353,7 +331,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       CombineFileSplit cfSplit = split;
       return new CombineFileRecordReader(job, cfSplit, reporter, rrClass);
     }
-
   }
 
   @Override
@@ -398,33 +375,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     LOG.debug(ArrayUtils.toString(command));
     int retval = shell.run(command);
     LOG.debug("Return value is :" + retval);
-  }
-
-  /**
-   * CombineFileInputFormat sometimes returns directories as splits, need to prune them.
-   */
-  private static Set<Integer> getDirIndices(Path[] paths, JobConf conf) throws IOException {
-    Set<Integer> result = new HashSet<Integer>();
-    for (int i = 0; i < paths.length; i++) {
-      FileSystem fs = paths[i].getFileSystem(conf);
-      if (!fs.isFile(paths[i])) {
-        result.add(i);
-      }
-    }
-    return result;
-  }
-
-  private static <K> List<K> prune(Set<Integer> indicesToPrune, List<K> elms) {
-    List<K> result = new ArrayList<K>();
-    int i = 0;
-    for (K elm : elms) {
-      if (indicesToPrune.contains(i)) {
-        continue;
-      }
-      result.add(elm);
-      i++;
-    }
-    return result;
   }
 
   private static String[] dedup(String[] locations) throws IOException {

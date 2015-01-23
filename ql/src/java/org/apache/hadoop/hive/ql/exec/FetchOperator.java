@@ -637,10 +637,10 @@ public class FetchOperator implements Serializable {
     boolean recursive = HiveConf.getBoolVar(job, HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
     // If this is in acid format always read it recursively regardless of what the jobconf says.
     if (!recursive && !AcidUtils.isAcid(p, job)) {
-      return fs.listStatus(p);
+      return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);
     }
     List<FileStatus> results = new ArrayList<FileStatus>();
-    for (FileStatus stat : fs.listStatus(p)) {
+    for (FileStatus stat : fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
       FileUtils.listStatusRecursively(fs, stat, results);
     }
     return results.toArray(new FileStatus[results.size()]);

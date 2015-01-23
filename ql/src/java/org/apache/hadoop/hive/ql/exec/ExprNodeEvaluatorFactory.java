@@ -64,6 +64,20 @@ public final class ExprNodeEvaluatorFactory {
         "Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
   }
 
+  public static ExprNodeEvaluator[] toCachedEvals(ExprNodeEvaluator[] evals) {
+    EvaluatorContext context = new EvaluatorContext();
+    for (int i = 0; i < evals.length; i++) {
+      if (evals[i] instanceof ExprNodeGenericFuncEvaluator) {
+        iterate(evals[i], context);
+        if (context.hasReference) {
+          evals[i] = new ExprNodeEvaluatorHead(evals[i]);
+          context.hasReference = false;
+        }
+      }
+    }
+    return evals;
+  }
+
   /**
    * Should be called before eval is initialized
    */
@@ -100,12 +114,14 @@ public final class ExprNodeEvaluatorFactory {
 
   private static class EvaluatorContext {
 
-    private final Map<String, ExprNodeEvaluator> cached = new HashMap<String, ExprNodeEvaluator>();
+    private final Map<ExprNodeDesc.ExprNodeDescEqualityWrapper, ExprNodeEvaluator> cached = 
+        new HashMap<ExprNodeDesc.ExprNodeDescEqualityWrapper, ExprNodeEvaluator>();
 
     private boolean hasReference;
 
     public ExprNodeEvaluator getEvaluated(ExprNodeEvaluator eval) {
-      String key = eval.getExpr().toString();
+      ExprNodeDesc.ExprNodeDescEqualityWrapper key = 
+          new ExprNodeDesc.ExprNodeDescEqualityWrapper(eval.expr); 
       ExprNodeEvaluator prev = cached.get(key);
       if (prev == null) {
         cached.put(key, eval);

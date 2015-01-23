@@ -1,0 +1,811 @@
+PREHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fact
+POSTHOOK: query: create table fact(m1 int, m2 int, d1 int, d2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fact
+PREHOOK: query: create table dim1(f1 int, f2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim1
+POSTHOOK: query: create table dim1(f1 int, f2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim1
+PREHOOK: query: create table dim2(f3 int, f4 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim2
+POSTHOOK: query: create table dim2(f3 int, f4 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim2
+PREHOOK: query: create table dim3(f5 int, f6 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim3
+POSTHOOK: query: create table dim3(f5 int, f6 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim3
+PREHOOK: query: create table dim4(f7 int, f8 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim4
+POSTHOOK: query: create table dim4(f7 int, f8 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim4
+PREHOOK: query: create table dim5(f9 int, f10 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim5
+POSTHOOK: query: create table dim5(f9 int, f10 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim5
+PREHOOK: query: create table dim6(f11 int, f12 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim6
+POSTHOOK: query: create table dim6(f11 int, f12 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim6
+PREHOOK: query: create table dim7(f13 int, f14 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dim7
+POSTHOOK: query: create table dim7(f13 int, f14 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dim7
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/fact-data.txt' INTO TABLE fact
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@fact
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/fact-data.txt' INTO TABLE fact
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@fact
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim5
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim5
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim5
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim6
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim6
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim7
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dim7
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dim-data.txt' INTO TABLE dim7
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dim7
+PREHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f1 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact
+                  Statistics: Num rows: 8 Data size: 98 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: d1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 49 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+                      outputColumnNames: _col0, _col1, _col8
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 4 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 4 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
+POSTHOOK: query: select m1, m2, f2 from fact join dim1 on fact.d1=dim1.f1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
+1	2	1
+11	12	1
+21	22	1
+31	32	1
+41	42	1
+51	52	3
+61	62	3
+71	72	3
+81	82	3
+91	92	3
+PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f1 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f3 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col3 (type: int)
+                        1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact
+                  Statistics: Num rows: 6 Data size: 98 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (d1 is not null and d2 is not null) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+                      outputColumnNames: _col0, _col1, _col3, _col8
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 2 Data size: 35 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col3 (type: int)
+                          1 f3 (type: int)
+                        outputColumnNames: _col0, _col1, _col8, _col13
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 2 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 2 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 2 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
+POSTHOOK: query: select m1, m2, f2, f4 from fact join dim1 on fact.d1=dim1.f1 join dim2 on fact.d2=dim2.f3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
+1	2	1	2
+11	12	1	2
+21	22	1	2
+31	32	1	2
+41	42	1	2
+51	52	3	4
+61	62	3	4
+71	72	3	4
+81	82	3	4
+91	92	3	4
+PREHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (f1 is not null and f2 is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: f3 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Spark HashTable Sink Operator
+                      keys:
+                        0 _col8 (type: int)
+                        1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact
+                  Statistics: Num rows: 8 Data size: 98 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: d1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 49 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 d1 (type: int)
+                        1 f1 (type: int)
+                      outputColumnNames: _col0, _col1, _col8
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 4 Data size: 53 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col8 (type: int)
+                          1 f3 (type: int)
+                        outputColumnNames: _col0, _col1, _col8, _col13
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 4 Data size: 58 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 4 Data size: 58 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 4 Data size: 58 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
+POSTHOOK: query: select m1, m2, f2, f4 from fact join dim1 on fact.d1= dim1.f1 join dim2 on dim1.f2 = dim2.f3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
+1	2	1	1
+11	12	1	1
+21	22	1	1
+31	32	1	1
+41	42	1	1
+51	52	3	3
+61	62	3	3
+71	72	3	3
+81	82	3	3
+91	92	3	3
+PREHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 d1 (type: int)
+                      1 f1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col8 (type: int)
+                      1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact
+                  Statistics: Num rows: 8 Data size: 98 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Left Outer Join0 to 1
+                    keys:
+                      0 d1 (type: int)
+                      1 f1 (type: int)
+                    outputColumnNames: _col0, _col1, _col8
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 8 Data size: 107 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col8 (type: int)
+                        1 f3 (type: int)
+                      outputColumnNames: _col0, _col1, _col8, _col13
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 8 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 8 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 8 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
+POSTHOOK: query: select m1, m2, f2, f4 from fact Left outer join dim1 on fact.d1= dim1.f1 Left outer join dim2 on dim1.f2 = dim2.f3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
+1	2	1	1
+11	12	1	1
+21	22	1	1
+31	32	1	1
+41	42	1	1
+51	52	3	3
+61	62	3	3
+71	72	3	3
+81	82	3	3
+91	92	3	3
+PREHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
+ from fact 
+ Left outer join dim1 on  fact.d1= dim1.f1
+ Left outer join dim2 on  dim1.f2 = dim2.f3
+ Left outer Join dim3 on  fact.d2= dim3.f5
+ Left outer Join dim4 on  dim3.f6= dim4.f7
+ Left outer join dim5 on  dim4.f8= dim5.f9
+ Left outer Join dim6 on  dim3.f6= dim6.f11
+ Left outer Join dim7 on  dim6.f12 = dim7.f13
+PREHOOK: type: QUERY
+POSTHOOK: query: explain Select m1, m2, f2, f4, f6, f8, f10, f12, f14
+ from fact 
+ Left outer join dim1 on  fact.d1= dim1.f1
+ Left outer join dim2 on  dim1.f2 = dim2.f3
+ Left outer Join dim3 on  fact.d2= dim3.f5
+ Left outer Join dim4 on  dim3.f6= dim4.f7
+ Left outer join dim5 on  dim4.f8= dim5.f9
+ Left outer Join dim6 on  dim3.f6= dim6.f11
+ Left outer Join dim7 on  dim6.f12 = dim7.f13
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: dim1
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 d1 (type: int)
+                      1 f1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: dim2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col8 (type: int)
+                      1 f3 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: dim3
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col3 (type: int)
+                      1 f5 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: dim4
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col18 (type: int)
+                      1 f7 (type: int)
+                      2 f11 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: dim5
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col23 (type: int)
+                      1 f9 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: dim6
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col18 (type: int)
+                      1 f7 (type: int)
+                      2 f11 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: dim7
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Spark HashTable Sink Operator
+                    keys:
+                      0 _col28 (type: int)
+                      1 f13 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: fact
+                  Statistics: Num rows: 6 Data size: 98 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Left Outer Join0 to 1
+                    keys:
+                      0 d1 (type: int)
+                      1 f1 (type: int)
+                    outputColumnNames: _col0, _col1, _col3, _col8
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 6 Data size: 107 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col8 (type: int)
+                        1 f3 (type: int)
+                      outputColumnNames: _col0, _col1, _col3, _col8, _col13
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 6 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join0 to 1
+                        keys:
+                          0 _col3 (type: int)
+                          1 f5 (type: int)
+                        outputColumnNames: _col0, _col1, _col8, _col13, _col18
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 6 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Left Outer Join0 to 1
+                               Left Outer Join0 to 2
+                          keys:
+                            0 _col18 (type: int)
+                            1 f7 (type: int)
+                            2 f11 (type: int)
+                          outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28
+                          input vertices:
+                            1 Map 5
+                            2 Map 7
+                          Statistics: Num rows: 13 Data size: 281 Basic stats: COMPLETE Column stats: NONE
+                          Map Join Operator
+                            condition map:
+                                 Left Outer Join0 to 1
+                            keys:
+                              0 _col23 (type: int)
+                              1 f9 (type: int)
+                            outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28, _col33
+                            input vertices:
+                              1 Map 6
+                            Statistics: Num rows: 14 Data size: 309 Basic stats: COMPLETE Column stats: NONE
+                            Map Join Operator
+                              condition map:
+                                   Left Outer Join0 to 1
+                              keys:
+                                0 _col28 (type: int)
+                                1 f13 (type: int)
+                              outputColumnNames: _col0, _col1, _col8, _col13, _col18, _col23, _col28, _col33, _col38
+                              input vertices:
+                                1 Map 8
+                              Statistics: Num rows: 15 Data size: 339 Basic stats: COMPLETE Column stats: NONE
+                              Select Operator
+                                expressions: _col0 (type: int), _col1 (type: int), _col8 (type: int), _col13 (type: int), _col18 (type: int), _col23 (type: int), _col33 (type: int), _col28 (type: int), _col38 (type: int)
+                                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                                Statistics: Num rows: 15 Data size: 339 Basic stats: COMPLETE Column stats: NONE
+                                File Output Operator
+                                  compressed: false
+                                  Statistics: Num rows: 15 Data size: 339 Basic stats: COMPLETE Column stats: NONE
+                                  table:
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: Select m1, m2, f2, f4, f6, f8, f10, f12, f14
+ from fact 
+ Left outer join dim1 on  fact.d1= dim1.f1
+ Left outer join dim2 on  dim1.f2 = dim2.f3
+ Left outer Join dim3 on  fact.d2= dim3.f5
+ Left outer Join dim4 on  dim3.f6= dim4.f7
+ Left outer join dim5 on  dim4.f8= dim5.f9
+ Left outer Join dim6 on  dim3.f6= dim6.f11
+ Left outer Join dim7 on  dim6.f12 = dim7.f13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim1
+PREHOOK: Input: default@dim2
+PREHOOK: Input: default@dim3
+PREHOOK: Input: default@dim4
+PREHOOK: Input: default@dim5
+PREHOOK: Input: default@dim6
+PREHOOK: Input: default@dim7
+PREHOOK: Input: default@fact
+#### A masked pattern was here ####
+POSTHOOK: query: Select m1, m2, f2, f4, f6, f8, f10, f12, f14
+ from fact 
+ Left outer join dim1 on  fact.d1= dim1.f1
+ Left outer join dim2 on  dim1.f2 = dim2.f3
+ Left outer Join dim3 on  fact.d2= dim3.f5
+ Left outer Join dim4 on  dim3.f6= dim4.f7
+ Left outer join dim5 on  dim4.f8= dim5.f9
+ Left outer Join dim6 on  dim3.f6= dim6.f11
+ Left outer Join dim7 on  dim6.f12 = dim7.f13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim1
+POSTHOOK: Input: default@dim2
+POSTHOOK: Input: default@dim3
+POSTHOOK: Input: default@dim4
+POSTHOOK: Input: default@dim5
+POSTHOOK: Input: default@dim6
+POSTHOOK: Input: default@dim7
+POSTHOOK: Input: default@fact
+#### A masked pattern was here ####
+1	2	1	1	2	2	2	2	2
+11	12	1	1	2	2	2	2	2
+21	22	1	1	2	2	2	2	2
+31	32	1	1	2	2	2	2	2
+41	42	1	1	2	2	2	2	2
+51	52	3	3	4	4	4	4	4
+61	62	3	3	4	4	4	4	4
+71	72	3	3	4	4	4	4	4
+81	82	3	3	4	4	4	4	4
+91	92	3	3	4	4	4	4	4

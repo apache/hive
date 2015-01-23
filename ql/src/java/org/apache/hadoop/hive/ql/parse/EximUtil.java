@@ -47,6 +47,8 @@ import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -168,37 +170,37 @@ public class EximUtil {
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
   public static void createExportDump(FileSystem fs, Path metadataPath, org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      List<org.apache.hadoop.hive.ql.metadata.Partition> partitions) throws SemanticException, IOException {
-    try {
-      JSONObject jsonContainer = new JSONObject();
-      jsonContainer.put("version", METADATA_FORMAT_VERSION);
-      if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
-        jsonContainer.put("fcversion", METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
-      }
-      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-      try {
-        String tableDesc = serializer.toString(tableHandle.getTTable(), "UTF-8");
-        jsonContainer.put("table", tableDesc);
-        JSONArray jsonPartitions = new JSONArray();
-        if (partitions != null) {
-          for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
-            String partDesc = serializer.toString(partition.getTPartition(), "UTF-8");
-            jsonPartitions.put(partDesc);
-          }
-        }
-        jsonContainer.put("partitions", jsonPartitions);
-      } catch (TException e) {
-        throw new SemanticException(
-            ErrorMsg.GENERIC_ERROR
-                .getMsg("Exception while serializing the metastore objects"), e);
-      }
-      OutputStream out = fs.create(metadataPath);
-      out.write(jsonContainer.toString().getBytes("UTF-8"));
-      out.close();
-
-    } catch (JSONException e) {
-      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
+      Iterable<org.apache.hadoop.hive.ql.metadata.Partition> partitions) throws SemanticException, IOException {
+    OutputStream out = fs.create(metadataPath);
+    JsonGenerator jgen = (new JsonFactory()).createJsonGenerator(out);
+    jgen.writeStartObject();
+    jgen.writeStringField("version",METADATA_FORMAT_VERSION);
+    if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
+      jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
     }
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    try {
+      jgen.writeStringField("table", serializer.toString(tableHandle.getTTable(), "UTF-8"));
+      jgen.writeFieldName("partitions");
+      jgen.writeStartArray();
+      if (partitions != null) {
+        for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
+          jgen.writeString(serializer.toString(partition.getTPartition(), "UTF-8"));
+          jgen.flush();
+        }
+      }
+      jgen.writeEndArray();
+    } catch (TException e) {
+      throw new SemanticException(
+          ErrorMsg.GENERIC_ERROR
+              .getMsg("Exception while serializing the metastore objects"), e);
+    }
+    jgen.writeEndObject();
+    jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
+  }
+
+  private static void write(OutputStream out, String s) throws IOException {
+    out.write(s.getBytes("UTF-8"));
   }
 
   public static Map.Entry<Table, List<Partition>>

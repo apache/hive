@@ -23,20 +23,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -825,7 +830,8 @@ public class HCatClientHMSImpl extends HCatClient {
   @Override
   public String getMessageBusTopicName(String dbName, String tableName) throws HCatException {
     try {
-      return hmsClient.getTable(dbName, tableName).getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
+      return hmsClient.getTable(dbName, tableName).getParameters().get(
+          HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
     }
     catch (MetaException e) {
       throw new HCatException("MetaException while retrieving JMS Topic name.", e);
@@ -836,7 +842,36 @@ public class HCatClientHMSImpl extends HCatClient {
           "TException while retrieving JMS Topic name.", e);
     }
   }
-  
+
+  @Override
+  public List<HCatNotificationEvent> getNextNotification(long lastEventId, int maxEvents,
+                                                         IMetaStoreClient.NotificationFilter filter)
+      throws HCatException {
+    try {
+      List<HCatNotificationEvent> events = new ArrayList<HCatNotificationEvent>();
+      NotificationEventResponse rsp = hmsClient.getNextNotification(lastEventId, maxEvents, filter);
+      if (rsp != null && rsp.getEvents() != null) {
+        for (NotificationEvent event : rsp.getEvents()) {
+          events.add(new HCatNotificationEvent(event));
+        }
+      }
+      return events;
+    } catch (TException e) {
+      throw new ConnectionFailureException("TException while getting notifications", e);
+    }
+  }
+
+  @Override
+  public long getCurrentNotificationEventId() throws HCatException {
+    try {
+      CurrentNotificationEventId id = hmsClient.getCurrentNotificationEventId();
+      return id.getEventId();
+    } catch (TException e) {
+      throw new ConnectionFailureException("TException while getting current notification event " +
+          "id " , e);
+    }
+  }
+
   @Override
   public String serializeTable(HCatTable hcatTable) throws HCatException {
     return MetadataSerializer.get().serializeTable(hcatTable);
@@ -905,8 +940,10 @@ public class HCatClientHMSImpl extends HCatClient {
 
   @Override
   public HCatPartitionSpec deserializePartitionSpec(List<String> hcatPartitionSpecStrings) throws HCatException {
-    HCatPartitionSpec hcatPartitionSpec = MetadataSerializer.get().deserializePartitionSpec(hcatPartitionSpecStrings);
-    hcatPartitionSpec.hcatTable(getTable(hcatPartitionSpec.getDbName(), hcatPartitionSpec.getTableName()));
+    HCatPartitionSpec hcatPartitionSpec = MetadataSerializer.get()
+        .deserializePartitionSpec(hcatPartitionSpecStrings);
+    hcatPartitionSpec
+        .hcatTable(getTable(hcatPartitionSpec.getDbName(), hcatPartitionSpec.getTableName()));
     return hcatPartitionSpec;
   }
 }

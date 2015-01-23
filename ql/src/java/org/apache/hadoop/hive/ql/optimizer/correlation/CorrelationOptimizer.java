@@ -107,7 +107,7 @@ public class CorrelationOptimizer implements Transform {
     // that has both intermediate tables and query input tables as input tables,
     // we should be able to guess if this JoinOperator will be converted to a MapJoin
     // based on hive.auto.convert.join.noconditionaltask.size.
-    for (JoinOperator joinOp: pCtx.getJoinContext().keySet()) {
+    for (JoinOperator joinOp: pCtx.getJoinOps()) {
       boolean isAbleToGuess = true;
       boolean mayConvert = false;
       // Get total size and individual alias's size
@@ -124,7 +124,7 @@ public class CorrelationOptimizer implements Transform {
 
         Set<String> aliases = new LinkedHashSet<String>();
         for (TableScanOperator tsop : topOps) {
-          Table table = pCtx.getTopToTable().get(tsop);
+          Table table = tsop.getConf().getTableMetadata();
           if (table == null) {
             // table should not be null.
             throw new SemanticException("The table of " +

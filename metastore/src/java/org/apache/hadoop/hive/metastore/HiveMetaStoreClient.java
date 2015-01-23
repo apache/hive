@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -94,6 +95,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -131,7 +135,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -345,6 +351,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     TTransportException tte = null;
     boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+    boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) conf.getTimeVar(
         ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -386,8 +393,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           } else if (useFramedTransport) {
             transport = new TFramedTransport(transport);
           }
-
-          client = new ThriftHiveMetastore.Client(new TCompactProtocol(transport));
+          final TProtocol protocol;
+          if (useCompactProtocol) {
+            protocol = new TCompactProtocol(transport);
+          } else {
+            protocol = new TBinaryProtocol(transport);
+          }
+          client = new ThriftHiveMetastore.Client(protocol);
           try {
             transport.open();
             isConnected = true;
@@ -1421,7 +1433,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Partition getPartition(String db, String tableName, String partName)
       throws MetaException, TException, UnknownTableException, NoSuchObjectException {
-    return deepCopy(filterHook.filterPartition(client.get_partition_by_name(db, tableName, partName)));
+    return deepCopy(
+        filterHook.filterPartition(client.get_partition_by_name(db, tableName, partName)));
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName)
@@ -1827,6 +1840,31 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
+                                                       NotificationFilter filter) throws TException {
+    NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
+    rqst.setMaxEvents(maxEvents);
+    NotificationEventResponse rsp = client.get_next_notification(rqst);
+    LOG.debug("Got back " + rsp.getEventsSize() + " events");
+    if (filter == null) {
+      return rsp;
+    } else {
+      NotificationEventResponse filtered = new NotificationEventResponse();
+      if (rsp != null && rsp.getEvents() != null) {
+        for (NotificationEvent e : rsp.getEvents()) {
+          if (filter.accept(e)) filtered.addToEvents(e);
+        }
+      }
+      return filtered;
+    }
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+    return client.get_current_notificationEventId();
   }
 
   /**

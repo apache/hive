@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker.TaskGraphWalkerContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 
 /**
@@ -53,8 +52,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       throws SemanticException;
 
   protected void replaceTaskWithConditionalTask(
-      Task<? extends Serializable> currTask, ConditionalTask cndTsk,
-      PhysicalContext physicalContext) {
+      Task<? extends Serializable> currTask, ConditionalTask cndTsk) {
     // add this task into task tree
     // set all parent tasks
     List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
@@ -88,8 +86,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
   // Replace the task with the new task. Copy the children and parents of the old
   // task to the new task.
   protected void replaceTask(
-      Task<? extends Serializable> currTask, Task<? extends Serializable> newTask,
-      PhysicalContext physicalContext) {
+      Task<? extends Serializable> currTask, Task<? extends Serializable> newTask) {
     // add this task into task tree
     // set all parent tasks
     List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();

@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Redactor;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -439,6 +440,11 @@ public class Driver implements CommandProcessor {
         SessionState.get().getCommandType());
 
       String queryStr = plan.getQueryStr();
+      List<Redactor> queryRedactors = getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
+      for (Redactor redactor : queryRedactors) {
+        redactor.setConf(conf);
+        queryStr = redactor.redactQuery(queryStr);
+      }
       conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
@@ -699,15 +705,13 @@ public class Driver implements CommandProcessor {
         || op.equals(HiveOperation.QUERY)) {
       SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
       ParseContext parseCtx = querySem.getParseContext();
-      Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
 
       for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
           .getParseContext().getTopOps().entrySet()) {
         Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
-        if (topOp instanceof TableScanOperator
-            && tsoTopMap.containsKey(topOp)) {
+        if (topOp instanceof TableScanOperator) {
           TableScanOperator tableScanOp = (TableScanOperator) topOp;
-          Table tbl = tsoTopMap.get(tableScanOp);
+          Table tbl = tableScanOp.getConf().getTableMetadata();
           List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
           List<FieldSchema> columns = tbl.getCols();
           List<String> cols = new ArrayList<String>();
@@ -1343,7 +1347,8 @@ public class Driver implements CommandProcessor {
       }
 
       int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
-        + Utilities.getTezTasks(plan.getRootTasks()).size();
+        + Utilities.getTezTasks(plan.getRootTasks()).size()
+        + Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         console.printInfo("Query ID = " + plan.getQueryId());
         console.printInfo("Total jobs = " + jobs);

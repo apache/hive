@@ -14,6 +14,8 @@ CREATE TABLE part_seq(
 
 LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite into table part_seq;
 
+-- SORT_QUERY_RESULTS
+
 -- testWindowingPTFWithPartSeqFile
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 

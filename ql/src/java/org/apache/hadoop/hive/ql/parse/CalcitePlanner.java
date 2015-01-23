@@ -22,6 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,9 +68,12 @@ import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.rules.JoinPushTransitivePredicatesRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
+import org.apache.calcite.rel.rules.ProjectRemoveRule;
+import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
 import org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule;
+import org.apache.calcite.rel.rules.UnionMergeRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -106,15 +111,16 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -159,12 +165,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableList.Builder;
 
 public class CalcitePlanner extends SemanticAnalyzer {
-  private AtomicInteger     noColsMissingStats = new AtomicInteger(0);
+  private final AtomicInteger     noColsMissingStats = new AtomicInteger(0);
   private List<FieldSchema> topLevelFieldSchema;
   private SemanticException semanticException;
   private boolean           runCBO             = true;
@@ -187,6 +193,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
+  @Override
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     Operator sinkOp = null;
@@ -282,7 +289,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Can CBO handle the given AST?
-   * 
+   *
    * @param ast
    *          Top level AST
    * @param qb
@@ -290,7 +297,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @param cboCtx
    * @param semAnalyzer
    * @return boolean
-   * 
+   *
    *         Assumption:<br>
    *         If top level QB is query then everything below it must also be
    *         Query.
@@ -345,7 +352,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Checks whether Calcite can handle the query.
-   * 
+   *
    * @param queryProperties
    * @param conf
    * @param topLevelQB
@@ -354,7 +361,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *          Whether return value should be verbose in case of failure.
    * @return null if the query can be handled; non-null reason string if it
    *         cannot be.
-   * 
+   *
    *         Assumption:<br>
    *         1. If top level QB is query then everything below it must also be
    *         Query<br>
@@ -548,7 +555,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Get Optimized AST for the given QB tree in the semAnalyzer.
-   * 
+   *
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
@@ -572,7 +579,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /***
    * Unwraps Calcite Invocation exceptions coming meta data provider chain and
    * obtains the real cause.
-   * 
+   *
    * @param Exception
    */
   private void rethrowCalciteException(Exception e) throws SemanticException {
@@ -651,7 +658,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
-    private Map<String, PrunedPartitionList>              partitionCache;
+    private final Map<String, PrunedPartitionList>              partitionCache;
 
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
@@ -706,6 +713,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(new LoptOptimizeJoinRule(HiveJoin.HIVE_JOIN_FACTORY,
           HiveProject.DEFAULT_PROJECT_FACTORY, HiveFilter.DEFAULT_FILTER_FACTORY));
 
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
+      hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
+      hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
+      hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
+
       hepPgm = hepPgmBldr.build();
       HepPlanner hepPlanner = new HepPlanner(hepPgm);
 
@@ -736,7 +749,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Perform all optimizations before Join Ordering.
-     * 
+     *
      * @param basePlan
      *          original plan
      * @param mdProvider
@@ -754,7 +767,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           SemiJoinFilterTransposeRule.INSTANCE, SemiJoinProjectTransposeRule.INSTANCE);
 
       // 2. PPD
-      basePlan = hepPlan(basePlan, true, mdProvider, new HiveFilterProjectTransposeRule(
+      basePlan = hepPlan(basePlan, true, mdProvider,
+          ReduceExpressionsRule.PROJECT_INSTANCE,
+          ReduceExpressionsRule.FILTER_INSTANCE,
+          ReduceExpressionsRule.JOIN_INSTANCE,
+          new HiveFilterProjectTransposeRule(
           Filter.class, HiveFilter.DEFAULT_FILTER_FACTORY, HiveProject.class,
           HiveProject.DEFAULT_PROJECT_FACTORY), new HiveFilterSetOpTransposeRule(
           HiveFilter.DEFAULT_FILTER_FACTORY),
@@ -787,7 +804,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Run the HEP Planner with the given rule set.
-     * 
+     *
      * @param basePlan
      * @param followPlanChanges
      * @param mdProvider
@@ -1057,7 +1074,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Generate Join Logical Plan Relnode by walking through the join AST.
-     * 
+     *
      * @param qb
      * @param aliasToRel
      *          Alias(Table/Relation alias) to RelNode; only read and not
@@ -1276,7 +1293,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         Map<String, RelNode> aliasToRel, boolean forHavingClause) throws SemanticException {
       /*
        * Handle Subquery predicates.
-       * 
+       *
        * Notes (8/22/14 hb): Why is this a copy of the code from {@link
        * #genFilterPlan} - for now we will support the same behavior as non CBO
        * route. - but plan to allow nested SubQueries(Restriction.9.m) and
@@ -1509,7 +1526,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genGBRelNode(List<ExprNodeDesc> gbExprs, List<AggInfo> aggInfoLst,
-        RelNode srcRel) throws SemanticException {
+        List<Integer> groupSets, RelNode srcRel) throws SemanticException {
       ImmutableMap<String, Integer> posMap = this.relToHiveColNameCalcitePosMap.get(srcRel);
       RexNodeConverter converter = new RexNodeConverter(this.cluster, srcRel.getRowType(), posMap,
           0, false);
@@ -1541,15 +1558,43 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
 
+      // Grouping sets: we need to transform them into ImmutableBitSet
+      // objects for Calcite
+      List<ImmutableBitSet> transformedGroupSets = null;
+      if(groupSets != null && !groupSets.isEmpty()) {
+        Set<ImmutableBitSet> setTransformedGroupSets =
+                new HashSet<ImmutableBitSet>(groupSets.size());
+        for(int val: groupSets) {
+          setTransformedGroupSets.add(convert(val));
+        }
+        // Calcite expects the grouping sets sorted and without duplicates
+        transformedGroupSets = new ArrayList<ImmutableBitSet>(setTransformedGroupSets);
+        Collections.sort(transformedGroupSets, ImmutableBitSet.COMPARATOR);
+      }
+
       HiveRelNode aggregateRel = null;
       try {
         aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            gbInputRel, false, groupSet, null, aggregateCalls);
+            gbInputRel, (transformedGroupSets!=null ? true:false), groupSet,
+            transformedGroupSets, aggregateCalls);
       } catch (InvalidRelException e) {
         throw new SemanticException(e);
       }
 
       return aggregateRel;
+    }
+
+    private ImmutableBitSet convert(int value) {
+      BitSet bits = new BitSet();
+      int index = 0;
+      while (value != 0L) {
+        if (value % 2 != 0) {
+          bits.set(index);
+        }
+        ++index;
+        value = value >>> 1;
+      }
+      return ImmutableBitSet.FROM_BIT_SET.apply(bits);
     }
 
     private void addAlternateGByKeyMappings(ASTNode gByExpr, ColumnInfo colInfo,
@@ -1676,7 +1721,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     /**
      * Generate GB plan.
-     * 
+     *
      * @param qb
      * @param srcRel
      * @return TODO: 1. Grouping Sets (roll up..)
@@ -1686,29 +1731,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode gbRel = null;
       QBParseInfo qbp = getQBParseInfo(qb);
 
-      // 0. for GSets, Cube, Rollup, bail from Calcite path.
-      if (!qbp.getDestRollups().isEmpty() || !qbp.getDestGroupingSets().isEmpty()
-          || !qbp.getDestCubes().isEmpty()) {
-        String gbyClause = null;
-        HashMap<String, ASTNode> gbysMap = qbp.getDestToGroupBy();
-        if (gbysMap.size() == 1) {
-          ASTNode gbyAST = gbysMap.entrySet().iterator().next().getValue();
-          gbyClause = ctx.getTokenRewriteStream().toString(gbyAST.getTokenStartIndex(),
-              gbyAST.getTokenStopIndex());
-          gbyClause = "in '" + gbyClause + "'.";
-        } else {
-          gbyClause = ".";
-        }
-        String msg = String.format("Encountered Grouping Set/Cube/Rollup%s"
-            + " Currently we don't support Grouping Set/Cube/Rollup" + " clauses in CBO,"
-            + " turn off cbo for these queries.", gbyClause);
-        LOG.debug(msg);
-        throw new CalciteSemanticException(msg);
-      }
-
       // 1. Gather GB Expressions (AST) (GB + Aggregations)
       // NOTE: Multi Insert is not supported
       String detsClauseName = qbp.getClauseNames().iterator().next();
+      // Check and transform group by *. This will only happen for select distinct *.
+      // Here the "genSelectPlan" is being leveraged.
+      // The main benefits are (1) remove virtual columns that should
+      // not be included in the group by; (2) add the fully qualified column names to unParseTranslator
+      // so that view is supported. The drawback is that an additional SEL op is added. If it is
+      // not necessary, it will be removed by NonBlockingOpDeDupProc Optimizer because it will match
+      // SEL%SEL% rule.
+      ASTNode selExprList = qb.getParseInfo().getSelForClause(detsClauseName);
+      if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
+          && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
+        ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
+        if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel);
+          RowResolver rr = this.relToHiveRR.get(srcRel);
+          qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
+        }
+      }
       List<ASTNode> grpByAstExprs = SemanticAnalyzer.getGroupByForClause(qbp, detsClauseName);
       HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;
@@ -1739,18 +1781,34 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 4. Construct aggregation function Info
+        // 4. GroupingSets, Cube, Rollup
+        int groupingColsSize = gbExprNDescLst.size();
+        List<Integer> groupingSets = null;
+        if (!qbp.getDestRollups().isEmpty()
+                || !qbp.getDestGroupingSets().isEmpty()
+                || !qbp.getDestCubes().isEmpty()) {
+          if (qbp.getDestRollups().contains(detsClauseName)) {
+            groupingSets = getGroupingSetsForRollup(grpByAstExprs.size());
+          } else if (qbp.getDestCubes().contains(detsClauseName)) {
+            groupingSets = getGroupingSetsForCube(grpByAstExprs.size());
+          } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
+            groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
+          }
+          groupingColsSize = groupingColsSize * 2;
+        }
+
+        // 5. Construct aggregation function Info
         ArrayList<AggInfo> aggregations = new ArrayList<AggInfo>();
         if (hasAggregationTrees) {
           assert (aggregationTrees != null);
           for (ASTNode value : aggregationTrees.values()) {
-            // 4.1 Determine type of UDAF
+            // 5.1 Determine type of UDAF
             // This is the GenericUDAF name
             String aggName = SemanticAnalyzer.unescapeIdentifier(value.getChild(0).getText());
             boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
             boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
 
-            // 4.2 Convert UDAF Params to ExprNodeDesc
+            // 5.2 Convert UDAF Params to ExprNodeDesc
             ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
             for (int i = 1; i < value.getChildCount(); i++) {
               ASTNode paraExpr = (ASTNode) value.getChild(i);
@@ -1767,18 +1825,62 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 aggParameters);
             AggInfo aInfo = new AggInfo(aggParameters, udaf.returnType, aggName, isDistinct);
             aggregations.add(aInfo);
-            String field = SemanticAnalyzer.getColumnInternalName(gbExprNDescLst.size()
-                + aggregations.size() - 1);
+            String field = getColumnInternalName(groupingColsSize + aggregations.size() - 1);
             outputColumnNames.add(field);
             groupByOutputRowResolver.putExpression(value, new ColumnInfo(field, aInfo.m_returnType,
                 "", false));
           }
         }
 
-        gbRel = genGBRelNode(gbExprNDescLst, aggregations, srcRel);
+        gbRel = genGBRelNode(gbExprNDescLst, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(gbRel,
             buildHiveToCalciteColumnMap(groupByOutputRowResolver, gbRel));
         this.relToHiveRR.put(gbRel, groupByOutputRowResolver);
+
+        // 6. If GroupingSets, Cube, Rollup were used, we account grouping__id.
+        // Further, we insert a project operator on top to remove the grouping
+        // boolean associated to each column in Calcite; this will avoid
+        // recalculating all column positions when we go back from Calcite to Hive
+        if(groupingSets != null && !groupingSets.isEmpty()) {
+          RowResolver selectOutputRowResolver = new RowResolver();
+          selectOutputRowResolver.setIsExprResolver(true);
+          RowResolver.add(selectOutputRowResolver, groupByOutputRowResolver);
+          outputColumnNames = new ArrayList<String>(outputColumnNames);
+
+          // 6.1 List of columns to keep from groupBy operator
+          List<RelDataTypeField> gbOutput = gbRel.getRowType().getFieldList();
+          List<RexNode> calciteColLst = new ArrayList<RexNode>();
+          for(RelDataTypeField gbOut: gbOutput) {
+            if(gbOut.getIndex() < gbExprNDescLst.size() ||
+                    gbOut.getIndex() >= gbExprNDescLst.size() * 2) {
+              calciteColLst.add(new RexInputRef(gbOut.getIndex(), gbOut.getType()));
+            }
+          }
+
+          // 6.2 Add column for grouping_id function
+          String field = getColumnInternalName(groupingColsSize + aggregations.size());
+          outputColumnNames.add(field);
+          selectOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+                  new ColumnInfo(
+                          field,
+                          TypeInfoFactory.stringTypeInfo,
+                          null,
+                          true));
+
+          // 6.3 Compute column for grouping_id function in Calcite
+          List<RexNode> identifierCols = new ArrayList<RexNode>();
+          for(int i = gbExprNDescLst.size(); i < gbExprNDescLst.size() * 2; i++) {
+            identifierCols.add(new RexInputRef(
+                    i, gbOutput.get(i).getType()));
+          }
+          final RexBuilder rexBuilder = cluster.getRexBuilder();
+          RexNode groupingID = rexBuilder.makeCall(HiveGroupingID.GROUPING__ID,
+                  identifierCols);
+          calciteColLst.add(groupingID);
+
+          // Create select
+          gbRel = this.genSelectRelNode(calciteColLst, selectOutputRowResolver, gbRel);
+        }
       }
 
       return gbRel;
@@ -1788,7 +1890,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * Generate OB RelNode and input Select RelNode that should be used to
      * introduce top constraining Project. If Input select RelNode is not
      * present then don't introduce top constraining select.
-     * 
+     *
      * @param qb
      * @param srcRel
      * @param outermostOB
@@ -2198,7 +2300,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     /**
      * NOTE: there can only be one select caluse since we don't handle multi
      * destination insert.
-     * 
+     *
      * @throws SemanticException
      */
     private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel, RelNode starSrcRel)

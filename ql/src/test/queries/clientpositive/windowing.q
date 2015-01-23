@@ -1,3 +1,6 @@
+set mapred.reduce.tasks=4;
+-- SORT_QUERY_RESULTS
+
 -- 1. testWindowing
 select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r,

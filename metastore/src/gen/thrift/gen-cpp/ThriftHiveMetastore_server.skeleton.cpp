@@ -607,6 +607,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("show_compact\n");
   }
 
+  void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
+    // Your implementation goes here
+    printf("get_next_notification\n");
+  }
+
+  void get_current_notificationEventId(CurrentNotificationEventId& _return) {
+    // Your implementation goes here
+    printf("get_current_notificationEventId\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

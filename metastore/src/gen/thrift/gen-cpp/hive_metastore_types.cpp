@@ -9282,6 +9282,374 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b) {
   swap(a.compacts, b.compacts);
 }
 
+const char* NotificationEventRequest::ascii_fingerprint = "6E578DA8AB10EED824A75534350EBAEF";
+const uint8_t NotificationEventRequest::binary_fingerprint[16] = {0x6E,0x57,0x8D,0xA8,0xAB,0x10,0xEE,0xD8,0x24,0xA7,0x55,0x34,0x35,0x0E,0xBA,0xEF};
+
+uint32_t NotificationEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_lastEvent = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lastEvent);
+          isset_lastEvent = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxEvents);
+          this->__isset.maxEvents = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_lastEvent)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t NotificationEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("NotificationEventRequest");
+
+  xfer += oprot->writeFieldBegin("lastEvent", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->lastEvent);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.maxEvents) {
+    xfer += oprot->writeFieldBegin("maxEvents", ::apache::thrift::protocol::T_I32, 2);
+    xfer += oprot->writeI32(this->maxEvents);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(NotificationEventRequest &a, NotificationEventRequest &b) {
+  using ::std::swap;
+  swap(a.lastEvent, b.lastEvent);
+  swap(a.maxEvents, b.maxEvents);
+  swap(a.__isset, b.__isset);
+}
+
+const char* NotificationEvent::ascii_fingerprint = "ACAF0036D9999F3A389F490F5E22D369";
+const uint8_t NotificationEvent::binary_fingerprint[16] = {0xAC,0xAF,0x00,0x36,0xD9,0x99,0x9F,0x3A,0x38,0x9F,0x49,0x0F,0x5E,0x22,0xD3,0x69};
+
+uint32_t NotificationEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_eventId = false;
+  bool isset_eventTime = false;
+  bool isset_eventType = false;
+  bool isset_message = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventId);
+          isset_eventId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->eventTime);
+          isset_eventTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->eventType);
+          isset_eventType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tableName);
+          this->__isset.tableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->message);
+          isset_message = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_eventId)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_eventTime)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_eventType)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_message)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t NotificationEvent::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("NotificationEvent");
+
+  xfer += oprot->writeFieldBegin("eventId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->eventId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("eventTime", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->eventTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("eventType", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->eventType);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->dbName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.tableName) {
+    xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->tableName);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("message", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->message);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(NotificationEvent &a, NotificationEvent &b) {
+  using ::std::swap;
+  swap(a.eventId, b.eventId);
+  swap(a.eventTime, b.eventTime);
+  swap(a.eventType, b.eventType);
+  swap(a.dbName, b.dbName);
+  swap(a.tableName, b.tableName);
+  swap(a.message, b.message);
+  swap(a.__isset, b.__isset);
+}
+
+const char* NotificationEventResponse::ascii_fingerprint = "EE3DB23399639114BCD1782A0FB01818";
+const uint8_t NotificationEventResponse::binary_fingerprint[16] = {0xEE,0x3D,0xB2,0x33,0x99,0x63,0x91,0x14,0xBC,0xD1,0x78,0x2A,0x0F,0xB0,0x18,0x18};
+
+uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_events = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->events.clear();
+            uint32_t _size401;
+            ::apache::thrift::protocol::TType _etype404;
+            xfer += iprot->readListBegin(_etype404, _size401);
+            this->events.resize(_size401);
+            uint32_t _i405;
+            for (_i405 = 0; _i405 < _size401; ++_i405)
+            {
+              xfer += this->events[_i405].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          isset_events = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_events)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("NotificationEventResponse");
+
+  xfer += oprot->writeFieldBegin("events", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->events.size()));
+    std::vector<NotificationEvent> ::const_iterator _iter406;
+    for (_iter406 = this->events.begin(); _iter406 != this->events.end(); ++_iter406)
+    {
+      xfer += (*_iter406).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(NotificationEventResponse &a, NotificationEventResponse &b) {
+  using ::std::swap;
+  swap(a.events, b.events);
+}
+
+const char* CurrentNotificationEventId::ascii_fingerprint = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
+const uint8_t CurrentNotificationEventId::binary_fingerprint[16] = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
+
+uint32_t CurrentNotificationEventId::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_eventId = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventId);
+          isset_eventId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_eventId)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t CurrentNotificationEventId::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("CurrentNotificationEventId");
+
+  xfer += oprot->writeFieldBegin("eventId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->eventId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b) {
+  using ::std::swap;
+  swap(a.eventId, b.eventId);
+}
+
 const char* MetaException::ascii_fingerprint = "EFB929595D312AC8F305D5A794CFEDA1";
 const uint8_t MetaException::binary_fingerprint[16] = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
 

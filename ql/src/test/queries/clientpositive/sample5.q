@@ -1,5 +1,7 @@
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 
+-- SORT_QUERY_RESULTS
+
 -- no input pruning, sample filter
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test

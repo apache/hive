@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -49,8 +50,14 @@ public final class CommandProcessorFactory {
   }
 
   public static CommandProcessor getForHiveCommand(String[] cmd, HiveConf conf)
-      throws SQLException {
-    HiveCommand hiveCommand = HiveCommand.find(cmd);
+    throws SQLException {
+    return getForHiveCommandInternal(cmd, conf, false);
+  }
+
+  public static CommandProcessor getForHiveCommandInternal(String[] cmd, HiveConf conf,
+                                                           boolean testOnly)
+    throws SQLException {
+    HiveCommand hiveCommand = HiveCommand.find(cmd, testOnly);
     if (hiveCommand == null || isBlank(cmd[0])) {
       return null;
     }
@@ -58,7 +65,8 @@ public final class CommandProcessorFactory {
       conf = new HiveConf();
     }
     Set<String> availableCommands = new HashSet<String>();
-    for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST).split(",")) {
+    for (String availableCommand : conf.getVar(HiveConf.ConfVars.HIVE_SECURITY_COMMAND_WHITELIST)
+      .split(",")) {
       availableCommands.add(availableCommand.toLowerCase().trim());
     }
     if (!availableCommands.contains(cmd[0].trim().toLowerCase())) {
@@ -82,6 +90,12 @@ public final class CommandProcessorFactory {
         return new CompileProcessor();
       case RELOAD:
         return new ReloadProcessor();
+      case CRYPTO:
+        try {
+          return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
+        } catch (HiveException e) {
+          throw new SQLException("Fail to start the command processor due to the exception: ", e);
+        }
       default:
         throw new AssertionError("Unknown HiveCommand " + hiveCommand);
     }

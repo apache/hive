@@ -6,12 +6,16 @@ POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-PREHOOK: query: -- no input pruning, sample filter
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no input pruning, sample filter
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- no input pruning, sample filter
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
@@ -349,48 +353,8 @@ POSTHOOK: Input: default@dest1
 0	val_0
 0	val_1
 0	val_1
-5	val_5
-5	val_5
-5	val_5
-5	val_6
 10	val_10
 10	val_11
-15	val_15
-15	val_15
-15	val_16
-15	val_16
-20	val_20
-20	val_21
-20	val_21
-30	val_30
-30	val_31
-35	val_35
-35	val_35
-35	val_35
-35	val_36
-35	val_36
-35	val_36
-40	val_41
-40	val_41
-50	val_51
-60	val_61
-65	val_65
-65	val_66
-65	val_66
-70	val_70
-70	val_70
-70	val_70
-70	val_71
-75	val_76
-80	val_80
-80	val_81
-85	val_85
-85	val_86
-90	val_90
-90	val_90
-90	val_90
-95	val_95
-95	val_95
 100	val_100
 100	val_100
 100	val_101
@@ -410,6 +374,10 @@ POSTHOOK: Input: default@dest1
 135	val_136
 140	val_141
 145	val_145
+15	val_15
+15	val_15
+15	val_16
+15	val_16
 150	val_150
 155	val_155
 160	val_160
@@ -428,6 +396,9 @@ POSTHOOK: Input: default@dest1
 190	val_190
 195	val_195
 195	val_195
+20	val_20
+20	val_21
+20	val_21
 200	val_200
 200	val_200
 205	val_205
@@ -461,6 +432,8 @@ POSTHOOK: Input: default@dest1
 285	val_286
 295	val_296
 295	val_296
+30	val_30
+30	val_31
 300	val_301
 300	val_301
 305	val_305
@@ -478,6 +451,12 @@ POSTHOOK: Input: default@dest1
 335	val_336
 340	val_341
 345	val_345
+35	val_35
+35	val_35
+35	val_35
+35	val_36
+35	val_36
+35	val_36
 355	val_356
 355	val_356
 360	val_360
@@ -498,6 +477,8 @@ POSTHOOK: Input: default@dest1
 395	val_395
 395	val_396
 395	val_396
+40	val_41
+40	val_41
 400	val_400
 405	val_406
 410	val_411
@@ -533,3 +514,26 @@ POSTHOOK: Input: default@dest1
 490	val_491
 495	val_495
 495	val_496
+5	val_5
+5	val_5
+5	val_5
+5	val_6
+50	val_51
+60	val_61
+65	val_65
+65	val_66
+65	val_66
+70	val_70
+70	val_70
+70	val_70
+70	val_71
+75	val_76
+80	val_80
+80	val_81
+85	val_85
+85	val_86
+90	val_90
+90	val_90
+90	val_90
+95	val_95
+95	val_95

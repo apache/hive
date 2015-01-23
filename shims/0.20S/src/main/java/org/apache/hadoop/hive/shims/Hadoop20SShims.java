@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
+import java.lang.Override;
+import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -45,10 +48,13 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobInProgress;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.WebHCatJTShim20S;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
@@ -63,6 +69,7 @@ import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.security.KerberosName;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.VersionInfo;
 
 
@@ -70,6 +77,39 @@ import org.apache.hadoop.util.VersionInfo;
  * Implemention of shims against Hadoop 0.20 with Security.
  */
 public class Hadoop20SShims extends HadoopShimsSecure {
+
+  @Override
+  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
+    return new CombineFileInputFormatShim() {
+      @Override
+      public RecordReader getRecordReader(InputSplit split,
+          JobConf job, Reporter reporter) throws IOException {
+        throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
+      }
+
+      @Override
+      protected FileStatus[] listStatus(JobConf job) throws IOException {
+        FileStatus[] result = super.listStatus(job);
+        boolean foundDir = false;
+        for (FileStatus stat: result) {
+          if (stat.isDir()) {
+            foundDir = true;
+            break;
+          }
+        }
+        if (!foundDir) {
+          return result;
+        }
+        ArrayList<FileStatus> files = new ArrayList<FileStatus>();
+        for (FileStatus stat: result) {
+          if (!stat.isDir()) {
+            files.add(stat);
+          }
+        }
+        return files.toArray(new FileStatus[files.size()]);
+      }
+    };
+  }
 
   @Override
   public String getTaskAttemptLogUrl(JobConf conf,
@@ -562,6 +602,11 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     return null;
   }
 
+  @Override
+  public boolean isDirectory(FileStatus fileStatus) {
+    return fileStatus.isDir();
+  }
+
   /**
    * Returns a shim to wrap KerberosName
    */
@@ -600,5 +645,40 @@ public class Hadoop20SShims extends HadoopShimsSecure {
     public String getShortName() throws IOException {
       return kerberosName.getShortName();
     }
+  }
+
+  @Override
+  public StoragePolicyShim getStoragePolicyShim(FileSystem fs) {
+    return null;
+  }
+
+  @Override
+  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
+    int rc;
+
+    // Creates the command-line parameters for distcp
+    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
+
+    try {
+      Class clazzDistCp = Class.forName("org.apache.hadoop.tools.distcp2");
+      Constructor c = clazzDistCp.getConstructor();
+      c.setAccessible(true);
+      Tool distcp = (Tool)c.newInstance();
+      distcp.setConf(conf);
+      rc = distcp.run(params);
+    } catch (ClassNotFoundException e) {
+      throw new IOException("Cannot find DistCp class package: " + e.getMessage());
+    } catch (NoSuchMethodException e) {
+      throw new IOException("Cannot get DistCp constructor: " + e.getMessage());
+    } catch (Exception e) {
+      throw new IOException("Cannot execute DistCp process: " + e, e);
+    }
+
+    return (0 == rc) ? true : false;
+  }
+
+  @Override
+  public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
+    return new HadoopShims.NoopHdfsEncryptionShim();
   }
 }

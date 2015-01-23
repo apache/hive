@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * Select operator implementation.
@@ -55,12 +54,12 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
     for (int i = 0; i < colList.size(); i++) {
       assert (colList.get(i) != null);
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
-      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
-        eval[i] = ExprNodeEvaluatorFactory.toCachedEval(eval[i]);
-      }
+    }
+    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
+      eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];
-    LOG.info("SELECT " + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
+    LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
         inputObjInspectors[0]);
     initializeChildren(hconf);

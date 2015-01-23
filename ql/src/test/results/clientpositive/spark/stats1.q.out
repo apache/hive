@@ -1,0 +1,238 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table tmptable(key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table tmptable(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE tmptable
+SELECT unionsrc.key, unionsrc.value 
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+      UNION  ALL  
+      SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE tmptable
+SELECT unionsrc.key, unionsrc.value 
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+      UNION  ALL  
+      SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(1)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.tmptable
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Select Operator
+                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.tmptable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.tmptable
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: INSERT OVERWRITE TABLE tmptable
+SELECT unionsrc.key, unionsrc.value 
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+      UNION  ALL  
+      SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: INSERT OVERWRITE TABLE tmptable
+SELECT unionsrc.key, unionsrc.value 
+FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
+      UNION  ALL  
+      SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+#### A masked pattern was here ####
+	
+	
+	
+	
+	val_165
+	val_193
+	val_265
+	val_27
+	val_409
+	val_484
+128	
+146	val_146
+150	val_150
+213	val_213
+224	
+238	val_238
+255	val_255
+273	val_273
+278	val_278
+311	val_311
+369	
+401	val_401
+406	val_406
+66	val_66
+98	val_98
+tst1	500
+PREHOOK: query: DESCRIBE FORMATTED tmptable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
+POSTHOOK: query: DESCRIBE FORMATTED tmptable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tmptable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	2                   
+	numRows             	26                  
+	rawDataSize         	199                 
+	totalSize           	225                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: DESCRIBE FORMATTED tmptable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tmptable
+POSTHOOK: query: DESCRIBE FORMATTED tmptable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tmptable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1583                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

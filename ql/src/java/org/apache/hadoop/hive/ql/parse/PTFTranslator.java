@@ -926,18 +926,17 @@ public class PTFTranslator {
      */
     for (ColumnInfo inpCInfo : inputRR.getColumnInfos()) {
       ColumnInfo cInfo = new ColumnInfo(inpCInfo);
-      String colAlias = cInfo.getAlias();
 
-      String[] tabColAlias = inputRR.reverseLookup(inpCInfo.getInternalName());
-      if (tabColAlias != null) {
-        colAlias = tabColAlias[1];
-      }
-      ASTNode inExpr = null;
-      inExpr = PTFTranslator.getASTNode(inpCInfo, inpRR);
+      ASTNode inExpr = PTFTranslator.getASTNode(inpCInfo, inpRR);
       if (inExpr != null) {
         rr.putExpression(inExpr, cInfo);
       } else {
-        rr.put(cInfo.getTabAlias(), colAlias, cInfo);
+        String[] tabColAlias = inputRR.reverseLookup(inpCInfo.getInternalName());
+        if (tabColAlias != null) {
+          rr.put(tabColAlias[0], tabColAlias[1], cInfo);
+        } else {
+          rr.put(inpCInfo.getTabAlias(), inpCInfo.getAlias(), cInfo);
+        }
       }
       
       String[] altMapping = inputRR.getAlternateMappings(inpCInfo.getInternalName());

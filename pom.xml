@@ -49,6 +49,7 @@
     <module>serde</module>
     <module>service</module>
     <module>shims</module>
+    <module>spark-client</module>
     <module>testutils</module>
     <module>packaging</module>
   </modules>
@@ -117,10 +118,10 @@
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.11.1.1</derby.version>
-    <guava.version>11.0.2</guava.version>
+    <guava.version>14.0.1</guava.version>
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
-    <hadoop-23.version>2.5.0</hadoop-23.version>
+    <hadoop-23.version>2.6.0</hadoop-23.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.hadoop1.version>0.98.3-hadoop1</hbase.hadoop1.version>
     <hbase.hadoop2.version>0.98.3-hadoop2</hbase.hadoop2.version>
@@ -146,11 +147,7 @@
     <opencsv.version>2.3</opencsv.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
-    <!--netty is not a direct dependency but due to a change
-        in artifact name and given that zookeeper < 3.5
-        requires netty < 3.6.0 we force hadoops version
-      -->
-    <netty.version>3.4.0.Final</netty.version>
+    <netty.version>4.0.23.Final</netty.version>
     <parquet.version>1.6.0rc3</parquet.version>
     <pig.version>0.12.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -159,15 +156,19 @@
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.5.2</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
+    <spark.version>1.2.0</spark.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scala.version>2.10.4</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>0.2</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
-    <zookeeper.version>3.4.5</zookeeper.version>
+    <zookeeper.version>3.4.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>2.6.0</curator.version>
+    <jsr305.version>3.0.0</jsr305.version>
   </properties>
 
   <repositories>
@@ -203,7 +204,7 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-    </repository>
+     </repository>
      <repository>
        <id>sonatype-snapshot</id>
        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
@@ -213,7 +214,7 @@
        <snapshots>
          <enabled>false</enabled>
        </snapshots>
-     </repository>
+    </repository>
   </repositories>
 
   <!-- Hadoop dependency management is done at the bottom under profiles -->
@@ -318,7 +319,7 @@
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty</artifactId>
+        <artifactId>netty-all</artifactId>
         <version>${netty.version}</version>
       </dependency>
       <dependency>
@@ -352,9 +353,9 @@
         <version>${log4j.version}</version>
       </dependency>
       <dependency>
-	<groupId>log4j</groupId>
-	<artifactId>apache-log4j-extras</artifactId>
-	<version>${log4j-extras.version}</version>
+        <groupId>log4j</groupId>
+        <artifactId>apache-log4j-extras</artifactId>
+        <version>${log4j-extras.version}</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>
@@ -824,6 +825,7 @@
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>
@@ -845,6 +847,7 @@
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+            <spark.home>${spark.home}</spark.home>
             <!-- Hadoop's minidfs class uses this -->
             <test.build.data>${test.tmp.dir}</test.build.data>
             <!-- required by QTestUtil -->
@@ -1113,6 +1116,22 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-minicluster</artifactId>
             <version>${hadoop-23.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-core</artifactId>
+              </exclusion>
+            </exclusions>
           </dependency>
         </dependencies>
       </dependencyManagement>

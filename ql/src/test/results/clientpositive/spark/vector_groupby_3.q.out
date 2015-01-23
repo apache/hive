@@ -1,0 +1,1873 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: create table vectortab2korc(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2korc
+PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: default@vectortab2korc
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: default@vectortab2korc
+POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+PREHOOK: query: explain
+select s, t, max(b) from vectortab2korc group by s, t
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select s, t, max(b) from vectortab2korc group by s, t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2korc
+                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: s (type: string), t (type: tinyint), b (type: bigint)
+                    outputColumnNames: s, t, b
+                    Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(b)
+                      keys: s (type: string), t (type: tinyint)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: tinyint)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
+                        Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: tinyint), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s, t, max(b) from vectortab2korc group by s, t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+POSTHOOK: query: select s, t, max(b) from vectortab2korc group by s, t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc
+#### A masked pattern was here ####
+	-10	8991442360387584000
+	-104	8268875586442256384
+	-107	1906
+	-108	8939431770838810624
+	-113	7569249672628789248
+	-114	1312
+	-116	8945302550165004288
+	-12	-7413317118463164416
+	-14	7983789401706094592
+	-16	-7673901622181953536
+	-19	9094945190752903168
+	-2	8759184090543857664
+	-24	898
+	-25	2262
+	-28	-7292078334519894016
+	-29	8371939471056470016
+	-33	1075
+	-36	-7512297136103800832
+	-38	2933
+	-4	-9014145341570203648
+	-46	-9080568167841226752
+	-5	3534
+	-53	-8619303037130301440
+	-66	3197
+	-72	9149216169284091904
+	-75	NULL
+	-80	-8938849835283677184
+	-83	8900351886974279680
+	-84	-7085247548404178944
+	-85	-7139677575412686848
+	-86	2862
+	-87	7078641038157643776
+	-91	3965
+	0	8163948965373386752
+	102	-7036607470351654912
+	103	780
+	105	-7511952204985049088
+	109	1436
+	112	-7063777488249085952
+	113	8775009214012456960
+	114	1145
+	12	2553
+	123	3625
+	16	8983857919580209152
+	19	2201
+	22	9191943992860327936
+	23	NULL
+	26	-7916510129632296960
+	29	8555933456197828608
+	31	2941
+	37	8143462899383345152
+	4	7062382339142156288
+	42	NULL
+	46	3174
+	48	-8566856504746352640
+	5	-8703026916864802816
+	54	-7242345057866285056
+	57	8230371298967609344
+	59	2494
+	60	-6986178228432322560
+	62	779
+	64	7368920486374989824
+	79	8736061027343859712
+	8	2905
+	84	NULL
+	87	797
+	88	8782900615468302336
+	90	2977
+	91	2193
+	96	-7866079955473989632
+	97	2017
+	NULL	2714
+american history	-101	7348598907182800896
+american history	-103	-6962271229404348416
+american history	-105	7870277756614623232
+american history	-108	7359004378440146944
+american history	-11	8714829359200747520
+american history	-110	-8989473881707921408
+american history	-112	7731443941834678272
+american history	-116	3812
+american history	-119	19
+american history	-127	1719
+american history	-15	9048002942653710336
+american history	-17	2968
+american history	-18	-8659643752269242368
+american history	-19	78
+american history	-26	-7057750467944931328
+american history	-27	NULL
+american history	-28	-7720966287634112512
+american history	-30	-8789178184387641344
+american history	-34	4018
+american history	-47	-8566940231897874432
+american history	-48	-8016589197379289088
+american history	-50	7857878068300898304
+american history	-53	1955
+american history	-55	8407869317250220032
+american history	-59	3949
+american history	-60	1566
+american history	-66	-8368487814665895936
+american history	-73	2487
+american history	-80	485
+american history	-81	2700
+american history	-86	-8731068123910987776
+american history	-87	-7536330682873937920
+american history	-89	-7571293705217687552
+american history	-9	-8503342882470019072
+american history	-90	1321
+american history	-92	-7612455481940246528
+american history	-94	9119046173224370176
+american history	-95	NULL
+american history	0	6928080429732536320
+american history	100	8760285623204290560
+american history	103	-7868306678534193152
+american history	111	522
+american history	119	8571268359622172672
+american history	122	7497276415392407552
+american history	123	-7488345684795342848
+american history	20	-7037375807670501376
+american history	22	8467976965865799680
+american history	29	-8243487285852766208
+american history	31	-8007017894942638080
+american history	33	9043089884440068096
+american history	38	7061809776248545280
+american history	39	7922443154272395264
+american history	40	2886
+american history	42	8190967051000659968
+american history	46	8374321007870836736
+american history	48	6962726713896484864
+american history	5	135
+american history	54	-7784419454650843136
+american history	56	1890
+american history	60	3512
+american history	68	-8067243114610532352
+american history	69	-7199983995864711168
+american history	71	8698055291501543424
+american history	72	8551446856960942080
+american history	74	9038087402564657152
+american history	77	1837
+american history	79	-7542857121910046720
+american history	82	3980
+american history	84	2105
+american history	89	8806507556248731648
+american history	96	823
+american history	NULL	3555
+biology	-101	-7198372044947275776
+biology	-104	-8683802826440105984
+biology	-119	7054938591408996352
+biology	-120	8388363436324085760
+biology	-121	8109381965028548608
+biology	-127	1270
+biology	-13	2463
+biology	-16	3960
+biology	-19	-7442593976514420736
+biology	-20	7130159794259353600
+biology	-31	-9032650742739836928
+biology	-35	2285
+biology	-36	1489
+biology	-40	-7469660864676585472
+biology	-42	2469
+biology	-44	2680
+biology	-46	2241
+biology	-49	NULL
+biology	-5	808
+biology	-53	-6962292590214234112
+biology	-54	-7319315187617587200
+biology	-57	7049773031131283456
+biology	-59	7534042483076857856
+biology	-6	888
+biology	-66	-7623047151287754752
+biology	-67	8532016240026279936
+biology	-7	-8665218198816497664
+biology	-72	-7915999634274369536
+biology	-79	3566
+biology	-81	NULL
+biology	-82	-7040248820505149440
+biology	-83	7232273749940838400
+biology	-85	-6935548339131138048
+biology	-86	3755
+biology	-90	7775034125776363520
+biology	-92	1142
+biology	-96	NULL
+biology	-97	-7827420207675105280
+biology	-98	-8940944155843461120
+biology	0	523
+biology	100	-8782213262837530624
+biology	111	6933731240564056064
+biology	113	664
+biology	114	1343
+biology	115	-7017212700635545600
+biology	117	120
+biology	12	2492
+biology	120	3443
+biology	124	-6919476845891313664
+biology	18	-7255010240787030016
+biology	2	-8387347109404286976
+biology	27	-9049720998034137088
+biology	3	-9075486079396069376
+biology	30	835
+biology	34	2517
+biology	35	8017403886247927808
+biology	36	2539
+biology	4	482
+biology	41	7052226236896256000
+biology	47	3974
+biology	5	7376467688511455232
+biology	51	3728
+biology	52	9084402694981533696
+biology	54	-7330203470474985472
+biology	55	1785
+biology	57	9083704659251798016
+biology	6	-7797149520019062784
+biology	64	2400
+biology	7	454
+biology	8	950
+biology	83	-8172827216441573376
+biology	86	3199
+biology	89	7747874976739016704
+biology	90	-7598782894648565760
+biology	91	-8131997716860526592
+biology	NULL	9116137265342169088
+chemistry	-101	2599
+chemistry	-103	-8099313480512716800
+chemistry	-108	7255302164215013376
+chemistry	-109	-7624057992767782912
+chemistry	-110	3430
+chemistry	-115	3307
+chemistry	-117	8014986215157530624
+chemistry	-122	-8232763638546694144
+chemistry	-125	3418
+chemistry	-127	-7637755520917741568
+chemistry	-2	-7500200359698907136
+chemistry	-23	-8518060755719585792
+chemistry	-26	-9178166810751909888
+chemistry	-3	3245
+chemistry	-30	2001
+chemistry	-31	-9080956291212132352
+chemistry	-33	7545689659010949120
+chemistry	-37	NULL
+chemistry	-40	4054
+chemistry	-44	7596563216912211968
+chemistry	-46	-7610137349734883328
+chemistry	-52	4056
+chemistry	-56	-7663293054873812992
+chemistry	-57	-7362189611124563968
+chemistry	-59	-7572262898020278272
+chemistry	-61	-8021859935185928192
+chemistry	-68	-8813211231120031744
+chemistry	-75	375
+chemistry	-8	8487573502287478784
+chemistry	-81	-8664806103426252800
+chemistry	-89	2968
+chemistry	-90	1291
+chemistry	-91	9030480306789818368
+chemistry	-95	-7470307155642245120
+chemistry	-98	9005866015985713152
+chemistry	102	-7907355742053883904
+chemistry	104	3609
+chemistry	110	NULL
+chemistry	113	7149417430082027520
+chemistry	116	7768984605670604800
+chemistry	124	1914
+chemistry	126	9083076230151864320
+chemistry	14	7198687580227043328
+chemistry	16	7229607057201127424
+chemistry	19	NULL
+chemistry	25	236
+chemistry	27	1826
+chemistry	3	2933
+chemistry	32	1775
+chemistry	37	41
+chemistry	39	2663
+chemistry	4	2138
+chemistry	41	8693036785094565888
+chemistry	46	1280
+chemistry	51	392
+chemistry	55	-8843859708698583040
+chemistry	64	9091085792947666944
+chemistry	74	837
+chemistry	75	3860
+chemistry	78	2476
+chemistry	79	8644602243484803072
+chemistry	8	873
+chemistry	83	1286
+chemistry	88	-8082793390939193344
+chemistry	90	7794244032613703680
+chemistry	91	3866
+chemistry	96	-7395343938785738752
+chemistry	NULL	8854677881758162944
+debate	-106	1948
+debate	-108	2816
+debate	-114	2085
+debate	-117	-8269917980278980608
+debate	-12	7682327310082531328
+debate	-127	8337549596011102208
+debate	-15	34
+debate	-24	8554899472487596032
+debate	-26	471
+debate	-27	3835
+debate	-28	-8379109122834997248
+debate	-29	-7476082621253402624
+debate	-3	8519937082746634240
+debate	-32	-7831320202242228224
+debate	-35	7062605127422894080
+debate	-41	-8856821118526734336
+debate	-46	1234
+debate	-47	49
+debate	-50	7061498706968428544
+debate	-52	7947544013461512192
+debate	-57	-8581979259158929408
+debate	-67	1521
+debate	-69	7948803266578161664
+debate	-70	8928133990107881472
+debate	-72	7720187583697502208
+debate	-82	NULL
+debate	-85	2341
+debate	-86	1095
+debate	-87	-8028910243475038208
+debate	-88	8345435427356090368
+debate	-95	1368
+debate	-96	8688483860094599168
+debate	-98	8011602724663336960
+debate	113	1995
+debate	124	3691
+debate	17	8560526613401714688
+debate	19	8501910015960735744
+debate	20	-8832750849949892608
+debate	26	738
+debate	34	3060
+debate	36	7792036342592348160
+debate	41	7039820685967343616
+debate	42	8557218322962644992
+debate	5	-8649711322250362880
+debate	52	-7637494527844343808
+debate	54	7534145866886782976
+debate	56	-7161165959057334272
+debate	63	1243
+debate	67	2692
+debate	68	8045070943673671680
+debate	69	-7822452149325094912
+debate	70	7534549597202194432
+debate	73	8372408423196270592
+debate	75	2463
+debate	77	1168
+debate	85	8822384228057604096
+debate	87	8146288732715196416
+debate	89	2089
+debate	90	9078604269481148416
+debate	93	455
+debate	94	-7506254246954500096
+debate	NULL	1777
+education	-101	7165364563962191872
+education	-105	1066
+education	-109	8150115791664340992
+education	-111	7296164580491075584
+education	-113	-8142667274351345664
+education	-125	2214
+education	-127	-8302817097848307712
+education	-13	695
+education	-15	-6960947572095770624
+education	-24	1509
+education	-28	7735566678126616576
+education	-34	-7707242953271500800
+education	-36	694
+education	-37	923
+education	-38	3749
+education	-43	3911
+education	-44	-8219876839318716416
+education	-52	9050032047355125760
+education	-55	7989119273552158720
+education	-61	7917494645725765632
+education	-64	6974475559697768448
+education	-69	2805
+education	-72	3021
+education	-77	9148071980848742400
+education	-86	8473699639908261888
+education	-87	345
+education	-89	1999
+education	-9	928
+education	-92	2811
+education	-93	7343171468838567936
+education	-96	-8022573309127000064
+education	-98	1341
+education	102	7375521127126089728
+education	103	7384150968511315968
+education	110	7452756603516190720
+education	111	3824
+education	113	8994608999945125888
+education	114	1846
+education	116	-8930307926221807616
+education	119	7548958830580563968
+education	12	8454154705460666368
+education	125	8577096957495025664
+education	17	2232
+education	27	-8454143651040444416
+education	33	-8488247955875618816
+education	34	379
+education	35	7473537548003352576
+education	38	-8244116388227104768
+education	4	-8034414142083170304
+education	41	7584007864107778048
+education	45	238
+education	46	7892281003266408448
+education	49	8461498293348065280
+education	51	-7623359796281999360
+education	53	-7600138468036386816
+education	59	7432998950057975808
+education	61	NULL
+education	66	7652123583449161728
+education	73	-7185369278665605120
+education	75	9054887854393950208
+education	77	3206
+education	81	-6970396058557005824
+education	82	1058
+education	85	7961909238130270208
+education	89	3409
+education	95	3764
+education	NULL	2903
+forestry	-1	-9071565764086521856
+forestry	-10	3962
+forestry	-105	2724
+forestry	-109	275
+forestry	-11	9194388393453060096
+forestry	-116	7997694023324975104
+forestry	-118	8272001752345690112
+forestry	-12	-8205148279289085952
+forestry	-126	9086905513121890304
+forestry	-23	7790728456522784768
+forestry	-3	1165
+forestry	-34	2524
+forestry	-42	268
+forestry	-49	417
+forestry	-50	2283
+forestry	-51	-9002912355472736256
+forestry	-58	7989160253372817408
+forestry	-68	-6988970700649168896
+forestry	-73	-7228589258642194432
+forestry	-74	1643
+forestry	-77	1247
+forestry	-79	1937
+forestry	-8	7955126053367119872
+forestry	-80	1165
+forestry	-81	-8922409715403112448
+forestry	-83	2752
+forestry	-94	-8051871680800120832
+forestry	-95	2485
+forestry	-98	3089
+forestry	0	-7603467428164009984
+forestry	102	255
+forestry	106	8570983266408103936
+forestry	107	999
+forestry	11	3467
+forestry	111	-7138415011665043456
+forestry	115	8573305425181941760
+forestry	117	-7120456708338688000
+forestry	12	8160662610166194176
+forestry	120	7784169796350730240
+forestry	19	-8760655406971863040
+forestry	29	-7831595638727565312
+forestry	31	3663
+forestry	35	1371
+forestry	37	950
+forestry	39	6933451028794925056
+forestry	40	-8763062627136864256
+forestry	44	-8559252110266564608
+forestry	45	8553195689344991232
+forestry	50	615
+forestry	51	2580
+forestry	52	8514851182589771776
+forestry	55	-9091113592821972992
+forestry	56	7418271723644403712
+forestry	7	3118
+forestry	71	8779711700787298304
+forestry	78	-7845896959112658944
+forestry	79	-7818454479651135488
+forestry	8	7299197687217856512
+forestry	87	1981
+forestry	90	8829545979081744384
+forestry	93	1422
+forestry	94	-8469607298426437632
+forestry	97	-8845239510002753536
+forestry	NULL	9123116008004288512
+geology	-100	3002
+geology	-101	-7078068944081002496
+geology	-106	-7661250850555633664
+geology	-108	-8604758220106014720
+geology	-112	1462
+geology	-115	-8660149447361404928
+geology	-117	3421
+geology	-124	3190
+geology	-16	8979012655944220672
+geology	-18	7370803940448305152
+geology	-21	91
+geology	-23	1537
+geology	-30	-8127494999848919040
+geology	-31	871
+geology	-32	7487538600082554880
+geology	-34	8708845895460577280
+geology	-35	-7510418793070075904
+geology	-48	1342
+geology	-50	8120593157178228736
+geology	-53	-6988811476286873600
+geology	-54	-7328087811698909184
+geology	-57	-7594824008626372608
+geology	-59	7621013099259527168
+geology	-68	-8203008052020879360
+geology	-72	8391785334471589888
+geology	-75	-7883252982752665600
+geology	-79	1614
+geology	-80	3446
+geology	-82	8817665768680906752
+geology	-84	-7511202710200885248
+geology	-94	268
+geology	-96	-6957946688477274112
+geology	1	-8870673219965001728
+geology	100	7528074274555305984
+geology	101	7701723309715685376
+geology	102	-8297230235506343936
+geology	116	3073
+geology	121	213
+geology	124	7779486624537370624
+geology	127	-7703540456272994304
+geology	14	-8136227554401107968
+geology	18	3763
+geology	21	8850055384477401088
+geology	23	NULL
+geology	26	-7145585429014888448
+geology	28	2183
+geology	31	1892
+geology	33	7689489436826804224
+geology	37	2762
+geology	38	-8395998375405912064
+geology	4	9020143715350814720
+geology	49	8854715632851345408
+geology	5	7784489776013295616
+geology	58	-8856151919723003904
+geology	6	3203
+geology	72	2179
+geology	82	6967631925774639104
+geology	84	8316336224427483136
+geology	86	-9101953184875757568
+geology	89	1346
+geology	9	-8379964450833367040
+geology	92	-7833618000492109824
+geology	93	NULL
+geology	95	-7838598833900584960
+geology	NULL	8171188598958407680
+history	-1	-8544299740525461504
+history	-101	154
+history	-103	-7623405558242500608
+history	-104	1769
+history	-105	3701
+history	-12	154
+history	-124	-8318886086186213376
+history	-125	1856
+history	-15	2013
+history	-18	3770
+history	-19	1791
+history	-24	3079
+history	-26	NULL
+history	-34	-7192529627893858304
+history	-37	3946
+history	-42	8987827141270880256
+history	-5	1667
+history	-54	2393
+history	-58	8376440110255243264
+history	-61	8325227661920133120
+history	-67	-7679894005808693248
+history	-75	-8783777723063099392
+history	-79	1796
+history	-8	2187
+history	-89	3418
+history	-90	65
+history	-91	1651
+history	-98	2046
+history	1	8637720762289659904
+history	100	263
+history	108	-7800879252150779904
+history	112	-7419068456205385728
+history	113	3728
+history	114	289
+history	126	2810
+history	127	-7884460946615984128
+history	14	6947488599548215296
+history	18	-7778829032042790912
+history	2	7648729477297987584
+history	25	3866
+history	50	3874
+history	51	8135164922674872320
+history	52	-6921654334727036928
+history	57	3690
+history	58	3664
+history	59	7514552840617558016
+history	61	-8411282676082565120
+history	62	3024
+history	7	7647481735646363648
+history	71	-8730803262481580032
+history	72	7099005292698550272
+history	73	2776
+history	75	-7547245548870025216
+history	78	-9102482277760983040
+history	84	-7162299524557471744
+history	92	921
+history	95	3769
+history	98	3588
+history	NULL	3231
+industrial engineering	-1	8087737899452432384
+industrial engineering	-101	-7617860842651017216
+industrial engineering	-11	-7802538500225777664
+industrial engineering	-110	2560
+industrial engineering	-124	3249
+industrial engineering	-22	-7540104552219860992
+industrial engineering	-28	724
+industrial engineering	-30	3472
+industrial engineering	-31	1520
+industrial engineering	-35	1726
+industrial engineering	-38	-8581765103969312768
+industrial engineering	-43	504
+industrial engineering	-47	2911
+industrial engineering	-49	181
+industrial engineering	-5	2485
+industrial engineering	-53	68
+industrial engineering	-57	-8521578237232529408
+industrial engineering	-58	650
+industrial engineering	-6	9185458640237641728
+industrial engineering	-65	9112400579327483904
+industrial engineering	-68	-9206329156028112896
+industrial engineering	-7	2420
+industrial engineering	-72	3208
+industrial engineering	-85	-7512289590991544320
+industrial engineering	-87	7486884806277611520
+industrial engineering	-96	688
+industrial engineering	-98	8368012468775608320
+industrial engineering	102	2900
+industrial engineering	104	-8875546987176206336
+industrial engineering	105	8071961599867387904
+industrial engineering	106	878
+industrial engineering	113	1862
+industrial engineering	126	-6968892545529896960
+industrial engineering	27	-8445801063348281344
+industrial engineering	29	3365
+industrial engineering	3	3682
+industrial engineering	32	364
+industrial engineering	33	-7240213957902663680
+industrial engineering	36	1158
+industrial engineering	42	2506
+industrial engineering	43	3725
+industrial engineering	48	355
+industrial engineering	54	691
+industrial engineering	58	8195103847607967744
+industrial engineering	59	8808467247666241536
+industrial engineering	7	7573530789362262016
+industrial engineering	70	9091082386452684800
+industrial engineering	73	-7011425384222244864
+industrial engineering	78	-9136398397785948160
+industrial engineering	79	-8948335470186373120
+industrial engineering	83	NULL
+industrial engineering	95	8192304692696383488
+industrial engineering	96	-7910019233726242816
+industrial engineering	98	-7524170566881329152
+industrial engineering	99	-9215144824304721920
+industrial engineering	NULL	3060
+joggying	-1	7844258063629852672
+joggying	-100	7080269176324218880
+joggying	-101	-8675661101615489024
+joggying	-110	-8870186814744420352
+joggying	-119	2189
+joggying	-121	3103
+joggying	-125	7823874904139849728
+joggying	-14	-8358130693961195520
+joggying	-15	-8658387566611996672
+joggying	-24	-7083646746411720704
+joggying	-27	2790
+joggying	-30	2217
+joggying	-40	3781
+joggying	-43	8323460620425330688
+joggying	-47	NULL
+joggying	-48	8351163199364390912
+joggying	-55	8208354137450766336
+joggying	-57	8936639033158410240
+joggying	-61	8687042963221159936
+joggying	-62	-8425998949410889728
+joggying	-64	2373
+joggying	-69	7678790769408172032
+joggying	-73	8011181697250631680
+joggying	-76	NULL
+joggying	-77	7626715182847090688
+joggying	-79	-7939634346485858304
+joggying	-8	8723248113030782976
+joggying	-80	8254763178969915392
+joggying	104	1864
+joggying	105	2002
+joggying	118	-8108693586698706944
+joggying	119	-7892780594910871552
+joggying	121	1987
+joggying	123	NULL
+joggying	125	2842
+joggying	13	8525894870444638208
+joggying	20	425
+joggying	25	1556
+joggying	26	2325
+joggying	27	1290
+joggying	28	-8858063395050110976
+joggying	37	-7378096180613840896
+joggying	43	7260908278294560768
+joggying	46	8905330479248064512
+joggying	48	1337
+joggying	49	-8047774491688255488
+joggying	52	2803
+joggying	57	8183233196086214656
+joggying	61	3253
+joggying	62	-8359839265974165504
+joggying	69	8302473563519950848
+joggying	70	1965
+joggying	72	976
+joggying	74	-7751265769984491520
+joggying	80	7454442625055145984
+joggying	85	7748799008146366464
+joggying	87	94
+joggying	92	7818464507324121088
+joggying	93	8416121695917498368
+joggying	94	7599019810193211392
+joggying	97	2565
+joggying	99	1863
+joggying	NULL	-8877053610728161280
+kindergarten	-106	-8103788088118018048
+kindergarten	-113	259
+kindergarten	-126	2509
+kindergarten	-18	7696737688942567424
+kindergarten	-26	7226360892091416576
+kindergarten	-40	7084659344078970880
+kindergarten	-42	-7094827141662539776
+kindergarten	-54	8896237972875370496
+kindergarten	-57	-7949309059286163456
+kindergarten	-59	8991071342495531008
+kindergarten	-60	7027529814236192768
+kindergarten	-69	1813
+kindergarten	-74	-8632237187473088512
+kindergarten	-75	7017956982081404928
+kindergarten	-78	7524958388842078208
+kindergarten	-79	-7751427073017544704
+kindergarten	-8	-7420448501073051648
+kindergarten	-92	NULL
+kindergarten	-95	8983912573761167360
+kindergarten	-98	982
+kindergarten	10	3111
+kindergarten	100	108
+kindergarten	101	7166263463731421184
+kindergarten	109	2962
+kindergarten	111	2320
+kindergarten	116	9207927479837319168
+kindergarten	118	-7819437864839495680
+kindergarten	120	7779735136559579136
+kindergarten	122	-7079898537463537664
+kindergarten	127	2223
+kindergarten	16	7753882935005880320
+kindergarten	18	-7395553021620731904
+kindergarten	19	-8104684579106914304
+kindergarten	23	8871707618793996288
+kindergarten	29	3248
+kindergarten	37	3493
+kindergarten	46	958
+kindergarten	48	-8572949572756774912
+kindergarten	51	8543177193114779648
+kindergarten	52	8868529429494071296
+kindergarten	55	-7404057145074712576
+kindergarten	61	7710447533880614912
+kindergarten	66	2735
+kindergarten	69	73
+kindergarten	82	530
+kindergarten	84	7998357471114969088
+kindergarten	85	7926898770090491904
+kindergarten	86	NULL
+kindergarten	90	8972161729142095872
+kindergarten	92	8716401555586727936
+kindergarten	96	-7429331808102899712
+kindergarten	NULL	6933001829416034304
+linguistics	-101	-8017791189288869888
+linguistics	-113	7614435638888210432
+linguistics	-12	NULL
+linguistics	-122	-7695491171376291840
+linguistics	-127	-8896045754034978816
+linguistics	-13	7566273236152721408
+linguistics	-14	-9203804401302323200
+linguistics	-16	2662
+linguistics	-17	9075404705968840704
+linguistics	-2	-7501803640821456896
+linguistics	-20	7620183559667081216
+linguistics	-22	8489584373231919104
+linguistics	-28	7345991518378442752
+linguistics	-34	3958
+linguistics	-4	3789
+linguistics	-41	1811
+linguistics	-52	-8651641150831362048
+linguistics	-53	NULL
+linguistics	-6	8145750910080745472
+linguistics	-67	NULL
+linguistics	-68	8184799300477943808
+linguistics	-69	-7104310188119834624
+linguistics	-70	2277
+linguistics	-73	-8916987977485312000
+linguistics	-77	7686992843032010752
+linguistics	-78	8518454006987948032
+linguistics	-86	NULL
+linguistics	-87	2244
+linguistics	-89	8489735221193138176
+linguistics	-90	-7739424919198187520
+linguistics	0	9023663198045544448
+linguistics	1	1386
+linguistics	10	2846
+linguistics	100	3622
+linguistics	11	83
+linguistics	113	7217123582035116032
+linguistics	115	-6920172215209426944
+linguistics	123	7762823913046556672
+linguistics	125	1074
+linguistics	126	9067985867711291392
+linguistics	18	1261
+linguistics	3	7386087924003676160
+linguistics	33	1086
+linguistics	37	1777
+linguistics	42	9117063974299148288
+linguistics	44	9136548192574529536
+linguistics	50	9188173682239275008
+linguistics	53	1447
+linguistics	6	8558000156325707776
+linguistics	64	1704
+linguistics	67	-7201085131997011968
+linguistics	7	9048297564833079296
+linguistics	72	204
+linguistics	73	2502
+linguistics	83	NULL
+linguistics	89	8116738401948377088
+linguistics	93	-7879864376629567488
+linguistics	96	803
+linguistics	98	7898670840507031552
+linguistics	NULL	8383159090746204160
+mathematics	-100	7662037650719850496
+mathematics	-101	-8756989568739835904
+mathematics	-103	658
+mathematics	-117	2786
+mathematics	-118	-6997233584896229376
+mathematics	-120	3322
+mathematics	-122	-7453525026342617088
+mathematics	-124	8290014929764040704
+mathematics	-127	-7158472098920390656
+mathematics	-19	3159
+mathematics	-21	-7661192563533062144
+mathematics	-31	681
+mathematics	-33	7461153404961128448
+mathematics	-40	-8518258741831680000
+mathematics	-45	7237310132329488384
+mathematics	-46	8210813831744118784
+mathematics	-49	8156018594610790400
+mathematics	-50	7746402369011277824
+mathematics	-52	8435912708683087872
+mathematics	-57	8219326436390821888
+mathematics	-66	-7894382303337832448
+mathematics	-7	8396433451610652672
+mathematics	-75	-7221474017515347968
+mathematics	-77	7581614118458335232
+mathematics	-79	8111757081791733760
+mathematics	-81	7753359568986636288
+mathematics	-88	-7115054815375073280
+mathematics	-91	8223732800007864320
+mathematics	-95	490
+mathematics	-98	-7425160895830573056
+mathematics	-99	NULL
+mathematics	0	8282648443538710528
+mathematics	10	7259955893466931200
+mathematics	102	690
+mathematics	107	8391407951622815744
+mathematics	111	2607
+mathematics	114	3094
+mathematics	22	6934570741217755136
+mathematics	23	7271887863395459072
+mathematics	25	-7333362172439035904
+mathematics	3	-8887058200926093312
+mathematics	32	2073
+mathematics	35	-7558524160894427136
+mathematics	38	-7557017910095650816
+mathematics	39	2579
+mathematics	46	-7759425383684849664
+mathematics	48	1366
+mathematics	50	3029
+mathematics	53	7549858023389003776
+mathematics	55	2227
+mathematics	56	898
+mathematics	58	3830
+mathematics	59	7487338208419823616
+mathematics	6	1701
+mathematics	62	883
+mathematics	63	8156782979767238656
+mathematics	65	1648
+mathematics	76	8927691194719174656
+mathematics	79	7871189141676998656
+mathematics	80	NULL
+mathematics	82	1093
+mathematics	87	3707
+mathematics	92	-8754992450211692544
+mathematics	98	2398
+mathematics	NULL	9001907486943993856
+nap time	-101	2229
+nap time	-102	-6938706403992854528
+nap time	-104	-7709958788604936192
+nap time	-113	8451612303224520704
+nap time	-115	-7576194692683563008
+nap time	-119	2715
+nap time	-122	8660248367767076864
+nap time	-15	7401968422230032384
+nap time	-2	8697823501349609472
+nap time	-31	939
+nap time	-4	736
+nap time	-41	7801697837312884736
+nap time	-45	7310869618402910208
+nap time	-49	8079573715140485120
+nap time	-54	-8562524688907485184
+nap time	-6	7843804446688264192
+nap time	-61	1524
+nap time	-71	9136234417125007360
+nap time	-85	3932
+nap time	-91	85
+nap time	0	1940
+nap time	103	361
+nap time	104	7125231541858205696
+nap time	105	7045967493826387968
+nap time	107	9114850402293882880
+nap time	108	1189
+nap time	118	8910706980937261056
+nap time	16	NULL
+nap time	23	7432428551399669760
+nap time	27	1454
+nap time	3	9064847977742032896
+nap time	31	6964585306125008896
+nap time	35	2689
+nap time	42	8652485812846567424
+nap time	51	-7881262505761710080
+nap time	52	2463
+nap time	56	-8240034910581153792
+nap time	6	7871554728617025536
+nap time	62	NULL
+nap time	69	NULL
+nap time	70	66
+nap time	73	7782245855193874432
+nap time	76	-8543982423727128576
+nap time	80	2647
+nap time	89	-7888051992910274560
+nap time	90	7761834341179375616
+nap time	92	8540237852367446016
+nap time	93	-8203075743525806080
+nap time	98	7691062622443044864
+nap time	NULL	-8430283518005846016
+opthamology	-111	8244041599171862528
+opthamology	-118	2072
+opthamology	-121	3879
+opthamology	-122	9096395849845194752
+opthamology	-14	3235
+opthamology	-17	-7629401308029976576
+opthamology	-18	2393
+opthamology	-22	7718825401976684544
+opthamology	-24	383
+opthamology	-27	3599
+opthamology	-28	8849475396952514560
+opthamology	-30	8048726769133592576
+opthamology	-33	1613
+opthamology	-35	2274
+opthamology	-44	2675
+opthamology	-48	-7877598807023386624
+opthamology	-49	8854495099223375872
+opthamology	-5	7411793502161182720
+opthamology	-55	2177
+opthamology	-59	3021
+opthamology	-63	470
+opthamology	-73	908
+opthamology	-75	8779073705407963136
+opthamology	-77	8631515095562887168
+opthamology	-78	-7303847963918393344
+opthamology	-79	-9117959922369060864
+opthamology	-8	7333512171174223872
+opthamology	-82	1606
+opthamology	-86	-9066993118333706240
+opthamology	-91	2255
+opthamology	-97	8752150411997356032
+opthamology	-99	-7875953567586451456
+opthamology	100	-7532751268425261056
+opthamology	104	1866
+opthamology	117	2835
+opthamology	120	-8340523561480437760
+opthamology	122	3462
+opthamology	125	965
+opthamology	127	412
+opthamology	21	7069729473166090240
+opthamology	39	2745
+opthamology	4	9131533983989358592
+opthamology	41	NULL
+opthamology	48	3159
+opthamology	49	-7904188195431661568
+opthamology	5	130
+opthamology	52	-7081500255163727872
+opthamology	53	-7055760785575665664
+opthamology	55	2335
+opthamology	68	-8866442231663067136
+opthamology	69	2144
+opthamology	74	-7708932208121225216
+opthamology	76	-7647020450676146176
+opthamology	77	-6934304742087655424
+opthamology	79	1508
+opthamology	81	8920344895701393408
+opthamology	84	927
+opthamology	87	6924820982050758656
+opthamology	88	-8593419958317056000
+opthamology	89	-7978782649203228672
+opthamology	92	NULL
+opthamology	96	-8418913260807217152
+opthamology	97	8935252708196999168
+opthamology	NULL	8856674723376668672
+philosophy	-100	-7603569103205916672
+philosophy	-103	8144552446127972352
+philosophy	-105	-7172594404186693632
+philosophy	-11	-7953426740065312768
+philosophy	-110	7471208109437304832
+philosophy	-115	1719
+philosophy	-119	-8507279516485566464
+philosophy	-121	342
+philosophy	-125	9199741683232399360
+philosophy	-17	-7515996202498473984
+philosophy	-25	-7878145001776152576
+philosophy	-26	-7344146703223496704
+philosophy	-27	-8710298418608619520
+philosophy	-39	1141
+philosophy	-40	3478
+philosophy	-50	8875745082589929472
+philosophy	-51	2180
+philosophy	-52	2824
+philosophy	-53	6987889924212203520
+philosophy	-55	3366
+philosophy	-56	-7593363318079610880
+philosophy	-61	7271786885641666560
+philosophy	-68	9185952983951343616
+philosophy	-69	2897
+philosophy	-77	-7344947507044466688
+philosophy	-78	1752
+philosophy	-80	-7035132060308643840
+philosophy	-92	8649296591032172544
+philosophy	-93	8720504651219001344
+philosophy	-95	3460
+philosophy	-99	-8030058711611629568
+philosophy	104	3541
+philosophy	108	6969599299897163776
+philosophy	117	2855
+philosophy	118	-7356685674003021824
+philosophy	120	-8300526097982226432
+philosophy	123	2140
+philosophy	20	8290944180915871744
+philosophy	21	-7903158849011843072
+philosophy	22	7892026679115554816
+philosophy	29	2848
+philosophy	31	7659279803863146496
+philosophy	34	-7058986555327307776
+philosophy	38	7238339720750948352
+philosophy	41	8792059919353348096
+philosophy	43	3555
+philosophy	45	8362046808797306880
+philosophy	48	6991316084916879360
+philosophy	64	535
+philosophy	67	2715
+philosophy	68	1693
+philosophy	73	8283099811330506752
+philosophy	8	-8088337436168830976
+philosophy	83	281
+philosophy	96	8682955459667951616
+philosophy	98	8613562211893919744
+philosophy	NULL	8759089349412847616
+quiet hour	-1	9085434340468473856
+quiet hour	-104	-7037638331316469760
+quiet hour	-105	918
+quiet hour	-111	8424515140664360960
+quiet hour	-114	8419958579638157312
+quiet hour	-119	7608447395949109248
+quiet hour	-121	7031339012080549888
+quiet hour	-123	8769199243315814400
+quiet hour	-127	1099
+quiet hour	-14	997
+quiet hour	-25	NULL
+quiet hour	-31	-7744462446680375296
+quiet hour	-33	7637152193832886272
+quiet hour	-41	7231399302953377792
+quiet hour	-42	NULL
+quiet hour	-45	7378993334503694336
+quiet hour	-48	8398862954249560064
+quiet hour	-50	7998687089080467456
+quiet hour	-52	8201303040648052736
+quiet hour	-55	8569030475428511744
+quiet hour	-56	3567
+quiet hour	-65	NULL
+quiet hour	-66	383
+quiet hour	-68	6982145326341423104
+quiet hour	-73	8793387410919038976
+quiet hour	-76	-7792903881635938304
+quiet hour	-8	-7329767178250018816
+quiet hour	-87	9182828596851990528
+quiet hour	-88	2919
+quiet hour	0	7450416810848313344
+quiet hour	110	2186
+quiet hour	112	7436133434239229952
+quiet hour	115	1641
+quiet hour	120	919
+quiet hour	121	1506
+quiet hour	123	7800332581637259264
+quiet hour	13	2560
+quiet hour	21	-8293833565967810560
+quiet hour	23	1880
+quiet hour	29	2323
+quiet hour	30	9062227900376203264
+quiet hour	33	7528211148397944832
+quiet hour	35	-7046180371529351168
+quiet hour	38	2725
+quiet hour	43	8069531888205086720
+quiet hour	58	2461
+quiet hour	6	8795069490394882048
+quiet hour	60	NULL
+quiet hour	66	3770
+quiet hour	7	2131
+quiet hour	71	500
+quiet hour	74	-7902517224300036096
+quiet hour	8	-7265998318110711808
+quiet hour	80	7006803044329021440
+quiet hour	82	8853989376829833216
+quiet hour	84	8920533610804609024
+quiet hour	93	-7873753603299540992
+quiet hour	98	-9008631121684832256
+quiet hour	NULL	7874764415950176256
+religion	-104	820
+religion	-106	NULL
+religion	-125	2106
+religion	-23	3183
+religion	-24	2194
+religion	-26	1039
+religion	-28	-8857335871148171264
+religion	-29	8221561626658881536
+religion	-3	203
+religion	-32	1537
+religion	-35	7295926343524163584
+religion	-38	-8140349174954893312
+religion	-41	7266437490436341760
+religion	-42	-9213132862973829120
+religion	-44	-8807361476639629312
+religion	-56	782
+religion	-60	7700734109530767360
+religion	-62	913
+religion	-64	-8430370933326536704
+religion	-69	-7433265617153343488
+religion	-7	-6968771079156654080
+religion	-70	-7461750143936897024
+religion	-71	296
+religion	-76	-8959796625322680320
+religion	-77	NULL
+religion	-78	7497306924248834048
+religion	-81	8463868417649524736
+religion	-9	-8696162322976997376
+religion	-93	491
+religion	-94	9174894805640142848
+religion	0	8996824426131390464
+religion	102	-8471480409335513088
+religion	103	8815398225009967104
+religion	106	3058
+religion	107	3810
+religion	110	-7849504559236210688
+religion	115	-7712425776235274240
+religion	120	5
+religion	123	979
+religion	124	8899122608190930944
+religion	15	4088
+religion	17	1780
+religion	2	8995562121346260992
+religion	29	-7612466483992051712
+religion	31	1021
+religion	38	1751
+religion	4	2803
+religion	44	-8509547439040757760
+religion	45	-8070535484085895168
+religion	49	8836228556823977984
+religion	5	-7159700138947862528
+religion	52	7250237407877382144
+religion	54	9211455920344088576
+religion	58	3467
+religion	67	8113585123802529792
+religion	70	7919597361814577152
+religion	73	9053187076403060736
+religion	74	815
+religion	76	-7273694358642851840
+religion	78	-8051587217208967168
+religion	82	3119
+religion	92	2067
+religion	93	3848
+religion	96	-8317591428117274624
+religion	97	3456
+religion	NULL	7295502697317097472
+study skills	-1	7381659098423926784
+study skills	-100	-8962547695651323904
+study skills	-106	8002769767000145920
+study skills	-107	8785153741735616512
+study skills	-117	-8400045653258444800
+study skills	-126	3507
+study skills	-127	-8559008501282832384
+study skills	-13	7195454019231834112
+study skills	-14	3913
+study skills	-17	3144
+study skills	-22	7204802700490858496
+study skills	-26	-9187662685618348032
+study skills	-27	961
+study skills	-3	707
+study skills	-33	-7213775605408178176
+study skills	-36	-8485389240529354752
+study skills	-4	1094
+study skills	-5	2412
+study skills	-52	3533
+study skills	-6	-7296096276653391872
+study skills	-65	8332670681629106176
+study skills	-73	-8535957064499879936
+study skills	-76	NULL
+study skills	-81	612
+study skills	-82	NULL
+study skills	-86	3990
+study skills	-88	2551
+study skills	101	2295
+study skills	106	-8161047750470279168
+study skills	107	9132009829414584320
+study skills	110	-7998947380180819968
+study skills	115	7344029858387820544
+study skills	119	2264
+study skills	123	-7797151404935618560
+study skills	18	743
+study skills	2	-7507578199583694848
+study skills	21	7274777328897802240
+study skills	23	8333523087360901120
+study skills	25	-8704234107608203264
+study skills	28	-8494118409594650624
+study skills	29	-7220731681653604352
+study skills	3	7291432593139507200
+study skills	30	2637
+study skills	35	-7488415863027367936
+study skills	39	8897901899039473664
+study skills	40	3961
+study skills	47	-7049618574399692800
+study skills	49	-7326863346317598720
+study skills	50	7054271419461812224
+study skills	54	7128222874437238784
+study skills	55	1368
+study skills	58	-7030489936116252672
+study skills	62	8372588378498777088
+study skills	63	2512
+study skills	66	-7497303453253402624
+study skills	68	3725
+study skills	72	-8028275725610909696
+study skills	77	7354813692542304256
+study skills	80	-9078662294976061440
+study skills	83	-7779270198785875968
+study skills	92	3059
+study skills	95	7393308503950548992
+study skills	96	-8046189486447017984
+study skills	NULL	8201491077550874624
+topology	-1	7391208370547269632
+topology	-102	8783241818558193664
+topology	-105	-7824788571789279232
+topology	-106	NULL
+topology	-116	-7964801953178091520
+topology	-122	3941
+topology	-21	-8615168537390571520
+topology	-25	244
+topology	-31	-7330413050756235264
+topology	-32	-8923529803981905920
+topology	-36	3588
+topology	-41	1153
+topology	-42	2434
+topology	-44	-8664374244449050624
+topology	-5	1439
+topology	-50	8168742078705262592
+topology	-57	8895174927321243648
+topology	-58	2619
+topology	-60	1493
+topology	-71	4037
+topology	-74	8773222500321361920
+topology	-78	7347732772348870656
+topology	-86	2515
+topology	-88	-6975459232300236800
+topology	-96	3568
+topology	-98	7212090742612467712
+topology	105	462
+topology	107	112
+topology	11	3333
+topology	119	8525336514806317056
+topology	121	7933040277013962752
+topology	127	-8835408234247168000
+topology	13	8411494452500930560
+topology	14	8367680396909404160
+topology	18	-9189155542884474880
+topology	26	2218
+topology	30	2348
+topology	38	7410096605330227200
+topology	41	2608
+topology	42	8547243497773457408
+topology	47	7705445437881278464
+topology	50	NULL
+topology	52	1899
+topology	54	7091300332052062208
+topology	55	-6935038507792801792
+topology	58	-7616522969329262592
+topology	59	7212016545671348224
+topology	61	1914
+topology	63	-8961059046745669632
+topology	67	3680
+topology	69	2358
+topology	7	7339426767877390336
+topology	71	812
+topology	80	4075
+topology	81	22
+topology	83	1477
+topology	86	294
+topology	87	8900180888218329088
+topology	94	8146492373537660928
+topology	NULL	8639254009546055680
+undecided	-10	NULL
+undecided	-104	8625937019655200768
+undecided	-105	4030
+undecided	-112	367
+undecided	-114	8761174805938331648
+undecided	-115	NULL
+undecided	-116	7013693841855774720
+undecided	-117	7086206629592252416
+undecided	-118	4078
+undecided	-120	7242751359672631296
+undecided	-13	3823
+undecided	-19	-8523434203900674048
+undecided	-23	1371
+undecided	-28	4024
+undecided	-29	1774
+undecided	-41	7690986322714066944
+undecided	-43	7491898395977523200
+undecided	-51	481
+undecided	-52	3071
+undecided	-53	1827
+undecided	-62	-8914039133569400832
+undecided	-69	3907
+undecided	-78	-9157613004431998976
+undecided	-8	8470141334513098752
+undecided	-83	7175638927948562432
+undecided	-84	-9109392978217484288
+undecided	-90	NULL
+undecided	-93	-7777884099756122112
+undecided	-96	7697541332524376064
+undecided	0	7944741547145502720
+undecided	1	1671
+undecided	11	9089435102788009984
+undecided	111	9180098147855769600
+undecided	114	3006
+undecided	119	168
+undecided	123	1187
+undecided	124	7888238729321496576
+undecided	13	-7700203302632210432
+undecided	14	9190466190353661952
+undecided	27	3622
+undecided	30	1910
+undecided	33	-8465978403747037184
+undecided	37	-7507424948896415744
+undecided	45	-8335810316927213568
+undecided	47	-8503573595507761152
+undecided	50	7570474972934488064
+undecided	51	1545
+undecided	56	8583916402383601664
+undecided	69	-7140008543769042944
+undecided	7	8269730157217062912
+undecided	76	8169878743136043008
+undecided	95	2821
+undecided	97	-7451660755269853184
+undecided	98	443
+undecided	NULL	8811693967537774592
+values clariffication	-100	1053
+values clariffication	-105	7555301305375858688
+values clariffication	-107	8295110846998233088
+values clariffication	-108	-7246123871306244096
+values clariffication	-109	7909645665163804672
+values clariffication	-114	7235109456886816768
+values clariffication	-119	NULL
+values clariffication	-123	7412924364686458880
+values clariffication	-28	3352
+values clariffication	-31	763
+values clariffication	-37	7581052107944361984
+values clariffication	-38	2991
+values clariffication	-40	2942
+values clariffication	-42	-7611584069753552896
+values clariffication	-46	NULL
+values clariffication	-48	7370078518278397952
+values clariffication	-5	3031
+values clariffication	-50	8199513544090730496
+values clariffication	-51	3637
+values clariffication	-55	3904
+values clariffication	-6	2056
+values clariffication	-60	2971
+values clariffication	-62	2712
+values clariffication	-63	-6947955278050181120
+values clariffication	-67	169
+values clariffication	-69	-7329807949048193024
+values clariffication	-70	3083
+values clariffication	-75	2569
+values clariffication	-8	8148211378319933440
+values clariffication	-81	6996686091335884800
+values clariffication	-90	1423
+values clariffication	-92	2011
+values clariffication	-95	-8996954350906294272
+values clariffication	-97	8579974641030365184
+values clariffication	-98	-8013397854633648128
+values clariffication	10	7186401810812059648
+values clariffication	108	1115
+values clariffication	118	-9022154842129547264
+values clariffication	12	8190539859890601984
+values clariffication	120	6927260280037097472
+values clariffication	122	-9084940280061485056
+values clariffication	124	-9210275791460499456
+values clariffication	126	3673
+values clariffication	127	-8347088645602050048
+values clariffication	14	-8147405381260345344
+values clariffication	15	7575087487730196480
+values clariffication	21	NULL
+values clariffication	23	3255
+values clariffication	30	9107991000536498176
+values clariffication	32	NULL
+values clariffication	4	489
+values clariffication	42	2020
+values clariffication	50	1983
+values clariffication	53	3887
+values clariffication	56	3608
+values clariffication	57	-7669169138124275712
+values clariffication	62	3910
+values clariffication	70	1287
+values clariffication	74	2533
+values clariffication	8	-8426531414463545344
+values clariffication	80	7220131672176058368
+values clariffication	85	2986
+values clariffication	9	-8603817012434198528
+values clariffication	92	-8490382417169408000
+values clariffication	93	7741854854673367040
+values clariffication	96	2625
+values clariffication	97	3858
+values clariffication	98	8515682078777081856
+values clariffication	NULL	-7456869587112255488
+wind surfing	-102	1518
+wind surfing	-104	8666178591503564800
+wind surfing	-111	8415171956168417280
+wind surfing	-113	4020
+wind surfing	-116	1941
+wind surfing	-117	1177
+wind surfing	-12	3974
+wind surfing	-121	7164349895861829632
+wind surfing	-124	1048
+wind surfing	-14	7130306447560826880
+wind surfing	-18	-8117838333114212352
+wind surfing	-2	661
+wind surfing	-21	NULL
+wind surfing	-30	3945
+wind surfing	-31	-9105701280936501248
+wind surfing	-34	-7535857766791577600
+wind surfing	-38	7410872053689794560
+wind surfing	-39	3554
+wind surfing	-42	2619
+wind surfing	-56	7107604675626008576
+wind surfing	-57	6926925215281774592
+wind surfing	-6	-6951350560260784128
+wind surfing	-60	601
+wind surfing	-65	1495
+wind surfing	-71	1990
+wind surfing	-78	-9088239683374350336
+wind surfing	-8	9016280522993975296
+wind surfing	-80	3630
+wind surfing	-83	1509
+wind surfing	-96	3147
+wind surfing	-98	8457906374051020800
+wind surfing	-99	7265141874315517952
+wind surfing	101	-7848043121524228096
+wind surfing	102	2649
+wind surfing	107	1032
+wind surfing	108	8508401924853850112
+wind surfing	11	-9149719074367946752
+wind surfing	111	8000440057238052864
+wind surfing	112	7077311975029555200
+wind surfing	121	3579
+wind surfing	15	3940
+wind surfing	16	2193
+wind surfing	20	3703
+wind surfing	21	8004633750273925120
+wind surfing	22	-7055619148037554176
+wind surfing	26	-8746702976270385152
+wind surfing	29	1157
+wind surfing	33	1055
+wind surfing	36	1559
+wind surfing	37	7593521922173419520
+wind surfing	40	-8831091081349758976
+wind surfing	41	3722
+wind surfing	44	3462
+wind surfing	45	8287522765741301760
+wind surfing	48	7414865343000322048
+wind surfing	5	3286
+wind surfing	52	8524940073536954368
+wind surfing	53	1856
+wind surfing	54	8100036735858401280
+wind surfing	58	7517159036469575680
+wind surfing	59	3613
+wind surfing	62	-8330233444291084288
+wind surfing	63	501
+wind surfing	64	7490717730239250432
+wind surfing	66	-7840338174858199040
+wind surfing	68	8455496814886002688
+wind surfing	71	9085381906890203136
+wind surfing	75	8825059717746376704
+wind surfing	78	6923604860394528768
+wind surfing	86	9169248521377374208
+wind surfing	88	1132
+wind surfing	92	1530
+wind surfing	96	8142241016679735296
+wind surfing	NULL	7961515985722605568
+xylophone band	-10	-7404052043914526720
+xylophone band	-101	2786
+xylophone band	-104	3510
+xylophone band	-109	-7804116532814151680
+xylophone band	-112	-8705403811649355776
+xylophone band	-115	-7000925438663041024
+xylophone band	-13	8708232769657815040
+xylophone band	-15	-9051477157204770816
+xylophone band	-2	-7989766326847807488
+xylophone band	-23	8837420822750314496
+xylophone band	-26	3397
+xylophone band	-27	618
+xylophone band	-3	2803
+xylophone band	-46	-7052619594823221248
+xylophone band	-59	1845
+xylophone band	-6	8410599906334097408
+xylophone band	-68	-8768744394742235136
+xylophone band	-70	-8270479187688816640
+xylophone band	-72	-7642381493746483200
+xylophone band	-75	3084
+xylophone band	-78	8222714144797368320
+xylophone band	-91	914
+xylophone band	-94	-7380731416973295616
+xylophone band	-96	8984935029383389184
+xylophone band	-98	7060236714847412224
+xylophone band	0	2988
+xylophone band	107	-8357136656913686528
+xylophone band	108	2108
+xylophone band	11	7500716020874674176
+xylophone band	112	7921639119138070528
+xylophone band	118	1728
+xylophone band	122	9207107990561972224
+xylophone band	123	8677794924343164928
+xylophone band	125	263
+xylophone band	127	NULL
+xylophone band	14	-7881351200983613440
+xylophone band	17	7778936842502275072
+xylophone band	19	2984
+xylophone band	22	-7551394356730339328
+xylophone band	23	7675009476762918912
+xylophone band	3	8286706213485297664
+xylophone band	33	311
+xylophone band	36	-6917607783359897600
+xylophone band	38	3067
+xylophone band	40	8129551357032259584
+xylophone band	52	-7687052294777208832
+xylophone band	6	1676
+xylophone band	60	1541
+xylophone band	62	8365058996333953024
+xylophone band	7	7065344324692443136
+xylophone band	77	9209153648361848832
+xylophone band	79	1307
+xylophone band	84	1398
+xylophone band	85	7592440105065308160
+xylophone band	88	584
+xylophone band	9	-7262798781688651776
+xylophone band	92	-7399631791131074560
+xylophone band	94	8643198489997254656
+xylophone band	NULL	3401
+yard duty	-1	-9012093603044245504
+yard duty	-100	7309156463509061632
+yard duty	-102	NULL
+yard duty	-103	-8659692318743314432
+yard duty	-109	2791
+yard duty	-114	3747
+yard duty	-115	8279056098670198784
+yard duty	-127	2719
+yard duty	-15	1481
+yard duty	-17	NULL
+yard duty	-19	8656571350884048896
+yard duty	-21	2092
+yard duty	-27	7199539820886958080
+yard duty	-28	-7444070205513138176
+yard duty	-33	1075
+yard duty	-44	1065
+yard duty	-45	9139805788041134080
+yard duty	-46	8641221723991433216
+yard duty	-48	9040958359122640896
+yard duty	-49	NULL
+yard duty	-50	8220104397160169472
+yard duty	-51	-7686220526274502656
+yard duty	-53	2843
+yard duty	-57	8059284960252731392
+yard duty	-61	-7541860097718902784
+yard duty	-62	71
+yard duty	-76	3563
+yard duty	-82	-8191825921746305024
+yard duty	-85	NULL
+yard duty	-86	3606
+yard duty	-88	8145745969573666816
+yard duty	-91	-7094189393339678720
+yard duty	-93	NULL
+yard duty	-98	7492436934952574976
+yard duty	10	3212
+yard duty	102	2004
+yard duty	105	80
+yard duty	110	7153922334283776000
+yard duty	15	8945004737083555840
+yard duty	18	3901
+yard duty	22	-7109790267244814336
+yard duty	25	1030
+yard duty	28	7220581538170413056
+yard duty	30	7394967727502467072
+yard duty	34	-7858505678035951616
+yard duty	42	3724
+yard duty	48	8780196485890555904
+yard duty	53	590
+yard duty	55	8417381121663746048
+yard duty	57	677
+yard duty	60	1781
+yard duty	64	-8084716955963252736
+yard duty	65	735
+yard duty	78	-8275337702906757120
+yard duty	8	-7194281951646187520
+yard duty	86	2688
+yard duty	9	-8345065519816695808
+yard duty	90	-7692192232238678016
+yard duty	NULL	1972
+zync studies	-102	8900545829211299840
+zync studies	-103	8509508263705477120
+zync studies	-105	8665969966920990720
+zync studies	-111	1681
+zync studies	-116	1542
+zync studies	-117	-9219066990552760320
+zync studies	-12	2325
+zync studies	-127	3079
+zync studies	-20	9104574294205636608
+zync studies	-21	296
+zync studies	-26	-8453491903284994048
+zync studies	-27	7936149988210212864
+zync studies	-32	2540
+zync studies	-33	-8086577583338061824
+zync studies	-34	579
+zync studies	-35	9000633029632499712
+zync studies	-36	412
+zync studies	-37	2412
+zync studies	-38	2514
+zync studies	-39	8099215208813903872
+zync studies	-40	3244
+zync studies	-45	-8300764106868350976
+zync studies	-50	2016
+zync studies	-52	3462
+zync studies	-54	8555948987770511360
+zync studies	-57	3213
+zync studies	-58	-8859107121649893376
+zync studies	-61	-6974654664348033024
+zync studies	-68	1870
+zync studies	-78	8235179243092090880
+zync studies	-79	-7152177800841502720
+zync studies	-83	8213810702473183232
+zync studies	-90	8160569434550403072
+zync studies	-94	2563
+zync studies	1	3841
+zync studies	100	8536948829863198720
+zync studies	11	279
+zync studies	116	9073672806863790080
+zync studies	120	7845953007588401152
+zync studies	15	8731960288562044928
+zync studies	19	-8714995808835444736
+zync studies	31	2306
+zync studies	37	2979
+zync studies	48	2205
+zync studies	59	NULL
+zync studies	63	-8877431933441327104
+zync studies	7	1127
+zync studies	70	8294315622451740672
+zync studies	87	-9203942396257984512
+zync studies	9	2878
+zync studies	90	2850
+zync studies	91	8091421389575282688
+zync studies	98	1252
+zync studies	99	1608
+zync studies	NULL	8962097525980225536

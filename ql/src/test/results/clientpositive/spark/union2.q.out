@@ -1,0 +1,87 @@
+PREHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                        select s2.key as key, s2.value as value from src s2) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+-- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
+  select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                        select s2.key as key, s2.value as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1), Map 3 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations: count(1)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          value expressions: _col0 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                      select s2.key as key, s2.value as value from src s2) unionsrc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
+                      select s2.key as key, s2.value as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1000

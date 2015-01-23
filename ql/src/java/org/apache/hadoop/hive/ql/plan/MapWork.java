@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.common.collect.Interner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -41,9 +40,10 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.mapred.JobConf;
+
+import com.google.common.collect.Interner;
 
 /**
  * MapWork represents all the information used to run a map task on the cluster.
@@ -105,8 +105,10 @@ public class MapWork extends BaseWork {
   public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   // the following two are used for join processing
-  private QBJoinTree joinTree;
   private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
+  private boolean leftInputJoin;
+  private String[] baseSrc;
+  private List<String> mapAliases;
 
   private boolean mapperCannotSpanPartns;
 
@@ -419,14 +421,6 @@ public class MapWork extends BaseWork {
     return useOneNullRowInputFormat;
   }
 
-  public QBJoinTree getJoinTree() {
-    return joinTree;
-  }
-
-  public void setJoinTree(QBJoinTree joinTree) {
-    this.joinTree = joinTree;
-  }
-
   public void setMapperCannotSpanPartns(boolean mapperCannotSpanPartns) {
     this.mapperCannotSpanPartns = mapperCannotSpanPartns;
   }
@@ -578,5 +572,29 @@ public class MapWork extends BaseWork {
 
   public boolean getDoSplitsGrouping() {
     return this.doSplitsGrouping;
+  }
+
+  public boolean isLeftInputJoin() {
+    return leftInputJoin;
+  }
+
+  public void setLeftInputJoin(boolean leftInputJoin) {
+    this.leftInputJoin = leftInputJoin;
+  }
+
+  public String[] getBaseSrc() {
+    return baseSrc;
+  }
+
+  public void setBaseSrc(String[] baseSrc) {
+    this.baseSrc = baseSrc;
+  }
+
+  public List<String> getMapAliases() {
+    return mapAliases;
+  }
+
+  public void setMapAliases(List<String> mapAliases) {
+    this.mapAliases = mapAliases;
   }
 }

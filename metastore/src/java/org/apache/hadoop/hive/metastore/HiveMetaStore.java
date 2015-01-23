@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -111,6 +112,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -201,7 +204,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -3120,9 +3125,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         oldPart = alterHandler.alterPartition(getMS(), wh, db_name, tbl_name, part_vals, new_part);
 
+        // Only fetch the table if we actually have a listener
+        Table table = null;
         for (MetaStoreEventListener listener : listeners) {
+          if (table == null) {
+            table = getMS().getTable(db_name, tbl_name);
+          }
           AlterPartitionEvent alterPartitionEvent =
-              new AlterPartitionEvent(oldPart, new_part, true, this);
+              new AlterPartitionEvent(oldPart, new_part, table, true, this);
           alterPartitionEvent.setEnvironmentContext(envContext);
           listener.onAlterPartition(alterPartitionEvent);
         }
@@ -3173,6 +3183,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         oldParts = alterHandler.alterPartitions(getMS(), wh, db_name, tbl_name, new_parts);
 
         Iterator<Partition> olditr = oldParts.iterator();
+        // Only fetch the table if we have a listener that needs it.
+        Table table = null;
         for (Partition tmpPart : new_parts) {
           Partition oldTmpPart = null;
           if (olditr.hasNext()) {
@@ -3182,8 +3194,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new InvalidOperationException("failed to alterpartitions");
           }
           for (MetaStoreEventListener listener : listeners) {
+            if (table == null) {
+              table = getMS().getTable(db_name, tbl_name);
+            }
             AlterPartitionEvent alterPartitionEvent =
-                new AlterPartitionEvent(oldTmpPart, tmpPart, true, this);
+                new AlterPartitionEvent(oldTmpPart, tmpPart, table, true, this);
             listener.onAlterPartition(alterPartitionEvent);
           }
         }
@@ -5362,126 +5377,74 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Transaction and locking methods
     @Override
     public GetOpenTxnsResponse get_open_txns() throws TException {
-      try {
-        return getTxnHandler().getOpenTxns();
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().getOpenTxns();
     }
 
     // Transaction and locking methods
     @Override
     public GetOpenTxnsInfoResponse get_open_txns_info() throws TException {
-      try {
-        return getTxnHandler().getOpenTxnsInfo();
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().getOpenTxnsInfo();
     }
 
     @Override
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
-      try {
-        return getTxnHandler().openTxns(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().openTxns(rqst);
     }
 
     @Override
     public void abort_txn(AbortTxnRequest rqst) throws NoSuchTxnException, TException {
-      try {
-        getTxnHandler().abortTxn(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().abortTxn(rqst);
     }
 
     @Override
     public void commit_txn(CommitTxnRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        getTxnHandler().commitTxn(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().commitTxn(rqst);
     }
 
     @Override
     public LockResponse lock(LockRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        return getTxnHandler().lock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().lock(rqst);
     }
 
     @Override
     public LockResponse check_lock(CheckLockRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, NoSuchLockException, TException {
-      try {
-        return getTxnHandler().checkLock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().checkLock(rqst);
     }
 
     @Override
     public void unlock(UnlockRequest rqst)
         throws NoSuchLockException, TxnOpenException, TException {
-      try {
-        getTxnHandler().unlock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().unlock(rqst);
     }
 
     @Override
     public ShowLocksResponse show_locks(ShowLocksRequest rqst) throws TException {
-      try {
-        return getTxnHandler().showLocks(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().showLocks(rqst);
     }
 
     @Override
     public void heartbeat(HeartbeatRequest ids)
         throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        getTxnHandler().heartbeat(ids);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().heartbeat(ids);
     }
 
     @Override
     public HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest rqst)
       throws TException {
-      try {
-        return getTxnHandler().heartbeatTxnRange(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().heartbeatTxnRange(rqst);
     }
 
     @Override
     public void compact(CompactionRequest rqst) throws TException {
-      try {
-        getTxnHandler().compact(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().compact(rqst);
     }
 
     @Override
     public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
-      try {
-        return getTxnHandler().showCompact(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().showCompact(rqst);
     }
 
     @Override
@@ -5578,6 +5541,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = ret && update_partition_column_statistics(colStats);
       }
       return ret;
+    }
+
+    @Override
+    public NotificationEventResponse get_next_notification(NotificationEventRequest rqst)
+        throws TException {
+      RawStore ms = getMS();
+      return ms.getNextNotification(rqst);
+    }
+
+    @Override
+    public CurrentNotificationEventId get_current_notificationEventId() throws TException {
+      RawStore ms = getMS();
+      return ms.getCurrentNotificationEventId();
     }
   }
 
@@ -5798,6 +5774,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
       boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
+      boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
@@ -5805,6 +5782,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       TProcessor processor;
       TTransportFactory transFactory;
+      final TProtocolFactory protocolFactory;
+      final TProtocolFactory inputProtoFactory;
+      if (useCompactProtocol) {
+        protocolFactory = new TCompactProtocol.Factory();
+        inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
+      } else {
+        protocolFactory = new TBinaryProtocol.Factory();
+        inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
+      }
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
@@ -5844,9 +5830,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
           .processor(processor)
           .transportFactory(transFactory)
-          .protocolFactory(new TCompactProtocol.Factory())
-          .inputProtocolFactory(
-              new TCompactProtocol.Factory(maxMessageSize, maxMessageSize))
+          .protocolFactory(protocolFactory)
+          .inputProtocolFactory(inputProtoFactory)
           .minWorkerThreads(minWorkerThreads)
           .maxWorkerThreads(maxWorkerThreads);
 
