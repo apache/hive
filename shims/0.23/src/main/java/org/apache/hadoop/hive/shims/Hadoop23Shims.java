@@ -1213,4 +1213,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return new HadoopShims.NoopHdfsEncryptionShim();
   }
+
+  @Override
+  public Path getPathWithoutSchemeAndAuthority(Path path) {
+    return Path.getPathWithoutSchemeAndAuthority(path);
+  }
 }
