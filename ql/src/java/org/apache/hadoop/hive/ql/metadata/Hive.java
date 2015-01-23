@@ -2399,7 +2399,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static String getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
     Path currentWorkingDir = fs.getWorkingDirectory();
     Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
-    return Path.getPathWithoutSchemeAndAuthority(path).toString();
+    return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path).toString();
   }
 
   //it is assumed that parent directory of the destf should already exist when this

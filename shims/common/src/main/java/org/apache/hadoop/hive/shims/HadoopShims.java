@@ -701,4 +701,6 @@ public interface HadoopShims {
    * @throws IOException If an error occurred while creating the instance.
    */
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
+
+  public Path getPathWithoutSchemeAndAuthority(Path path);
 }

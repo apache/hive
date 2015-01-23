@@ -681,4 +681,9 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException {
     return new HadoopShims.NoopHdfsEncryptionShim();
   }
+
+  @Override
+  public Path getPathWithoutSchemeAndAuthority(Path path) {
+    return path;
+  }
 }
