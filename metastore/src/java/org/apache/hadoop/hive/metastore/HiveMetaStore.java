@@ -5318,126 +5318,74 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Transaction and locking methods
     @Override
     public GetOpenTxnsResponse get_open_txns() throws TException {
-      try {
-        return getTxnHandler().getOpenTxns();
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().getOpenTxns();
     }
 
     // Transaction and locking methods
     @Override
     public GetOpenTxnsInfoResponse get_open_txns_info() throws TException {
-      try {
-        return getTxnHandler().getOpenTxnsInfo();
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().getOpenTxnsInfo();
     }
 
     @Override
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
-      try {
-        return getTxnHandler().openTxns(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().openTxns(rqst);
     }
 
     @Override
     public void abort_txn(AbortTxnRequest rqst) throws NoSuchTxnException, TException {
-      try {
-        getTxnHandler().abortTxn(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().abortTxn(rqst);
     }
 
     @Override
     public void commit_txn(CommitTxnRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        getTxnHandler().commitTxn(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().commitTxn(rqst);
     }
 
     @Override
     public LockResponse lock(LockRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        return getTxnHandler().lock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().lock(rqst);
     }
 
     @Override
     public LockResponse check_lock(CheckLockRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, NoSuchLockException, TException {
-      try {
-        return getTxnHandler().checkLock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().checkLock(rqst);
     }
 
     @Override
     public void unlock(UnlockRequest rqst)
         throws NoSuchLockException, TxnOpenException, TException {
-      try {
-        getTxnHandler().unlock(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().unlock(rqst);
     }
 
     @Override
     public ShowLocksResponse show_locks(ShowLocksRequest rqst) throws TException {
-      try {
-        return getTxnHandler().showLocks(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().showLocks(rqst);
     }
 
     @Override
     public void heartbeat(HeartbeatRequest ids)
         throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, TException {
-      try {
-        getTxnHandler().heartbeat(ids);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().heartbeat(ids);
     }
 
     @Override
     public HeartbeatTxnRangeResponse heartbeat_txn_range(HeartbeatTxnRangeRequest rqst)
       throws TException {
-      try {
-        return getTxnHandler().heartbeatTxnRange(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().heartbeatTxnRange(rqst);
     }
 
     @Override
     public void compact(CompactionRequest rqst) throws TException {
-      try {
-        getTxnHandler().compact(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      getTxnHandler().compact(rqst);
     }
 
     @Override
     public ShowCompactResponse show_compact(ShowCompactRequest rqst) throws TException {
-      try {
-        return getTxnHandler().showCompact(rqst);
-      } catch (MetaException e) {
-        throw new TException(e);
-      }
+      return getTxnHandler().showCompact(rqst);
     }
 
     @Override
