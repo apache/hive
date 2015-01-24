@@ -53,4 +53,9 @@ public interface JobContext {
    */
   Map<String, List<JavaFutureAction<?>>> getMonitoredJobs();
 
+  /**
+   * Return all added jar path which added through AddJarJob.
+   */
+  List<String> getAddedJars();
+
 }
