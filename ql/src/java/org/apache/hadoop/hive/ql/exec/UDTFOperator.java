@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  protected final Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected static final Log LOG = LogFactory.getLog(UDTFOperator.class.getName());
 
   StructObjectInspector udtfInputOI = null;
   Object[] objToSendToUDTF = null;
