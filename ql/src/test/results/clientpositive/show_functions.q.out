@@ -79,6 +79,7 @@ format_number
 from_unixtime
 from_utc_timestamp
 get_json_object
+greatest
 hash
 hex
 histogram_numeric
@@ -99,6 +100,7 @@ last_day
 last_value
 lcase
 lead
+least
 length
 like
 ln

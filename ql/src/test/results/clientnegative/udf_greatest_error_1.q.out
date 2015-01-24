@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10014]: Line 1:7 Wrong arguments ''2.0'': greatest only takes primitive types, got array<string>
