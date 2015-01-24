@@ -1575,7 +1575,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return copy;
   }
 
-  private List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
+  protected List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
     List<FieldSchema> copy = null;
     if (schemas != null) {
       copy = new ArrayList<FieldSchema>();
