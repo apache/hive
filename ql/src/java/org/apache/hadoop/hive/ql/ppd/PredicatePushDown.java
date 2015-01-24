@@ -134,7 +134,9 @@ public class PredicatePushDown implements Transform {
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
 
-    LOG.debug("After PPD:\n" + Operator.toString(pctx.getTopOps().values()));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("After PPD:\n" + Operator.toString(pctx.getTopOps().values()));
+    }
     return pGraphContext;
   }
 
