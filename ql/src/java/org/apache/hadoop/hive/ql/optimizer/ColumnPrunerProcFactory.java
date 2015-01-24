@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -266,26 +267,28 @@ public final class ColumnPrunerProcFactory {
       PTFDesc conf = op.getConf();
       //Since we cannot know what columns will be needed by a PTF chain,
       //we do not prune columns on PTFOperator for PTF chains.
-      if (!conf.forWindowing()) {
+      if (!conf.forWindowing() && !Noop.class.isInstance(conf.getFuncDef().getTFunction())) {
         return super.process(nd, stack, cppCtx, nodeOutputs);
       }
-
-      WindowTableFunctionDef def = (WindowTableFunctionDef) conf.getFuncDef();
-      ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
-
       List<String> prunedCols = cppCtx.getPrunedColList(op.getChildOperators().get(0));
-      //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
-      prunedCols = new ArrayList<String>(prunedCols);
-      prunedColumnsList(prunedCols, def);
       RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
+
+      WindowTableFunctionDef def = null;
+      if (conf.forWindowing()) {
+        def = (WindowTableFunctionDef) conf.getFuncDef();
+        prunedCols = prunedColumnsList(prunedCols, def);
+      }
+      ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
       RowResolver newRR = buildPrunedRR(prunedCols, oldRR, sig);
-      cppCtx.getPrunedColLists().put(op, prunedInputList(prunedCols, def));
       cppCtx.getOpToParseCtxMap().get(op).setRowResolver(newRR);
       op.getSchema().setSignature(sig);
+
+      prunedCols = def == null ? prunedCols : prunedInputList(prunedCols, def);
+      cppCtx.getPrunedColLists().put(op, prunedCols);
       return null;
     }
 
-    private static RowResolver buildPrunedRR(List<String> prunedCols,
+    private RowResolver buildPrunedRR(List<String> prunedCols,
         RowResolver oldRR, ArrayList<ColumnInfo> sig) throws SemanticException{
       RowResolver newRR = new RowResolver();
       HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
@@ -302,7 +305,10 @@ public final class ColumnPrunerProcFactory {
     /*
      * add any input columns referenced in WindowFn args or expressions.
      */
-    private void prunedColumnsList(List<String> prunedCols, WindowTableFunctionDef tDef) {
+    private ArrayList<String> prunedColumnsList(List<String> prunedCols, 
+        WindowTableFunctionDef tDef) {
+      //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
+      ArrayList<String> mergedColList = new ArrayList<String>(prunedCols);
       if ( tDef.getWindowFunctions() != null ) {
         for(WindowFunctionDef wDef : tDef.getWindowFunctions() ) {
           if ( wDef.getArgs() == null) {
@@ -310,22 +316,23 @@ public final class ColumnPrunerProcFactory {
           }
           for(PTFExpressionDef arg : wDef.getArgs()) {
             ExprNodeDesc exprNode = arg.getExprNode();
-            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+            Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
           }
         }
       }
      if(tDef.getPartition() != null){
          for(PTFExpressionDef col : tDef.getPartition().getExpressions()){
            ExprNodeDesc exprNode = col.getExprNode();
-           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+           Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
          }
        }
        if(tDef.getOrder() != null){
          for(PTFExpressionDef col : tDef.getOrder().getExpressions()){
            ExprNodeDesc exprNode = col.getExprNode();
-           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+           Utilities.mergeUniqElems(mergedColList, exprNode.getCols());
          }
        }
+      return mergedColList;
     }
 
     /*
