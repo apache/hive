@@ -2490,7 +2490,8 @@ class RecordReaderImpl implements RecordReader {
           return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case IS_NULL:
-        return hasNull ? TruthValue.YES : TruthValue.NO;
+        // min = null condition above handles the all-nulls YES case
+        return hasNull ? TruthValue.YES_NO : TruthValue.NO;
       default:
         return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
       }
