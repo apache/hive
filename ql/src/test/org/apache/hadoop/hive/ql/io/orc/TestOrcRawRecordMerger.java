@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -301,7 +301,7 @@ public class TestOrcRawRecordMerger {
   }
 
   private static ValidTxnList createMaximalTxnList() {
-    return new ValidTxnListImpl(Long.MAX_VALUE + ":");
+    return new ValidReadTxnList(Long.MAX_VALUE + ":");
   }
 
   @Test
@@ -492,7 +492,7 @@ public class TestOrcRawRecordMerger {
         .maximumTransactionId(100);
     of.getRecordUpdater(root, options).close(false);
 
-    ValidTxnList txnList = new ValidTxnListImpl("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:");
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -550,7 +550,7 @@ public class TestOrcRawRecordMerger {
     ru.delete(200, new MyRow("", 8, 0, BUCKET));
     ru.close(false);
 
-    ValidTxnList txnList = new ValidTxnListImpl("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:");
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
@@ -734,7 +734,7 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidTxnList txns = new ValidTxnListImpl("2000:200");
+    ValidTxnList txns = new ValidReadTxnList("2000:200");
     merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             txns, new Reader.Options(),
