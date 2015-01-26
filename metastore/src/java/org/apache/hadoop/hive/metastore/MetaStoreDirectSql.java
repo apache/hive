@@ -108,6 +108,7 @@ class MetaStoreDirectSql {
    */
   private final DB dbType;
   private final int batchSize;
+  private final boolean convertMapNullsToEmptyStrings;
 
   /**
    * Whether direct SQL can be used with the current datastore backing {@link #pm}.
@@ -122,6 +123,9 @@ class MetaStoreDirectSql {
       batchSize = (dbType == DB.ORACLE || dbType == DB.MSSQL) ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+
+    convertMapNullsToEmptyStrings =
+        HiveConf.getBoolVar(conf, ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
 
     this.isCompatibleDatastore = ensureDbInit() && runTestQuery();
     if (isCompatibleDatastore) {
@@ -298,7 +302,7 @@ class MetaStoreDirectSql {
       String type = extractSqlString(dbline[5]);
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
-      db.setParameters(dbParams);
+      db.setParameters(MetaStoreUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
             + " locn["+db.getLocationUri()  +"] desc [" +db.getDescription()
