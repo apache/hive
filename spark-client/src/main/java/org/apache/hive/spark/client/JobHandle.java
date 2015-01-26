@@ -55,4 +55,53 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
    */
   SparkCounters getSparkCounters();
 
+  /**
+   * Return the current state of the job.
+   */
+  State getState();
+
+  /**
+   * Add a listener to the job handle. If the job's state is not SENT, a callback for the
+   * corresponding state will be invoked immediately.
+   *
+   * @param l The listener to add.
+   */
+  void addListener(Listener<T> l);
+
+  /**
+   * The current state of the submitted job.
+   */
+  static enum State {
+    SENT,
+    QUEUED,
+    STARTED,
+    CANCELLED,
+    FAILED,
+    SUCCEEDED;
+  }
+
+  /**
+   * A listener for monitoring the state of the job in the remote context. Callbacks are called
+   * when the corresponding state change occurs.
+   */
+  static interface Listener<T extends Serializable> {
+
+    void onJobQueued(JobHandle<T> job);
+
+    void onJobStarted(JobHandle<T> job);
+
+    void onJobCancelled(JobHandle<T> job);
+
+    void onJobFailed(JobHandle<T> job, Throwable cause);
+
+    void onJobSucceeded(JobHandle<T> job, T result);
+
+    /**
+     * Called when a monitored Spark job is started on the remote context. This callback
+     * does not indicate a state change in the client job's status.
+     */
+    void onSparkJobStarted(JobHandle<T> job, int sparkJobId);
+
+  }
+
 }

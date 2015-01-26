@@ -22,6 +22,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -42,8 +43,6 @@ import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 
-import scala.Tuple2;
-
 /**
  * SetSparkReducerParallelism determines how many reducers should
  * be run for a given reduce sink, clone from SetReducerParallelism.
@@ -53,7 +52,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
   private static final Log LOG = LogFactory.getLog(SetSparkReducerParallelism.class.getName());
 
   // Spark memory per task, and total number of cores
-  private Tuple2<Long, Integer> sparkMemoryAndCores;
+  private ObjectPair<Long, Integer> sparkMemoryAndCores;
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
@@ -135,15 +134,15 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             maxReducers, false);
 
         if (sparkMemoryAndCores != null &&
-            sparkMemoryAndCores._1() > 0 && sparkMemoryAndCores._2() > 0) {
+            sparkMemoryAndCores.getFirst() > 0 && sparkMemoryAndCores.getSecond() > 0) {
           // warn the user if bytes per reducer is much larger than memory per task
-          if ((double) sparkMemoryAndCores._1() / bytesPerReducer < 0.5) {
+          if ((double) sparkMemoryAndCores.getFirst() / bytesPerReducer < 0.5) {
             LOG.warn("Average load of a reducer is much larger than its available memory. " +
                 "Consider decreasing hive.exec.reducers.bytes.per.reducer");
           }
 
           // If there are more cores, use the number of cores
-          numReducers = Math.max(numReducers, sparkMemoryAndCores._2());
+          numReducers = Math.max(numReducers, sparkMemoryAndCores.getSecond());
         }
         numReducers = Math.min(numReducers, maxReducers);
         LOG.info("Set parallelism for reduce sink " + sink + " to: " + numReducers +

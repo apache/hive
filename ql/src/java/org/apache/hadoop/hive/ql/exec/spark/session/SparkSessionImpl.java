@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
@@ -31,8 +32,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.spark.SparkConf;
 import org.apache.spark.util.Utils;
-
-import scala.Tuple2;
 
 import com.google.common.base.Preconditions;
 
@@ -66,12 +65,12 @@ public class SparkSessionImpl implements SparkSession {
   }
 
   @Override
-  public Tuple2<Long, Integer> getMemoryAndCores() throws Exception {
+  public ObjectPair<Long, Integer> getMemoryAndCores() throws Exception {
     SparkConf sparkConf = hiveSparkClient.getSparkConf();
     int numExecutors = hiveSparkClient.getExecutorCount();
     // at start-up, we may be unable to get number of executors
     if (numExecutors <= 0) {
-      return new Tuple2<Long, Integer>(-1L, -1);
+      return new ObjectPair<Long, Integer>(-1L, -1);
     }
     int executorMemoryInMB = Utils.memoryStringToMb(
         sparkConf.get("spark.executor.memory", "512m"));
@@ -94,7 +93,7 @@ public class SparkSessionImpl implements SparkSession {
     LOG.info("Spark cluster current has executors: " + numExecutors
         + ", total cores: " + totalCores + ", memory per executor: "
         + executorMemoryInMB + "M, memoryFraction: " + memoryFraction);
-    return new Tuple2<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
+    return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
         Integer.valueOf(totalCores));
   }
 

@@ -97,28 +97,16 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
    *   - create a new session and add it to the list.
    */
   @Override
-  public SparkSession getSession(SparkSession existingSession, HiveConf conf,
-      boolean doOpen) throws HiveException {
+  public SparkSession getSession(SparkSession existingSession, HiveConf conf, boolean doOpen)
+      throws HiveException {
     setup(conf);
 
     if (existingSession != null) {
-      if (canReuseSession(existingSession, conf)) {
-        // Open the session if it is closed.
-        if (!existingSession.isOpen() && doOpen) {
-          existingSession.open(conf);
-        }
-
-        Preconditions.checkState(createdSessions.contains(existingSession));
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(String.format("Existing session (%s) is reused.",
-              existingSession.getSessionId()));
-        }
-        return existingSession;
-      } else {
-        // Close the session, as the client is holding onto a session that can't be used
-        // by the client anymore.
-        closeSession(existingSession);
+      // Open the session if it is closed.
+      if (!existingSession.isOpen() && doOpen) {
+	existingSession.open(conf);
       }
+      return existingSession;
     }
 
     SparkSession sparkSession = new SparkSessionImpl();
@@ -132,24 +120,6 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       LOG.debug(String.format("New session (%s) is created.", sparkSession.getSessionId()));
     }
     return sparkSession;
-  }
-
-  /**
-   * Currently we only match the userNames in existingSession conf and given conf.
-   */
-  private boolean canReuseSession(SparkSession existingSession, HiveConf conf) throws HiveException {
-    try {
-      UserGroupInformation newUgi = Utils.getUGI();
-      String newUserName = newUgi.getShortUserName();
-
-      // TODO this we need to store the session username somewhere else as getUGIForConf never used the conf
-      UserGroupInformation ugiInSession = Utils.getUGI();
-      String userNameInSession = ugiInSession.getShortUserName();
-
-      return newUserName.equals(userNameInSession);
-    } catch (Exception ex) {
-      throw new HiveException("Failed to get user info from HiveConf.", ex);
-    }
   }
 
   @Override

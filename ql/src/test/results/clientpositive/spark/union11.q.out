@@ -29,7 +29,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (GROUP, 1)
         Reducer 5 <- Map 4 (GROUP, 1)
         Reducer 7 <- Map 6 (GROUP, 1)
-        Reducer 3 <- Reducer 2 (GROUP, 1), Reducer 5 (GROUP, 1), Reducer 7 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (GROUP, 2), Reducer 5 (GROUP, 2), Reducer 7 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
