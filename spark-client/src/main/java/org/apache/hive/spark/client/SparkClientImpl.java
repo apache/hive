@@ -40,7 +40,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.Rpc;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkException;
@@ -67,6 +69,7 @@ class SparkClientImpl implements SparkClient {
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
 
   private final Map<String, String> conf;
+  private final HiveConf hiveConf;
   private final AtomicInteger childIdGenerator;
   private final Thread driverThread;
   private final Map<String, JobHandleImpl<?>> jobs;
@@ -74,8 +77,9 @@ class SparkClientImpl implements SparkClient {
   private final ClientProtocol protocol;
   private volatile boolean isAlive;
 
-  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf) throws IOException, SparkException {
+  SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf) throws IOException, SparkException {
     this.conf = conf;
+    this.hiveConf = hiveConf;
     this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
@@ -116,13 +120,16 @@ class SparkClientImpl implements SparkClient {
   }
 
   @Override
+  public <T extends Serializable> Future<T> run(Job<T> job) {
+    return protocol.run(job);
+  }
+
+  @Override
   public void stop() {
     if (isAlive) {
       isAlive = false;
       try {
-        protocol.endSession().get(10, TimeUnit.SECONDS);
-      } catch (TimeoutException te) {
-        LOG.warn("Timed out waiting for driver to respond to stop request.");
+        protocol.endSession();
       } catch (Exception e) {
         LOG.warn("Exception while waiting for end session reply.", e);
       } finally {
@@ -137,29 +144,29 @@ class SparkClientImpl implements SparkClient {
       LOG.debug("Interrupted before driver thread was finished.");
     }
     if (endTime - System.currentTimeMillis() <= 0) {
-      LOG.debug("Shut down time out.");
+      LOG.warn("Timed out shutting down remote driver, interrupting...");
       driverThread.interrupt();
     }
   }
 
   @Override
   public Future<?> addJar(URL url) {
-    return submit(new AddJarJob(url.toString()));
+    return run(new AddJarJob(url.toString()));
   }
 
   @Override
   public Future<?> addFile(URL url) {
-    return submit(new AddFileJob(url.toString()));
+    return run(new AddFileJob(url.toString()));
   }
 
   @Override
   public Future<Integer> getExecutorCount() {
-    return submit(new GetExecutorCountJob());
+    return run(new GetExecutorCountJob());
   }
 
   @Override
   public Future<Integer> getDefaultParallelism() {
-    return submit(new GetDefaultParallelismJob());
+    return run(new GetDefaultParallelismJob());
   }
 
   void cancel(String jobId) {
@@ -296,6 +303,25 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
+      if (master.equals("yarn-cluster")) {
+        String executorCores = conf.get("spark.executor.cores");
+        if (executorCores != null) {
+          argv.add("--executor-cores");
+          argv.add(executorCores);
+        }
+
+        String executorMemory = conf.get("spark.executor.memory");
+        if (executorMemory != null) {
+          argv.add("--executor-memory");
+          argv.add(executorMemory);
+        }
+
+        String numOfExecutors = conf.get("spark.executor.instances");
+        if (numOfExecutors != null) {
+          argv.add("--num-executors");
+          argv.add(numOfExecutors);
+        }
+      }
 
       argv.add("--properties-file");
       argv.add(properties.getAbsolutePath());
@@ -312,6 +338,14 @@ class SparkClientImpl implements SparkClient {
       argv.add(serverAddress);
       argv.add("--remote-port");
       argv.add(serverPort);
+
+      //hive.spark.* keys are passed down to the RemoteDriver via --conf,
+      //as --properties-file contains the spark.* keys that are meant for SparkConf object.
+      for (String hiveSparkConfKey : RpcConfiguration.HIVE_SPARK_RSC_CONFIGS) {
+        String value = RpcConfiguration.getValue(hiveConf, hiveSparkConfKey);
+        argv.add("--conf");
+        argv.add(String.format("%s=%s", hiveSparkConfKey, value));
+      }
 
       LOG.debug("Running client driver with argv: {}", Joiner.on(" ").join(argv));
 
@@ -360,7 +394,7 @@ class SparkClientImpl implements SparkClient {
     <T extends Serializable> JobHandleImpl<T> submit(Job<T> job) {
       final String jobId = UUID.randomUUID().toString();
       final Promise<T> promise = driverRpc.createPromise();
-      JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
+      final JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
       jobs.put(jobId, handle);
 
       final io.netty.util.concurrent.Future<Void> rpc = driverRpc.call(new JobRequest(jobId, job));
@@ -371,7 +405,9 @@ class SparkClientImpl implements SparkClient {
       rpc.addListener(new GenericFutureListener<io.netty.util.concurrent.Future<Void>>() {
         @Override
         public void operationComplete(io.netty.util.concurrent.Future<Void> f) {
-          if (!f.isSuccess() && !promise.isDone()) {
+          if (f.isSuccess()) {
+            handle.changeState(JobHandle.State.QUEUED);
+          } else if (!promise.isDone()) {
             promise.setFailure(f.cause());
           }
         }
@@ -379,14 +415,22 @@ class SparkClientImpl implements SparkClient {
       promise.addListener(new GenericFutureListener<Promise<T>>() {
         @Override
         public void operationComplete(Promise<T> p) {
-          jobs.remove(jobId);
+          if (jobId != null) {
+            jobs.remove(jobId);
+          }
           if (p.isCancelled() && !rpc.isDone()) {
             rpc.cancel(true);
           }
         }
       });
-
       return handle;
+    }
+
+    <T extends Serializable> Future<T> run(Job<T> job) {
+      @SuppressWarnings("unchecked")
+      final io.netty.util.concurrent.Future<T> rpc = (io.netty.util.concurrent.Future<T>)
+        driverRpc.call(new SyncJobRequest(job), Serializable.class);
+      return rpc;
     }
 
     void cancel(String jobId) {
@@ -426,11 +470,20 @@ class SparkClientImpl implements SparkClient {
       }
     }
 
+    private void handle(ChannelHandlerContext ctx, JobStarted msg) {
+      JobHandleImpl<?> handle = jobs.get(msg.id);
+      if (handle != null) {
+        handle.changeState(JobHandle.State.STARTED);
+      } else {
+        LOG.warn("Received event for unknown job {}", msg.id);
+      }
+    }
+
     private void handle(ChannelHandlerContext ctx, JobSubmitted msg) {
       JobHandleImpl<?> handle = jobs.get(msg.clientJobId);
       if (handle != null) {
         LOG.info("Received spark job ID: {} for {}", msg.sparkJobId, msg.clientJobId);
-        handle.getSparkJobIds().add(msg.sparkJobId);
+        handle.addSparkJobId(msg.sparkJobId);
       } else {
         LOG.warn("Received spark job ID: {} for unknown job {}", msg.sparkJobId, msg.clientJobId);
       }

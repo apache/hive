@@ -22,7 +22,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -885,3 +885,5 @@ where li.l_linenumber = 1 and
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
+108570	8571
+4297	1798

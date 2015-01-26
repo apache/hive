@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -76,10 +77,13 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient List<String> localJars = new ArrayList<String>();
   private transient List<String> localFiles = new ArrayList<String>();
 
+  private final transient long sparkClientTimtout;
+
   RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws IOException, SparkException {
     this.hiveConf = hiveConf;
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
-    remoteClient = SparkClientFactory.createClient(conf);
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf);
+    sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
   }
 
   @Override
@@ -89,17 +93,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   @Override
   public int getExecutorCount() throws Exception {
-    long timeout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
     Future<Integer> handler = remoteClient.getExecutorCount();
-    return handler.get(timeout, TimeUnit.SECONDS).intValue();
+    return handler.get(sparkClientTimtout, TimeUnit.SECONDS).intValue();
   }
 
   @Override
   public int getDefaultParallelism() throws Exception {
-    long timeout = hiveConf.getTimeVar(
-        HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
     Future<Integer> handler = remoteClient.getDefaultParallelism();
-    return handler.get(timeout, TimeUnit.SECONDS);
+    return handler.get(sparkClientTimtout, TimeUnit.SECONDS);
   }
 
   @Override
@@ -118,11 +119,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     byte[] scratchDirBytes = KryoSerializer.serialize(emptyScratchDir);
     byte[] sparkWorkBytes = KryoSerializer.serialize(sparkWork);
 
-    long timeout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.SECONDS);
-
-    JobHandle<Serializable> jobHandle = remoteClient.submit(
-        new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes));
-    return new SparkJobRef(jobHandle.getClientJobId(), new RemoteSparkJobStatus(remoteClient, jobHandle, timeout));
+    JobStatusJob job = new JobStatusJob(jobConfBytes, scratchDirBytes, sparkWorkBytes);
+    JobHandle<Serializable> jobHandle = remoteClient.submit(job);
+    RemoteSparkJobStatus sparkJobStatus = new RemoteSparkJobStatus(remoteClient, jobHandle, sparkClientTimtout);
+    return new RemoteSparkJobRef(hiveConf, jobHandle, sparkJobStatus);
   }
 
   private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) {

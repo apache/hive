@@ -21,14 +21,18 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 
@@ -95,7 +99,8 @@ public class HiveSparkClientFactory {
       }
     }
 
-    // load properties from hive configurations.
+    // load properties from hive configurations, including both spark.* properties
+    // and properties for remote driver RPC.
     for (Map.Entry<String, String> entry : hiveConf) {
       String propertyName = entry.getKey();
       if (propertyName.startsWith("spark")) {
@@ -103,6 +108,13 @@ public class HiveSparkClientFactory {
         sparkConf.put(propertyName, value);
         LOG.info(String.format(
           "load spark configuration from hive configuration (%s -> %s).",
+          propertyName, value));
+      }
+      if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
+        String value = RpcConfiguration.getValue(hiveConf, propertyName);
+        sparkConf.put(propertyName, value);
+        LOG.info(String.format(
+          "load RPC configuration from hive configuration (%s -> %s).",
           propertyName, value));
       }
     }
