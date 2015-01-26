@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
@@ -111,4 +113,33 @@ public class TestGenericUDFDateAdd extends TestCase {
     assertNull("date_add() both args null", udf.evaluate(args));
   }
 
+  public void testByteDataTypeAsDays() throws HiveException {
+    GenericUDFDateAdd udf = new GenericUDFDateAdd();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaByteObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Byte("4"));
+    DeferredObject[] args = {valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+
+    assertEquals("date_add() test for BYTE failed ", "2009-07-24", output.toString());
+  }
+
+  public void testShortDataTypeAsDays() throws HiveException {
+    GenericUDFDateAdd udf = new GenericUDFDateAdd();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.javaShortObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+
+    udf.initialize(arguments);
+    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new Short("4"));
+    DeferredObject[] args = {valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+
+    assertEquals("date_add() test for SHORT failed ", "2009-07-24", output.toString());
+  }
 }
