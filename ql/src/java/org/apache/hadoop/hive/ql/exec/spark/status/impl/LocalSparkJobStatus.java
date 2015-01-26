@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
@@ -43,6 +45,7 @@ import com.google.common.collect.Maps;
 public class LocalSparkJobStatus implements SparkJobStatus {
 
   private final JavaSparkContext sparkContext;
+  private static final Log LOG = LogFactory.getLog(LocalSparkJobStatus.class.getName());
   private int jobId;
   // After SPARK-2321, we only use JobMetricsListener to get job metrics
   // TODO: remove it when the new API provides equivalent functionality
@@ -69,16 +72,20 @@ public class LocalSparkJobStatus implements SparkJobStatus {
 
   @Override
   public JobExecutionStatus getState() {
+    SparkJobInfo sparkJobInfo = getJobInfo();
     // For spark job with empty source data, it's not submitted actually, so we would never
     // receive JobStart/JobEnd event in JobStateListener, use JavaFutureAction to get current
     // job state.
-    if (future.isDone()) {
+    if (sparkJobInfo == null && future.isDone()) {
+      try {
+        future.get();
+      } catch (Exception e) {
+        LOG.error("Failed to run job " + jobId, e);
+        return JobExecutionStatus.FAILED;
+      }
       return JobExecutionStatus.SUCCEEDED;
-    } else {
-      // SparkJobInfo may not be available yet
-      SparkJobInfo sparkJobInfo = getJobInfo();
-      return sparkJobInfo == null ? null : sparkJobInfo.status();
     }
+    return sparkJobInfo == null ? null : sparkJobInfo.status();
   }
 
   @Override
