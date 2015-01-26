@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -74,9 +76,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
 /**
- * TODO Unnecessary when the server sides for both dbstore and filestore are
- * merged
+ * Wrapper around hive metastore thrift api
  */
+@Public
+@Evolving
 public interface IMetaStoreClient {
 
   /**
