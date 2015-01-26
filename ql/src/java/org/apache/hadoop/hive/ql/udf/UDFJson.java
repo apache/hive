@@ -59,7 +59,7 @@ import org.codehaus.jackson.type.JavaType;
     + "  [,] : Union operator\n"
     + "  [start:end:step] : array slice operator\n")
 public class UDFJson extends UDF {
-  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
+  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s\\u4e00-\\u9fa5]+).*");
   private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
