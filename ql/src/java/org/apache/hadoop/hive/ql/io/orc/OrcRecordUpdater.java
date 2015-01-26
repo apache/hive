@@ -129,7 +129,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static Path getSideFile(Path main) {
-    return new Path(main + "_flush_length");
+    return new Path(main + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
   }
 
   static int getOperation(OrcStruct struct) {
