@@ -56,10 +56,7 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.service.HiveClient;
-import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.util.Shell;
-import org.apache.thrift.TException;
 
 
 // Cannot call class TestCliDriver since that's the name of the generated
@@ -231,66 +228,6 @@ public class TestCliDriverMethods extends TestCase {
 
   }
 
-  /**
-   * test remote execCommand
-   */
-  public void testRemoteCall() throws Exception {
-    MyCliSessionState ss = new MyCliSessionState(new HiveConf(),
-        org.apache.hadoop.hive.cli.TestCliDriverMethods.MyCliSessionState.ClientResult.RETURN_OK);
-    ss.err = System.err;
-    ByteArrayOutputStream data = new ByteArrayOutputStream();
-    ss.out = new PrintStream(data);
-    MyCliSessionState.start(ss);
-
-    CliDriver cliDriver = new CliDriver();
-    cliDriver.processCmd("remote command");
-    assertTrue(data.toString().contains("test result"));
-
-  }
-
-  /**
-   * test remote Exception
-   */
-  public void testServerException() throws Exception {
-    MyCliSessionState ss = new MyCliSessionState(
-        new HiveConf(),
-        org.apache.hadoop.hive.cli.TestCliDriverMethods.MyCliSessionState.ClientResult.RETURN_SERVER_EXCEPTION);
-    ByteArrayOutputStream data = new ByteArrayOutputStream();
-    ss.err = new PrintStream(data);
-    ss.out = System.out;
-    MyCliSessionState.start(ss);
-
-    CliDriver cliDriver = new CliDriver();
-    cliDriver.processCmd("remote command");
-    assertTrue(data.toString().contains("[Hive Error]: test HiveServerException"));
-    data.reset();
-
-
-  }
-
-  /**
-   * test remote Exception
-   */
-  public void testServerTException() throws Exception {
-    MyCliSessionState ss = new MyCliSessionState(
-        new HiveConf(),
-        org.apache.hadoop.hive.cli.TestCliDriverMethods.MyCliSessionState.ClientResult.RETURN_T_EXCEPTION);
-    ByteArrayOutputStream data = new ByteArrayOutputStream();
-    ss.err = new PrintStream(data);
-    ss.out = System.out;
-    MyCliSessionState.start(ss);
-
-    CliDriver cliDriver = new CliDriver();
-    cliDriver.processCmd("remote command");
-    assertTrue(data.toString().contains("[Thrift Error]: test TException"));
-    assertTrue(data.toString().contains(
-        "[Thrift Error]: Hive server is not cleaned due to thrift exception: test TException"));
-
-  }
-
-  /**
-   * test remote Exception
-   */
   public void testProcessSelectDatabase() throws Exception {
     CliSessionState sessinState = new CliSessionState(new HiveConf());
     CliSessionState.start(sessinState);
@@ -521,63 +458,4 @@ public class TestCliDriverMethods extends TestCase {
       return status;
     }
   }
-
-  private static class MyCliSessionState extends CliSessionState {
-
-    public enum ClientResult {
-      RETURN_OK, RETURN_SERVER_EXCEPTION, RETURN_T_EXCEPTION
-    };
-
-    private final ClientResult result;
-
-    public MyCliSessionState(HiveConf conf, ClientResult result) {
-      super(conf);
-      this.result = result;
-    }
-
-    @Override
-    public boolean isRemoteMode() {
-      return true;
-    }
-
-    @Override
-    public HiveClient getClient() {
-
-      HiveClient result = mock(HiveClient.class);
-      if (ClientResult.RETURN_OK.equals(this.result)) {
-        List<String> fetchResult = new ArrayList<String>(1);
-        fetchResult.add("test result");
-        try {
-          when(result.fetchN(anyInt())).thenReturn(fetchResult);
-        } catch (HiveServerException e) {
-        } catch (Exception e) {
-        }
-      } else if (ClientResult.RETURN_SERVER_EXCEPTION.equals(this.result)) {
-        HiveServerException exception = new HiveServerException("test HiveServerException", 10,
-            "sql state");
-        try {
-          when(result.fetchN(anyInt())).thenThrow(exception);
-
-          when(result.fetchN(anyInt())).thenThrow(exception);
-        } catch (TException e) {
-          ;
-        }
-        return result;
-      } else if (ClientResult.RETURN_T_EXCEPTION.equals(this.result)) {
-        TException exception = new TException("test TException");
-        try {
-          // org.mockito.Mockito.
-          doThrow(exception).when(result).clean();
-          when(result.fetchN(anyInt())).thenThrow(exception);
-        } catch (TException e) {
-          e.printStackTrace();
-        }
-        return result;
-      }
-      return result;
-    }
-
-  }
-
-
 }
