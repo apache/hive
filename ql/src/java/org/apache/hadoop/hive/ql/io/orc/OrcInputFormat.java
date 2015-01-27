@@ -39,7 +39,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -408,7 +408,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
       String value = conf.get(ValidTxnList.VALID_TXNS_KEY,
                               Long.MAX_VALUE + ":");
-      transactionList = new ValidTxnListImpl(value);
+      transactionList = new ValidReadTxnList(value);
     }
 
     int getSchedulers() {
@@ -1137,7 +1137,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
                                 Long.MAX_VALUE + ":");
-    ValidTxnList validTxnList = new ValidTxnListImpl(txnString);
+    ValidTxnList validTxnList = new ValidReadTxnList(txnString);
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
             validTxnList, readOptions, deltas);

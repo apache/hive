@@ -28,55 +28,55 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 /**
- * Tests for {@link org.apache.hadoop.hive.common.ValidTxnListImpl}
+ * Tests for {@link ValidReadTxnList}
  */
-public class TestValidTxnImpl {
+public class TestValidReadTxnList {
 
   @Test
   public void noExceptions() throws Exception {
-    ValidTxnList txnList = new ValidTxnListImpl(new long[0], 1);
+    ValidTxnList txnList = new ValidReadTxnList(new long[0], 1);
     String str = txnList.writeToString();
     Assert.assertEquals("1:", str);
-    ValidTxnList newList = new ValidTxnListImpl();
+    ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
-    Assert.assertTrue(newList.isTxnCommitted(1));
-    Assert.assertFalse(newList.isTxnCommitted(2));
+    Assert.assertTrue(newList.isTxnValid(1));
+    Assert.assertFalse(newList.isTxnValid(2));
   }
 
   @Test
   public void exceptions() throws Exception {
-    ValidTxnList txnList = new ValidTxnListImpl(new long[]{2L,4L}, 5);
+    ValidTxnList txnList = new ValidReadTxnList(new long[]{2L,4L}, 5);
     String str = txnList.writeToString();
     Assert.assertEquals("5:2:4", str);
-    ValidTxnList newList = new ValidTxnListImpl();
+    ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
-    Assert.assertTrue(newList.isTxnCommitted(1));
-    Assert.assertFalse(newList.isTxnCommitted(2));
-    Assert.assertTrue(newList.isTxnCommitted(3));
-    Assert.assertFalse(newList.isTxnCommitted(4));
-    Assert.assertTrue(newList.isTxnCommitted(5));
-    Assert.assertFalse(newList.isTxnCommitted(6));
+    Assert.assertTrue(newList.isTxnValid(1));
+    Assert.assertFalse(newList.isTxnValid(2));
+    Assert.assertTrue(newList.isTxnValid(3));
+    Assert.assertFalse(newList.isTxnValid(4));
+    Assert.assertTrue(newList.isTxnValid(5));
+    Assert.assertFalse(newList.isTxnValid(6));
   }
 
   @Test
   public void longEnoughToCompress() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidTxnListImpl(exceptions, 2000);
+    ValidTxnList txnList = new ValidReadTxnList(exceptions, 2000);
     String str = txnList.writeToString();
-    ValidTxnList newList = new ValidTxnListImpl();
+    ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
-    for (int i = 0; i < 100; i++) Assert.assertTrue(newList.isTxnCommitted(i));
-    for (int i = 100; i < 1100; i++) Assert.assertFalse(newList.isTxnCommitted(i));
-    for (int i = 1100; i < 2001; i++) Assert.assertTrue(newList.isTxnCommitted(i));
-    Assert.assertFalse(newList.isTxnCommitted(2001));
+    for (int i = 0; i < 100; i++) Assert.assertTrue(newList.isTxnValid(i));
+    for (int i = 100; i < 1100; i++) Assert.assertFalse(newList.isTxnValid(i));
+    for (int i = 1100; i < 2001; i++) Assert.assertTrue(newList.isTxnValid(i));
+    Assert.assertFalse(newList.isTxnValid(2001));
   }
 
   @Test
   public void readWriteConfig() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidTxnListImpl(exceptions, 2000);
+    ValidTxnList txnList = new ValidReadTxnList(exceptions, 2000);
     String str = txnList.writeToString();
     Configuration conf = new Configuration();
     conf.set(ValidTxnList.VALID_TXNS_KEY, str);

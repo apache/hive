@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -183,7 +183,7 @@ public class Cleaner extends CompactorThread {
       // Create a bogus validTxnList with a high water mark set to MAX_LONG and no open
       // transactions.  This assures that all deltas are treated as valid and all we return are
       // obsolete files.
-      final ValidTxnList txnList = new ValidTxnListImpl();
+      final ValidTxnList txnList = new ValidReadTxnList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);

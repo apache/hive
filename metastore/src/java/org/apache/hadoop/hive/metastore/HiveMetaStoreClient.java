@@ -1694,12 +1694,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnHandler.createValidTxnList(client.get_open_txns(), 0);
+    return TxnHandler.createValidReadTxnList(client.get_open_txns(), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    return TxnHandler.createValidTxnList(client.get_open_txns(), currentTxn);
+    return TxnHandler.createValidReadTxnList(client.get_open_txns(), currentTxn);
   }
 
   @Override

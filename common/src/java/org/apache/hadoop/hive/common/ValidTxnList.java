@@ -38,21 +38,23 @@ public interface ValidTxnList {
   public enum RangeResponse {NONE, SOME, ALL};
 
   /**
-   * Indicates whether a given transaction has been committed and should be
-   * viewed as valid for read.
+   * Indicates whether a given transaction is valid. Note that valid may have different meanings
+   * for different implementations, as some will only want to see committed transactions and some
+   * both committed and aborted.
    * @param txnid id for the transaction
-   * @return true if committed, false otherwise
+   * @return true if valid, false otherwise
    */
-  public boolean isTxnCommitted(long txnid);
+  public boolean isTxnValid(long txnid);
 
   /**
-   * Find out if a range of transaction ids have been committed.
+   * Find out if a range of transaction ids are valid.  Note that valid may have different meanings
+   * for different implementations, as some will only want to see committed transactions and some
+   * both committed and aborted.
    * @param minTxnId minimum txnid to look for, inclusive
    * @param maxTxnId maximum txnid to look for, inclusive
-   * @return Indicate whether none, some, or all of these transactions have been
-   * committed.
+   * @return Indicate whether none, some, or all of these transactions are valid.
    */
-  public RangeResponse isTxnRangeCommitted(long minTxnId, long maxTxnId);
+  public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId);
 
   /**
    * Write this validTxnList into a string. This should produce a string that
@@ -74,9 +76,10 @@ public interface ValidTxnList {
   public long getHighWatermark();
 
   /**
-   * Get the list of transactions under the high water mark that are still
-   * open.
-   * @return a list of open transaction ids
+   * Get the list of transactions under the high water mark that are not valid.  Note that invalid
+   * may have different meanings for different implementations, as some will only want to see open
+   * transactions and some both open and aborted.
+   * @return a list of invalid transaction ids
    */
-  public long[] getOpenTransactions();
+  public long[] getInvalidTransactions();
 }

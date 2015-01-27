@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -76,7 +77,8 @@ public class Initiator extends CompactorThread {
         // don't doom the entire thread.
         try {
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          ValidTxnList txns = TxnHandler.createValidTxnList(txnHandler.getOpenTxns(), 0);
+          ValidTxnList txns =
+              CompactionTxnHandler.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold);
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
