@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>1.0</version>
+    <version>0.14.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -35,7 +35,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <src.path.pattern>src/main/java</src.path.pattern>
   </properties>
 
   <modules>
