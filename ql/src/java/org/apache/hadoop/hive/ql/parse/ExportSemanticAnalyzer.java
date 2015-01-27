@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -82,11 +84,13 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
-    List<Partition> partitions = null;
+    PartitionIterable partitions = null;
     try {
-      partitions = null;
       if (ts.tableHandle.isPartitioned()) {
-        partitions = (ts.partitions != null) ? ts.partitions : db.getPartitions(ts.tableHandle);
+        partitions = (ts.partitions != null) ?
+            new PartitionIterable(ts.partitions) :
+            new PartitionIterable(db,ts.tableHandle,null,conf.getIntVar(
+                HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
       }
       Path path = new Path(ctx.getLocalTmpPath(), "_metadata");
       EximUtil.createExportDump(FileSystem.getLocal(conf), path, ts.tableHandle, partitions);
