@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 public final class BuddyAllocator implements Allocator {
   private static final Log LOG = LogFactory.getLog(BuddyAllocator.class);
 
+
   private final Arena[] arenas;
   private AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -126,12 +127,6 @@ public final class BuddyAllocator implements Allocator {
       if (ix == dest.length) return true;
     }
     return false;
-  }
-
-  public static LlapCacheableBuffer allocateFake() {
-    LlapCacheableBuffer fake = new LlapCacheableBuffer();
-    fake.initialize(-1, null, -1, 1);
-    return fake;
   }
 
   @Override
@@ -338,8 +333,8 @@ public final class BuddyAllocator implements Allocator {
 
     public void deallocate(LlapCacheableBuffer buffer) {
       assert data != null;
-      int freeListIx = 31 - Integer.numberOfLeadingZeros(buffer.length) - minAllocLog2,
-          headerIx = buffer.offset >>> minAllocLog2;
+      int freeListIx = 31 - Integer.numberOfLeadingZeros(buffer.byteBuffer.remaining())
+          - minAllocLog2, headerIx = buffer.byteBuffer.position() >>> minAllocLog2;
       while (true) {
         FreeList freeList = freeLists[freeListIx];
         int bHeaderIx = headerIx ^ (1 << freeListIx);

@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -769,18 +770,18 @@ public class TestRecordReaderImpl {
     assertTrue(!RecordReaderImpl.overlap(0, 10, 11, 12));
   }
 
-  private static List<RecordReaderImpl.DiskRange> diskRanges(Integer... points) {
-    List<RecordReaderImpl.DiskRange> result =
-        new ArrayList<RecordReaderImpl.DiskRange>();
+  private static List<DiskRange> diskRanges(Integer... points) {
+    List<DiskRange> result =
+        new ArrayList<DiskRange>();
     for(int i=0; i < points.length; i += 2) {
-      result.add(new RecordReaderImpl.DiskRange(points[i], points[i+1]));
+      result.add(new DiskRange(points[i], points[i+1]));
     }
     return result;
   }
 
   @Test
   public void testMergeDiskRanges() throws Exception {
-    List<RecordReaderImpl.DiskRange> list = diskRanges();
+    List<DiskRange> list = diskRanges();
     RecordReaderImpl.mergeDiskRanges(list);
     assertThat(list, is(diskRanges()));
     list = diskRanges(100, 200, 300, 400, 500, 600);
@@ -860,7 +861,7 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testPartialPlan() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    List<DiskRange> result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();
@@ -968,7 +969,7 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testPartialPlanCompressed() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    List<DiskRange> result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();
@@ -1050,7 +1051,7 @@ public class TestRecordReaderImpl {
 
   @Test
   public void testPartialPlanString() throws Exception {
-    List<RecordReaderImpl.DiskRange> result;
+    List<DiskRange> result;
 
     // set the streams
     List<OrcProto.Stream> streams = new ArrayList<OrcProto.Stream>();

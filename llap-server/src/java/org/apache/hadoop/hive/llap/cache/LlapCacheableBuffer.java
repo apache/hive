@@ -43,31 +43,31 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
 
   private final AtomicInteger refCount = new AtomicInteger(0);
 
+  // All kinds of random stuff needed by various parts of the system, beyond the publicly
+  // visible bytes "interface". This is not so pretty since all concerns are mixed here.
+  // But at least we don't waste bunch of memory per every buffer and bunch of virtual calls.
+  /** Allocator uses this to remember which arena to alloc from.
+   * TODO Could wrap ByteBuffer instead? This needs reference anyway. */
   public int arenaIndex = -1;
+  /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
+   * the lookup is on compressed ranges, so we need to know this. */
+  public int declaredLength;
+
+  /** Priority for cache policy (should be pretty universal). */
   public double priority;
+  /** Last priority update time for cache policy (should be pretty universal). */
   public long lastUpdate = -1;
+  /** Linked list pointers for LRFU/LRU cache policies. Given that each block is in cache
+   * that might be better than external linked list. Or not, since this is not concurrent. */
   public LlapCacheableBuffer prev = null, next = null;
+  /** Index in heap for LRFU/LFU cache policies. */
   public int indexInHeap = NOT_IN_CACHE;
+  // TODO: Add 4 more bytes of crap here!
+
 
   @VisibleForTesting
   int getRefCount() {
     return refCount.get();
-  }
-
-  @Override
-  public int hashCode() {
-    if (this.byteBuffer == null) return 0;
-    return (System.identityHashCode(this.byteBuffer) * 37 + offset) * 37 + length;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) return true;
-    if (!(obj instanceof LlapCacheableBuffer)) return false;
-    LlapCacheableBuffer other = (LlapCacheableBuffer)obj;
-    // We only compare objects, and not contents of the ByteBuffer.
-    return byteBuffer == other.byteBuffer
-        && this.offset == other.offset && this.length == other.length;
   }
 
   int incRef() {
@@ -75,7 +75,7 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
     while (true) {
       int oldRefCount = refCount.get();
       if (oldRefCount == EVICTED_REFCOUNT) return -1;
-      assert oldRefCount >= 0;
+      assert oldRefCount >= 0 : "oldRefCount is " + oldRefCount + " " + this;
       newRefCount = oldRefCount + 1;
       if (refCount.compareAndSet(oldRefCount, newRefCount)) break;
     }
@@ -95,14 +95,14 @@ public final class LlapCacheableBuffer extends LlapMemoryBuffer {
   int decRef() {
     int newRefCount = refCount.decrementAndGet();
     if (newRefCount < 0) {
-      throw new AssertionError("Unexpected refCount " + newRefCount);
+      throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
     }
     return newRefCount;
   }
 
   @Override
   public String toString() {
-    return "0x" + Integer.toHexString(hashCode());
+    return "0x" + Integer.toHexString(System.identityHashCode(this));
   }
 
   /**

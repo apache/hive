@@ -179,10 +179,10 @@ public class TestBuddyAllocator {
     for (int j = 0; j < allocCount; ++j) {
       LlapMemoryBuffer mem = allocs[index][j];
       long testValue = testValues[index][j] = rdm.nextLong();
-      mem.byteBuffer.putLong(mem.offset, testValue);
-      int halfLength = mem.length >> 1;
-      if (halfLength + 8 <= mem.length) {
-        mem.byteBuffer.putLong(mem.offset + halfLength, testValue);
+      mem.byteBuffer.putLong(0, testValue);
+      int halfLength = mem.byteBuffer.remaining() >> 1;
+      if (halfLength + 8 <= mem.byteBuffer.remaining()) {
+        mem.byteBuffer.putLong(halfLength, testValue);
       }
     }
   }
@@ -204,10 +204,10 @@ public class TestBuddyAllocator {
       BuddyAllocator a, LlapMemoryBuffer[] allocs, long[] testValues) {
     for (int j = 0; j < allocs.length; ++j) {
       LlapCacheableBuffer mem = (LlapCacheableBuffer)allocs[j];
-      assertEquals(testValues[j], mem.byteBuffer.getLong(mem.offset));
-      int halfLength = mem.length >> 1;
-      if (halfLength + 8 <= mem.length) {
-        assertEquals(testValues[j], mem.byteBuffer.getLong(mem.offset + halfLength));
+      assertEquals(testValues[j], mem.byteBuffer.getLong(0));
+      int halfLength = mem.byteBuffer.remaining() >> 1;
+      if (halfLength + 8 <= mem.byteBuffer.remaining()) {
+        assertEquals(testValues[j], mem.byteBuffer.getLong(halfLength));
       }
       a.deallocate(mem);
     }

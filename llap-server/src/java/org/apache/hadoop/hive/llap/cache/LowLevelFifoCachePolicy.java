@@ -69,7 +69,7 @@ public class LowLevelFifoCachePolicy extends LowLevelCachePolicyBase {
         LlapCacheableBuffer candidate = iter.next();
         if (candidate.invalidate()) {
           iter.remove();
-          evicted += candidate.length;
+          evicted += candidate.byteBuffer.remaining();
           listener.notifyEvicted(candidate);
         }
       }

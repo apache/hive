@@ -17,22 +17,32 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
+  private static final Log LOG = LogFactory.getLog(LowLevelCacheImpl.class);
+
   private final Allocator allocator;
 
   private AtomicInteger newEvictions = new AtomicInteger(0);
@@ -66,30 +76,81 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public LlapMemoryBuffer[] getFileData(String fileName, long[] offsets) {
-    LlapMemoryBuffer[] result = null;
+  public void getFileData(String fileName, LinkedList<DiskRange> ranges) {
     FileCache subCache = cache.get(fileName);
-    if (subCache == null || !subCache.incRef()) return result;
+    if (subCache == null || !subCache.incRef()) return;
     try {
-      for (int i = 0; i < offsets.length; ++i) {
-        while (true) { // Overwhelmingly only runs once.
-          long offset = offsets[i];
-          LlapCacheableBuffer buffer = subCache.cache.get(offset);
-          if (buffer == null) break;
-          if (lockBuffer(buffer)) {
-            if (result == null) {
-              result = new LlapCacheableBuffer[offsets.length];
-            }
-            result[i] = buffer;
-            break;
-          }
-          if (subCache.cache.remove(offset, buffer)) break;
-        }
+      ListIterator<DiskRange> dr = ranges.listIterator();
+      while (dr.hasNext()) {
+        getOverlappingRanges(dr, subCache.cache);
       }
     } finally {
       subCache.decRef();
     }
-    return result;
+  }
+
+  private void getOverlappingRanges(ListIterator<DiskRange> drIter,
+      ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache) {
+    DiskRange currentNotCached = drIter.next();
+    Iterator<Map.Entry<Long, LlapCacheableBuffer>> matches =
+        cache.subMap(currentNotCached.offset, currentNotCached.end).entrySet().iterator();
+    long cacheEnd = -1;
+    while (matches.hasNext()) {
+      assert currentNotCached != null;
+      Map.Entry<Long, LlapCacheableBuffer> e = matches.next();
+      LlapCacheableBuffer buffer = e.getValue();
+      // Lock the buffer, validate it and add to results.
+      if (!lockBuffer(buffer)) {
+        // If we cannot lock, remove this from cache and continue.
+        matches.remove();
+        continue;
+      }
+      LOG.info("TODO# get +1 " + buffer.toString());
+      long cacheOffset = e.getKey();
+      if (cacheEnd > cacheOffset) { // compare with old cacheEnd
+        throw new AssertionError("Cache has overlapping buffers: " + cacheEnd + ") and ["
+            + cacheOffset + ", " + (cacheOffset + buffer.declaredLength) + ")");
+      }
+      cacheEnd = cacheOffset + buffer.declaredLength;
+      CacheChunk currentCached = new CacheChunk(buffer, cacheOffset, cacheEnd);
+      currentNotCached = addCachedBufferToIter(drIter, currentNotCached, currentCached);
+    }
+  }
+
+  private DiskRange addCachedBufferToIter(ListIterator<DiskRange> drIter,
+      DiskRange currentNotCached, CacheChunk currentCached) {
+    if (currentNotCached.offset == currentCached.offset) {
+      if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
+        // Replace the entire current DiskRange with new cached range. Java LL is idiotic, so...
+        drIter.remove();
+        drIter.add(currentCached);
+        currentNotCached = null;
+      } else {
+        // Insert the new cache range before the disk range.
+        currentNotCached.offset = currentCached.end;
+        drIter.previous();
+        drIter.add(currentCached); 
+        DiskRange dr = drIter.next();
+        assert dr == currentNotCached;
+      }
+    } else {
+      assert currentNotCached.offset < currentCached.offset;
+      long originalEnd = currentNotCached.end;
+      currentNotCached.end = currentCached.offset;
+      drIter.add(currentCached);
+      if (originalEnd <= currentCached.end) { // we assume it's always "==" now
+        // We have reached the end of the range and truncated the last non-cached range.
+        currentNotCached = null;
+      } else {
+        // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
+        currentNotCached = new DiskRange(currentCached.end, originalEnd);
+        drIter.add(currentNotCached);
+        DiskRange dr = drIter.previous();
+        assert dr == currentNotCached;
+        drIter.next();
+      }
+    }
+    return currentNotCached;
   }
 
   private boolean lockBuffer(LlapCacheableBuffer buffer) {
@@ -97,18 +158,19 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     if (rc == 1) {
       cachePolicy.notifyLock(buffer);
     }
-    return rc >= 0;
+    return rc > 0;
   }
 
   @Override
-  public long[] putFileData(String fileName, long[] offsets, LlapMemoryBuffer[] buffers) {
+  public long[] putFileData(String fileName, DiskRange[] ranges, LlapMemoryBuffer[] buffers) {
     long[] result = null;
-    assert buffers.length == offsets.length;
+    assert buffers.length == ranges.length;
     FileCache subCache = getOrAddFileSubCache(fileName);
     try {
-      for (int i = 0; i < offsets.length; ++i) {
+      for (int i = 0; i < ranges.length; ++i) {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
-        long offset = offsets[i];
+        long offset = ranges[i].offset;
+        buffer.declaredLength = ranges[i].getLength();
         assert buffer.isLocked();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapCacheableBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
@@ -122,8 +184,14 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
                 + fileName + "@" + offset  + "; old " + oldVal + ", new " + buffer);
           }
           if (lockBuffer(oldVal)) {
+            // We don't do proper overlap checking because it would cost cycles and we
+            // think it will never happen. We do perform the most basic check here.
+            if (oldVal.declaredLength != buffer.declaredLength) {
+              throw new RuntimeException("Found a block with different length at the same offset: "
+                  + oldVal.declaredLength + " vs " + buffer.declaredLength + " @" + offset);
+            }
             // We found an old, valid block for this key in the cache.
-            releaseBufferInternal(buffer);
+s            releaseBufferInternal(buffer);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
@@ -196,9 +264,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     }
   }
 
+  private static final ByteBuffer fakeBuf = ByteBuffer.wrap(new byte[1]);
   public static LlapCacheableBuffer allocateFake() {
     LlapCacheableBuffer fake = new LlapCacheableBuffer();
-    fake.initialize(-1, null, -1, 1);
+    fake.initialize(-1, fakeBuf, 0, 1);
     return fake;
   }
 
@@ -210,9 +279,12 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
 
   private static class FileCache {
     private static final int EVICTED_REFCOUNT = -1, EVICTING_REFCOUNT = -2;
-    // TODO: given the specific data, perhaps the nested thing should not be CHM
-    private ConcurrentHashMap<Long, LlapCacheableBuffer> cache
-      = new ConcurrentHashMap<Long, LlapCacheableBuffer>();
+    // TODO: given the specific data and lookups, perhaps the nested thing should not be a map
+    //       In fact, CSLM has slow single-threaded operation, and one file is probably often read
+    //       by just one (or few) threads, so a much more simple DS with locking might be better.
+    //       Let's use CSLM for now, since it's available.
+    private ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache
+      = new ConcurrentSkipListMap<Long, LlapCacheableBuffer>();
     private AtomicInteger refCount = new AtomicInteger(0);
 
     boolean incRef() {

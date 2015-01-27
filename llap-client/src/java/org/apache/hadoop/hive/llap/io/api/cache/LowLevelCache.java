@@ -18,14 +18,17 @@
 
 package org.apache.hadoop.hive.llap.io.api.cache;
 
+import java.util.LinkedList;
+
+import org.apache.hadoop.hive.common.DiskRange;
+
 
 public interface LowLevelCache {
-
   /**
    * Gets file data for particular offsets. Null entries mean no data.
    * @param file File name; MUST be interned.
    */
-  LlapMemoryBuffer[] getFileData(String fileName, long[] offsets);
+  void getFileData(String fileName, LinkedList<DiskRange> ranges);
 
   /**
    * Puts file data into cache.
@@ -33,7 +36,7 @@ public interface LowLevelCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(String file, long[] offsets, LlapMemoryBuffer[] chunks);
+  long[] putFileData(String file, DiskRange[] ranges, LlapMemoryBuffer[] chunks);
 
   /**
    * Releases the buffer returned by getFileData or allocateMultiple.

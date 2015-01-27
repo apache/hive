@@ -20,28 +20,33 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
+import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+
+import com.google.common.annotations.VisibleForTesting;
 
 abstract class InStream extends InputStream {
-
   private static final Log LOG = LogFactory.getLog(InStream.class);
 
   private static class UncompressedStream extends InStream {
     private final String name;
-    private final ByteBuffer[] bytes;
-    private final long[] offsets;
+    private final List<DiskRange> bytes;
     private final long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;
 
-    public UncompressedStream(String name, ByteBuffer[] input, long[] offsets,
-                              long length) {
+    public UncompressedStream(String name, List<DiskRange> input, long length) {
       this.name = name;
       this.bytes = input;
-      this.offsets = offsets;
       this.length = length;
       currentRange = 0;
       currentOffset = 0;
@@ -83,12 +88,10 @@ abstract class InStream extends InputStream {
 
     @Override
     public void close() {
-      currentRange = bytes.length;
+      currentRange = bytes.size();
       currentOffset = length;
       // explicit de-ref of bytes[]
-      for(int i = 0; i < bytes.length; i++) {
-        bytes[i] = null;
-      }
+      bytes.clear();
     }
 
     @Override
@@ -97,14 +100,15 @@ abstract class InStream extends InputStream {
     }
 
     public void seek(long desired) {
-      for(int i = 0; i < bytes.length; ++i) {
-        if (offsets[i] <= desired &&
-            desired - offsets[i] < bytes[i].remaining()) {
+      for(int i = 0; i < bytes.size(); ++i) {
+        DiskRange curRange = bytes.get(i);
+        if (curRange.offset <= desired &&
+            (desired - curRange.offset) < curRange.getLength()) {
           currentOffset = desired;
           currentRange = i;
-          this.range = bytes[i].duplicate();
+          this.range = curRange.getData();
           int pos = range.position();
-          pos += (int)(desired - offsets[i]); // this is why we duplicate
+          pos += (int)(desired - curRange.offset); // this is why we duplicate
           this.range.position(pos);
           return;
         }
@@ -122,43 +126,54 @@ abstract class InStream extends InputStream {
   }
 
   private static class CompressedStream extends InStream {
+    private final String fileName;
     private final String name;
-    private final ByteBuffer[] bytes;
-    private final long[] offsets;
+    private final List<DiskRange> bytes;
     private final int bufferSize;
     private final long length;
+    private LlapMemoryBuffer cacheBuffer;
     private ByteBuffer uncompressed;
     private final CompressionCodec codec;
     private ByteBuffer compressed;
     private long currentOffset;
     private int currentRange;
     private boolean isUncompressedOriginal;
-    private boolean isDirect = false;
+    private final LowLevelCache cache;
+    private final boolean doManageBuffers = true;
 
-    public CompressedStream(String name, ByteBuffer[] input,
-                            long[] offsets, long length,
-                            CompressionCodec codec, int bufferSize
-                           ) {
+    public CompressedStream(String fileName, String name, List<DiskRange> input, long length,
+                            CompressionCodec codec, int bufferSize, LowLevelCache cache) {
+      this.fileName = fileName;
       this.bytes = input;
       this.name = name;
       this.codec = codec;
       this.length = length;
-      if(this.length > 0) {
-        isDirect = this.bytes[0].isDirect();
-      }
-      this.offsets = offsets;
       this.bufferSize = bufferSize;
       currentOffset = 0;
       currentRange = 0;
+      this.cache = cache;
     }
 
-    // TODO: this should allocate from cache
-    private ByteBuffer allocateBuffer(int size) {
+    private ByteBuffer allocateBuffer(int size, boolean isDirect) {
       // TODO: use the same pool as the ORC readers
-      if(isDirect == true) {
+      if (isDirect) {
         return ByteBuffer.allocateDirect(size);
       } else {
         return ByteBuffer.allocate(size);
+      }
+    }
+
+    // TODO: This should not be used for main path.
+    private final LlapMemoryBuffer[] singleAllocDest = new LlapMemoryBuffer[1];
+    private void allocateForUncompressed(int size, boolean isDirect) {
+      if (cache == null) {
+        cacheBuffer = null;
+        uncompressed = allocateBuffer(size, isDirect);
+      } else {
+        singleAllocDest[0] = null;
+        cache.allocateMultiple(singleAllocDest, size);
+        cacheBuffer = singleAllocDest[0];
+        uncompressed = cacheBuffer.byteBuffer;
       }
     }
 
@@ -166,6 +181,11 @@ abstract class InStream extends InputStream {
       if (compressed == null || compressed.remaining() <= 0) {
         seek(currentOffset);
       }
+      if (cacheBuffer != null) {
+        assert compressed == null;
+        return; // Next block is ready from cache.
+      }
+      long originalOffset = currentOffset;
       if (compressed.remaining() > OutStream.HEADER_SIZE) {
         int b0 = compressed.get() & 0xff;
         int b1 = compressed.get() & 0xff;
@@ -188,14 +208,19 @@ abstract class InStream extends InputStream {
           isUncompressedOriginal = true;
         } else {
           if (isUncompressedOriginal) {
-            uncompressed = allocateBuffer(bufferSize);
+            allocateForUncompressed(bufferSize, slice.isDirect());
             isUncompressedOriginal = false;
           } else if (uncompressed == null) {
-            uncompressed = allocateBuffer(bufferSize);
+            allocateForUncompressed(bufferSize, slice.isDirect());
           } else {
             uncompressed.clear();
           }
           codec.decompress(slice, uncompressed);
+          if (cache != null) {
+            // TODO: this is the inefficient path
+            cache.putFileData(fileName, new DiskRange[] { new DiskRange(originalOffset,
+                chunkLength + OutStream.HEADER_SIZE) }, new LlapMemoryBuffer[] { cacheBuffer });
+          }
         }
       } else {
         throw new IllegalStateException("Can't read header at " + this);
@@ -239,13 +264,20 @@ abstract class InStream extends InputStream {
 
     @Override
     public void close() {
+      cacheBuffer = null;
       uncompressed = null;
       compressed = null;
-      currentRange = bytes.length;
+      currentRange = bytes.size();
       currentOffset = length;
-      for(int i = 0; i < bytes.length; i++) {
-        bytes[i] = null;
+      if (doManageBuffers) {
+        // TODO: this is the inefficient path for now. LLAP will used this differently.
+        for (DiskRange range : bytes) {
+          if (range instanceof CacheChunk) {
+            cache.releaseBuffer(((CacheChunk)range).buffer);
+          }
+        }
       }
+      bytes.clear();
     }
 
     @Override
@@ -262,8 +294,8 @@ abstract class InStream extends InputStream {
       }
     }
 
-    /* slices a read only contigous buffer of chunkLength */
-    private ByteBuffer slice(int chunkLength) throws IOException {
+    /* slices a read only contiguous buffer of chunkLength */
+      private ByteBuffer slice(int chunkLength) throws IOException {
       int len = chunkLength;
       final long oldOffset = currentOffset;
       ByteBuffer slice;
@@ -274,7 +306,7 @@ abstract class InStream extends InputStream {
         currentOffset += len;
         compressed.position(compressed.position() + len);
         return slice;
-      } else if (currentRange >= (bytes.length - 1)) {
+      } else if (currentRange >= (bytes.size() - 1)) {
         // nothing has been modified yet
         throw new IOException("EOF in " + this + " while trying to read " +
             chunkLength + " bytes");
@@ -288,16 +320,20 @@ abstract class InStream extends InputStream {
 
       // we need to consolidate 2 or more buffers into 1
       // first copy out compressed buffers
-      ByteBuffer copy = allocateBuffer(chunkLength);
+      ByteBuffer copy = allocateBuffer(chunkLength, compressed.isDirect());
       currentOffset += compressed.remaining();
       len -= compressed.remaining();
       copy.put(compressed);
 
-      while (len > 0 && (++currentRange) < bytes.length) {
+      while (len > 0 && (++currentRange) < bytes.size()) {
         if (LOG.isDebugEnabled()) {
           LOG.debug(String.format("Read slow-path, >1 cross block reads with %s", this.toString()));
         }
-        compressed = bytes[currentRange].duplicate();
+        DiskRange range = bytes.get(currentRange);
+        if (!(range instanceof BufferChunk)) {
+          throw new IOException("Trying to extend compressed block into uncompressed block");
+        }
+        compressed = range.getData().duplicate();
         if (compressed.remaining() >= len) {
           slice = compressed.slice();
           slice.limit(len);
@@ -318,40 +354,61 @@ abstract class InStream extends InputStream {
     }
 
     private void seek(long desired) throws IOException {
-      for(int i = 0; i < bytes.length; ++i) {
-        if (offsets[i] <= desired &&
-            desired - offsets[i] < bytes[i].remaining()) {
+      for(int i = 0; i < bytes.size(); ++i) {
+        DiskRange range = bytes.get(i);
+        if (range.offset <= desired && desired < range.end) {
           currentRange = i;
-          compressed = bytes[i].duplicate();
-          int pos = compressed.position();
-          pos += (int)(desired - offsets[i]);
-          compressed.position(pos);
+          if (range instanceof BufferChunk) {
+            cacheBuffer = null;
+            compressed = range.getData().duplicate();
+            int pos = compressed.position();
+            pos += (int)(desired - range.offset);
+            compressed.position(pos);
+          } else {
+            compressed = null;
+            cacheBuffer = ((CacheChunk)range).buffer;
+            uncompressed = cacheBuffer.byteBuffer.duplicate();
+            if (desired != range.offset) {
+              throw new IOException("Cannot seek into the middle of uncompressed cached data");
+            }
+          }
           currentOffset = desired;
           return;
         }
       }
       // if they are seeking to the precise end, go ahead and let them go there
-      int segments = bytes.length;
-      if (segments != 0 &&
-          desired == offsets[segments - 1] + bytes[segments - 1].remaining()) {
+      int segments = bytes.size();
+      if (segments != 0 && desired == bytes.get(segments - 1).end) {
+        DiskRange range = bytes.get(segments - 1);
         currentRange = segments - 1;
-        compressed = bytes[currentRange].duplicate();
-        compressed.position(compressed.limit());
-        currentOffset = desired;
+        if (range instanceof BufferChunk) {
+          cacheBuffer = null;
+          compressed = range.getData().duplicate();
+          compressed.position(compressed.limit());
+        } else {
+          compressed = null;
+          cacheBuffer = ((CacheChunk)range).buffer;
+          uncompressed = cacheBuffer.byteBuffer.duplicate();
+          uncompressed.position(uncompressed.limit());
+          if (desired != range.offset) {
+            throw new IOException("Cannot seek into the middle of uncompressed cached data");
+          }
+          currentOffset = desired;
+        }
         return;
       }
-      throw new IOException("Seek outside of data in " + this + " to " +
-        desired);
+      throw new IOException("Seek outside of data in " + this + " to " + desired);
     }
 
     private String rangeString() {
       StringBuilder builder = new StringBuilder();
-      for(int i=0; i < offsets.length; ++i) {
+      for(int i=0; i < bytes.size(); ++i) {
         if (i != 0) {
           builder.append("; ");
         }
-        builder.append(" range " + i + " = " + offsets[i] + " to " +
-            bytes[i].remaining());
+        DiskRange range = bytes.get(i);
+        builder.append(" range " + i + " = " + range.offset
+            + " to " + (range.end - range.offset));
       }
       return builder.toString();
     }
@@ -382,17 +439,43 @@ abstract class InStream extends InputStream {
    * @return an input stream
    * @throws IOException
    */
+  @VisibleForTesting
+  @Deprecated
   public static InStream create(String name,
-                                ByteBuffer[] input,
+                                ByteBuffer[] buffers,
                                 long[] offsets,
                                 long length,
                                 CompressionCodec codec,
                                 int bufferSize) throws IOException {
+    List<DiskRange> input = new ArrayList<DiskRange>(buffers.length);
+    for (int i = 0; i < buffers.length; ++i) {
+      input.add(new BufferChunk(buffers[i], offsets[i]));
+    }
+    return create(null, name, input, length, codec, bufferSize, null);
+  }
+
+  /**
+   * Create an input stream from a list of disk ranges with data.
+   * @param name the name of the stream
+   * @param input the list of ranges of bytes for the stream; from disk or cache
+   * @param length the length in bytes of the stream
+   * @param codec the compression codec
+   * @param bufferSize the compression buffer size
+   * @param cache Low-level cache to use to put data, if any. Only works with compressed streams.
+   * @return an input stream
+   * @throws IOException
+   */
+  public static InStream create(String fileName,
+                                String name,
+                                List<DiskRange> input,
+                                long length,
+                                CompressionCodec codec,
+                                int bufferSize,
+                                LowLevelCache cache) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(name, input, offsets, length);
+      return new UncompressedStream(name, input, length);
     } else {
-      return new CompressedStream(name, input, offsets, length, codec,
-          bufferSize);
+      return new CompressedStream(fileName, name, input, length, codec, bufferSize, cache);
     }
   }
 }

@@ -33,12 +33,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -463,14 +465,14 @@ public class ReaderImpl implements Reader {
       int footerBufferSize = footerBuffer.limit() - footerBuffer.position() - metadataSize;
       footerBuffer.limit(position + metadataSize);
 
-      InputStream instream = InStream.create("metadata", new ByteBuffer[]{footerBuffer},
-          new long[]{0L}, metadataSize, codec, bufferSize);
+      InputStream instream = InStream.create(null, "metadata", Lists.<DiskRange>newArrayList(
+          new BufferChunk(footerBuffer, 0)), metadataSize, codec, bufferSize, null);
       this.metadata = OrcProto.Metadata.parseFrom(instream);
 
       footerBuffer.position(position + metadataSize);
       footerBuffer.limit(position + metadataSize + footerBufferSize);
-      instream = InStream.create("footer", new ByteBuffer[]{footerBuffer},
-          new long[]{0L}, footerBufferSize, codec, bufferSize);
+      instream = InStream.create(null, "footer", Lists.<DiskRange>newArrayList(
+          new BufferChunk(footerBuffer, 0)), footerBufferSize, codec, bufferSize, null);
       this.footer = OrcProto.Footer.parseFrom(instream);
 
       footerBuffer.position(position);
