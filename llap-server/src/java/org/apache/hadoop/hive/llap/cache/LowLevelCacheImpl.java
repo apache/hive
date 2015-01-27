@@ -105,7 +105,6 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         matches.remove();
         continue;
       }
-      LOG.info("TODO# get +1 " + buffer.toString());
       long cacheOffset = e.getKey();
       if (cacheEnd > cacheOffset) { // compare with old cacheEnd
         throw new AssertionError("Cache has overlapping buffers: " + cacheEnd + ") and ["
@@ -121,7 +120,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       DiskRange currentNotCached, CacheChunk currentCached) {
     if (currentNotCached.offset == currentCached.offset) {
       if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
-        // Replace the entire current DiskRange with new cached range. Java LL is idiotic, so...
+        // Replace the entire current DiskRange with new cached range.
         drIter.remove();
         drIter.add(currentCached);
         currentNotCached = null;
