@@ -62,6 +62,7 @@ class SparkClientImpl implements SparkClient {
 
   private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
 
+  private static final String OSX_TEST_OPTS = "SPARK_OSX_TEST_OPTS";
   private static final String SPARK_HOME_ENV = "SPARK_HOME";
   private static final String SPARK_HOME_KEY = "spark.home";
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
@@ -227,10 +228,16 @@ class SparkClientImpl implements SparkClient {
           sparkLogDir = sparkHome + "/logs/";
         }
       }
+
+      String osxTestOpts = "";
+      if (Strings.nullToEmpty(System.getProperty("os.name")).toLowerCase().contains("mac")) {
+        osxTestOpts = Strings.nullToEmpty(System.getenv(OSX_TEST_OPTS));
+      }
+
       String driverJavaOpts = Joiner.on(" ").skipNulls().join(
-          "-Dhive.spark.log.dir=" + sparkLogDir, conf.get(DRIVER_OPTS_KEY));
+          "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(DRIVER_OPTS_KEY));
       String executorJavaOpts = Joiner.on(" ").skipNulls().join(
-          "-Dhive.spark.log.dir=" + sparkLogDir, conf.get(EXECUTOR_OPTS_KEY));
+          "-Dhive.spark.log.dir=" + sparkLogDir, osxTestOpts, conf.get(EXECUTOR_OPTS_KEY));
 
       // Create a file with all the job properties to be read by spark-submit. Change the
       // file's permissions so that only the owner can read it. This avoid having the
