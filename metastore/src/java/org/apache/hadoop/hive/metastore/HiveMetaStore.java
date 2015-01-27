@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
@@ -165,6 +166,7 @@ import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
@@ -5554,6 +5556,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public CurrentNotificationEventId get_current_notificationEventId() throws TException {
       RawStore ms = getMS();
       return ms.getCurrentNotificationEventId();
+    }
+
+    @Override
+    public void fire_notification_event(FireEventRequest rqst) throws TException {
+      switch (rqst.getEventType()) {
+        case INSERT:
+          InsertEvent event = new InsertEvent(rqst.getDbName(), rqst.getTableName(),
+              rqst.getPartitionVals(), rqst.isSuccessful(), this);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onInsert(event);
+          }
+          break;
+
+        default:
+          throw new TException("Event type " + rqst.getEventType().toString() + " not currently " +
+              "supported.");
+      }
+
     }
   }
 

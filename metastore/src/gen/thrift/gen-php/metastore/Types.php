@@ -113,6 +113,17 @@ final class GrantRevokeType {
   );
 }
 
+final class EventRequestType {
+  const INSERT = 1;
+  const UPDATE = 2;
+  const DELETE = 3;
+  static public $__names = array(
+    1 => 'INSERT',
+    2 => 'UPDATE',
+    3 => 'DELETE',
+  );
+}
+
 final class FunctionType {
   const JAVA = 1;
   static public $__names = array(
@@ -12123,6 +12134,184 @@ class CurrentNotificationEventId {
     if ($this->eventId !== null) {
       $xfer += $output->writeFieldBegin('eventId', TType::I64, 1);
       $xfer += $output->writeI64($this->eventId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class FireEventRequest {
+  static $_TSPEC;
+
+  public $eventType = null;
+  public $dbName = null;
+  public $successful = null;
+  public $tableName = null;
+  public $partitionVals = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'eventType',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'successful',
+          'type' => TType::BOOL,
+          ),
+        4 => array(
+          'var' => 'tableName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'partitionVals',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['eventType'])) {
+        $this->eventType = $vals['eventType'];
+      }
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['successful'])) {
+        $this->successful = $vals['successful'];
+      }
+      if (isset($vals['tableName'])) {
+        $this->tableName = $vals['tableName'];
+      }
+      if (isset($vals['partitionVals'])) {
+        $this->partitionVals = $vals['partitionVals'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'FireEventRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->eventType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->successful);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tableName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::LST) {
+            $this->partitionVals = array();
+            $_size444 = 0;
+            $_etype447 = 0;
+            $xfer += $input->readListBegin($_etype447, $_size444);
+            for ($_i448 = 0; $_i448 < $_size444; ++$_i448)
+            {
+              $elem449 = null;
+              $xfer += $input->readString($elem449);
+              $this->partitionVals []= $elem449;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('FireEventRequest');
+    if ($this->eventType !== null) {
+      $xfer += $output->writeFieldBegin('eventType', TType::I32, 1);
+      $xfer += $output->writeI32($this->eventType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->successful !== null) {
+      $xfer += $output->writeFieldBegin('successful', TType::BOOL, 3);
+      $xfer += $output->writeBool($this->successful);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tableName !== null) {
+      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 4);
+      $xfer += $output->writeString($this->tableName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partitionVals !== null) {
+      if (!is_array($this->partitionVals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('partitionVals', TType::LST, 5);
+      {
+        $output->writeListBegin(TType::STRING, count($this->partitionVals));
+        {
+          foreach ($this->partitionVals as $iter450)
+          {
+            $xfer += $output->writeString($iter450);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
