@@ -45,12 +45,12 @@ STAGE PLANS:
                   alias: str_str_orc
                   Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: str2 (type: string), str1 (type: string)
+                    outputColumnNames: str2, str1
                     Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col1)
-                      keys: _col0 (type: string)
+                      aggregations: sum(UDFToInteger(COALESCE(str1,0)))
+                      keys: str2 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
@@ -69,7 +69,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  expressions: _col0 (type: string), round((_col1 / 60), 2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -185,12 +185,12 @@ STAGE PLANS:
                   alias: str_str_orc
                   Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: str2 (type: string), str1 (type: string)
+                    outputColumnNames: str2, str1
                     Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col1)
-                      keys: _col0 (type: string)
+                      aggregations: sum(UDFToInteger(COALESCE(str1,0)))
+                      keys: str2 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
@@ -210,7 +210,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  expressions: _col0 (type: string), round((_col1 / 60), 2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 255 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

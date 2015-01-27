@@ -193,7 +193,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: '1' (type: string), _col1 (type: string)
               sort order: ++
-              Map-reduce partition columns: '' (type: string)
+              Map-reduce partition columns: '1' (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
       Reduce Operator Tree:
@@ -276,7 +276,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: '1' (type: string), _col1 (type: string)
               sort order: ++
-              Map-reduce partition columns: '' (type: string)
+              Map-reduce partition columns: '1' (type: string)
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
               value expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
       Reduce Operator Tree:
