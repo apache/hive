@@ -39,7 +39,8 @@ public abstract class HCatEventMessage {
     ADD_PARTITION(HCatConstants.HCAT_ADD_PARTITION_EVENT),
     DROP_PARTITION(HCatConstants.HCAT_DROP_PARTITION_EVENT),
     ALTER_TABLE(HCatConstants.HCAT_ALTER_TABLE_EVENT),
-    ALTER_PARTITION(HCatConstants.HCAT_ALTER_PARTITION_EVENT);
+    ALTER_PARTITION(HCatConstants.HCAT_ALTER_PARTITION_EVENT),
+    INSERT(HCatConstants.HCAT_INSERT_EVENT);
 
     private String typeString;
 

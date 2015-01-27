@@ -79,6 +79,14 @@ module GrantRevokeType
   VALID_VALUES = Set.new([GRANT, REVOKE]).freeze
 end
 
+module EventRequestType
+  INSERT = 1
+  UPDATE = 2
+  DELETE = 3
+  VALUE_MAP = {1 => "INSERT", 2 => "UPDATE", 3 => "DELETE"}
+  VALID_VALUES = Set.new([INSERT, UPDATE, DELETE]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -2069,87 +2077,6 @@ class CurrentNotificationEventId
   ::Thrift::Struct.generate_accessors self
 end
 
-class InsertEventRequestData
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  FILESADDED = 1
-
-  FIELDS = {
-    FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field filesAdded is unset!') unless @filesAdded
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class FireEventRequestData < ::Thrift::Union
-  include ::Thrift::Struct_Union
-  class << self
-    def insertData(val)
-      FireEventRequestData.new(:insertData, val)
-    end
-  end
-
-  INSERTDATA = 1
-
-  FIELDS = {
-    INSERTDATA => {:type => ::Thrift::Types::STRUCT, :name => 'insertData', :class => ::InsertEventRequestData}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
-  end
-
-  ::Thrift::Union.generate_accessors self
-end
-
-class FireEventRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  SUCCESSFUL = 1
-  DATA = 2
-  DBNAME = 3
-  TABLENAME = 4
-  PARTITIONVALS = 5
-
-  FIELDS = {
-    SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
-    DATA => {:type => ::Thrift::Types::STRUCT, :name => 'data', :class => ::FireEventRequestData},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
-    PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field successful is unset!') if @successful.nil?
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field data is unset!') unless @data
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class FireEventResponse
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-
-  FIELDS = {
-
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class GetAllFunctionsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FUNCTIONS = 1
@@ -2186,6 +2113,36 @@ class TableMeta
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableType is unset!') unless @tableType
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FireEventRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTTYPE = 1
+  DBNAME = 2
+  SUCCESSFUL = 3
+  TABLENAME = 4
+  PARTITIONVALS = 5
+
+  FIELDS = {
+    EVENTTYPE => {:type => ::Thrift::Types::I32, :name => 'eventType', :enum_class => ::EventRequestType},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventType is unset!') unless @eventType
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field successful is unset!') if @successful.nil?
+    unless @eventType.nil? || ::EventRequestType::VALID_VALUES.include?(@eventType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field eventType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

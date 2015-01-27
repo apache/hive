@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -150,6 +151,7 @@ import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
+import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
@@ -5884,8 +5886,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       initPartCount = getMS().getPartitionCount();
       initDatabaseCount = getMS().getDatabaseCount();
     }
-  }
 
+    @Override
+    public void fire_notification_event(FireEventRequest rqst) throws TException {
+      switch (rqst.getEventType()) {
+        case INSERT:
+          InsertEvent event = new InsertEvent(rqst.getDbName(), rqst.getTableName(),
+              rqst.getPartitionVals(), rqst.isSuccessful(), this);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onInsert(event);
+          }
+          break;
+
+        default:
+          throw new TException("Event type " + rqst.getEventType().toString() + " not currently " +
+              "supported.");
+      }
+    }
+  }
 
   public static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, HiveConf hiveConf)
       throws MetaException {
@@ -5932,7 +5950,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return isMetaStoreRemote;
   }
 
-  /**
+  /**updateMetric
    * Renew a delegation token to extend its lifetime.
    *
    * @param tokenStrForm

@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -1410,6 +1411,14 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+
+  /**
+   * Request that the metastore fire an event.  Currently this is only supported for DML
+   * operations, since the metastore knows when DDL operations happen.
+   * @param request
+   * @throws TException
+   */
+  void fireNotificationEvent(FireEventRequest request) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

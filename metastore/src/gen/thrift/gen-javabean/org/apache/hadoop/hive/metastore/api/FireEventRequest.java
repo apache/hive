@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 public class FireEventRequest implements org.apache.thrift.TBase<FireEventRequest, FireEventRequest._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FireEventRequest");
 
-  private static final org.apache.thrift.protocol.TField SUCCESSFUL_FIELD_DESC = new org.apache.thrift.protocol.TField("successful", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField EVENT_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("eventType", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField SUCCESSFUL_FIELD_DESC = new org.apache.thrift.protocol.TField("successful", org.apache.thrift.protocol.TType.BOOL, (short)3);
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITION_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionVals", org.apache.thrift.protocol.TType.LIST, (short)5);
 
@@ -46,17 +46,21 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     schemes.put(TupleScheme.class, new FireEventRequestTupleSchemeFactory());
   }
 
+  private EventRequestType eventType; // required
+  private String dbName; // required
   private boolean successful; // required
-  private FireEventRequestData data; // required
-  private String dbName; // optional
   private String tableName; // optional
   private List<String> partitionVals; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SUCCESSFUL((short)1, "successful"),
-    DATA((short)2, "data"),
-    DB_NAME((short)3, "dbName"),
+    /**
+     * 
+     * @see EventRequestType
+     */
+    EVENT_TYPE((short)1, "eventType"),
+    DB_NAME((short)2, "dbName"),
+    SUCCESSFUL((short)3, "successful"),
     TABLE_NAME((short)4, "tableName"),
     PARTITION_VALS((short)5, "partitionVals");
 
@@ -73,12 +77,12 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SUCCESSFUL
-          return SUCCESSFUL;
-        case 2: // DATA
-          return DATA;
-        case 3: // DB_NAME
+        case 1: // EVENT_TYPE
+          return EVENT_TYPE;
+        case 2: // DB_NAME
           return DB_NAME;
+        case 3: // SUCCESSFUL
+          return SUCCESSFUL;
         case 4: // TABLE_NAME
           return TABLE_NAME;
         case 5: // PARTITION_VALS
@@ -125,16 +129,16 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
   // isset id assignments
   private static final int __SUCCESSFUL_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.DB_NAME,_Fields.TABLE_NAME,_Fields.PARTITION_VALS};
+  private _Fields optionals[] = {_Fields.TABLE_NAME,_Fields.PARTITION_VALS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.EVENT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("eventType", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, EventRequestType.class)));
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SUCCESSFUL, new org.apache.thrift.meta_data.FieldMetaData("successful", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FireEventRequestData.class)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARTITION_VALS, new org.apache.thrift.meta_data.FieldMetaData("partitionVals", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -148,13 +152,15 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
   }
 
   public FireEventRequest(
-    boolean successful,
-    FireEventRequestData data)
+    EventRequestType eventType,
+    String dbName,
+    boolean successful)
   {
     this();
+    this.eventType = eventType;
+    this.dbName = dbName;
     this.successful = successful;
     setSuccessfulIsSet(true);
-    this.data = data;
   }
 
   /**
@@ -162,13 +168,13 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
    */
   public FireEventRequest(FireEventRequest other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.successful = other.successful;
-    if (other.isSetData()) {
-      this.data = new FireEventRequestData(other.data);
+    if (other.isSetEventType()) {
+      this.eventType = other.eventType;
     }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
+    this.successful = other.successful;
     if (other.isSetTableName()) {
       this.tableName = other.tableName;
     }
@@ -187,56 +193,42 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
 
   @Override
   public void clear() {
+    this.eventType = null;
+    this.dbName = null;
     setSuccessfulIsSet(false);
     this.successful = false;
-    this.data = null;
-    this.dbName = null;
     this.tableName = null;
     this.partitionVals = null;
   }
 
-  public boolean isSuccessful() {
-    return this.successful;
+  /**
+   * 
+   * @see EventRequestType
+   */
+  public EventRequestType getEventType() {
+    return this.eventType;
   }
 
-  public void setSuccessful(boolean successful) {
-    this.successful = successful;
-    setSuccessfulIsSet(true);
+  /**
+   * 
+   * @see EventRequestType
+   */
+  public void setEventType(EventRequestType eventType) {
+    this.eventType = eventType;
   }
 
-  public void unsetSuccessful() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID);
+  public void unsetEventType() {
+    this.eventType = null;
   }
 
-  /** Returns true if field successful is set (has been assigned a value) and false otherwise */
-  public boolean isSetSuccessful() {
-    return EncodingUtils.testBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID);
+  /** Returns true if field eventType is set (has been assigned a value) and false otherwise */
+  public boolean isSetEventType() {
+    return this.eventType != null;
   }
 
-  public void setSuccessfulIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID, value);
-  }
-
-  public FireEventRequestData getData() {
-    return this.data;
-  }
-
-  public void setData(FireEventRequestData data) {
-    this.data = data;
-  }
-
-  public void unsetData() {
-    this.data = null;
-  }
-
-  /** Returns true if field data is set (has been assigned a value) and false otherwise */
-  public boolean isSetData() {
-    return this.data != null;
-  }
-
-  public void setDataIsSet(boolean value) {
+  public void setEventTypeIsSet(boolean value) {
     if (!value) {
-      this.data = null;
+      this.eventType = null;
     }
   }
 
@@ -261,6 +253,28 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     if (!value) {
       this.dbName = null;
     }
+  }
+
+  public boolean isSuccessful() {
+    return this.successful;
+  }
+
+  public void setSuccessful(boolean successful) {
+    this.successful = successful;
+    setSuccessfulIsSet(true);
+  }
+
+  public void unsetSuccessful() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID);
+  }
+
+  /** Returns true if field successful is set (has been assigned a value) and false otherwise */
+  public boolean isSetSuccessful() {
+    return EncodingUtils.testBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID);
+  }
+
+  public void setSuccessfulIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESSFUL_ISSET_ID, value);
   }
 
   public String getTableName() {
@@ -326,19 +340,11 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SUCCESSFUL:
+    case EVENT_TYPE:
       if (value == null) {
-        unsetSuccessful();
+        unsetEventType();
       } else {
-        setSuccessful((Boolean)value);
-      }
-      break;
-
-    case DATA:
-      if (value == null) {
-        unsetData();
-      } else {
-        setData((FireEventRequestData)value);
+        setEventType((EventRequestType)value);
       }
       break;
 
@@ -347,6 +353,14 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
         unsetDbName();
       } else {
         setDbName((String)value);
+      }
+      break;
+
+    case SUCCESSFUL:
+      if (value == null) {
+        unsetSuccessful();
+      } else {
+        setSuccessful((Boolean)value);
       }
       break;
 
@@ -371,14 +385,14 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SUCCESSFUL:
-      return Boolean.valueOf(isSuccessful());
-
-    case DATA:
-      return getData();
+    case EVENT_TYPE:
+      return getEventType();
 
     case DB_NAME:
       return getDbName();
+
+    case SUCCESSFUL:
+      return Boolean.valueOf(isSuccessful());
 
     case TABLE_NAME:
       return getTableName();
@@ -397,12 +411,12 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     }
 
     switch (field) {
-    case SUCCESSFUL:
-      return isSetSuccessful();
-    case DATA:
-      return isSetData();
+    case EVENT_TYPE:
+      return isSetEventType();
     case DB_NAME:
       return isSetDbName();
+    case SUCCESSFUL:
+      return isSetSuccessful();
     case TABLE_NAME:
       return isSetTableName();
     case PARTITION_VALS:
@@ -424,21 +438,12 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     if (that == null)
       return false;
 
-    boolean this_present_successful = true;
-    boolean that_present_successful = true;
-    if (this_present_successful || that_present_successful) {
-      if (!(this_present_successful && that_present_successful))
+    boolean this_present_eventType = true && this.isSetEventType();
+    boolean that_present_eventType = true && that.isSetEventType();
+    if (this_present_eventType || that_present_eventType) {
+      if (!(this_present_eventType && that_present_eventType))
         return false;
-      if (this.successful != that.successful)
-        return false;
-    }
-
-    boolean this_present_data = true && this.isSetData();
-    boolean that_present_data = true && that.isSetData();
-    if (this_present_data || that_present_data) {
-      if (!(this_present_data && that_present_data))
-        return false;
-      if (!this.data.equals(that.data))
+      if (!this.eventType.equals(that.eventType))
         return false;
     }
 
@@ -448,6 +453,15 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
       if (!(this_present_dbName && that_present_dbName))
         return false;
       if (!this.dbName.equals(that.dbName))
+        return false;
+    }
+
+    boolean this_present_successful = true;
+    boolean that_present_successful = true;
+    if (this_present_successful || that_present_successful) {
+      if (!(this_present_successful && that_present_successful))
+        return false;
+      if (this.successful != that.successful)
         return false;
     }
 
@@ -476,20 +490,20 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder();
 
-    boolean present_successful = true;
-    builder.append(present_successful);
-    if (present_successful)
-      builder.append(successful);
-
-    boolean present_data = true && (isSetData());
-    builder.append(present_data);
-    if (present_data)
-      builder.append(data);
+    boolean present_eventType = true && (isSetEventType());
+    builder.append(present_eventType);
+    if (present_eventType)
+      builder.append(eventType.getValue());
 
     boolean present_dbName = true && (isSetDbName());
     builder.append(present_dbName);
     if (present_dbName)
       builder.append(dbName);
+
+    boolean present_successful = true;
+    builder.append(present_successful);
+    if (present_successful)
+      builder.append(successful);
 
     boolean present_tableName = true && (isSetTableName());
     builder.append(present_tableName);
@@ -512,22 +526,12 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     int lastComparison = 0;
     FireEventRequest typedOther = (FireEventRequest)other;
 
-    lastComparison = Boolean.valueOf(isSetSuccessful()).compareTo(typedOther.isSetSuccessful());
+    lastComparison = Boolean.valueOf(isSetEventType()).compareTo(typedOther.isSetEventType());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSuccessful()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.successful, typedOther.successful);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetData()).compareTo(typedOther.isSetData());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetData()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.data, typedOther.data);
+    if (isSetEventType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.eventType, typedOther.eventType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -538,6 +542,16 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     }
     if (isSetDbName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbName, typedOther.dbName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSuccessful()).compareTo(typedOther.isSetSuccessful());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSuccessful()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.successful, typedOther.successful);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -582,27 +596,25 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     StringBuilder sb = new StringBuilder("FireEventRequest(");
     boolean first = true;
 
+    sb.append("eventType:");
+    if (this.eventType == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.eventType);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("dbName:");
+    if (this.dbName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dbName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("successful:");
     sb.append(this.successful);
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("data:");
-    if (this.data == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.data);
-    }
-    first = false;
-    if (isSetDbName()) {
-      if (!first) sb.append(", ");
-      sb.append("dbName:");
-      if (this.dbName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.dbName);
-      }
-      first = false;
-    }
     if (isSetTableName()) {
       if (!first) sb.append(", ");
       sb.append("tableName:");
@@ -629,12 +641,16 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetSuccessful()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'successful' is unset! Struct:" + toString());
+    if (!isSetEventType()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'eventType' is unset! Struct:" + toString());
     }
 
-    if (!isSetData()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'data' is unset! Struct:" + toString());
+    if (!isSetDbName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
+    }
+
+    if (!isSetSuccessful()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'successful' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -676,27 +692,26 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
           break;
         }
         switch (schemeField.id) {
-          case 1: // SUCCESSFUL
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.successful = iprot.readBool();
-              struct.setSuccessfulIsSet(true);
+          case 1: // EVENT_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.eventType = EventRequestType.findByValue(iprot.readI32());
+              struct.setEventTypeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // DATA
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.data = new FireEventRequestData();
-              struct.data.read(iprot);
-              struct.setDataIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // DB_NAME
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // SUCCESSFUL
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.successful = iprot.readBool();
+              struct.setSuccessfulIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -740,21 +755,19 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(SUCCESSFUL_FIELD_DESC);
-      oprot.writeBool(struct.successful);
-      oprot.writeFieldEnd();
-      if (struct.data != null) {
-        oprot.writeFieldBegin(DATA_FIELD_DESC);
-        struct.data.write(oprot);
+      if (struct.eventType != null) {
+        oprot.writeFieldBegin(EVENT_TYPE_FIELD_DESC);
+        oprot.writeI32(struct.eventType.getValue());
         oprot.writeFieldEnd();
       }
       if (struct.dbName != null) {
-        if (struct.isSetDbName()) {
-          oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
-          oprot.writeString(struct.dbName);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(struct.dbName);
+        oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(SUCCESSFUL_FIELD_DESC);
+      oprot.writeBool(struct.successful);
+      oprot.writeFieldEnd();
       if (struct.tableName != null) {
         if (struct.isSetTableName()) {
           oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
@@ -793,22 +806,17 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, FireEventRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      oprot.writeI32(struct.eventType.getValue());
+      oprot.writeString(struct.dbName);
       oprot.writeBool(struct.successful);
-      struct.data.write(oprot);
       BitSet optionals = new BitSet();
-      if (struct.isSetDbName()) {
+      if (struct.isSetTableName()) {
         optionals.set(0);
       }
-      if (struct.isSetTableName()) {
+      if (struct.isSetPartitionVals()) {
         optionals.set(1);
       }
-      if (struct.isSetPartitionVals()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetDbName()) {
-        oprot.writeString(struct.dbName);
-      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -826,21 +834,18 @@ public class FireEventRequest implements org.apache.thrift.TBase<FireEventReques
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, FireEventRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      struct.eventType = EventRequestType.findByValue(iprot.readI32());
+      struct.setEventTypeIsSet(true);
+      struct.dbName = iprot.readString();
+      struct.setDbNameIsSet(true);
       struct.successful = iprot.readBool();
       struct.setSuccessfulIsSet(true);
-      struct.data = new FireEventRequestData();
-      struct.data.read(iprot);
-      struct.setDataIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.dbName = iprot.readString();
-        struct.setDbNameIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         {
           org.apache.thrift.protocol.TList _list513 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.partitionVals = new ArrayList<String>(_list513.size);
