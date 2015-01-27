@@ -190,7 +190,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
                   + oldVal.declaredLength + " vs " + buffer.declaredLength + " @" + offset);
             }
             // We found an old, valid block for this key in the cache.
-s            releaseBufferInternal(buffer);
+            releaseBufferInternal(buffer);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];

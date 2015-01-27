@@ -202,7 +202,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
       InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
-    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_ENABLED)) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED)) {
       return inputFormat; // LLAP not enabled, no-op.
     }
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,

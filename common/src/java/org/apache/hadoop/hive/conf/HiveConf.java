@@ -2005,15 +2005,14 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "remote spark client JobHandle future timeout value in seconds."),
 
-    LLAP_ENABLED("hive.llap.enabled", false, ""),
-    LLAP_LOW_LEVEL_CACHE("hive.llap.use.lowlevel.cache", true, ""),
-    LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.cache.orc.alloc.min", 128 * 1024, ""),
-    LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.cache.orc.alloc.max", 16 * 1024 * 1024, ""),
-    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.cache.orc.arena.size", 128 * 1024 * 1024, ""),
-    LLAP_ORC_CACHE_MAX_SIZE("hive.llap.cache.orc.size", 1024L * 1024 * 1024, ""),
-    LLAP_REQUEST_THREAD_COUNT("hive.llap.request.thread.count", 16, ""),
-    LLAP_USE_LRFU("hive.llap.use.lrfu", false, ""),
-    LLAP_LRFU_LAMBDA("hive.llap.lrfu.lambda", 0.01f, "")
+    LLAP_IO_ENABLED("hive.llap.io.enabled", true, ""),
+    LLAP_LOW_LEVEL_CACHE("hive.llap.io.use.lowlevel.cache", true, ""),
+    LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.io.cache.orc.alloc.min", 128 * 1024, ""),
+    LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024, ""),
+    LLAP_ORC_CACHE_ARENA_SIZE("hive.llap.io.cache.orc.arena.size", 128 * 1024 * 1024, ""),
+    LLAP_ORC_CACHE_MAX_SIZE("hive.llap.io.cache.orc.size", 1024L * 1024 * 1024, ""),
+    LLAP_USE_LRFU("hive.llap.io.use.lrfu", false, ""),
+    LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f, "")
     ;
 
     public final String varname;
