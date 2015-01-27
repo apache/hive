@@ -133,8 +133,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       WalkerCtx walkerCtx = (WalkerCtx) procCtx;
       // There can be atmost one element eligible to be converted to
       // metadata only
-      if ((walkerCtx.getMayBeMetadataOnlyTableScans().isEmpty())
-          || (walkerCtx.getMayBeMetadataOnlyTableScans().size() > 1)) {
+      if (walkerCtx.getMayBeMetadataOnlyTableScans().isEmpty()) {
         return nd;
       }
 
