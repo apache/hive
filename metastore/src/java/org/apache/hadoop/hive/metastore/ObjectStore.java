@@ -143,8 +143,6 @@ import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 
 /**
  * This class is the interface between the application logic and the database
@@ -573,7 +571,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
-    db.setParameters(mdb.getParameters());
+    db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = mdb.getOwnerType();
     db.setOwnerType((null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
@@ -1020,8 +1018,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
-  private <K, V> Map<K, V> convertMap(Map<K, V> dnMap) {
-    return (dnMap == null) ? null : Maps.newHashMap(dnMap);
+  private Map<String, String> convertMap(Map<String, String> dnMap) {
+    return MetaStoreUtils.trimMapNulls(dnMap,
+        HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
   }
 
   private Table convertToTable(MTable mtbl) throws MetaException {
