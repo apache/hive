@@ -36,16 +36,19 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
  */
 public class IOContext {
 
-  /**
-   * Spark uses this thread local
-   */
-  private static final ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
-    @Override
-    protected synchronized IOContext initialValue() { return new IOContext(); }
- };
+    public static String DEFAULT_CONTEXT = "";
+
+    private static final ThreadLocal<Map<String,IOContext>> threadLocal = new ThreadLocal<Map<String,IOContext>>() {
+	@Override
+	protected synchronized Map<String,IOContext> initialValue() {
+		Map<String, IOContext> map = new HashMap<String, IOContext>(); 
+		map.put(DEFAULT_CONTEXT, new IOContext());
+		return map;
+	    }
+    };
 
   private static IOContext get() {
-    return IOContext.threadLocal.get();
+      return IOContext.threadLocal.get().get(DEFAULT_CONTEXT);
   }
 
   /**
@@ -53,12 +56,14 @@ public class IOContext {
    */
   private static final Map<String, IOContext> inputNameIOContextMap = new HashMap<String, IOContext>();
 
-
   public static IOContext get(Configuration conf) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return get();
-    }
     String inputName = conf.get(Utilities.INPUT_NAME);
+    Map<String, IOContext> inputNameIOContextMap = threadLocal.get();
+
+    if (inputName == null) {
+	inputName = DEFAULT_CONTEXT;
+    }
+
     if (!inputNameIOContextMap.containsKey(inputName)) {
       IOContext ioContext = new IOContext();
       inputNameIOContextMap.put(inputName, ioContext);
@@ -68,8 +73,7 @@ public class IOContext {
   }
 
   public static void clear() {
-    IOContext.threadLocal.remove();
-    inputNameIOContextMap.clear();
+      threadLocal.remove();
   }
 
   private long currentBlockStart;

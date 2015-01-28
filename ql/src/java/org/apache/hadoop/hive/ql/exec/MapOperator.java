@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -85,6 +86,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   private final transient LongWritable recordCounter = new LongWritable();
   protected transient long numRows = 0;
   protected transient long cntr = 1;
+  private final Map<Integer, DummyStoreOperator> connectedOperators
+    = new TreeMap<Integer, DummyStoreOperator>();
 
   // input path --> {operator --> context}
   private final Map<String, Map<Operator<?>, MapOpCtx>> opCtxMap =
@@ -620,7 +623,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   @Override
   public Map<Integer, DummyStoreOperator> getTagToOperatorTree() {
-    return MapRecordProcessor.getConnectOps();
+    return connectedOperators;
   }
 
   public void initializeContexts() {
@@ -633,5 +636,13 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   public Deserializer getCurrentDeserializer() {
 
     return currentCtxs[0].deserializer;
+  }
+
+  public void clearConnectedOperators() {
+    connectedOperators.clear();
+  }
+
+  public void setConnectedOperators(int tag, DummyStoreOperator dummyOp) {
+    connectedOperators.put(tag, dummyOp);
   }
 }

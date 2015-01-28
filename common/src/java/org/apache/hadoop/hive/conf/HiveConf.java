@@ -1883,6 +1883,10 @@ public class HiveConf extends Configuration {
 
     HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez (hadoop 2 only), spark"),
+
+    HIVE_EXECUTION_MODE("hive.execution.mode", "container", new StringSet("container", "llap"),
+        "Chooses whether query fragments will run in container or in llap"),
+
     HIVE_JAR_DIRECTORY("hive.jar.directory", null,
         "This is the location hive in tez mode will look for to find a site wide \n" +
         "installed hive instance."),

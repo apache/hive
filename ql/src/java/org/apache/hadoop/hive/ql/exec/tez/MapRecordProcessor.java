@@ -79,8 +79,6 @@ public class MapRecordProcessor extends RecordProcessor {
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
   private MapWork mapWork;
   List<MapWork> mergeWorkList = null;
-  private static Map<Integer, DummyStoreOperator> connectOps =
-      new TreeMap<Integer, DummyStoreOperator>();
 
   public MapRecordProcessor(JobConf jconf) throws Exception {
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
@@ -157,7 +155,7 @@ public class MapRecordProcessor extends RecordProcessor {
         mapOp = new MapOperator();
       }
 
-      connectOps.clear();
+      mapOp.clearConnectedOperators();
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
         for (MapWork mergeMapWork : mergeWorkList) {
@@ -176,7 +174,7 @@ public class MapRecordProcessor extends RecordProcessor {
             mergeMapOp.setChildren(jconf);
             if (foundCachedMergeWork == false) {
               DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
-              connectOps.put(mergeMapWork.getTag(), dummyOp);
+              mapOp.setConnectedOperators(mergeMapWork.getTag(), dummyOp);
             }
             mergeMapOp.setExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
@@ -336,10 +334,6 @@ public class MapRecordProcessor extends RecordProcessor {
       Utilities.clearWorkMap();
       MapredContext.close();
     }
-  }
-
-  public static Map<Integer, DummyStoreOperator> getConnectOps() {
-    return connectOps;
   }
 
   private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) throws Exception {

@@ -365,7 +365,7 @@ public final class Utilities {
       LOG.info("PLAN PATH = " + path);
       assert path != null;
       if (!gWorkMap.containsKey(path)
-        || HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+        || !HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr")) {
         Path localPath;
         if (conf.getBoolean("mapreduce.task.uberized", false) && name.equals(REDUCE_PLAN_NAME)) {
           localPath = new Path(name);
