@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -70,7 +69,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   static final private Log LOG = LogFactory.getLog(ConvertJoinMapJoin.class.getName());
 
-  @SuppressWarnings("unchecked")
   @Override
   /*
    * (non-Javadoc) we should ideally not modify the tree we traverse. However,
@@ -172,6 +170,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return null;
   }
 
+  @SuppressWarnings("unchecked")
   private Object checkAndConvertSMBJoin(OptimizeTezProcContext context, JoinOperator joinOp,
       TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
     // we cannot convert to bucket map join, we cannot convert to
@@ -228,12 +227,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   private void convertJoinSMBJoin(JoinOperator joinOp, OptimizeTezProcContext context,
       int mapJoinConversionPos, int numBuckets, boolean isSubQuery, boolean adjustParentsChildren)
       throws SemanticException {
-    ParseContext parseContext = context.parseContext;
     MapJoinDesc mapJoinDesc = null;
     if (adjustParentsChildren) {
-      mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf, parseContext.getOpParseCtx(),
-            joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
-            mapJoinConversionPos, true);
+      mapJoinDesc = MapJoinProcessor.getMapJoinDesc(context.conf,
+            joinOp, joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
+            joinOp.getConf().getMapAliases(), mapJoinConversionPos, true);
     } else {
       JoinDesc joinDesc = joinOp.getConf();
       // retain the original join desc in the map join.
@@ -249,7 +247,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc.resetOrder();
     }
 
-    @SuppressWarnings("unchecked")
     CommonMergeJoinOperator mergeJoinOp =
         (CommonMergeJoinOperator) OperatorFactory.get(new CommonMergeJoinDesc(numBuckets,
             isSubQuery, mapJoinConversionPos, mapJoinDesc), joinOp.getSchema());
@@ -637,11 +634,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     //can safely convert the join to a map join.
-    ParseContext parseContext = context.parseContext;
     MapJoinOperator mapJoinOp =
-        MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, parseContext.getOpParseCtx(), joinOp,
-                joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
-                bigTablePosition, true);
+        MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, joinOp,
+                joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
+                joinOp.getConf().getMapAliases(), bigTablePosition, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

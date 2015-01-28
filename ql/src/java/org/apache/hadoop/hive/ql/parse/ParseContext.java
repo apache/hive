@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +69,6 @@ public class ParseContext {
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private Set<JoinOperator> joinOps;
   private Set<MapJoinOperator> mapJoinOps;
   private Set<SMBMapJoinOperator> smbMapJoinOps;
@@ -152,7 +150,6 @@ public class ParseContext {
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends OperatorDesc>> topOps,
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx,
       Set<JoinOperator> joinOps,
       Set<SMBMapJoinOperator> smbMapJoinOps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
@@ -177,7 +174,6 @@ public class ParseContext {
     this.smbMapJoinOps = smbMapJoinOps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
-    this.opParseCtx = opParseCtx;
     this.topOps = topOps;
     this.ctx = ctx;
     this.idToTableNameMap = idToTableNameMap;
@@ -301,43 +297,6 @@ public class ParseContext {
    */
   public void setTopOps(HashMap<String, Operator<? extends OperatorDesc>> topOps) {
     this.topOps = topOps;
-  }
-
-  /**
-   * @return the opParseCtx
-   */
-  public LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtx() {
-    return opParseCtx;
-  }
-
-  /**
-   * Remove the OpParseContext of a specific operator op
-   * @param op
-   * @return
-   */
-  public OpParseContext removeOpParseCtx(Operator<? extends OperatorDesc> op) {
-    return opParseCtx.remove(op);
-  }
-
-  /**
-   * Update the OpParseContext of operator op to newOpParseContext.
-   * If op is not in opParseCtx, a new entry will be added into opParseCtx.
-   * The key is op, and the value is newOpParseContext.
-   * @param op
-   * @param newOpParseContext
-   */
-  public void updateOpParseCtx(Operator<? extends OperatorDesc> op,
-      OpParseContext newOpParseContext) {
-    opParseCtx.put(op, newOpParseContext);
-  }
-
-  /**
-   * @param opParseCtx
-   *          the opParseCtx to set
-   */
-  public void setOpParseCtx(
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
-    this.opParseCtx = opParseCtx;
   }
 
   public HashMap<String, SplitSample> getNameToSplitSample() {
