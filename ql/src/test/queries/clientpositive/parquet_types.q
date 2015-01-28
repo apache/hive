@@ -49,6 +49,8 @@ hex(cbinary), m1, l1, st1 FROM parquet_types;
 
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar) FROM parquet_types;
 
+-- test types in group by
+
 SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
@@ -59,3 +61,15 @@ FROM parquet_types
 GROUP BY ctinyint
 ORDER BY ctinyint
 ;
+
+SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat;
+
+SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar;
+
+SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar;
+
+SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1;
+
+SELECT t, count(*) FROM parquet_types GROUP BY t ORDER BY t;
+
+SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;

@@ -101,6 +101,14 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
     if (o == null) {
       return null;
     }
+
+    if (o instanceof Text) {
+      String str = ((Text)o).toString();
+      HiveCharWritable hcw = new HiveCharWritable();
+      hcw.set(str, ((CharTypeInfo)typeInfo).getLength());
+      return hcw;
+    }
+
     HiveCharWritable writable = (HiveCharWritable) o;
     if (doesWritableMatchTypeParams((HiveCharWritable) o)) {
       return new HiveCharWritable(writable);
