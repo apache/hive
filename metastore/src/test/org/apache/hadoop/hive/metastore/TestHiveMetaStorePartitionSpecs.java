@@ -143,6 +143,8 @@ public class TestHiveMetaStorePartitionSpecs {
     Table table = new Table(tableName, dbName, "", 0, 0, 0, storageDescriptor, partColumns, tableParameters, "", "", "");
 
     hmsc.createTable(table);
+    Assert.assertTrue("Table " + dbName + "." + tableName + " does not exist",
+      hmsc.tableExists(dbName, tableName));
 
   }
 
