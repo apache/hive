@@ -386,7 +386,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartList = pctx.getOpToPartList();
     opToSamplePruner = pctx.getOpToSamplePruner();
     topOps = pctx.getTopOps();
-    opParseCtx = pctx.getOpParseCtx();
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
     ctx = pctx.getContext();
@@ -402,8 +401,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ParseContext getParseContext() {
-    return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList,
-        topOps, opParseCtx,
+    return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
@@ -7143,7 +7141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
         newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
         newColInfo.setTabAlias(nm[0]);
-        rsRR.addMappingOnly(nm[0], nm[1], newColInfo);
+        rsRR.put(nm[0], nm[1], newColInfo);
         if (nm2 != null) {
           rsRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
         }
@@ -7394,7 +7392,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
         newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
         newColInfo.setTabAlias(nm[0]);
-        outputRR.addMappingOnly(nm[0], nm[1], newColInfo);
+        outputRR.put(nm[0], nm[1], newColInfo);
         if (nm2 != null) {
           outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
         }
@@ -10207,7 +10205,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
     ParseContext pCtx = new ParseContext(conf, qb, plannerCtx.child,
-        opToPartPruner, opToPartList, topOps, opParseCtx,
+        opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,

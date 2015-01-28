@@ -392,7 +392,7 @@ public abstract class TaskCompiler {
     ParseContext clone = new ParseContext(conf,
         pCtx.getQB(), pCtx.getParseTree(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
-        pCtx.getOpParseCtx(), pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
+        pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
         pCtx.getListMapJoinOpsNoReducer(), pCtx.getGroupOpToInputTables(),

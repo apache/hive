@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,10 +53,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -66,14 +68,8 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * When dynamic partitioning (with or without bucketing and sorting) is enabled, this optimization
@@ -196,8 +192,7 @@ public class SortedDynPartitionOptimizer implements Transform {
       for (int i : sortPositions) LOG.debug("sort position " + i);
       for (int i : sortOrder) LOG.debug("sort order " + i);
       List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
-      List<ColumnInfo> colInfos = parseCtx.getOpParseCtx().get(fsParent).getRowResolver()
-          .getColumnInfos();
+      List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
       ArrayList<ExprNodeDesc> bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
 
       // update file sink descriptor
@@ -206,9 +201,7 @@ public class SortedDynPartitionOptimizer implements Transform {
       fsOp.getConf().setTotalFiles(1);
 
       // Create ReduceSinkDesc
-      RowResolver inputRR = parseCtx.getOpParseCtx().get(fsParent).getRowResolver();
-      ObjectPair<String, RowResolver> pair = copyRowResolver(inputRR);
-      RowResolver outRR = pair.getSecond();
+      RowSchema outRS = new RowSchema(fsParent.getSchema());
       ArrayList<ColumnInfo> valColInfo = Lists.newArrayList(fsParent.getSchema().getSignature());
       ArrayList<ExprNodeDesc> newValueCols = Lists.newArrayList();
       Map<String, ExprNodeDesc> colExprMap = Maps.newHashMap();
@@ -220,28 +213,25 @@ public class SortedDynPartitionOptimizer implements Transform {
           newValueCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
 
       if (!bucketColumns.isEmpty()) {
-        String tableAlias = outRR.getColumnInfos().get(0).getTabAlias();
+        String tableAlias = outRS.getSignature().get(0).getTabAlias();
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo,
             tableAlias, true, true);
-        outRR.put(tableAlias, BUCKET_NUMBER_COL_NAME, ci);
+        outRS.getSignature().add(ci);
       }
 
       // Create ReduceSink operator
-      ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-          OperatorFactory.getAndMakeChild(rsConf, new RowSchema(outRR.getColumnInfos()), fsParent),
-          outRR, parseCtx);
+      ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
+              rsConf, new RowSchema(outRS.getSignature()), fsParent);
       rsOp.setColumnExprMap(colExprMap);
 
       // Create ExtractDesc
-      ObjectPair<String, RowResolver> exPair = copyRowResolver(outRR);
-      RowResolver exRR = exPair.getSecond();
+      RowSchema exRR = new RowSchema(outRS);
       ExtractDesc exConf = new ExtractDesc(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
           Utilities.ReduceField.VALUE.toString(), "", false));
 
       // Create Extract Operator
-      ExtractOperator exOp = (ExtractOperator) putOpInsertMap(
-          OperatorFactory.getAndMakeChild(exConf, new RowSchema(exRR.getColumnInfos()), rsOp),
-          exRR, parseCtx);
+      ExtractOperator exOp = (ExtractOperator) OperatorFactory.getAndMakeChild(
+              exConf, exRR, rsOp);
 
       // link EX to FS
       fsOp.getParentOperators().clear();
@@ -313,8 +303,6 @@ public class SortedDynPartitionOptimizer implements Transform {
             rsParent.getChildOperators().add(rsGrandChild);
             rsGrandChild.getParentOperators().clear();
             rsGrandChild.getParentOperators().add(rsParent);
-            parseCtx.removeOpParseCtx(rsToRemove);
-            parseCtx.removeOpParseCtx(rsChild);
             LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChild.getOperatorId()
                 + " as it was introduced by enforce bucketing/sorting.");
           }
@@ -494,31 +482,6 @@ public class SortedDynPartitionOptimizer implements Transform {
       }
 
       return cols;
-    }
-
-    private Operator<? extends Serializable> putOpInsertMap(Operator<?> op, RowResolver rr,
-        ParseContext context) {
-      OpParseContext ctx = new OpParseContext(rr);
-      context.getOpParseCtx().put(op, ctx);
-      return op;
-    }
-
-    private ObjectPair<String, RowResolver> copyRowResolver(RowResolver inputRR) {
-      ObjectPair<String, RowResolver> output = new ObjectPair<String, RowResolver>();
-      RowResolver outRR = new RowResolver();
-      int pos = 0;
-      String tabAlias = null;
-
-      for (ColumnInfo colInfo : inputRR.getColumnInfos()) {
-        String[] info = inputRR.reverseLookup(colInfo.getInternalName());
-        tabAlias = info[0];
-        outRR.put(info[0], info[1], new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
-            colInfo.getType(), info[0], colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol()));
-        pos++;
-      }
-      output.setFirst(tabAlias);
-      output.setSecond(outRR);
-      return output;
     }
 
   }

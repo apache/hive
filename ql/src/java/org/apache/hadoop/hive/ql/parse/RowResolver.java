@@ -54,7 +54,6 @@ public class RowResolver implements Serializable{
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
 
-  @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(RowResolver.class.getName());
 
   public RowResolver() {

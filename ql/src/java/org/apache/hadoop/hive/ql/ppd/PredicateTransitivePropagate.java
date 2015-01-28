@@ -44,9 +44,7 @@ import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -97,20 +95,19 @@ public class PredicateTransitivePropagate implements Transform {
         ((FilterOperator)parent).getConf().setPredicate(merged);
       } else {
         ExprNodeDesc merged = ExprNodeDescUtils.mergePredicates(exprs);
-        RowResolver parentRR = pGraphContext.getOpParseCtx().get(parent).getRowResolver();
-        Operator<FilterDesc> newFilter = createFilter(reducer, parent, parentRR, merged);
-        pGraphContext.getOpParseCtx().put(newFilter, new OpParseContext(parentRR));
+        RowSchema parentRS = parent.getSchema();
+        Operator<FilterDesc> newFilter = createFilter(reducer, parent, parentRS, merged);
       }
     }
 
     return pGraphContext;
   }
 
-  // insert filter operator between target(chilld) and input(parent)
+  // insert filter operator between target(child) and input(parent)
   private Operator<FilterDesc> createFilter(Operator<?> target, Operator<?> parent,
-      RowResolver parentRR, ExprNodeDesc filterExpr) {
+      RowSchema parentRS, ExprNodeDesc filterExpr) {
     Operator<FilterDesc> filter = OperatorFactory.get(new FilterDesc(filterExpr, false),
-        new RowSchema(parentRR.getColumnInfos()));
+        new RowSchema(parentRS.getSignature()));
     filter.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
     filter.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
     filter.getParentOperators().add(parent);

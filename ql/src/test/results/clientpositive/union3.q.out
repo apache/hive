@@ -101,59 +101,43 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: int)
-                outputColumnNames: _col0
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: int)
-                outputColumnNames: _col0
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: int)
-                outputColumnNames: _col0
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-              Select Operator
-                expressions: _col0 (type: int)
-                outputColumnNames: _col0
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 4 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce

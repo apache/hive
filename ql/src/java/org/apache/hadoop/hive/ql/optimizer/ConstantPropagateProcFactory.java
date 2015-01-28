@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -108,30 +107,16 @@ public final class ConstantPropagateProcFactory {
    * @param desc
    * @return
    */
-  public static ColumnInfo resolveColumn(RowResolver rr,
+  public static ColumnInfo resolveColumn(RowSchema rs,
       ExprNodeColumnDesc desc) {
-    try {
-      ColumnInfo ci = rr.get(desc.getTabAlias(), desc.getColumn());
-      if (ci == null) {
-        String[] tmp = rr.reverseLookup(desc.getColumn());
-        if (tmp == null) {
-          return null;
-        }
-        ci = rr.get(tmp[0], tmp[1]);
-        ci.setTabAlias(tmp[0]);
-        ci.setAlias(tmp[1]);
-      } else {
-        String[] tmp = rr.reverseLookup(ci.getInternalName());
-        if (tmp == null) {
-          return null;
-        }
-        ci.setTabAlias(tmp[0]);
-        ci.setAlias(tmp[1]);
-      }
-      return ci;
-    } catch (SemanticException e) {
-      throw new RuntimeException(e);
+    ColumnInfo ci = rs.getColumnInfo(desc.getTabAlias(), desc.getColumn());
+    if (ci == null) {
+      ci = rs.getColumnInfo(desc.getColumn());
     }
+    if (ci == null) {
+      return null;
+    }
+    return ci;
   }
 
   private static final Set<PrimitiveCategory> unSupportedTypes = ImmutableSet
@@ -258,7 +243,7 @@ public final class ConstantPropagateProcFactory {
         // expressions are
         // constant, add them to colToConstatns as half-deterministic columns.
         if (propagate) {
-          propagate(udf, newExprs, cppCtx.getRowResolver(op), constants);
+          propagate(udf, newExprs, op.getSchema(), constants);
         }
       }
 
@@ -323,7 +308,7 @@ public final class ConstantPropagateProcFactory {
    * @param op
    * @param constants
    */
-  private static void propagate(GenericUDF udf, List<ExprNodeDesc> newExprs, RowResolver rr,
+  private static void propagate(GenericUDF udf, List<ExprNodeDesc> newExprs, RowSchema rs,
       Map<ColumnInfo, ExprNodeDesc> constants) {
     if (udf instanceof GenericUDFOPEqual) {
       ExprNodeDesc lOperand = newExprs.get(0);
@@ -346,7 +331,7 @@ public final class ConstantPropagateProcFactory {
         // we need a column expression on other side.
         return;
       }
-      ColumnInfo ci = resolveColumn(rr, c);
+      ColumnInfo ci = resolveColumn(rs, c);
       if (ci != null) {
         LOG.debug("Filter " + udf + " is identified as a value assignment, propagate it.");
         if (!v.getTypeInfo().equals(ci.getType())) {
@@ -361,7 +346,7 @@ public final class ConstantPropagateProcFactory {
       if (operand instanceof ExprNodeColumnDesc) {
         LOG.debug("Filter " + udf + " is identified as a value assignment, propagate it.");
         ExprNodeColumnDesc c = (ExprNodeColumnDesc) operand;
-        ColumnInfo ci = resolveColumn(rr, c);
+        ColumnInfo ci = resolveColumn(rs, c);
         if (ci != null) {
           constants.put(ci, new ExprNodeNullDesc());
         }
@@ -440,45 +425,38 @@ public final class ConstantPropagateProcFactory {
    * @return
    */
   private static ExprNodeDesc evaluateColumn(ExprNodeColumnDesc desc,
-      ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> parent) {
-    try {
-      ColumnInfo ci = null;
-      RowResolver rr = cppCtx.getOpToParseCtxMap().get(parent).getRowResolver();
-      String[] tmp = rr.reverseLookup(desc.getColumn());
-      if (tmp == null) {
-        LOG.error("Reverse look up of column " + desc + " error!");
-        return null;
-      }
-      ci = rr.get(tmp[0], tmp[1]);
-      if (ci != null) {
-        ExprNodeDesc constant = null;
-        // Additional work for union operator, see union27.q
-        if (ci.getAlias() == null) {
-          for (Entry<ColumnInfo, ExprNodeDesc> e : cppCtx.getOpToConstantExprs().get(parent).entrySet()) {
-            if (e.getKey().getInternalName().equals(ci.getInternalName())) {
-              constant = e.getValue();
-              break;
-            }
-          }
-        } else {
-          constant = cppCtx.getOpToConstantExprs().get(parent).get(ci);
-        }
-        if (constant != null) {
-          if (constant instanceof ExprNodeConstantDesc
-              && !constant.getTypeInfo().equals(desc.getTypeInfo())) {
-            return typeCast(constant, desc.getTypeInfo());
-          }
-          return constant;
-        } else {
-          return null;
-        }
-      }
+    ConstantPropagateProcCtx cppCtx, Operator<? extends Serializable> parent) {
+    RowSchema rs = parent.getSchema();
+    ColumnInfo ci = rs.getColumnInfo(desc.getColumn());
+    if (ci == null) {
+      LOG.error("Reverse look up of column " + desc + " error!");
+      ci = rs.getColumnInfo(desc.getTabAlias(), desc.getColumn());
+    }
+    if (ci == null) {
       LOG.error("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
       throw new RuntimeException("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
-    } catch (SemanticException e) {
-      throw new RuntimeException(e);
     }
-
+    ExprNodeDesc constant = null;
+    // Additional work for union operator, see union27.q
+    if (ci.getAlias() == null) {
+      for (Entry<ColumnInfo, ExprNodeDesc> e : cppCtx.getOpToConstantExprs().get(parent).entrySet()) {
+        if (e.getKey().getInternalName().equals(ci.getInternalName())) {
+          constant = e.getValue();
+          break;
+        }
+      }
+    } else {
+      constant = cppCtx.getOpToConstantExprs().get(parent).get(ci);
+    }
+    if (constant != null) {
+      if (constant instanceof ExprNodeConstantDesc
+          && !constant.getTypeInfo().equals(desc.getTypeInfo())) {
+        return typeCast(constant, desc.getTypeInfo());
+      }
+      return constant;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -798,11 +776,10 @@ public final class ConstantPropagateProcFactory {
         // Assume only 1 parent for FS operator
         Operator<? extends Serializable> parent = op.getParentOperators().get(0);
         Map<ColumnInfo, ExprNodeDesc> parentConstants = cppCtx.getPropagatedConstants(parent);
-        RowResolver rr = cppCtx.getOpToParseCtxMap().get(parent).getRowResolver();
+        RowSchema rs = parent.getSchema();
         boolean allConstant = true;
         for (String input : inputs) {
-          String tmp[] = rr.reverseLookup(input);
-          ColumnInfo ci = rr.get(tmp[0], tmp[1]);
+          ColumnInfo ci = rs.getColumnInfo(input);
           if (parentConstants.get(ci) == null) {
             allConstant = false;
             break;

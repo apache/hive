@@ -44,9 +44,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -347,7 +345,7 @@ public final class CorrelationUtilities {
   protected static SelectOperator replaceOperatorWithSelect(Operator<?> operator,
       ParseContext context, AbstractCorrelationProcCtx procCtx)
       throws SemanticException {
-    RowResolver inputRR = context.getOpParseCtx().get(operator).getRowResolver();
+    RowSchema inputRS = operator.getSchema();
     SelectDesc select = new SelectDesc(null, null);
 
     Operator<?> parent = getSingleParent(operator);
@@ -355,9 +353,8 @@ public final class CorrelationUtilities {
 
     parent.getChildOperators().clear();
 
-    SelectOperator sel = (SelectOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(select, new RowSchema(inputRR
-            .getColumnInfos()), parent), inputRR, context);
+    SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
+            select, new RowSchema(inputRS.getSignature()), parent);
 
     sel.setColumnExprMap(operator.getColumnExprMap());
 
@@ -393,8 +390,6 @@ public final class CorrelationUtilities {
       }
       cGBYr.setColumnExprMap(cGBYm.getColumnExprMap());
       cGBYr.setSchema(cGBYm.getSchema());
-      RowResolver resolver = context.getOpParseCtx().get(cGBYm).getRowResolver();
-      context.getOpParseCtx().get(cGBYr).setRowResolver(resolver);
     } else {
       // pRS-cRS-cGBYr (no map aggregation) --> pRS-cGBYr(COMPLETE)
       // revert expressions of cGBYr to that of cRS
@@ -404,25 +399,23 @@ public final class CorrelationUtilities {
       }
 
       Map<String, ExprNodeDesc> oldMap = cGBYr.getColumnExprMap();
-      RowResolver oldRR = context.getOpParseCtx().get(cGBYr).getRowResolver();
+      RowSchema oldRS = cGBYr.getSchema();
 
       Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
-      RowResolver newRR = new RowResolver();
+      ArrayList<ColumnInfo> newRS = new ArrayList<ColumnInfo>();
 
       List<String> outputCols = cGBYr.getConf().getOutputColumnNames();
       for (int i = 0; i < outputCols.size(); i++) {
         String colName = outputCols.get(i);
-        String[] nm = oldRR.reverseLookup(colName);
-        ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
-        newRR.put(nm[0], nm[1], colInfo);
+        ColumnInfo colInfo = oldRS.getColumnInfo(colName);
+        newRS.add(colInfo);
         ExprNodeDesc colExpr = ExprNodeDescUtils.backtrack(oldMap.get(colName), cGBYr, cRS);
         if (colExpr != null) {
           newMap.put(colInfo.getInternalName(), colExpr);
         }
       }
       cGBYr.setColumnExprMap(newMap);
-      cGBYr.setSchema(new RowSchema(newRR.getColumnInfos()));
-      context.getOpParseCtx().get(cGBYr).setRowResolver(newRR);
+      cGBYr.setSchema(new RowSchema(newRS));
     }
     cGBYr.getConf().setMode(GroupByDesc.Mode.COMPLETE);
 
@@ -494,13 +487,5 @@ public final class CorrelationUtilities {
     }
     target.setChildOperators(null);
     target.setParentOperators(null);
-    context.getOpParseCtx().remove(target);
-  }
-
-  protected static Operator<? extends Serializable> putOpInsertMap(Operator<?> op, RowResolver rr,
-      ParseContext context) {
-    OpParseContext ctx = new OpParseContext(rr);
-    context.getOpParseCtx().put(op, ctx);
-    return op;
   }
 }

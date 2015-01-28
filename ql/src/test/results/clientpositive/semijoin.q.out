@@ -2565,17 +2565,13 @@ STAGE PLANS:
             1 _col0 (type: string)
           outputColumnNames: _col0
           Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 6 Data size: 49 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

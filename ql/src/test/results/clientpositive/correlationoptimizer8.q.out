@@ -545,17 +545,13 @@ STAGE PLANS:
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 95 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 95 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 95 Data size: 1002 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Map Reduce
@@ -761,17 +757,13 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: count(VALUE._col0)
             keys: KEY._col0 (type: string)
@@ -790,17 +782,13 @@ STAGE PLANS:
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Mux Operator
             Statistics: Num rows: 397 Data size: 4019 Basic stats: COMPLETE Column stats: NONE
             Join Operator
@@ -811,17 +799,13 @@ STAGE PLANS:
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-              Select Operator
-                expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1179,17 +1163,13 @@ STAGE PLANS:
             1 UDFToDouble(_col0) (type: double)
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 182 Data size: 1938 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 182 Data size: 1938 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 182 Data size: 1938 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Map Reduce

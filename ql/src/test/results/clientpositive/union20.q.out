@@ -132,18 +132,14 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 27889 Data size: 7585808 Basic stats: COMPLETE Column stats: PARTIAL
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 27889 Data size: 7585808 Basic stats: COMPLETE Column stats: PARTIAL
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 27889 Data size: 7585808 Basic stats: COMPLETE Column stats: PARTIAL
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Statistics: Num rows: 13944 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 13944 Data size: 0 Basic stats: PARTIAL Column stats: PARTIAL
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-4
     Map Reduce

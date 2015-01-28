@@ -77,11 +77,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
@@ -934,24 +932,6 @@ public final class GenMapRedUtils {
     return mrWork;
   }
 
-  /**
-   * insert in the map for the operator to row resolver.
-   *
-   * @param op
-   *          operator created
-   * @param rr
-   *          row resolver
-   * @param parseCtx
-   *          parse context
-   */
-  @SuppressWarnings("nls")
-  public static Operator<? extends OperatorDesc> putOpInsertMap(
-      Operator<? extends OperatorDesc> op, RowResolver rr, ParseContext parseCtx) {
-    OpParseContext ctx = new OpParseContext(rr);
-    parseCtx.getOpParseCtx().put(op, ctx);
-    return op;
-  }
-
   public static TableScanOperator createTemporaryTableScanOperator(RowSchema rowSchema) {
     TableScanOperator tableScanOp =
         (TableScanOperator) OperatorFactory.get(new TableScanDesc(null), rowSchema);
@@ -996,19 +976,16 @@ public final class GenMapRedUtils {
       desc.setCompressType(parseCtx.getConf().getVar(
           HiveConf.ConfVars.COMPRESSINTERMEDIATETYPE));
     }
-    Operator<? extends OperatorDesc> fileSinkOp = putOpInsertMap(OperatorFactory
-        .get(desc, parent.getSchema()), null, parseCtx);
+    Operator<? extends OperatorDesc> fileSinkOp = OperatorFactory.get(
+            desc, parent.getSchema());
 
     // Connect parent to fileSinkOp
     parent.replaceChild(child, fileSinkOp);
     fileSinkOp.setParentOperators(Utilities.makeList(parent));
 
     // Create a dummy TableScanOperator for the file generated through fileSinkOp
-    RowResolver parentRowResolver =
-        parseCtx.getOpParseCtx().get(parent).getRowResolver();
-    TableScanOperator tableScanOp = (TableScanOperator) putOpInsertMap(
-        createTemporaryTableScanOperator(parent.getSchema()),
-        parentRowResolver, parseCtx);
+    TableScanOperator tableScanOp = (TableScanOperator) createTemporaryTableScanOperator(
+            parent.getSchema());
 
     // Connect this TableScanOperator to child.
     tableScanOp.setChildOperators(Utilities.makeList(child));

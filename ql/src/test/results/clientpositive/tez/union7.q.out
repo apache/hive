@@ -86,18 +86,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 3 
             Vertex: Union 3
 

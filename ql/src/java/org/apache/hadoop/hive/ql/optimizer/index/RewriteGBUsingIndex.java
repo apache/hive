@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -332,8 +331,6 @@ public class RewriteGBUsingIndex implements Transform {
           RewriteQueryUsingAggregateIndexCtx.getInstance(parseContext, hiveDb, canApplyCtx);
       rewriteQueryCtx.invokeRewriteQueryProc();
       parseContext = rewriteQueryCtx.getParseContext();
-      parseContext.setOpParseCtx((LinkedHashMap<Operator<? extends OperatorDesc>,
-          OpParseContext>) rewriteQueryCtx.getOpc());
     }
     LOG.info("Finished Rewriting query");
   }

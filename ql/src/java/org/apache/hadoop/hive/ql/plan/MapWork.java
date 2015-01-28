@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -96,7 +95,6 @@ public class MapWork extends BaseWork {
   private Long minSplitSize;
   private Long minSplitSizePerNode;
   private Long minSplitSizePerRack;
-  private final int tag = 0;
 
   //use sampled partitioning
   private int samplingType;
@@ -105,7 +103,6 @@ public class MapWork extends BaseWork {
   public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   // the following two are used for join processing
-  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
   private boolean leftInputJoin;
   private String[] baseSrc;
   private List<String> mapAliases;
@@ -455,16 +452,6 @@ public class MapWork extends BaseWork {
 
   public ArrayList<PartitionDesc> getPartitionDescs() {
     return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
-  }
-
-  public
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtxMap() {
-    return opParseCtxMap;
-  }
-
-  public void setOpParseCtxMap(
-    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap) {
-    this.opParseCtxMap = opParseCtxMap;
   }
 
   public Path getTmpHDFSPath() {

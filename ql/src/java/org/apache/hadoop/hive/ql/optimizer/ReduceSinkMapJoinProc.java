@@ -196,7 +196,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           LOG.debug("Cloning reduce sink for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-              (ReduceSinkDesc) parentRS.getConf().clone(), parentRS.getParentOperators());
+              (ReduceSinkDesc) parentRS.getConf().clone(),
+              new RowSchema(parentRS.getSchema()),
+              parentRS.getParentOperators());
           context.clonedReduceSinks.add(r);
         } else {
           r = parentRS;

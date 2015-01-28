@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -113,6 +114,8 @@ public class StatsOptimizer implements Transform {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TS + SEL + GBY + RS + GBY + SEL + FS),
         new MetaDataProcessor(pctx));
+    opRules.put(new RuleRegExp("R2", TS + SEL + GBY + RS + GBY + FS),
+            new MetaDataProcessor(pctx));
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
@@ -208,21 +211,24 @@ public class StatsOptimizer implements Transform {
           return null;
         }
 
-        selOp = (SelectOperator)rsOp.getChildOperators().get(0).getChildOperators().get(0);
-        List<AggregationDesc> aggrs = gbyOp.getConf().getAggregators();
-
-        if (!(selOp.getConf().getColList().size() == aggrs.size())) {
-          // all select columns must be aggregations
-          return null;
-
-        }
-        for(ExprNodeDesc desc : selOp.getConf().getColList()) {
-          if (!(desc instanceof ExprNodeColumnDesc)) {
-            // Probably an expression, cant handle that
+        Operator<?> last = rsOp.getChildOperators().get(0);
+        if (last.getChildOperators().get(0) instanceof SelectOperator) {
+          selOp = (SelectOperator)rsOp.getChildOperators().get(0).getChildOperators().get(0);
+          last = selOp;
+          if (!(selOp.getConf().getColList().size() ==
+                  gbyOp.getConf().getAggregators().size())) {
+            // all select columns must be aggregations
             return null;
+  
+          }
+          for(ExprNodeDesc desc : selOp.getConf().getColList()) {
+            if (!(desc instanceof ExprNodeColumnDesc)) {
+              // Probably an expression, cant handle that
+              return null;
+            }
           }
         }
-        FileSinkOperator fsOp = (FileSinkOperator)(selOp.getChildren().get(0));
+        FileSinkOperator fsOp = (FileSinkOperator)(last.getChildren().get(0));
         if (fsOp.getChildOperators() != null && fsOp.getChildOperators().size() > 0) {
           // looks like a subq plan.
           return null;
@@ -234,7 +240,7 @@ public class StatsOptimizer implements Transform {
 
         Hive hive = Hive.get(pctx.getConf());
 
-        for (AggregationDesc aggr : aggrs) {
+        for (AggregationDesc aggr : gbyOp.getConf().getAggregators()) {
           if (aggr.getDistinct()) {
             // our stats for NDV is approx, not accurate.
             return null;

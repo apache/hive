@@ -372,11 +372,10 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     }
 
     //can safely convert the join to a map join.
-    ParseContext parseContext = context.getParseContext();
     MapJoinOperator mapJoinOp =
-        MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), parseContext.getOpParseCtx(), joinOp,
-            joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(), joinOp.getConf().getMapAliases(),
-            bigTablePosition, true);
+        MapJoinProcessor.convertJoinOpMapJoinOp(context.getConf(), joinOp,
+            joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
+            joinOp.getConf().getMapAliases(), bigTablePosition, true);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);

@@ -254,7 +254,6 @@ public class QueryPlanTreeTransformation {
     for (ReduceSinkOperator rsop: handledRSs) {
       rsop.setChildOperators(null);
       rsop.setParentOperators(null);
-      pCtx.getOpParseCtx().remove(rsop);
     }
   }
 }

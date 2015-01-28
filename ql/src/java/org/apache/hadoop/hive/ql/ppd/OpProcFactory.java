@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -459,7 +457,7 @@ public final class OpProcFactory {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
-      Set<String> aliases = getAliases(nd, owi);
+      Set<String> aliases = getAliases(nd);
       // we pass null for aliases here because mergeWithChildrenPred filters
       // aliases in the children node context and we need to filter them in
       // the current JoinOperator's context
@@ -495,8 +493,8 @@ public final class OpProcFactory {
       return null;
     }
 
-    protected Set<String> getAliases(Node nd, OpWalkerInfo owi) throws SemanticException {
-      return owi.getRowResolver(nd).getTableNames();
+    protected Set<String> getAliases(Node nd) throws SemanticException {
+      return ((Operator)nd).getSchema().getTableNames();
     }
 
     protected Object handlePredicates(Node nd, ExprWalkerInfo prunePreds, OpWalkerInfo owi)
@@ -512,8 +510,8 @@ public final class OpProcFactory {
   public static class JoinPPD extends JoinerPPD {
 
     @Override
-    protected Set<String> getAliases(Node nd, OpWalkerInfo owi) {
-      return getQualifiedAliases((JoinOperator) nd, owi.getRowResolver(nd));
+    protected Set<String> getAliases(Node nd) {
+      return getQualifiedAliases((JoinOperator) nd, ((JoinOperator)nd).getSchema());
     }
 
     /**
@@ -540,7 +538,7 @@ public final class OpProcFactory {
      *          Row resolver
      * @return set of qualified aliases
      */
-    private Set<String> getQualifiedAliases(JoinOperator op, RowResolver rr) {
+    private Set<String> getQualifiedAliases(JoinOperator op, RowSchema rs) {
       Set<String> aliases = new HashSet<String>();
       JoinCondDesc[] conds = op.getConf().getConds();
       Map<Integer, Set<String>> posToAliasMap = op.getPosToAliasMap();
@@ -560,7 +558,7 @@ public final class OpProcFactory {
       if(i == -1){
         aliases.addAll(posToAliasMap.get(0));
       }
-      Set<String> aliases2 = rr.getTableNames();
+      Set<String> aliases2 = rs.getTableNames();
       aliases.retainAll(aliases2);
       return aliases;
     }
@@ -691,7 +689,7 @@ public final class OpProcFactory {
         String[] aliases = ((ReduceSinkOperator)operator).getInputAliases();
         return new HashSet<String>(Arrays.asList(aliases));
       }
-      Set<String> includes = owi.getRowResolver(operator).getTableNames();
+      Set<String> includes = operator.getSchema().getTableNames();
       if (includes.size() == 1 && includes.contains("")) {
         // Reduce sink of group by operator
         return null;
@@ -794,7 +792,7 @@ public final class OpProcFactory {
 
   protected static Object createFilter(Operator op,
       Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) {
-    RowResolver inputRR = owi.getRowResolver(op);
+    RowSchema inputRS = op.getSchema();
 
     // combine all predicates into a single expression
     List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
@@ -834,7 +832,7 @@ public final class OpProcFactory {
         .getChildOperators();
     op.setChildOperators(null);
     Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
-        new FilterDesc(condn, false), new RowSchema(inputRR.getColumnInfos()),
+        new FilterDesc(condn, false), new RowSchema(inputRS.getSignature()),
         op);
     output.setChildOperators(originalChilren);
     for (Operator<? extends OperatorDesc> ch : originalChilren) {
@@ -845,8 +843,6 @@ public final class OpProcFactory {
       parentOperators.remove(pos);
       parentOperators.add(pos, output); // add the new op as the old
     }
-    OpParseContext ctx = new OpParseContext(inputRR);
-    owi.put(output, ctx);
 
     if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
         HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {

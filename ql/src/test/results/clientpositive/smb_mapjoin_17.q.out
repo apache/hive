@@ -222,15 +222,12 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -332,15 +329,12 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -442,15 +436,12 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -640,15 +631,12 @@ STAGE PLANS:
             3 key (type: int)
             4 key (type: int)
           outputColumnNames: _col0, _col1
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string)
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

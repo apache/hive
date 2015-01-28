@@ -113,15 +113,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: 4 (type: int)
                   outputColumnNames: _col0
-                  Select Operator
-                    expressions: _col0 (type: int)
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 2 
             Reduce Operator Tree:
               Limit
@@ -137,15 +134,12 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
             Reduce Operator Tree:
               Limit
@@ -161,15 +155,12 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: int)
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 9 
             Reduce Operator Tree:
               Limit
@@ -177,15 +168,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: 3 (type: int)
                   outputColumnNames: _col0
-                  Select Operator
-                    expressions: _col0 (type: int)
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Union 4 
             Vertex: Union 4
 

@@ -579,17 +579,13 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                     Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: decimal(10,0))
-                      outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -836,15 +832,12 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
-                        Select Operator
-                          expressions: _col0 (type: decimal(10,0))
-                          outputColumnNames: _col0
-                          File Output Operator
-                            compressed: false
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -893,15 +886,12 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
-                        Select Operator
-                          expressions: _col0 (type: decimal(10,0))
-                          outputColumnNames: _col0
-                          File Output Operator
-                            compressed: false
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Map 5 
             Map Operator Tree:
                 TableScan

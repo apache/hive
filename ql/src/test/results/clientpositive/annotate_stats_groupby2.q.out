@@ -109,17 +109,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -167,17 +163,13 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -228,17 +220,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -287,17 +275,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: PARTIAL
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: bigint)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: PARTIAL
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: PARTIAL
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -345,17 +329,13 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
           pruneGroupingSetId: true
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -402,17 +382,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -460,17 +436,13 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
           pruneGroupingSetId: true
-          Select Operator
-            expressions: _col0 (type: string), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 8 Data size: 1384 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -44,10 +43,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Implementation of one of the rule-based optimization steps. ConstantPropagate traverse the DAG
@@ -65,7 +62,6 @@ public class ConstantPropagate implements Transform {
 
   private static final Log LOG = LogFactory.getLog(ConstantPropagate.class);
   protected ParseContext pGraphContext;
-  private Map<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
 
   public ConstantPropagate() {}
 
@@ -78,10 +74,9 @@ public class ConstantPropagate implements Transform {
   @Override
   public ParseContext transform(ParseContext pactx) throws SemanticException {
     pGraphContext = pactx;
-    opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // generate pruned column list for all relevant operators
-    ConstantPropagateProcCtx cppCtx = new ConstantPropagateProcCtx(opToParseCtxMap);
+    ConstantPropagateProcCtx cppCtx = new ConstantPropagateProcCtx();
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
