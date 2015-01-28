@@ -354,6 +354,11 @@ public class RemoteDriver {
         if (sparkCounters != null) {
           counters = sparkCounters.snapshot();
         }
+        // make sure job has really succeeded
+        // at this point, future.get shall not block us
+        for (JavaFutureAction<?> future : jobs) {
+          future.get();
+        }
         protocol.jobFinished(req.id, result, null, counters);
       } catch (Throwable t) {
         // Catch throwables in a best-effort to report job status back to the client. It's
