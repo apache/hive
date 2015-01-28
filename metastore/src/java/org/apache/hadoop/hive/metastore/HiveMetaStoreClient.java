@@ -1209,7 +1209,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException {
     try {
-      return filterHook.filterTable(client.get_table(databaseName, tableName)) == null;
+      return filterHook.filterTable(client.get_table(databaseName, tableName)) != null;
     } catch (NoSuchObjectException e) {
       return false;
     }
