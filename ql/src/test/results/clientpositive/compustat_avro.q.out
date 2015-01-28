@@ -1,0 +1,52 @@
+PREHOOK: query: drop table if exists testAvro
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists testAvro
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table testAvro
+   ROW FORMAT SERDE                                                                      
+     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
+   STORED AS INPUTFORMAT                                                                 
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'                        
+   OUTPUTFORMAT                                                                          
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testAvro
+POSTHOOK: query: create table testAvro
+   ROW FORMAT SERDE                                                                      
+     'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
+   STORED AS INPUTFORMAT                                                                 
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'                        
+   OUTPUTFORMAT                                                                          
+     'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testAvro
+PREHOOK: query: describe formatted testAvro.col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavro
+POSTHOOK: query: describe formatted testAvro.col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavro
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: analyze table testAvro compute statistics for columns col1,col3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testavro
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testAvro compute statistics for columns col1,col3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testavro
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted testAvro.col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testavro
+POSTHOOK: query: describe formatted testAvro.col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testavro
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	                    	                    	0                   	0                   	0.0                 	0                   	                    	                    	from deserializer   
