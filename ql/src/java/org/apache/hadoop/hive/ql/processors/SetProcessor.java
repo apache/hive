@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  *
  */
 public class SetProcessor implements CommandProcessor {
+  private static final Log LOG = LogFactory.getLog(SetProcessor.class);
 
   private static final String prefix = "set: ";
 
@@ -161,7 +164,7 @@ public class SetProcessor implements CommandProcessor {
           throw new IllegalArgumentException(message.toString());
         }
       } else if (key.startsWith("hive.")) {
-        throw new IllegalArgumentException("hive configuration " + key + " does not exists.");
+        LOG.warn("hive configuration " + key + " does not exists.");
       }
     }
     conf.verifyAndSet(key, value);
