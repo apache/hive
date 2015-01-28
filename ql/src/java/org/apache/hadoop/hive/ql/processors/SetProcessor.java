@@ -254,7 +254,7 @@ public class SetProcessor implements CommandProcessor {
           throw new IllegalArgumentException(message.toString());
         }
       } else if (!removedConfigs.contains(key) && key.startsWith("hive.")) {
-        throw new IllegalArgumentException("hive configuration " + key + " does not exists.");
+        LOG.warn("hive configuration " + key + " does not exists.");
       }
     }
     conf.verifyAndSet(key, value);
