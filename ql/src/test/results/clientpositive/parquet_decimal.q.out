@@ -66,6 +66,24 @@ Mary	33.33
 Tom	19
 Beck	0
 Beck	79.9
+PREHOOK: query: SELECT value, count(*) FROM parq_dec GROUP BY value ORDER BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parq_dec
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, count(*) FROM parq_dec GROUP BY value ORDER BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parq_dec
+#### A masked pattern was here ####
+-12.25	1
+0	1
+4.33	1
+5.96	1
+19	1
+33.33	1
+55.71	1
+77.34	1
+79.9	1
+234.79	1
 PREHOOK: query: TRUNCATE TABLE parq_dec
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@parq_dec
