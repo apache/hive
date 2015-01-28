@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -645,6 +645,40 @@ public abstract class FolderPermissionBase {
     }
   }
 
+  /**
+   * Tests the permission to the table doesn't change after the truncation
+   * @throws Exception
+   */
+  @Test
+  public void testTruncateTable() throws Exception {
+    String tableName = "truncatetable";
+    String partition = warehouseDir + "/" + tableName + "/part1=1";
+
+    CommandProcessorResponse ret = driver.run("CREATE TABLE " + tableName + " (key STRING, value STRING) PARTITIONED BY (part1 INT)");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    setPermission(warehouseDir + "/" + tableName);
+
+    ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    assertExistence(warehouseDir + "/" + tableName);
+
+    verifyPermission(warehouseDir + "/" + tableName);
+    verifyPermission(partition);
+
+    ret = driver.run("TRUNCATE TABLE " + tableName);
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
+    Assert.assertEquals(0, ret.getResponseCode());
+
+    verifyPermission(warehouseDir + "/" + tableName);
+
+    assertExistence(partition);
+    verifyPermission(partition);    
+  }
+  
   private void verifySinglePartition(String tableLoc, int index) throws Exception {
     verifyPermission(tableLoc + "/part1=1", index);
     verifyPermission(tableLoc + "/part1=2", index);
