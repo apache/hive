@@ -129,6 +129,8 @@ public class QTestGenTask extends Task {
 
   private String logDirectory;
 
+  private String tezDirectory;
+
   private String template;
 
   private String className;
@@ -197,6 +199,14 @@ public class QTestGenTask extends Task {
 
   public void setTemplate(String template) {
     this.template = template;
+  }
+
+  public String getTezDirectory() {
+    return tezDirectory;
+  }
+
+  public void setTezDirectory(String tezDirectory) {
+    this.tezDirectory = tezDirectory;
   }
 
   public String getTemplate() {
@@ -348,6 +358,7 @@ public class QTestGenTask extends Task {
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
+    File tezDir = null;
 
     try {
 
@@ -416,6 +427,13 @@ public class QTestGenTask extends Task {
         throw new BuildException("Log Directory " + logDir.getCanonicalPath() + " does not exist");
       }
 
+      if (tezDirectory != null) {
+	tezDir = new File(tezDirectory);
+	if (!tezDir.exists()) {
+	  tezDir.mkdirs();
+	}
+      }
+
       if (resultsDirectory != null) {
         resultsDir = new File(resultsDirectory);
         if (!resultsDir.exists()) {
@@ -467,6 +485,7 @@ public class QTestGenTask extends Task {
         ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));
       }
       ctx.put("logDir", relativePath(hiveRootDir, logDir));
+      ctx.put("tezDirectory", tezDir);
       ctx.put("clusterMode", clusterMode);
       ctx.put("hiveConfDir", escapePath(hiveConfDir));
       ctx.put("hadoopVersion", hadoopVersion);

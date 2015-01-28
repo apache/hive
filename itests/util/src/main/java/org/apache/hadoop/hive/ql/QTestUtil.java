@@ -126,6 +126,7 @@ public class QTestUtil {
   private final String testFiles;
   protected final String outDir;
   protected final String logDir;
+  protected final String tezDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
   private final Set<String> qSortSet;
@@ -237,9 +238,11 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, String initScript, String cleanupScript) throws
-      Exception {
-    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript, cleanupScript);
+  public QTestUtil(String outDir, String logDir, String initScript,
+		   String cleanupScript, String tezDirectory) throws
+		     Exception {
+    this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript,
+	 cleanupScript, tezDirectory);
   }
 
   public String getOutputDirectory() {
@@ -287,6 +290,10 @@ public class QTestUtil {
                             "/build/ql/test/data/warehouse/")).toString());
     }
 
+    if (clusterType == MiniClusterType.tezlocal) {
+      conf.setVar(ConfVars.HIVE_USER_INSTALL_DIR, tezDir + "/jars");
+    }
+
     // Windows paths should be converted after MiniMrShim.setupConfiguration()
     // since setupConfiguration may overwrite configuration values.
     if (Shell.WINDOWS) {
@@ -299,6 +306,7 @@ public class QTestUtil {
     tez,
     spark,
     encrypted,
+    tezlocal,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -310,6 +318,8 @@ public class QTestUtil {
         return spark;
       } else if (type.equals("encrypted")) {
         return encrypted;
+      } else if (type.equals("tezlocal")) {
+        return tezlocal;
       } else {
         return none;
       }
@@ -317,9 +327,9 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer,
-                   String initScript, String cleanupScript)
+                   String initScript, String cleanupScript, String tezDirectory)
     throws Exception {
-    this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript);
+    this(outDir, logDir, clusterType, null, hadoopVer, initScript, cleanupScript, tezDirectory);
   }
 
   private String getKeyProviderURI() {
@@ -332,12 +342,17 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript)
+		   String confDir, String hadoopVer, String initScript,
+		   String cleanupScript, String tezDirectory)
     throws Exception {
+
     this.outDir = outDir;
     this.logDir = logDir;
+    this.tezDir = tezDirectory;
+
     if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
+      HiveConf.setHiveSiteLocation(new URL("file://"
+        + new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
     conf = new HiveConf(Driver.class);
@@ -349,7 +364,7 @@ public class QTestUtil {
     qHashQuerySet = new HashSet<String>();
     qSortNHashQuerySet = new HashSet<String>();
     qJavaVersionSpecificOutput = new HashSet<String>();
-    this.clusterType = clusterType;
+    QTestUtil.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
     int numberOfDataNodes = 4;
@@ -376,7 +391,11 @@ public class QTestUtil {
 
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
-        mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
+        mr = shims.getMiniTezCluster(conf, 4, uriString, 1, false,
+				     tezDir + "/staging");
+      } else if (clusterType == MiniClusterType.tezlocal) {
+	mr = shims.getMiniTezCluster(conf, 4, uriString, 1, true,
+				     tezDir + "/staging");
       } else {
         mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
       }
@@ -834,6 +853,15 @@ public class QTestUtil {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
     Utilities.clearWorkMap();
+    if (QTestUtil.clusterType == MiniClusterType.tezlocal) {
+      conf.setBoolean("tez.local.mode", true);
+      conf.set("fs.defaultFS", "file:///");
+      conf.setBoolean("tez.runtime.optimize.local.fetch", true);
+      conf.set("tez.staging-dir", tezDir + "/staging");
+      conf.setInt("tez.am.inline.task.execution.max-tasks", 2);
+      conf.setBoolean("tez.ignore.lib.uris", true);
+    }
+
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;

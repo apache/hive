@@ -39,10 +39,12 @@ public class $className extends TestCase {
     String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";
     String cleanupScript = "$cleanupScript";
+    String tezDirectory = "$tezDirectory";
+
     try {
       String hadoopVer = "$hadoopVersion";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, tezDirectory);
 
       // do a one time initialization
       qt.cleanUp();

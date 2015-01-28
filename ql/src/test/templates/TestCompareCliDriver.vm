@@ -40,10 +40,11 @@ public class $className extends TestCase {
     String hiveConfDir = "$hiveConfDir";
     String initScript = "$initScript";
     String cleanupScript = "$cleanupScript";
+    String tezDirectory = "$tezDirectory";
     try {
       String hadoopVer = "$hadoopVersion";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, tezDirectory);
 
       // do a one time initialization
       qt.cleanUp();
@@ -107,9 +108,9 @@ public class $className extends TestCase {
       }
     }
     TestSuite suite = new TestSuite();
-    
-    
-    
+
+
+
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
@@ -121,7 +122,7 @@ public class $className extends TestCase {
     suite.addTest(new $className("testCompareCliDriver_shutdown"));
     return suite;
   }
-  
+
   private Map<String, List<String>> versionFiles = new HashMap<String, List<String>>();
 
   static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
@@ -140,7 +141,7 @@ public class $className extends TestCase {
 
   private void runTest(String tname, String fname, String fpath) throws Exception {
     final String queryDirectory = HIVE_ROOT + "$queryDir";
-  
+
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);

@@ -44,7 +44,7 @@ public class HBaseQTestUtil extends QTestUtil {
     String initScript, String cleanupScript)
     throws Exception {
 
-    super(outDir, logDir, miniMr, null, initScript, cleanupScript);
+    super(outDir, logDir, miniMr, null, initScript, cleanupScript, null);
     setup.preTest(conf);
     this.conn = setup.getConnection();
     super.init();
