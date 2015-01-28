@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
@@ -71,7 +71,7 @@ public class ExprProcCtx implements NodeProcessorCtx {
     return inpOp;
   }
 
-  public RowResolver getResolver() {
-    return lctx.getParseCtx().getOpParseCtx().get(inpOp).getRowResolver();
+  public RowSchema getSchema() {
+    return inpOp.getSchema();
   }
 }

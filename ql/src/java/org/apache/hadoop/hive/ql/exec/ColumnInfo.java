@@ -208,10 +208,26 @@ public class ColumnInfo implements Serializable {
       return false;
     }
 
-    // TODO: why does this not compare tabAlias?
     ColumnInfo dest = (ColumnInfo)obj;
     if ((!checkEquals(internalName, dest.getInternalName())) ||
+        (!checkEquals(tabAlias, dest.getTabAlias())) ||
         (!checkEquals(alias, dest.getAlias())) ||
+        (!checkEquals(getType(), dest.getType())) ||
+        (isSkewedCol != dest.isSkewedCol()) ||
+        (isVirtualCol != dest.getIsVirtualCol()) ||
+        (isHiddenVirtualCol != dest.isHiddenVirtualCol())) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public boolean internalEquals(ColumnInfo dest) {
+    if (dest == null) {
+      return false;
+    }
+
+    if ((!checkEquals(internalName, dest.getInternalName())) ||
         (!checkEquals(getType(), dest.getType())) ||
         (isSkewedCol != dest.isSkewedCol()) ||
         (isVirtualCol != dest.getIsVirtualCol()) ||
