@@ -1,0 +1,62 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.llap.daemon;
+
+import org.apache.hadoop.conf.Configuration;
+
+public class LlapDaemonConfiguration extends Configuration {
+
+  public LlapDaemonConfiguration(Configuration conf) {
+    super(conf);
+    addResource(LLAP_DAEMON_SITE);
+  }
+
+  public LlapDaemonConfiguration() {
+    super(false);
+    addResource(LLAP_DAEMON_SITE);
+  }
+
+
+  private static final String LLAP_DAEMON_PREFIX = "llap.daemon.";
+  private static final String LLAP_DAEMON_AM_PREFIX = LLAP_DAEMON_PREFIX + "am.";
+  private static final String LLAP_DAEMON_SITE = "llap-daemon-site.xml";
+
+
+
+  public static final String LLAP_DAEMON_RPC_NUM_HANDLERS = LLAP_DAEMON_PREFIX + "rpc.num.handlers";
+  public static final int LLAP_DAEMON_RPC_NUM_HANDLERS_DEFAULT = 5;
+
+  public static final String LLAP_DAEMON_WORK_DIRS = LLAP_DAEMON_PREFIX + "work.dirs";
+
+  public static final String LLAP_DAEMON_YARN_SHUFFLE_PORT = LLAP_DAEMON_PREFIX + "yarn.shuffle.port";
+
+
+  // Section for configs used in AM and executors
+  public static final String LLAP_DAEMON_NUM_EXECUTORS = LLAP_DAEMON_PREFIX + "num.executors";
+  public static final int LLAP_DAEMON_NUM_EXECUTORS_DEFAULT = 4;
+  public static final String LLAP_DAEMON_RPC_PORT = LLAP_DAEMON_PREFIX + "rpc.port";
+  public static final int LLAP_DAEMON_RPC_PORT_DEFAULT = 15001;
+  public static final String LLAP_DAEMON_MEMORY_PER_INSTANCE_MB = LLAP_DAEMON_AM_PREFIX + "memory.per.instance.mb";
+  public static final int LLAP_DAEMON_MEMORY_PER_INSTANCE_MB_DEFAULT = 4096;
+  public static final String LLAP_DAEMON_VCPUS_PER_INSTANCE = LLAP_DAEMON_AM_PREFIX + "vcpus.per.instance";
+  public static final int LLAP_DAEMON_VCPUS_PER_INSTANCE_DEFAULT = 4;
+
+
+  // Section for configs used in the AM //
+  public static final String LLAP_DAEMON_AM_SERVICE_HOSTS = LLAP_DAEMON_AM_PREFIX + "service.hosts";
+  public static final String LLAP_DAEMON_AM_COMMUNICATOR_NUM_THREADS = LLAP_DAEMON_AM_PREFIX + "communicator.num.threads";
+  public static final int LLAP_DAEMON_AM_COMMUNICATOR_NUM_THREADS_DEFAULT = 5;
+
+}
