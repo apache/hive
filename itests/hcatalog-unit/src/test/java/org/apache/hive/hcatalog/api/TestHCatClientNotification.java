@@ -83,7 +83,7 @@ public class TestHCatClientNotification {
     assertEquals(firstEventId + 1, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, event.getEventType());
-    assertNull(event.getDbName());
+    assertEquals("myhcatdb", event.getDbName());
     assertNull(event.getTableName());
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_DATABASE\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"myhcatdb\",\"timestamp\":[0-9]+}"));
@@ -124,7 +124,7 @@ public class TestHCatClientNotification {
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
     assertEquals(dbName, event.getDbName());
-    assertNull(event.getTableName());
+    assertEquals("hcatcreatetable", event.getTableName());
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_TABLE\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"hcatcreatetable\",\"timestamp\":[0-9]+}"));
   }

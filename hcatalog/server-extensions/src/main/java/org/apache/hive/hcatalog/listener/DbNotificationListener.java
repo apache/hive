@@ -119,8 +119,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
     event.setDbName(t.getDbName());
-    // Table name is not set in create table because this goes on the queue for the database the
-    // table is created in, not the (new) queue for the table itself.
+    event.setTableName(t.getTableName());
     enqueue(event);
   }
 
@@ -209,9 +208,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_CREATE_DATABASE_EVENT,
         msgFactory.buildCreateDatabaseMessage(db).toString());
-    // Database name is null for create database, because this doesn't belong to messages for
-    // that database.  Rather it belongs to system wide messages.  The db name is in the message,
-    // so listeners can determine it.
+    event.setDbName(db.getName());
     enqueue(event);
   }
 
