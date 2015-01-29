@@ -87,7 +87,7 @@
 
   <property>
     <name>templeton.pig.path</name>
-    <value>pig-0.11.1.tar.gz/pig-0.11.1/bin/pig</value>
+    <value>pig-0.12.2.tar.gz/pig-0.12.2/bin/pig</value>
     <description>The path to the Pig executable.</description>
   </property>
 
@@ -105,13 +105,13 @@
 
   <property>
     <name>templeton.hive.path</name>
-    <value>hive-0.11.0.tar.gz/hive-0.11.0/bin/hive</value>
+    <value>apache-hive-1.0.0-bin.tar.gz/apache-hive-1.0-bin/bin/hive</value>
     <description>The path to the Hive executable.</description>
   </property>
 
   <property>
     <name>templeton.hive.home</name>
-    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin</value>
+    <value>apache-hive-1.0.0-bin.tar.gz/apache-hive-1.0-bin</value>
     <description>
       The path to the Hive home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
@@ -120,7 +120,7 @@
   </property>
   <property>
     <name>templeton.hcat.home</name>
-    <value>hive-0.14.0-SNAPSHOT-bin.tar.gz/hive-0.14.0-SNAPSHOT-bin/hcatalog</value>
+    <value>apache-hive-1.0.0-bin.tar.gz/apache-hive-1.0-bin/hcatalog</value>
     <description>
       The path to the HCat home within the tar.  This is needed if Hive is not installed on all
       nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
