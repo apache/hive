@@ -2014,7 +2014,7 @@ public class HiveConf extends Configuration {
       "1000ms", new TimeValidator(TimeUnit.MILLISECONDS),
       "Timeout for remote Spark driver in connecting back to Hive client."),
     SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT("hive.spark.client.server.connect.timeout",
-      "20000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "90000ms", new TimeValidator(TimeUnit.MILLISECONDS),
       "Timeout for handshake between Hive client and remote Spark driver.  Checked by both processes."),
     SPARK_RPC_SECRET_RANDOM_BITS("hive.spark.client.secret.bits", "256",
       "Number of bits of randomness in the generated secret for communication between Hive client and remote Spark driver. " +
