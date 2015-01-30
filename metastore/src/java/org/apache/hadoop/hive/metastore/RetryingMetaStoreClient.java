@@ -97,7 +97,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             (e.getCause() instanceof TTransportException)) {
           caughtException = (TException) e.getCause();
         } else if ((e.getCause() instanceof MetaException) &&
-            e.getCause().getMessage().matches("JDO[a-zA-Z]*Exception")) {
+            e.getCause().getMessage().matches("(?s).*JDO[a-zA-Z]*Exception.*")) {
           caughtException = (MetaException) e.getCause();
         } else {
           throw e.getCause();
