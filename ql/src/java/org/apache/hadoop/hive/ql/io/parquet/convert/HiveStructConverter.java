@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Writable;
 import parquet.io.api.Converter;
@@ -36,8 +38,9 @@ public class HiveStructConverter extends HiveGroupConverter {
   private final List<Repeated> repeatedConverters;
   private boolean reuseWritableArray = false;
 
-  public HiveStructConverter(final GroupType requestedSchema, final GroupType tableSchema) {
+  public HiveStructConverter(final GroupType requestedSchema, final GroupType tableSchema, Map<String, String> metadata) {
     this(requestedSchema, null, 0, tableSchema);
+    setMetadata(metadata);
     this.reuseWritableArray = true;
     this.writables = new Writable[tableSchema.getFieldCount()];
   }
@@ -49,6 +52,9 @@ public class HiveStructConverter extends HiveGroupConverter {
 
   public HiveStructConverter(final GroupType selectedGroupType,
                              final ConverterParent parent, final int index, final GroupType containingGroupType) {
+    if (parent != null) {
+      setMetadata(parent.getMetadata());
+    }
     this.parent = parent;
     this.index = index;
     this.totalFieldCount = containingGroupType.getFieldCount();

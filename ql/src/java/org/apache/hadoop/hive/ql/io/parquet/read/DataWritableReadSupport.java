@@ -153,7 +153,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       throw new IllegalStateException("ReadContext not initialized properly. " +
         "Don't know the Hive Schema.");
     }
-    final MessageType tableSchema = MessageTypeParser.parseMessageType(metadata.get(HIVE_SCHEMA_KEY));
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema);
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata);
   }
 }
