@@ -23,7 +23,19 @@ import parquet.schema.OriginalType;
 import parquet.schema.PrimitiveType;
 import parquet.schema.Type;
 
+import java.util.Map;
+
 public abstract class HiveGroupConverter extends GroupConverter implements ConverterParent {
+
+  private Map<String, String> metadata;
+
+  public void setMetadata(Map<String, String> metadata) {
+    this.metadata = metadata;
+  }
+
+  public Map<String, String> getMetadata() {
+    return metadata;
+  }
 
   protected static PrimitiveConverter getConverterFromDescription(PrimitiveType type, int index, ConverterParent parent) {
     if (type == null) {
