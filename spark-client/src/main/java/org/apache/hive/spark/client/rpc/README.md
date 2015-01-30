@@ -6,7 +6,7 @@ Basic flow of events:
 - Client side creates an RPC server
 - Client side spawns RemoteDriver, which manages the SparkContext, and provides a secret
 - Client side sets up a timer to wait for RemoteDriver to connect back
-- RemoteDriver connects back to client, sends Hello message with secret
+- RemoteDriver connects back to client, SASL handshake ensues
 - Connection is established and now there's a session between the client and the driver.
 
 Features of the RPC layer:
