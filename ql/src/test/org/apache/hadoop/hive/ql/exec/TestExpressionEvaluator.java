@@ -122,12 +122,12 @@ public class TestExpressionEvaluator extends TestCase {
     }
   }
 
-  private static ExprNodeDesc getListIndexNode(ExprNodeDesc node, int index) {
+  private static ExprNodeDesc getListIndexNode(ExprNodeDesc node, int index) throws Exception {
     return getListIndexNode(node, new ExprNodeConstantDesc(index));
   }
 
   private static ExprNodeDesc getListIndexNode(ExprNodeDesc node,
-      ExprNodeDesc index) {
+      ExprNodeDesc index) throws Exception {
     ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
     children.add(node);
     children.add(index);

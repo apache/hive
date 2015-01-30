@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -756,7 +757,13 @@ public class VectorizationContext {
     if (udfName == null) {
       return false;
     }
-    FunctionInfo funcInfo = FunctionRegistry.getFunctionInfo(udfName);
+    FunctionInfo funcInfo;
+    try {
+      funcInfo = FunctionRegistry.getFunctionInfo(udfName);
+    } catch (SemanticException e) {
+      LOG.warn("Failed to load " + udfName, e);
+      funcInfo = null;
+    }
     if (funcInfo == null) {
       return false;
     }

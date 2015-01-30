@@ -677,7 +677,12 @@ public class TypeCheckProcFactory {
     static ExprNodeDesc getFuncExprNodeDescWithUdfData(String udfName, TypeInfo typeInfo,
         ExprNodeDesc... children) throws UDFArgumentException {
 
-      FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
+      FunctionInfo fi;
+      try {
+        fi = FunctionRegistry.getFunctionInfo(udfName);
+      } catch (SemanticException e) {
+        throw new UDFArgumentException(e);
+      }
       if (fi == null) {
         throw new UDFArgumentException(udfName + " not found.");
       }

@@ -1748,6 +1748,13 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
+    HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
+        "Comma separated list of builtin udf names allowed in queries.\n" +
+        "An empty whitelist allows all builtin udfs to be executed. " +
+        " The udf black list takes precedence over udf white list"),
+    HIVE_SERVER2_BUILTIN_UDF_BLACKLIST("hive.server2.builtin.udf.blacklist", "",
+         "Comma separated list of udfs names. These udfs will not be allowed in queries." +
+         " The udf black list takes precedence over udf white list"),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
