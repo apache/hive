@@ -186,17 +186,30 @@ public class SparkCompiler extends TaskCompiler {
      *
      * Some of the other processors are expecting only one traversal beyond SMBJoinOp.
      * We need to traverse from the big-table path only, and stop traversing on the small-table path once we reach SMBJoinOp.
+     * Also add some SMB join information to the context, so we can properly annotate the MapWork later on.
      */
     opRules.put(new TypeRule(SMBMapJoinOperator.class),
       new NodeProcessor() {
         @Override
         public Object process(Node currNode, Stack<Node> stack,
                               NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+          GenSparkProcContext context = (GenSparkProcContext) procCtx;
+          SMBMapJoinOperator currSmbNode = (SMBMapJoinOperator) currNode;
+          SparkSMBMapJoinInfo smbMapJoinCtx = context.smbMapJoinCtxMap.get(currSmbNode);
+          if (smbMapJoinCtx == null) {
+            smbMapJoinCtx = new SparkSMBMapJoinInfo();
+            context.smbMapJoinCtxMap.put(currSmbNode, smbMapJoinCtx);
+          }
+
           for (Node stackNode : stack) {
             if (stackNode instanceof DummyStoreOperator) {
+              //If coming from small-table side, do some book-keeping, and skip traversal.
+              smbMapJoinCtx.smallTableRootOps.add(context.currentRootOperator);
               return true;
             }
           }
+          //If coming from big-table side, do some book-keeping, and continue traversal
+          smbMapJoinCtx.bigTableRootOp = context.currentRootOperator;
           return false;
         }
       }
@@ -210,23 +223,13 @@ public class SparkCompiler extends TaskCompiler {
     GraphWalker ogw = new GenSparkWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
-
-    // ------------------- Second Pass -----------------------
-    // SMB Join optimizations to add the "localWork" and bucketing data structures to MapWork.
-    opRules.clear();
-    opRules.put(new TypeRule(SMBMapJoinOperator.class),
-       SparkSortMergeJoinFactory.getTableScanMapJoin());
-
-    disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    topNodes = new ArrayList<Node>();
-    topNodes.addAll(pCtx.getTopOps().values());
-    ogw = new GenSparkWorkWalker(disp, procCtx);
-    ogw.startWalking(topNodes, null);
-
     // we need to clone some operator plans and remove union operators still
     for (BaseWork w: procCtx.workWithUnionOperators) {
       GenSparkUtils.getUtils().removeUnionOperators(conf, procCtx, w);
     }
+
+    // we need to fill MapWork with 'local' work and bucket information for SMB Join.
+    GenSparkUtils.getUtils().annotateMapWork(procCtx);
 
     // finally make sure the file sink operators are set up right
     for (FileSinkOperator fileSink: procCtx.fileSinkSet) {
