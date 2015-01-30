@@ -41,7 +41,7 @@ public abstract class HiveGroupConverter extends GroupConverter implements Conve
     OriginalType annotation = type.getOriginalType();
     if (annotation == OriginalType.LIST) {
       return HiveCollectionConverter.forList(type, parent, index);
-    } else if (annotation == OriginalType.MAP) {
+    } else if (annotation == OriginalType.MAP || annotation == OriginalType.MAP_KEY_VALUE) {
       return HiveCollectionConverter.forMap(type, parent, index);
     }
 
