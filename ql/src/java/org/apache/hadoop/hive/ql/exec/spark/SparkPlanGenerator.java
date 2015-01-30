@@ -233,6 +233,7 @@ public class SparkPlanGenerator {
       throw new IllegalArgumentException(msg, e);
     }
     if (work instanceof MapWork) {
+      cloned.setBoolean("mapred.task.is.map", true);
       List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work,
           scratchDir, context, false);
       Utilities.setInputPaths(cloned, inputPaths);
@@ -250,6 +251,7 @@ public class SparkPlanGenerator {
       // remember the JobConf cloned for each MapWork, so we won't clone for it again
       workToJobConf.put(work, cloned);
     } else if (work instanceof ReduceWork) {
+      cloned.setBoolean("mapred.task.is.map", false);
       Utilities.setReduceWork(cloned, (ReduceWork) work, scratchDir, false);
       Utilities.createTmpDirs(cloned, (ReduceWork) work);
       cloned.set(Utilities.MAPRED_REDUCER_CLASS, ExecReducer.class.getName());

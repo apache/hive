@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -279,6 +280,10 @@ public abstract class TaskCompiler {
       List<ExecDriver> mrTasks = Utilities.getMRTasks(rootTasks);
       for (ExecDriver tsk : mrTasks) {
         tsk.setRetryCmdWhenFail(true);
+      }
+      List<SparkTask> sparkTasks = Utilities.getSparkTasks(rootTasks);
+      for (SparkTask sparkTask : sparkTasks) {
+        sparkTask.setRetryCmdWhenFail(true);
       }
     }
 
