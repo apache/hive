@@ -21,18 +21,19 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.security.sasl.Sasl;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Definitions of configuration keys and default values for the RPC layer.
@@ -56,6 +57,9 @@ public final class RpcConfiguration {
   );
 
   public static final String SERVER_LISTEN_ADDRESS_KEY = "hive.spark.client.server.address";
+
+  /** Prefix for other SASL options. */
+  public static final String RPC_SASL_OPT_PREFIX = "hive.spark.client.rpc.sasl.";
 
   private final Map<String, String> config;
 
@@ -96,8 +100,7 @@ public final class RpcConfiguration {
     InetAddress address = InetAddress.getLocalHost();
     if (address.isLoopbackAddress()) {
       // Address resolves to something like 127.0.1.1, which happens on Debian;
-      // try to find
-      // a better address using the local network interfaces
+      // try to find a better address using the local network interfaces
       Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
       while (ifaces.hasMoreElements()) {
         NetworkInterface ni = ifaces.nextElement();
@@ -132,7 +135,6 @@ public final class RpcConfiguration {
     return value != null ? Integer.parseInt(value) : HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.defaultIntVal;
   }
 
-
   /**
    * Utility method for a given RpcConfiguration key, to convert value to millisecond if it is a time value,
    * and return as string in either case.
@@ -148,4 +150,41 @@ public final class RpcConfiguration {
       return conf.get(key);
     }
   }
+
+  String getSaslMechanism() {
+    String value = config.get(HiveConf.ConfVars.SPARK_RPC_SASL_MECHANISM.varname);
+    return value != null ? value : HiveConf.ConfVars. SPARK_RPC_SASL_MECHANISM.defaultStrVal;
+  }
+
+  /**
+   * SASL options are namespaced under "hive.spark.client.rpc.sasl.*"; each option is the
+   * lower-case version of the constant in the "javax.security.sasl.Sasl" class (e.g. "strength"
+   * for cipher strength).
+   */
+  Map<String, String> getSaslOptions() {
+    Map<String, String> opts = new HashMap<String, String>();
+    Map<String, String> saslOpts = ImmutableMap.<String, String>builder()
+      .put(Sasl.CREDENTIALS, "credentials")
+      .put(Sasl.MAX_BUFFER, "max_buffer")
+      .put(Sasl.POLICY_FORWARD_SECRECY, "policy_forward_secrecy")
+      .put(Sasl.POLICY_NOACTIVE, "policy_noactive")
+      .put(Sasl.POLICY_NOANONYMOUS, "policy_noanonymous")
+      .put(Sasl.POLICY_NODICTIONARY, "policy_nodictionary")
+      .put(Sasl.POLICY_NOPLAINTEXT, "policy_noplaintext")
+      .put(Sasl.POLICY_PASS_CREDENTIALS, "policy_pass_credentials")
+      .put(Sasl.QOP, "qop")
+      .put(Sasl.RAW_SEND_SIZE, "raw_send_size")
+      .put(Sasl.REUSE, "reuse")
+      .put(Sasl.SERVER_AUTH, "server_auth")
+      .put(Sasl.STRENGTH, "strength")
+      .build();
+    for (Map.Entry<String, String> e : saslOpts.entrySet()) {
+      String value = config.get(RPC_SASL_OPT_PREFIX + e.getValue());
+      if (value != null) {
+        opts.put(e.getKey(), value);
+      }
+    }
+    return opts;
+  }
+
 }

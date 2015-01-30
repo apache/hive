@@ -2024,7 +2024,9 @@ public class HiveConf extends Configuration {
     SPARK_RPC_MAX_MESSAGE_SIZE("hive.spark.client.rpc.max.size", 50 * 1024 * 1024,
       "Maximum message size in bytes for communication between Hive client and remote Spark driver. Default is 50MB."),
     SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
-      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}.");
+      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
+    SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
+      "Name of the SASL mechanism to use for authentication.");
 
     public final String varname;
     private final String defaultExpr;

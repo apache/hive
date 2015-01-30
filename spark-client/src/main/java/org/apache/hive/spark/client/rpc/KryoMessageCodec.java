@@ -18,6 +18,7 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -63,9 +64,12 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     }
   };
 
+  private volatile EncryptionHandler encryptionHandler;
+
   public KryoMessageCodec(int maxMessageSize, Class<?>... messages) {
     this.maxMessageSize = maxMessageSize;
     this.messages = Arrays.asList(messages);
+    this.encryptionHandler = null;
   }
 
   @Override
@@ -86,7 +90,7 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     }
 
     try {
-      ByteBuffer nioBuffer = in.nioBuffer(in.readerIndex(), msgSize);
+      ByteBuffer nioBuffer = maybeDecrypt(in.nioBuffer(in.readerIndex(), msgSize));
       Input kryoIn = new Input(new ByteBufferInputStream(nioBuffer));
 
       Object msg = kryos.get().readClassAndObject(kryoIn);
@@ -106,7 +110,7 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     kryos.get().writeClassAndObject(kryoOut, msg);
     kryoOut.flush();
 
-    byte[] msgData = bytes.toByteArray();
+    byte[] msgData = maybeEncrypt(bytes.toByteArray());
     LOG.debug("Encoded message of type {} ({} bytes)", msg.getClass().getName(), msgData.length);
     checkSize(msgData.length);
 
@@ -115,10 +119,56 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     buf.writeBytes(msgData);
   }
 
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    if (encryptionHandler != null) {
+      encryptionHandler.dispose();
+    }
+    super.channelInactive(ctx);
+  }
+
   private void checkSize(int msgSize) {
     Preconditions.checkArgument(msgSize > 0, "Message size (%s bytes) must be positive.", msgSize);
     Preconditions.checkArgument(maxMessageSize <= 0 || msgSize <= maxMessageSize,
         "Message (%s bytes) exceeds maximum allowed size (%s bytes).", msgSize, maxMessageSize);
+  }
+
+  private byte[] maybeEncrypt(byte[] data) throws Exception {
+    return (encryptionHandler != null) ? encryptionHandler.wrap(data, 0, data.length) : data;
+  }
+
+  private ByteBuffer maybeDecrypt(ByteBuffer data) throws Exception {
+    if (encryptionHandler != null) {
+      byte[] encrypted;
+      int len = data.limit() - data.position();
+      int offset;
+      if (data.hasArray()) {
+        encrypted = data.array();
+        offset = data.position() + data.arrayOffset();
+        data.position(data.limit());
+      } else {
+        encrypted = new byte[len];
+        offset = 0;
+        data.get(encrypted);
+      }
+      return ByteBuffer.wrap(encryptionHandler.unwrap(encrypted, offset, len));
+    } else {
+      return data;
+    }
+  }
+
+  void setEncryptionHandler(EncryptionHandler handler) {
+    this.encryptionHandler = handler;
+  }
+
+  interface EncryptionHandler {
+
+    byte[] wrap(byte[] data, int offset, int len) throws IOException;
+
+    byte[] unwrap(byte[] data, int offset, int len) throws IOException;
+
+    void dispose() throws IOException;
+
   }
 
 }
