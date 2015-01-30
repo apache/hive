@@ -1,4 +1,4 @@
-Apache Hive (TM) @VERSION@
+Apache Hive (TM) 1.0.0
 ======================
 
 The Apache Hive (TM) data warehouse software facilitates querying and

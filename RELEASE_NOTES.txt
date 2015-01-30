@@ -15,6 +15,7 @@ Release Notes - Hive - Version 1.0.0
     * [HIVE-8739] - handle Derby and Oracle errors with joins and filters in Direct SQL in a invalid-DB-specific path
     * [HIVE-8784] - Querying partition does not work with JDO enabled against PostgreSQL
     * [HIVE-8805] - CBO skipped due to SemanticException: Line 0:-1 Both left and right aliases encountered in JOIN 'avg_cs_ext_discount_amt'
+    * [HIVE-8807] - Obsolete default values in webhcat-default.xml
     * [HIVE-8811] - Dynamic partition pruning can result in NPE during query compilation
     * [HIVE-8827] - Remove SSLv2Hello from list of disabled protocols
     * [HIVE-8830] - hcatalog process don't exit because of non daemon thread
@@ -49,11 +50,15 @@ Release Notes - Hive - Version 1.0.0
     * [HIVE-9234] - HiveServer2 leaks FileSystem objects in FileSystem.CACHE
     * [HIVE-9249] - java.lang.ClassCastException: org.apache.hadoop.hive.serde2.io.HiveVarcharWritable cannot be cast to org.apache.hadoop.hive.common.type.HiveVarchar when joining tables
     * [HIVE-9278] - Cached expression feature broken in one case
+    * [HIVE-9317] - move Microsoft copyright to NOTICE file
     * [HIVE-9359] - Export of a large table causes OOM in Metastore and Client
     * [HIVE-9361] - Intermittent NPE in SessionHiveMetaStoreClient.alterTempTable
     * [HIVE-9390] - Enhance retry logic wrt DB access in TxnHandler
     * [HIVE-9401] - Backport: Fastpath for limited fetches from unpartitioned tables
     * [HIVE-9404] - NPE in org.apache.hadoop.hive.metastore.txn.TxnHandler.determineDatabaseProduct()
+    * [HIVE-9436] - RetryingMetaStoreClient does not retry JDOExceptions
+    * [HIVE-9473] - sql std auth should disallow built-in udfs that allow any java methods to be called
+    * [HIVE-9514] - schematool is broken in hive 1.0.0
 
 
 ** Improvement
