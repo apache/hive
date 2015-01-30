@@ -84,13 +84,14 @@ class SparkClientImpl implements SparkClient {
     this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
+    String clientId = UUID.randomUUID().toString();
     String secret = rpcServer.createSecret();
-    this.driverThread = startDriver(rpcServer, secret);
+    this.driverThread = startDriver(rpcServer, clientId, secret);
     this.protocol = new ClientProtocol();
 
     try {
       // The RPC server will take care of timeouts here.
-      this.driverRpc = rpcServer.registerClient(secret, protocol).get();
+      this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
     } catch (Exception e) {
       LOG.warn("Error while waiting for client to connect.", e);
       driverThread.interrupt();
@@ -174,7 +175,8 @@ class SparkClientImpl implements SparkClient {
     protocol.cancel(jobId);
   }
 
-  private Thread startDriver(RpcServer rpcServer, final String secret) throws IOException {
+  private Thread startDriver(RpcServer rpcServer, final String clientId, final String secret)
+      throws IOException {
     Runnable runnable;
     final String serverAddress = rpcServer.getAddress();
     final String serverPort = String.valueOf(rpcServer.getPort());
@@ -190,6 +192,8 @@ class SparkClientImpl implements SparkClient {
           args.add(serverAddress);
           args.add("--remote-port");
           args.add(serverPort);
+          args.add("--client-id");
+          args.add(clientId);
           args.add("--secret");
           args.add(secret);
 
@@ -243,6 +247,7 @@ class SparkClientImpl implements SparkClient {
       for (Map.Entry<String, String> e : conf.entrySet()) {
         allProps.put(e.getKey(), conf.get(e.getKey()));
       }
+      allProps.put(SparkClientFactory.CONF_CLIENT_ID, clientId);
       allProps.put(SparkClientFactory.CONF_KEY_SECRET, secret);
       allProps.put(DRIVER_OPTS_KEY, driverJavaOpts);
       allProps.put(EXECUTOR_OPTS_KEY, executorJavaOpts);

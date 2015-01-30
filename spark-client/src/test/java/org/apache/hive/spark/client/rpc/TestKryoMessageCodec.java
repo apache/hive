@@ -17,37 +17,27 @@
 
 package org.apache.hive.spark.client.rpc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.logging.LoggingHandler;
-
-import java.util.List;
-
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
+import static org.junit.Assert.*;
 
 public class TestKryoMessageCodec {
 
+  private static final String MESSAGE = "Hello World!";
+
   @Test
   public void testKryoCodec() throws Exception {
-    ByteBuf buf = newBuffer();
-    Object message = "Hello World!";
-
-    KryoMessageCodec codec = new KryoMessageCodec(0);
-    codec.encode(null, message, buf);
-
-    List<Object> objects = Lists.newArrayList();
-    codec.decode(null, buf, objects);
-
+    List<Object> objects = encodeAndDecode(MESSAGE, null);
     assertEquals(1, objects.size());
-    assertEquals(message, objects.get(0));
+    assertEquals(MESSAGE, objects.get(0));
   }
 
   @Test
@@ -76,16 +66,15 @@ public class TestKryoMessageCodec {
 
   @Test
   public void testEmbeddedChannel() throws Exception {
-    Object message = "Hello World!";
     EmbeddedChannel c = new EmbeddedChannel(
       new LoggingHandler(getClass()),
       new KryoMessageCodec(0));
-    c.writeAndFlush(message);
+    c.writeAndFlush(MESSAGE);
     assertEquals(1, c.outboundMessages().size());
-    assertFalse(message.getClass().equals(c.outboundMessages().peek().getClass()));
+    assertFalse(MESSAGE.getClass().equals(c.outboundMessages().peek().getClass()));
     c.writeInbound(c.readOutbound());
     assertEquals(1, c.inboundMessages().size());
-    assertEquals(message, c.readInbound());
+    assertEquals(MESSAGE, c.readInbound());
     c.close();
   }
 
@@ -143,6 +132,53 @@ public class TestKryoMessageCodec {
     }
   }
 
+  @Test
+  public void testEncryptionOnly() throws Exception {
+    List<Object> objects = Collections.<Object>emptyList();
+    try {
+      objects = encodeAndDecode(MESSAGE, new TestEncryptionHandler(true, false));
+    } catch (Exception e) {
+      // Pass.
+    }
+    // Do this check in case the ciphertext actually makes sense in some way.
+    for (Object msg : objects) {
+      assertFalse(MESSAGE.equals(objects.get(0)));
+    }
+  }
+
+  @Test
+  public void testDecryptionOnly() throws Exception {
+    List<Object> objects = Collections.<Object>emptyList();
+    try {
+      objects = encodeAndDecode(MESSAGE, new TestEncryptionHandler(false, true));
+    } catch (Exception e) {
+      // Pass.
+    }
+    // Do this check in case the decrypted plaintext actually makes sense in some way.
+    for (Object msg : objects) {
+      assertFalse(MESSAGE.equals(objects.get(0)));
+    }
+  }
+
+  @Test
+  public void testEncryptDecrypt() throws Exception {
+    List<Object> objects = encodeAndDecode(MESSAGE, new TestEncryptionHandler(true, true));
+    assertEquals(1, objects.size());
+    assertEquals(MESSAGE, objects.get(0));
+  }
+
+  private List<Object> encodeAndDecode(Object message, KryoMessageCodec.EncryptionHandler eh)
+      throws Exception {
+    ByteBuf buf = newBuffer();
+    KryoMessageCodec codec = new KryoMessageCodec(0);
+    codec.setEncryptionHandler(eh);
+    codec.encode(null, message, buf);
+
+    List<Object> objects = Lists.newArrayList();
+    codec.decode(null, buf, objects);
+    return objects;
+  }
+
   private ByteBuf newBuffer() {
     return UnpooledByteBufAllocator.DEFAULT.buffer(1024);
   }
@@ -157,6 +193,40 @@ public class TestKryoMessageCodec {
     TestMessage(byte[] data) {
       this.data = data;
     }
+  }
+
+  private static class TestEncryptionHandler implements KryoMessageCodec.EncryptionHandler {
+
+    private static final byte KEY = 0x42;
+
+    private final boolean encrypt;
+    private final boolean decrypt;
+
+    TestEncryptionHandler(boolean encrypt, boolean decrypt) {
+      this.encrypt = encrypt;
+      this.decrypt = decrypt;
+    }
+
+    public byte[] wrap(byte[] data, int offset, int len) throws IOException {
+      return encrypt ? transform(data, offset, len) : data;
+    }
+
+    public byte[] unwrap(byte[] data, int offset, int len) throws IOException {
+      return decrypt ? transform(data, offset, len) : data;
+    }
+
+    public void dispose() throws IOException {
+
+    }
+
+    private byte[] transform(byte[] data, int offset, int len) {
+      byte[] dest = new byte[len];
+      for (int i = 0; i < len; i++) {
+        dest[i] = (byte) (data[offset + i] ^ KEY);
+      }
+      return dest;
+    }
+
   }
 
 }
