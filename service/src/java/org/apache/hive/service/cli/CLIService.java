@@ -43,12 +43,10 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 /**
  * CLIService.
@@ -79,6 +77,11 @@ public class CLIService extends CompositeService implements ICLIService {
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
+    try {
+      applyAuthorizationConfigPolicy(hiveConf);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error applying authorization policy on hive configuration", e);
+    }
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager(hiveServer2);
     addService(sessionManager);
@@ -110,6 +113,15 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     setupBlockedUdfs();
     super.init(hiveConf);
+  }
+
+  private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException {
+    // authorization setup using SessionState should be revisited eventually, as
+    // authorization and authentication are not session specific settings
+    SessionState ss = new SessionState(newHiveConf);
+    ss.setIsHiveServerQuery(true);
+    SessionState.start(ss);
+    ss.applyAuthorizationPolicy();
   }
 
   private void setupBlockedUdfs() {

@@ -58,6 +58,13 @@ public class SettableConfigUpdater {
     }
 
     hiveConf.setModifiableWhiteListRegex(whiteListParamsStr);
+
+    // disallow udfs that can potentially allow untrusted code execution
+    // if admin has already customized this list, honor that
+    String curBlackList = hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST);
+    if (curBlackList == null || curBlackList.trim().isEmpty()) {
+      hiveConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect,reflect2,java_method");
+    }
   }
 
 }
