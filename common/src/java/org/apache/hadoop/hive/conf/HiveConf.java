@@ -2264,8 +2264,31 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
-    isSparkConfigUpdated = name.startsWith("spark");
+    isSparkConfigUpdated = isSparkRelatedConfig(name);
     set(name, value);
+  }
+
+  /**
+   * check whether spark related property is updated, which includes spark configurations,
+   * RSC configurations and yarn configuration in Spark on YARN mode.
+   * @param name
+   * @return
+   */
+  private boolean isSparkRelatedConfig(String name) {
+    boolean result = false;
+    if (name.startsWith("spark")) { // Spark property.
+      result = true;
+    } else if (name.startsWith("yarn")) { // YARN property in Spark on YARN mode.
+      String sparkMaster = get("spark.master");
+      if (sparkMaster != null &&
+        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+        result = true;
+      }
+    } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
+      result = true;
+    }
+
+    return result;
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {
