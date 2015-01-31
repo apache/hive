@@ -127,6 +127,7 @@
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.hadoop1.version>${cdh.hbase.version}</hbase.hadoop1.version>
     <hbase.hadoop2.version>${cdh.hbase.version}</hbase.hadoop2.version>
+    <high-scale-lib.version>1.1.1</high-scale-lib.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>${cdh.httpcomponents.version}</httpcomponents.client.version>
     <httpcomponents.core.version>${cdh.httpcomponents.core.version}</httpcomponents.core.version>
