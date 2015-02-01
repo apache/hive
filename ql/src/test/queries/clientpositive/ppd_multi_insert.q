@@ -6,6 +6,7 @@ set hive.ppd.remove.duplicatefilters=false;
 CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE;
+CREATE TABLE mi4(value STRING) STORED AS TEXTFILE;
 
 EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
@@ -23,7 +24,8 @@ INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key
 SELECT mi1.* FROM mi1;
 SELECT mi2.* FROM mi2;
 SELECT mi3.* FROM mi3;
-dfs -cat ${system:test.warehouse.dir}/mi4.out/*;
+LOAD DATA INPATH '${system:test.warehouse.dir}/mi4.out' OVERWRITE INTO TABLE mi4;
+SELECT mi4.* FROM mi4;
 
 
 set hive.ppd.remove.duplicatefilters=true;
@@ -44,4 +46,5 @@ INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key
 SELECT mi1.* FROM mi1;
 SELECT mi2.* FROM mi2;
 SELECT mi3.* FROM mi3;
-dfs -cat ${system:test.warehouse.dir}/mi4.out/*;
+LOAD DATA INPATH '${system:test.warehouse.dir}/mi4.out' OVERWRITE INTO TABLE mi4;
+SELECT mi4.* FROM mi4;
