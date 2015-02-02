@@ -1,0 +1,126 @@
+PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
+-- and populating that information in partitions' metadata.  In particular, those cases
+-- where where merging may or may not be used.
+
+CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
+-- and populating that information in partitions' metadata.  In particular, those cases
+-- where where merging may or may not be used.
+
+CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: -- Tests a reduce task followed by a merge.  The output should be neither bucketed nor sorted.
+INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table@part=1
+POSTHOOK: query: -- Tests a reduce task followed by a merge.  The output should be neither bucketed nor sorted.
+INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table@part=1
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	2                   
+	numRows             	1028                
+	rawDataSize         	10968               
+	totalSize           	11996               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Tests a reduce task followed by a move. The output should be bucketed and sorted.
+INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table@part=1
+POSTHOOK: query: -- Tests a reduce task followed by a move. The output should be bucketed and sorted.
+INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table@part=1
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
+	numFiles            	2                   
+	numRows             	1028                
+	rawDataSize         	10968               
+	totalSize           	11996               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

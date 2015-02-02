@@ -1,0 +1,287 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+-- try the query without indexing, with manual indexing, and with automatic indexing
+-- without indexing
+SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+-- try the query without indexing, with manual indexing, and with automatic indexing
+-- without indexing
+SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: -- create indices
+EXPLAIN
+CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: -- create indices
+EXPLAIN
+CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+PREHOOK: query: EXPLAIN
+CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: EXPLAIN
+CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+PREHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src1_index__
+PREHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src2_index__
+PREHOOK: query: ALTER INDEX src1_index ON src REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@src
+PREHOOK: Output: default@default__src_src1_index__
+POSTHOOK: query: ALTER INDEX src1_index ON src REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src1_index__
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER INDEX src2_index ON src REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@src
+PREHOOK: Output: default@default__src_src2_index__
+POSTHOOK: query: ALTER INDEX src2_index ON src REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src2_index__
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM default__src_src1_index__
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src1_index__
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM default__src_src1_index__
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src1_index__
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM default__src_src2_index__
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src2_index__
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM default__src_src2_index__
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src2_index__
+#### A masked pattern was here ####
+PREHOOK: query: -- manual indexing
+EXPLAIN
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+       WHERE key = 0) a
+ JOIN 
+    (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+       WHERE value = "val_0") b
+ ON
+   a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+PREHOOK: type: QUERY
+POSTHOOK: query: -- manual indexing
+EXPLAIN
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+       WHERE key = 0) a
+ JOIN 
+    (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+       WHERE value = "val_0") b
+ ON
+   a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 4)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default__src_src1_index__
+                  Statistics: Num rows: 500 Data size: 46311 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((key = 0) and _bucketname is not null) and _offset is not null) (type: boolean)
+                    Statistics: Num rows: 63 Data size: 5835 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _bucketname (type: string), _offset (type: bigint), _bitmaps (type: array<bigint>)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 63 Data size: 5835 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: bigint)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                        Statistics: Num rows: 63 Data size: 5835 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: array<bigint>)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: default__src_src2_index__
+                  Statistics: Num rows: 500 Data size: 48311 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((value = 'val_0') and _bucketname is not null) and _offset is not null) (type: boolean)
+                    Statistics: Num rows: 63 Data size: 6087 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _bucketname (type: string), _offset (type: bigint), _bitmaps (type: array<bigint>)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 63 Data size: 6087 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: bigint)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                        Statistics: Num rows: 63 Data size: 6087 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: array<bigint>)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: bigint)
+                  1 _col0 (type: string), _col1 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col5
+                Statistics: Num rows: 69 Data size: 6418 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (not EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(_col2,_col5))) (type: boolean)
+                  Statistics: Num rows: 35 Data size: 3255 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 35 Data size: 3255 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: collect_set(_col1)
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 35 Data size: 3255 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 35 Data size: 3255 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: array<bigint>)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: collect_set(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 17 Data size: 1581 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: array<bigint>)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 17 Data size: 1581 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 17 Data size: 1581 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+#### A masked pattern was here ####
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src1_index__
+PREHOOK: Input: default@default__src_src2_index__
+#### A masked pattern was here ####
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src1_index__
+POSTHOOK: Input: default@default__src_src2_index__
+#### A masked pattern was here ####
+PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: DROP INDEX src1_index ON src
+PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: DROP INDEX src1_index ON src
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
+PREHOOK: query: DROP INDEX src2_index ON src
+PREHOOK: type: DROPINDEX
+PREHOOK: Input: default@src
+POSTHOOK: query: DROP INDEX src2_index ON src
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Input: default@src
