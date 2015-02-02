@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 public class ParseContext {
   private QB qb;
-  private ASTNode ast;
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
@@ -146,7 +145,6 @@ public class ParseContext {
   public ParseContext(
       HiveConf conf,
       QB qb,
-      ASTNode ast,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends OperatorDesc>> topOps,
@@ -167,7 +165,6 @@ public class ParseContext {
       QueryProperties queryProperties) {
     this.conf = conf;
     this.qb = qb;
-    this.ast = ast;
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
     this.joinOps = joinOps;
@@ -237,21 +234,6 @@ public class ParseContext {
    */
   public void setConf(HiveConf conf) {
     this.conf = conf;
-  }
-
-  /**
-   * @return the ast
-   */
-  public ASTNode getParseTree() {
-    return ast;
-  }
-
-  /**
-   * @param ast
-   *          the parsetree to set
-   */
-  public void setParseTree(ASTNode ast) {
-    this.ast = ast;
   }
 
   /**
