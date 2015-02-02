@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URLClassLoader;
+import java.sql.Timestamp;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
@@ -250,6 +251,11 @@ public class SessionState {
    * store the jars loaded last time
    */
   private final Set<String> preReloadableAuxJars = new HashSet<String>();
+
+  /**
+   * CURRENT_TIMESTAMP value for query
+   */
+  private Timestamp queryCurrentTimestamp;
 
   /**
    * Get the lineage state stored in this session.
@@ -1410,4 +1416,27 @@ public class SessionState {
     return Integer.toString(nextValueTempTableSuffix++);
   }
 
+  /**
+   * Initialize current timestamp, other necessary query initialization.
+   */
+  public void setupQueryCurrentTimestamp() {
+    queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+
+    // Provide a facility to set current timestamp during tests
+    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      String overrideTimestampString =
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, null);
+      if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
+        queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
+      }
+    }
+  }
+
+  /**
+   * Get query current timestamp
+   * @return
+   */
+  public Timestamp getQueryCurrentTimestamp() {
+    return queryCurrentTimestamp;
+  }
 }
