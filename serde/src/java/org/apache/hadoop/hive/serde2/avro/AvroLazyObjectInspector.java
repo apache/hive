@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyListObjectInspecto
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyUnionObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -84,12 +85,19 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
    * @param escaped whether the data is escaped or not
    * @param escapeChar if escaped is true, the escape character
    * */
+  @Deprecated
   public AvroLazyObjectInspector(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments,
       byte separator, Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
     super(structFieldNames, structFieldObjectInspectors, structFieldComments, separator,
         nullSequence, lastColumnTakesRest, escaped, escapeChar);
+  }
+
+  public AvroLazyObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments,
+      byte separator, LazyObjectInspectorParameters lazyParams) {
+    super(structFieldNames, structFieldObjectInspectors, structFieldComments, separator, lazyParams);
   }
 
   /**
