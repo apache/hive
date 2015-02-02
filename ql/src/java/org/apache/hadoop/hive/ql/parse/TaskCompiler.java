@@ -385,7 +385,7 @@ public abstract class TaskCompiler {
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
     ParseContext clone = new ParseContext(conf,
-        pCtx.getQB(), pCtx.getParseTree(),
+        pCtx.getQB(),
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
