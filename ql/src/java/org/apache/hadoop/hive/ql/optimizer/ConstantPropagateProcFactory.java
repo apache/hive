@@ -372,7 +372,7 @@ public final class ConstantPropagateProcFactory {
             // if false return false
             return childExpr;
           }
-        } else // Try to fold (key = 86) and (key is not null) to (key = 86) 
+        } else // Try to fold (key = 86) and (key is not null) to (key = 86)
         if (childExpr instanceof ExprNodeGenericFuncDesc &&
             ((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFOPNotNull &&
             childExpr.getChildren().get(0) instanceof ExprNodeColumnDesc && other instanceof ExprNodeGenericFuncDesc
@@ -429,7 +429,7 @@ public final class ConstantPropagateProcFactory {
     }
     if (ci == null) {
       LOG.error("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
-      throw new RuntimeException("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
+      return null;
     }
     ExprNodeDesc constant = null;
     // Additional work for union operator, see union27.q

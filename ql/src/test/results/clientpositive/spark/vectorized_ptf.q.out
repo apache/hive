@@ -244,7 +244,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -299,7 +299,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -669,12 +671,14 @@ STAGE PLANS:
                   Map-reduce partition columns: _col2 (type: string)
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                  value expressions: _col5 (type: int)
                   auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 14 Data size: 8823 Basic stats: COMPLETE Column stats: NONE
@@ -843,7 +847,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -898,7 +902,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col2, _col1, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1101,7 +1107,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1156,7 +1162,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1388,7 +1396,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1443,7 +1451,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1685,7 +1695,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1740,7 +1750,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -1952,7 +1964,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                    value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2074,7 +2086,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2325,7 +2339,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                    value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2416,7 +2430,9 @@ STAGE PLANS:
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2579,7 +2595,6 @@ STAGE PLANS:
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                       auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2633,7 +2648,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -2853,7 +2870,7 @@ STAGE PLANS:
                       Map-reduce partition columns: p_mfgr (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                      value expressions: p_size (type: int), p_retailprice (type: double)
                       auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2907,7 +2924,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3130,7 +3149,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3185,7 +3204,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3418,7 +3439,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3473,7 +3494,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3485,12 +3508,14 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
+                      value expressions: _col5 (type: int), _col7 (type: double)
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -3743,7 +3768,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -3798,7 +3823,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4128,7 +4155,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -4250,7 +4277,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4453,7 +4482,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -4508,7 +4537,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -4799,13 +4830,15 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                  value expressions: _col1 (type: string), _col2 (type: double)
                   auto parallelism: false
             Execution mode: vectorized
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
@@ -5195,7 +5228,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int), p_retailprice (type: double)
+                    value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -5345,7 +5378,9 @@ STAGE PLANS:
         Reducer 6 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5360,7 +5395,9 @@ STAGE PLANS:
         Reducer 7 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5710,7 +5747,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -5765,7 +5802,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -5777,12 +5816,14 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                      value expressions: _col5 (type: int)
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6066,7 +6107,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6121,7 +6162,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6131,12 +6174,14 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                    value expressions: _col5 (type: int)
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6146,12 +6191,14 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                    value expressions: _col1 (type: string), _col5 (type: int)
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6418,7 +6465,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6473,7 +6520,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6483,12 +6532,14 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                    value expressions: _col1 (type: string), _col5 (type: int)
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6767,7 +6818,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -6822,7 +6873,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6832,12 +6885,14 @@ STAGE PLANS:
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                    value expressions: _col1 (type: string), _col5 (type: int)
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -6849,12 +6904,14 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                      value expressions: _col5 (type: int)
                       auto parallelism: false
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7164,7 +7221,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -7219,7 +7276,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7231,12 +7290,14 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                      value expressions: _col1 (type: string), _col5 (type: int)
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7512,7 +7573,7 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
-                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                    value expressions: p_size (type: int)
                     auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
@@ -7567,7 +7628,9 @@ STAGE PLANS:
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
@@ -7579,12 +7642,14 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
-                      value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
+                      value expressions: _col5 (type: int)
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
+                outputColumnNames: _col1, _col2, _col5
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE

@@ -122,11 +122,13 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: -
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -188,11 +190,13 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: -
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -224,9 +228,11 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: -
                     Map-reduce partition columns: _col0 (type: int)
-                    value expressions: _col0 (type: int), _col1 (type: string)
+                    value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -377,11 +383,13 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: -
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -449,11 +457,13 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: -
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
@@ -489,9 +499,11 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: -
                       Map-reduce partition columns: _col0 (type: int)
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      value expressions: _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             table:
