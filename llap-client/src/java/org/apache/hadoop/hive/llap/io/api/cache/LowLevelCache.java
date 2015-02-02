@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.llap.io.api.cache;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.DiskRange;
 
@@ -48,6 +49,8 @@ public interface LowLevelCache {
    */
   void allocateMultiple(LlapMemoryBuffer[] dest, int size);
 
-  void releaseBuffers(LlapMemoryBuffer[] cacheBuffers);
+  void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers);
+
+  LlapMemoryBuffer createUnallocated();
 
 }

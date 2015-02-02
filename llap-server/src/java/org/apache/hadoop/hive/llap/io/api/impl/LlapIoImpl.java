@@ -70,8 +70,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     this.cvp = new OrcColumnVectorProducer(threadPool, edp, conf);
   }
 
-  VectorReader getReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg) {
-    return new VectorReader(split, columnIds, sarg, cvp);
+  VectorReader getReader(InputSplit split,
+      List<Integer> columnIds, SearchArgument sarg, String[] columnNames) {
+    return new VectorReader(split, columnIds, sarg, columnNames, cvp);
   }
 
   @Override

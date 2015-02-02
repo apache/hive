@@ -121,8 +121,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     if (currentNotCached.offset == currentCached.offset) {
       if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
-        drIter.remove();
-        drIter.add(currentCached);
+        drIter.set(currentCached);
         currentNotCached = null;
       } else {
         // Insert the new cache range before the disk range.
@@ -251,9 +250,9 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public void releaseBuffers(LlapMemoryBuffer[] cacheBuffers) {
-    for (int i = 0; i < cacheBuffers.length; ++i) {
-      releaseBufferInternal((LlapCacheableBuffer)cacheBuffers[i]);
+  public void releaseBuffers(List<LlapMemoryBuffer> cacheBuffers) {
+    for (LlapMemoryBuffer b : cacheBuffers) {
+      releaseBufferInternal((LlapCacheableBuffer)b);
     }
   }
 
@@ -398,5 +397,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         }
       }
     }
+  }
+
+  @Override
+  public LlapMemoryBuffer createUnallocated() {
+    return new LlapCacheableBuffer();
   }
 }

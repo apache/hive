@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
 
 public class NoopCache<CacheKey> implements Cache<CacheKey> {
   @Override
-  public ColumnBuffer cacheOrGet(CacheKey key, ColumnBuffer value) {
+  public StreamBuffer cacheOrGet(CacheKey key, StreamBuffer value) {
     return value;
   }
 
   @Override
-  public ColumnBuffer get(CacheKey key) {
+  public StreamBuffer get(CacheKey key) {
     return null;  // TODO: ensure real implementation increases refcount
   }
 }

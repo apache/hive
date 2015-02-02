@@ -23,32 +23,22 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
-public class OrcMetadata {
+public class OrcFileMetadata {
   private CompressionKind compressionKind;
   private int compressionBufferSize;
   private List<OrcProto.Type> types;
   private List<StripeInformation> stripes;
-  private Map<Integer, List<OrcProto.ColumnEncoding>> stripeToColEncodings;
-  private Map<Integer, OrcProto.RowIndex[]> stripeToRowIndexEntries;
+  private int rowIndexStride;
 
-  public Map<Integer, List<OrcProto.ColumnEncoding>> getStripeToColEncodings() {
-    return stripeToColEncodings;
-  }
-
-  public void setStripeToColEncodings(
-      Map<Integer, List<OrcProto.ColumnEncoding>> stripeToColEncodings) {
-    this.stripeToColEncodings = stripeToColEncodings;
-  }
-
-  public Map<Integer, OrcProto.RowIndex[]> getStripeToRowIndexEntries() {
-    return stripeToRowIndexEntries;
-  }
-
-  public void setStripeToRowIndexEntries(
-      Map<Integer, OrcProto.RowIndex[]> stripeToRowIndexEntries) {
-    this.stripeToRowIndexEntries = stripeToRowIndexEntries;
+  public OrcFileMetadata(Reader reader) {
+    setCompressionKind(reader.getCompression());
+    setCompressionBufferSize(reader.getCompressionSize());
+    setStripes(reader.getStripes());
+    setTypes(reader.getTypes());
+    setRowIndexStride(reader.getRowIndexStride());
   }
 
   public List<StripeInformation> getStripes() {
@@ -81,5 +71,13 @@ public class OrcMetadata {
 
   public void setTypes(List<OrcProto.Type> types) {
     this.types = types;
+  }
+
+  public int getRowIndexStride() {
+    return rowIndexStride;
+  }
+
+  public void setRowIndexStride(int rowIndexStride) {
+    this.rowIndexStride = rowIndexStride;
   }
 }

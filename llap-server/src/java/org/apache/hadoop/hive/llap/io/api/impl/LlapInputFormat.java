@@ -68,8 +68,9 @@ public class LlapInputFormat
       if (includedCols.isEmpty()) {
         includedCols = null; // Also means read all columns? WTF?
       }
-      VectorReader reader = llapIo.getReader(
-          fileSplit, includedCols, SearchArgumentFactory.createFromConf(job));
+      VectorReader reader = llapIo.getReader(fileSplit, includedCols,
+          SearchArgumentFactory.createFromConf(job),
+          ColumnProjectionUtils.getReadColumnNames(job));
       return new LlapRecordReader(reader, job, fileSplit);
     } catch (Exception ex) {
       throw new IOException(ex);

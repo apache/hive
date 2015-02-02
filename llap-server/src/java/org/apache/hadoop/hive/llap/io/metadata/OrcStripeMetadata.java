@@ -15,18 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap.io.metadata;
 
-package org.apache.hadoop.hive.llap.io.encoded;
+import java.io.IOException;
 
-import java.util.List;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 
-import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.mapred.InputSplit;
+public class OrcStripeMetadata {
+  // TODO#: add encoding and stream list
+  OrcProto.RowIndex[] rowIndexes;
 
-public interface EncodedDataProducer<BatchKey> {
-  EncodedDataReader<BatchKey> getReader(InputSplit split, List<Integer> columnIds,
-      SearchArgument sarg, String[] columnNames, Consumer<EncodedColumn<BatchKey>> consumer);
+  public OrcStripeMetadata(RecordReader reader, int stripeIx) throws IOException {
+    rowIndexes = reader.getCurrentRowIndexEntries();
+  }
+
+  public OrcProto.RowIndex[] getRowIndexes() {
+    return rowIndexes;
+  }
+
+  public void setRowIndexes(OrcProto.RowIndex[] rowIndexes) {
+    this.rowIndexes = rowIndexes;
+  }
 }

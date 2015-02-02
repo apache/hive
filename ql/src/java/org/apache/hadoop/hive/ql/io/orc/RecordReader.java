@@ -18,8 +18,11 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
@@ -82,6 +85,9 @@ public interface RecordReader {
    */
   void seekToRow(long rowCount) throws IOException;
 
+  void prepareEncodedColumnRead() throws IOException;
+
+  // TODO: maybe all of this should be moved to LLAP-specific class
   /**
    * TODO: this API is subject to change; on one hand, external code should control the threading
    *       aspects, with ORC method returning one EncodedColumn as it will; on the other, it's
@@ -89,13 +95,18 @@ public interface RecordReader {
    *       return many EncodedColumn-s.
    *  TODO: assumes the reader is for one stripe, otherwise the signature makes no sense.
    *        Also has no columns passed, because that is in ctor.
-   * @param colRgs Bitmasks of what RGs are to be read. Has # of elements equal to the number of
-   *               included columns; then each bitmask is rgCount bits long; 0 means "need to read"
-   * @param rgCount The length of bitmasks in colRgs.
-   * @param sarg Sarg to apply additional filtering to RGs.
+   * @param colRgs What RGs are to be read. Has # of elements equal to the number of
+   *               included columns; then each boolean is rgCount long.
+   * @param cache Cache to get/put data and allocate memory.
    * @param consumer Consumer to pass the results too.
-   * @param allocator Allocator to allocate memory.
+   * @throws IOException
    */
-  void readEncodedColumns(long[][] colRgs, int rgCount,
-      Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache);
+  void readEncodedColumns(int stripeIx, boolean[][] colRgs,
+      LowLevelCache cache, Consumer<EncodedColumn<OrcBatchKey>> consumer) throws IOException;
+
+  RowIndex[] getCurrentRowIndexEntries() throws IOException;
+
+  List<ColumnEncoding> getCurrentColumnEncodings() throws IOException;
+
+  void setRowIndex(RowIndex[] rowIndex);
 }

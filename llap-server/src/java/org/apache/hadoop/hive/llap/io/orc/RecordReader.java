@@ -26,27 +26,4 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto;
  *
  */
 public interface RecordReader extends org.apache.hadoop.hive.ql.io.orc.RecordReader {
-  /**
-   * Return all row index entries for the specified stripe index.
-   *
-   * @param stripeIdx - stripe index within orc file
-   * @return - all row index entries
-   */
-  OrcProto.RowIndex[] getRowIndexEntries(int stripeIdx) throws IOException;
-
-  /**
-   * Return column encodings of all columns for the specified stripe index.
-   *
-   * @param stripeIdx - stripe index within orc file
-   * @return - column encodings of all columns
-   */
-  List<OrcProto.ColumnEncoding> getColumnEncodings(int stripeIdx) throws IOException;
-
-  /**
-   * Return the row groups that satisfy the SARG condition for the specified stripe index.
-   *
-   * @param stripeIdx - stripe index within orc file
-   * @return - row groups qualifying the SARG
-   */
-  boolean[] getIncludedRowGroups(int stripeIdx) throws IOException;
 }

@@ -18,50 +18,21 @@
 
 package org.apache.hadoop.hive.llap.io.metadata;
 
-import static org.apache.hadoop.hive.ql.io.orc.OrcFile.readerOptions;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.llap.io.orc.OrcFile;
 import org.apache.hadoop.hive.llap.io.orc.Reader;
-import org.apache.hadoop.hive.llap.io.orc.RecordReader;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
-public class OrcMetadataLoader implements Callable<OrcMetadata> {
-  private FileSystem fs;
-  private Path path;
-  private Configuration conf;
+// TODO: this class is pointless
+public class OrcMetadataLoader implements Callable<OrcFileMetadata> {
+  private Reader reader;
 
-  public OrcMetadataLoader(FileSystem fs, Path path, Configuration conf) {
-    this.fs = fs;
-    this.path = path;
-    this.conf = conf;
+  public OrcMetadataLoader(Reader reader) {
+    this.reader = reader;
   }
 
   @Override
-  public OrcMetadata call() throws Exception {
-    Reader reader = OrcFile.createLLAPReader(path, readerOptions(conf).filesystem(fs));
-    OrcMetadata orcMetadata = new OrcMetadata();
-    orcMetadata.setCompressionKind(reader.getCompression());
-    orcMetadata.setCompressionBufferSize(reader.getCompressionSize());
-    List<StripeInformation> stripes = reader.getStripes();
-    orcMetadata.setStripes(stripes);
-    Map<Integer, List<OrcProto.ColumnEncoding>> stripeColEnc = new HashMap<Integer, List<OrcProto.ColumnEncoding>>();
-    Map<Integer, OrcProto.RowIndex[]> stripeRowIndices = new HashMap<Integer, OrcProto.RowIndex[]>();
-    RecordReader rows = reader.rows();
-    for (int i = 0; i < stripes.size(); i++) {
-      stripeColEnc.put(i, rows.getColumnEncodings(i));
-      stripeRowIndices.put(i, rows.getRowIndexEntries(i));
-    }
-    orcMetadata.setStripeToColEncodings(stripeColEnc);
-    orcMetadata.setStripeToRowIndexEntries(stripeRowIndices);
-    return orcMetadata;
+  public OrcFileMetadata call() throws Exception {
+    return new OrcFileMetadata(reader);
   }
 }

@@ -219,12 +219,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
                                                   long offset, long length
                                                   ) throws IOException {
     Reader.Options options = new Reader.Options().range(offset, length);
-    boolean isOriginal =
-        !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
+    boolean isOriginal = isOriginal(file);
     List<OrcProto.Type> types = file.getTypes();
     options.include(genIncludedColumns(types, conf, isOriginal));
     setSearchArgument(options, types, conf, isOriginal);
     return file.rowsOptions(options);
+  }
+
+  public static boolean isOriginal(Reader file) {
+    return !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
   }
 
   /**
@@ -278,6 +281,21 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  public static String[] getSargColumnNames(String[] originalColumnNames,
+      List<OrcProto.Type> types, boolean[] includedColumns, boolean isOriginal) {
+    int rootColumn = getRootColumn(isOriginal);
+    String[] columnNames = new String[types.size() - rootColumn];
+    int i = 0;
+    for(int columnId: types.get(rootColumn).getSubtypesList()) {
+      if (includedColumns == null || includedColumns[columnId - rootColumn]) {
+        // this is guaranteed to be positive because types only have children
+        // ids greater than their own id.
+        columnNames[columnId - rootColumn] = originalColumnNames[i++];
+      }
+    }
+    return columnNames;
+  }
+
   static void setSearchArgument(Reader.Options options,
                                 List<OrcProto.Type> types,
                                 Configuration conf,
@@ -296,19 +314,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
 
     LOG.info("ORC pushdown predicate: " + sarg);
-    int rootColumn = getRootColumn(isOriginal);
-    String[] neededColumnNames = columnNamesString.split(",");
-    String[] columnNames = new String[types.size() - rootColumn];
-    boolean[] includedColumns = options.getInclude();
-    int i = 0;
-    for(int columnId: types.get(rootColumn).getSubtypesList()) {
-      if (includedColumns == null || includedColumns[columnId - rootColumn]) {
-        // this is guaranteed to be positive because types only have children
-        // ids greater than their own id.
-        columnNames[columnId - rootColumn] = neededColumnNames[i++];
-      }
-    }
-    options.searchArgument(sarg, columnNames);
+    options.searchArgument(sarg, getSargColumnNames(
+        columnNamesString.split(","), types, options.getInclude(), isOriginal));
   }
 
   @Override

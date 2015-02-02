@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.*;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
@@ -42,24 +44,6 @@ public class LLAPRecordReaderImpl extends RecordReaderImpl implements RecordRead
       List<OrcProto.Type> types, CompressionCodec codec,
       int bufferSize, long strideRate, Configuration conf) throws IOException {
     super(stripes, fileSystem, path, options, types, codec, bufferSize, strideRate, conf);
-  }
-
-  @Override
-  public OrcProto.RowIndex[] getRowIndexEntries(int stripeIdx) throws IOException {
-    return readRowIndex(stripeIdx);
-  }
-
-  @Override
-  public List<OrcProto.ColumnEncoding> getColumnEncodings(int stripeIdx) throws IOException {
-    StripeInformation si = stripes.get(stripeIdx);
-    OrcProto.StripeFooter sf = readStripeFooter(si);
-    return sf.getColumnsList();
-  }
-
-  @Override
-  public boolean[] getIncludedRowGroups(int stripeIdx) throws IOException {
-    currentStripe = stripeIdx;
-    return pickRowGroups();
   }
 
   @Override
@@ -95,11 +79,5 @@ public class LLAPRecordReaderImpl extends RecordReaderImpl implements RecordRead
   @Override
   public void seekToRow(long rowCount) throws IOException {
 
-  }
-
-  @Override
-  public void readEncodedColumns(long[][] colRgs, int rgCount,
-      Consumer<EncodedColumn<OrcBatchKey>> consumer, LowLevelCache cache) {
-    throw new UnsupportedOperationException("not implemented");
   }
 }

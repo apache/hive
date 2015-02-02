@@ -165,7 +165,6 @@ public class LowLevelLrfuCachePolicy extends LowLevelCachePolicyBase {
           continue;
         }
         // Update the state to removed-from-list, so that parallel notifyUnlock doesn't modify us.
-        // TODO#: double check this is valid!
         nextCandidate.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         evicted += nextCandidate.byteBuffer.remaining();
       }

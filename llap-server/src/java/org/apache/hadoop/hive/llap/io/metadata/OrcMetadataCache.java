@@ -19,79 +19,48 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
-import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
  * ORC-specific metadata cache.
+ * TODO: should be merged with main cache somehow if we find this takes too much memory
  */
 public class OrcMetadataCache {
   private static final int DEFAULT_CACHE_ACCESS_CONCURRENCY = 10;
-  private static final int DEFAULT_MAX_CACHE_ENTRIES = 100;
-  private static Cache<String, OrcMetadata> METADATA;
+  private static final int DEFAULT_MAX_FILE_ENTRIES = 1000;
+  private static final int DEFAULT_MAX_STRIPE_ENTRIES = 10000;
+  private static Cache<String, OrcFileMetadata> METADATA;
+  private static Cache<OrcBatchKey, OrcStripeMetadata> STRIPE_METADATA;
 
   static {
     METADATA = CacheBuilder.newBuilder()
         .concurrencyLevel(DEFAULT_CACHE_ACCESS_CONCURRENCY)
-        .maximumSize(DEFAULT_MAX_CACHE_ENTRIES)
+        .maximumSize(DEFAULT_MAX_FILE_ENTRIES)
         .build();
-  }
-
-  private Path path;
-  private OrcMetadataLoader loader;
-
-  public OrcMetadataCache(FileSystem fs, Path path, Configuration conf) {
-    this.path = path;
-    this.loader = new OrcMetadataLoader(fs, path, conf);
-  }
-
-  public CompressionKind getCompression(String pathString) throws IOException {
-    try {
-      return METADATA.get(pathString, loader).getCompressionKind();
-    } catch (ExecutionException e) {
-      throw new IOException("Unable to load orc metadata for " + path.toString(), e);
+    STRIPE_METADATA = CacheBuilder.newBuilder()
+        .concurrencyLevel(DEFAULT_CACHE_ACCESS_CONCURRENCY)
+        .maximumSize(DEFAULT_MAX_STRIPE_ENTRIES)
+        .build();
     }
+
+  public void putFileMetadata(String filePath, OrcFileMetadata metaData) {
+    METADATA.put(filePath, metaData);
   }
 
-  public int getCompressionBufferSize(String pathString) throws IOException {
-    try {
-      return METADATA.get(pathString, loader).getCompressionBufferSize();
-    } catch (ExecutionException e) {
-      throw new IOException("Unable to load orc metadata for " + path.toString(), e);
-    }
+  public void putStripeMetadata(OrcBatchKey stripeKey, OrcStripeMetadata metaData) {
+    STRIPE_METADATA.put(stripeKey, metaData);
   }
 
-  public List<OrcProto.Type> getTypes(String pathString) throws IOException {
-    try {
-      return METADATA.get(pathString, loader).getTypes();
-    } catch (ExecutionException e) {
-      throw new IOException("Unable to load orc metadata for " + path.toString(), e);
-    }
+  public OrcStripeMetadata getStripeMetadata(OrcBatchKey stripeKey) throws IOException {
+    return STRIPE_METADATA.getIfPresent(stripeKey);
   }
 
-  public List<StripeInformation> getStripes(String pathString) throws IOException {
-    try {
-      return METADATA.get(pathString, loader).getStripes();
-    } catch (ExecutionException e) {
-      throw new IOException("Unable to load orc metadata for " + path.toString(), e);
-    }
+  public OrcFileMetadata getFileMetadata(String pathString) throws IOException {
+    return METADATA.getIfPresent(pathString);
   }
-
-  //  public boolean[] getIncludedRowGroups(String pathString, SearchArgument sarg, int stripeIdx) throws IOException {
-  //    try {
-  //      return METADATA.get(pathString, loader).getStripeToRowIndexEntries();
-  //    } catch (ExecutionException e) {
-  //      throw new IOException("Unable to load orc metadata for " + path.toString(), e);
-  //    }
-  //  }
 }

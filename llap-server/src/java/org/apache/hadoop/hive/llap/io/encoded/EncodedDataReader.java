@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
 
 /**
  * Interface for encoded data readers to implement.
@@ -29,5 +29,5 @@ import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
  * The final threading design will probably change.
  */
 public interface EncodedDataReader<BatchKey>
-  extends ConsumerFeedback<ColumnBuffer>, Callable<Void> {
+  extends ConsumerFeedback<StreamBuffer>, Callable<Void> {
 }

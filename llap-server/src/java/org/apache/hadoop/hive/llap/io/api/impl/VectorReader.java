@@ -36,6 +36,7 @@ public class VectorReader implements Consumer<ColumnVectorBatch> {
   private final InputSplit split;
   private final List<Integer> columnIds;
   private final SearchArgument sarg;
+  private final String[] columnNames;
   private final ColumnVectorProducer<?> cvp;
 
   private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
@@ -45,10 +46,11 @@ public class VectorReader implements Consumer<ColumnVectorBatch> {
   private ConsumerFeedback<ColumnVectorBatch> feedback;
 
   public VectorReader(InputSplit split, List<Integer> columnIds, SearchArgument sarg,
-      ColumnVectorProducer<?> cvp) {
+      String[] columnNames, ColumnVectorProducer<?> cvp) {
     this.split = split;
     this.columnIds = columnIds;
     this.sarg = sarg;
+    this.columnNames = columnNames;
     this.cvp = cvp;
   }
 
@@ -56,7 +58,7 @@ public class VectorReader implements Consumer<ColumnVectorBatch> {
     // TODO: if some collection is needed, return previous ColumnVectorBatch here
     ColumnVectorBatch current = null;
     if (feedback == null) {
-      feedback = cvp.read(split, columnIds, sarg, this);
+      feedback = cvp.read(split, columnIds, sarg, columnNames, this);
     }
     if (isClosed) {
       throw new AssertionError("next called after close");

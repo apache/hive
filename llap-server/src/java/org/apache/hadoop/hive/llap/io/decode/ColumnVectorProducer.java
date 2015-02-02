@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.ColumnBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
@@ -42,12 +42,13 @@ public abstract class ColumnVectorProducer<BatchKey> {
     this.executor = executor;
   }
 
+  // TODO#: Given how ORC reads data, it should return this and not separate columns.
   static class EncodedColumnBatch {
     public EncodedColumnBatch(int colCount) {
-      columnDatas = new ColumnBuffer[colCount];
+      columnDatas = new StreamBuffer[colCount][];
       columnsRemaining = colCount;
     }
-    public ColumnBuffer[] columnDatas;
+    public StreamBuffer[][] columnDatas;
     public int columnsRemaining;
   }
 
@@ -57,7 +58,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
     private final HashMap<BatchKey, EncodedColumnBatch> pendingData =
         new HashMap<BatchKey, EncodedColumnBatch>();
-    private ConsumerFeedback<ColumnBuffer> upstreamFeedback;
+    private ConsumerFeedback<StreamBuffer> upstreamFeedback;
     private final Consumer<ColumnVectorBatch> downstreamConsumer;
     private final int colCount;
 
@@ -66,7 +67,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
       this.colCount = colCount;
     }
 
-    public void init(ConsumerFeedback<ColumnBuffer> upstreamFeedback) {
+    public void init(ConsumerFeedback<StreamBuffer> upstreamFeedback) {
       this.upstreamFeedback = upstreamFeedback;
     }
 
@@ -85,7 +86,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
         }
       }
       if (localIsStopped) {
-        upstreamFeedback.returnData(data.columnData);
+        returnProcessed(data.streamData);
         return;
       }
 
@@ -94,7 +95,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
         // Check if we are stopped and the batch was already cleaned.
         localIsStopped = (targetBatch.columnDatas == null);
         if (!localIsStopped) {
-          targetBatch.columnDatas[data.columnIndex] = data.columnData;
+          targetBatch.columnDatas[data.columnIndex] = data.streamData;
           colsRemaining = --targetBatch.columnsRemaining;
           if (0 == colsRemaining) {
             synchronized (pendingData) {
@@ -107,14 +108,22 @@ public abstract class ColumnVectorProducer<BatchKey> {
         }
       }
       if (localIsStopped) {
-        upstreamFeedback.returnData(data.columnData);
+        returnProcessed(data.streamData);
         return;
       }
       if (0 == colsRemaining) {
         ColumnVectorProducer.this.decodeBatch(data.batchKey, targetBatch, downstreamConsumer);
         // Batch has been decoded; unlock the buffers in cache
-        for (ColumnBuffer cb : targetBatch.columnDatas) {
-          upstreamFeedback.returnData(cb);
+        for (StreamBuffer[] columnData : targetBatch.columnDatas) {
+          returnProcessed(columnData);
+        }
+      }
+    }
+
+    private void returnProcessed(StreamBuffer[] data) {
+      for (StreamBuffer sb : data) {
+        if (sb.decRef() == 0) {
+          upstreamFeedback.returnData(sb);
         }
       }
     }
@@ -142,7 +151,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
     }
 
     private void dicardPendingData(boolean isStopped) {
-      List<ColumnBuffer> dataToDiscard = new ArrayList<ColumnBuffer>(pendingData.size() * colCount);
+      List<StreamBuffer> dataToDiscard = new ArrayList<StreamBuffer>(pendingData.size() * colCount);
       List<EncodedColumnBatch> batches = new ArrayList<EncodedColumnBatch>(pendingData.size());
       synchronized (pendingData) {
         if (isStopped) {
@@ -153,14 +162,18 @@ public abstract class ColumnVectorProducer<BatchKey> {
       }
       for (EncodedColumnBatch batch : batches) {
         synchronized (batch) {
-          for (ColumnBuffer b : batch.columnDatas) {
-            dataToDiscard.add(b);
+          for (StreamBuffer[] bb : batch.columnDatas) {
+            for (StreamBuffer b : bb) {
+              dataToDiscard.add(b);
+            }
           }
           batch.columnDatas = null;
         }
       }
-      for (ColumnBuffer data : dataToDiscard) {
-        upstreamFeedback.returnData(data);
+      for (StreamBuffer data : dataToDiscard) {
+        if (data.decRef() == 0) {
+          upstreamFeedback.returnData(data);
+        }
       }
     }
 
@@ -191,13 +204,21 @@ public abstract class ColumnVectorProducer<BatchKey> {
    * @throws IOException 
    */
   public ConsumerFeedback<ColumnVectorBatch> read(InputSplit split, List<Integer> columnIds,
-      SearchArgument sarg, Consumer<ColumnVectorBatch> consumer) throws IOException {
+      SearchArgument sarg, String[] columnNames, Consumer<ColumnVectorBatch> consumer)
+          throws IOException {
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     EncodedDataConsumer edc = new EncodedDataConsumer(consumer, columnIds.size());
     // Get the source of encoded data.
     EncodedDataProducer<BatchKey> edp = getEncodedDataProducer();
     // Then, get the specific reader of encoded data out of the producer.
-    EncodedDataReader<BatchKey> reader = edp.getReader(split, columnIds, sarg, edc);
+    /*
+[ERROR] reason: actual argument 
+org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer<BatchKey>.EncodedDataConsumer
+cannot be converted to 
+org.apache.hadoop.hive.llap.Consumer<
+  org.apache.hadoop.hive.llap.io.api.EncodedColumn<
+    org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey>> by method invocation conversion     * */
+    EncodedDataReader<BatchKey> reader = edp.getReader(split, columnIds, sarg, columnNames, edc);
     // Set the encoded data reader as upstream feedback for encoded data consumer, and start.
     edc.init(reader);
     executor.submit(reader);
