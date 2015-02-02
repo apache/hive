@@ -1,0 +1,94 @@
+PREHOOK: query: create table hbase_str(rowkey string,mytime string,mystr string)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_str
+POSTHOOK: query: create table hbase_str(rowkey string,mytime string,mystr string)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_str
+PREHOOK: query: describe hbase_str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_str
+POSTHOOK: query: describe hbase_str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_str
+rowkey              	string              	from deserializer   
+mytime              	string              	from deserializer   
+mystr               	string              	from deserializer   
+PREHOOK: query: insert overwrite table hbase_str select key, '2001-02-03-04.05.06.123456', value from src limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_str
+POSTHOOK: query: insert overwrite table hbase_str select key, '2001-02-03-04.05.06.123456', value from src limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_str
+PREHOOK: query: select * from hbase_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_str
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_str
+#### A masked pattern was here ####
+238	2001-02-03-04.05.06.123456	val_238
+311	2001-02-03-04.05.06.123456	val_311
+86	2001-02-03-04.05.06.123456	val_86
+PREHOOK: query: -- Timestamp string does not match the default timestamp format, specify a custom timestamp format
+create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr', 'timestamp.formats' = 'yyyy-MM-dd-HH.mm.ss.SSSSSS')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_ts
+POSTHOOK: query: -- Timestamp string does not match the default timestamp format, specify a custom timestamp format
+create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr', 'timestamp.formats' = 'yyyy-MM-dd-HH.mm.ss.SSSSSS')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_ts
+PREHOOK: query: describe hbase_ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_ts
+POSTHOOK: query: describe hbase_ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_ts
+rowkey              	string              	from deserializer   
+mytime              	timestamp           	from deserializer   
+mystr               	string              	from deserializer   
+PREHOOK: query: select * from hbase_ts
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_ts
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_ts
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_ts
+#### A masked pattern was here ####
+238	2001-02-03 04:05:06.123	val_238
+311	2001-02-03 04:05:06.123	val_311
+86	2001-02-03 04:05:06.123	val_86
+PREHOOK: query: drop table hbase_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_str
+PREHOOK: Output: default@hbase_str
+POSTHOOK: query: drop table hbase_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_str
+POSTHOOK: Output: default@hbase_str
+PREHOOK: query: drop table hbase_ts
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_ts
+PREHOOK: Output: default@hbase_ts
+POSTHOOK: query: drop table hbase_ts
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_ts
+POSTHOOK: Output: default@hbase_ts

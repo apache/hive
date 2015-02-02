@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class DefaultHBaseKeyFactory extends AbstractHBaseKeyFactory implements HBaseKeyFactory {
@@ -45,8 +46,7 @@ public class DefaultHBaseKeyFactory extends AbstractHBaseKeyFactory implements H
 
   @Override
   public ObjectInspector createKeyObjectInspector(TypeInfo type) throws SerDeException {
-    return LazyFactory.createLazyObjectInspector(type, serdeParams.getSeparators(), 1,
-        serdeParams.getNullSequence(), serdeParams.isEscaped(), serdeParams.getEscapeChar());
+    return LazyFactory.createLazyObjectInspector(type, 1, serdeParams, ObjectInspectorOptions.JAVA);
   }
 
   @Override

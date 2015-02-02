@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.hadoop.hive.serde2.BaseStructObjectInspector;
 import org.apache.hadoop.hive.serde2.StructObject;
 import org.apache.hadoop.hive.serde2.avro.AvroLazyObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -42,20 +44,10 @@ import org.apache.hadoop.io.Text;
 public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
 
   private byte separator;
-  private Text nullSequence;
-  private boolean lastColumnTakesRest;
-  private boolean escaped;
-  private byte escapeChar;
+  private LazyObjectInspectorParameters lazyParams;
 
   protected LazySimpleStructObjectInspector() {
     super();
-  }
-
-  protected LazySimpleStructObjectInspector(
-      List<StructField> fields, byte separator, Text nullSequence) {
-    init(fields);
-    this.separator = separator;
-    this.nullSequence = nullSequence;
   }
 
   /**
@@ -70,6 +62,7 @@ public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
         nullSequence, lastColumnTakesRest, escaped, escapeChar);
   }
 
+  @Deprecated
   public LazySimpleStructObjectInspector(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors,
       List<String> structFieldComments, byte separator, Text nullSequence,
@@ -78,17 +71,32 @@ public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
         separator, nullSequence, lastColumnTakesRest, escaped, escapeChar);
   }
 
+  public LazySimpleStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments, byte separator, LazyObjectInspectorParameters lazyParams) {
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments,
+        separator, lazyParams);
+  }
+
   protected void init(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors,
       List<String> structFieldComments, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
+    LazyObjectInspectorParameters lazyParams =
+        new LazyObjectInspectorParametersImpl(escaped, escapeChar,
+            false, null, null, nullSequence, lastColumnTakesRest);
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments,
+        separator, lazyParams);
+  }
+
+  protected void init(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments, byte separator,
+      LazyObjectInspectorParameters lazyParams) {
     init(structFieldNames, structFieldObjectInspectors, structFieldComments);
     this.separator = separator;
-    this.nullSequence = nullSequence;
-    this.lastColumnTakesRest = lastColumnTakesRest;
-    this.escaped = escaped;
-    this.escapeChar = escapeChar;
+    this.lazyParams = lazyParams;
   }
 
   // With Data
@@ -142,19 +150,22 @@ public class LazySimpleStructObjectInspector extends BaseStructObjectInspector {
   }
 
   public Text getNullSequence() {
-    return nullSequence;
+    return lazyParams.getNullSequence();
   }
 
   public boolean getLastColumnTakesRest() {
-    return lastColumnTakesRest;
+    return lazyParams.isLastColumnTakesRest();
   }
 
   public boolean isEscaped() {
-    return escaped;
+    return lazyParams.isEscaped();
   }
 
   public byte getEscapeChar() {
-    return escapeChar;
+    return lazyParams.getEscapeChar();
   }
 
+  public LazyObjectInspectorParameters getLazyParams() {
+    return lazyParams;
+  }
 }

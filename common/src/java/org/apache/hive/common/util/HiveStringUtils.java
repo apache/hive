@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * HiveStringUtils
@@ -489,6 +490,34 @@ public class HiveStringUtils {
       strList.remove(last);
     }
     return strList.toArray(new String[strList.size()]);
+  }
+
+  /**
+   * Split a string using the default separator/escape character,
+   * then unescape the resulting array of strings
+   * @param str
+   * @return an array of unescaped strings
+   */
+  public static String[] splitAndUnEscape(String str) {
+    return splitAndUnEscape(str, ESCAPE_CHAR, COMMA);
+  }
+
+  /**
+   * Split a string using the specified separator/escape character,
+   * then unescape the resulting array of strings using the same escape/separator.
+   * @param str a string that may have escaped separator
+   * @param escapeChar a char that be used to escape the separator
+   * @param separator a separator char
+   * @return an array of unescaped strings
+   */
+  public static String[] splitAndUnEscape(String str, char escapeChar, char separator) {
+    String[] result = split(str, escapeChar, separator);
+    if (result != null) {
+      for (int idx = 0; idx < result.length; ++idx) {
+        result[idx] = unEscapeString(result[idx], escapeChar, separator);
+      }
+    }
+    return result;
   }
 
   /**

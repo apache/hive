@@ -97,9 +97,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
-        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence(), serdeParams
-            .isEscaped(), serdeParams.getEscapeChar());
+        serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 
     int size = serdeParams.getColumnTypes().size();
     List<Integer> notSkipIDs = new ArrayList<Integer>();

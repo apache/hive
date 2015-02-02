@@ -18,18 +18,30 @@
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.TimestampParser;
 
 public class LazyTimestampObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<TimestampWritable>
     implements TimestampObjectInspector {
 
-  protected LazyTimestampObjectInspector() {
+  protected List<String> timestampFormats = null;
+  protected TimestampParser timestampParser = null;
+
+  LazyTimestampObjectInspector() {
     super(TypeInfoFactory.timestampTypeInfo);
+    timestampParser = new TimestampParser();
+  }
+
+  LazyTimestampObjectInspector(List<String> tsFormats) {
+    super(TypeInfoFactory.timestampTypeInfo);
+    this.timestampFormats = tsFormats;
+    timestampParser = new TimestampParser(tsFormats);
   }
 
   public Object copyObject(Object o) {
@@ -39,4 +51,13 @@ public class LazyTimestampObjectInspector
   public Timestamp getPrimitiveJavaObject(Object o) {
     return o == null ? null : ((LazyTimestamp) o).getWritableObject().getTimestamp();
   }
+
+  public List<String> getTimestampFormats() {
+    return timestampFormats;
+  }
+
+  public TimestampParser getTimestampParser() {
+    return timestampParser;
+  }
+
 }

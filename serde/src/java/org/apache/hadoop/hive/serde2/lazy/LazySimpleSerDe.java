@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.HiveStringUtils;
 
 
 /**
@@ -123,10 +126,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(serdeParams
-        .getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-        .getSeparators(), serdeParams.getNullSequence(), serdeParams
-        .isLastColumnTakesRest(), serdeParams.isEscaped(), serdeParams
-        .getEscapeChar(), serdeParams.isExtendedBooleanLiteral());
+        .getColumnNames(), serdeParams.getColumnTypes(), serdeParams);
 
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);

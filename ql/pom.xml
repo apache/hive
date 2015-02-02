@@ -36,6 +36,11 @@
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${joda.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-ant</artifactId>
       <version>${project.version}</version>
@@ -700,6 +705,7 @@
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:spark-client</include>
+                  <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>
               <relocations>
