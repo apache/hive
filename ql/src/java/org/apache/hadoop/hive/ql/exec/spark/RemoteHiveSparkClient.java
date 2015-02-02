@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +77,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient SparkConf sparkConf;
   private transient HiveConf hiveConf;
 
-  private transient List<String> localJars = new ArrayList<String>();
-  private transient List<String> localFiles = new ArrayList<String>();
+  private transient List<URL> localJars = new ArrayList<URL>();
+  private transient List<URL> localFiles = new ArrayList<URL>();
 
   private final transient long sparkClientTimtout;
 
@@ -161,26 +162,28 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   private void addResources(String addedFiles) {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
-      if (!localFiles.contains(addedFile)) {
-        localFiles.add(addedFile);
-        try {
-          remoteClient.addFile(SparkUtilities.getURL(addedFile));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add file:" + addedFile);
+      try {
+        URL fileUrl = SparkUtilities.getURL(addedFile);
+        if (fileUrl != null && !localFiles.contains(fileUrl)) {
+          localFiles.add(fileUrl);
+          remoteClient.addFile(fileUrl);
         }
+      } catch (MalformedURLException e) {
+        LOG.warn("Failed to add file:" + addedFile);
       }
     }
   }
 
   private void addJars(String addedJars) {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
-      if (!localJars.contains(addedJar)) {
-        localJars.add(addedJar);
-        try {
-          remoteClient.addJar(SparkUtilities.getURL(addedJar));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add jar:" + addedJar);
+      try {
+        URL jarUrl = SparkUtilities.getURL(addedJar);
+        if (jarUrl != null && !localJars.contains(jarUrl)) {
+          localJars.add(jarUrl);
+          remoteClient.addJar(jarUrl);
         }
+      } catch (MalformedURLException e) {
+        LOG.warn("Failed to add jar:" + addedJar);
       }
     }
   }
