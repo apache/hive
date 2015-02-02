@@ -847,20 +847,22 @@ public class HiveConf extends Configuration {
 
     // test mode in hive mode
     HIVETESTMODE("hive.test.mode", false,
-        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename."),
+        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
+        false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
-        "In test mode, specfies prefixes for the output table"),
+        "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
         "In test mode, specfies sampling frequency for table, which is not bucketed,\n" +
         "For example, the following query:\n" +
         "  INSERT OVERWRITE TABLE dest SELECT col1 from src\n" +
         "would be converted to\n" +
         "  INSERT OVERWRITE TABLE test_dest\n" +
-        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))"),
+        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))", false),
     HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", "",
-        "In test mode, specifies comma separated table names which would not apply sampling"),
-    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test"),
-    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test"),
+        "In test mode, specifies comma separated table names which would not apply sampling", false),
+    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test", false),
+    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test", false),
+    HIVETESTCURRENTTIMESTAMP("hive.test.currenttimestamp", null, "current timestamp for test", false),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),

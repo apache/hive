@@ -304,6 +304,8 @@ public final class FunctionRegistry {
     registerUDF("~", UDFOPBitNot.class, true);
 
     registerGenericUDF("current_database", UDFCurrentDB.class);
+    registerGenericUDF("current_date", GenericUDFCurrentDate.class);
+    registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
 
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
