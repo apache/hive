@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -149,7 +150,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
@@ -229,12 +229,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
-  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  private final HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
   private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
-  private Map<JoinOperator, QBJoinTree> joinContext;
-  private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
+  private final Map<JoinOperator, QBJoinTree> joinContext;
+  private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
   private final Map<FileSinkOperator, Table> fsopToTable;
   private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
@@ -5975,8 +5975,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         maxReducers = numBuckets;
       }
 
-      input = genReduceSinkPlanForSortingBucketing(dest_tab, input,
-          sortCols, sortOrders, partnCols, maxReducers);
+      StringBuilder order = new StringBuilder();
+      for (int sortOrder : sortOrders) {
+        order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
+      }
+      input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(),  maxReducers,
+        (isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
+      reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
       ctx.setPartnCols(partnColsNoConvert);
@@ -6448,7 +6453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fileSinkDesc.setWriteType(wt);
       acidFileSinks.add(fileSinkDesc);
     }
-    
+
     fileSinkDesc.setTemporary(destTableIsTemporary);
 
     /* Set List Bucketing context. */
@@ -6930,7 +6935,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ArrayList<ExprNodeDesc> getSortCols(String dest, QB qb, Table tab, TableDesc table_desc,
       Operator input, boolean convert)
       throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     List<Order> tabSortCols = tab.getSortCols();
     List<FieldSchema> tabCols = tab.getCols();
 
@@ -6940,7 +6944,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int pos = 0;
       for (FieldSchema tabCol : tabCols) {
         if (sortCol.getCol().equals(tabCol.getName())) {
-          ColumnInfo colInfo = inputRR.getColumnInfos().get(pos);
           posns.add(pos);
           break;
         }
@@ -6953,7 +6956,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private ArrayList<Integer> getSortOrders(String dest, QB qb, Table tab, Operator input)
       throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     List<Order> tabSortCols = tab.getSortCols();
     List<FieldSchema> tabCols = tab.getCols();
 
@@ -6969,74 +6971,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return orders;
   }
 
-  @SuppressWarnings("nls")
-  private Operator genReduceSinkPlanForSortingBucketing(Table tab, Operator input,
-      ArrayList<ExprNodeDesc> sortCols,
-      List<Integer> sortOrders,
-      ArrayList<ExprNodeDesc> partitionCols,
-      int numReducers)
-      throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-
-    // For the generation of the values expression just get the inputs
-    // signature and generate field expressions for those
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
-    ArrayList<String> outputColumns = new ArrayList<String>();
-    int i = 0;
-    for (ColumnInfo colInfo : inputRR.getColumnInfos()) {
-      String internalName = getColumnInternalName(i++);
-      outputColumns.add(internalName);
-      valueCols.add(new ExprNodeColumnDesc(colInfo));
-      colExprMap.put(internalName, valueCols
-          .get(valueCols.size() - 1));
-    }
-
-    StringBuilder order = new StringBuilder();
-    for (int sortOrder : sortOrders) {
-      order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' : '-');
-    }
-
-    AcidUtils.Operation acidOp = (isAcidTable(tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID);
-
-    Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
-        .getReduceSinkDesc(sortCols, valueCols, outputColumns, false, -1,
-            partitionCols, order.toString(), numReducers, acidOp),
-        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
-    interim.setColumnExprMap(colExprMap);
-    reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator) interim);
-
-    // Add the extract operator to get the value fields
-    RowResolver out_rwsch = new RowResolver();
-    RowResolver interim_rwsch = inputRR;
-    Integer pos = Integer.valueOf(0);
-    for (ColumnInfo colInfo : interim_rwsch.getColumnInfos()) {
-      String[] info = interim_rwsch.reverseLookup(colInfo.getInternalName());
-      out_rwsch.put(info[0], info[1], new ColumnInfo(
-          getColumnInternalName(pos), colInfo.getType(), info[0],
-          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol()));
-      pos = Integer.valueOf(pos.intValue() + 1);
-    }
-
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new ExtractDesc(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-            Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
-            out_rwsch.getColumnInfos()), interim), out_rwsch);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created ReduceSink Plan for table: " + tab.getTableName() +
-          " row schema: " + out_rwsch.toString());
-    }
-
-    return output;
-
-  }
-
   private Operator genReduceSinkPlan(String dest, QB qb, Operator<?> input,
       int numReducers) throws SemanticException {
-    
+
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-    
+
     // First generate the expression for the partition and sort keys
     // The cluster by clause / distribute by clause has the aliases for
     // partition function
@@ -7094,16 +7033,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sortCols.add(exprNode);
       }
     }
-    return genReduceSinkPlan(input, partCols, sortCols, order.toString(), numReducers);
+    return genReduceSinkPlan(input, partCols, sortCols, order.toString(), numReducers, Operation.NOT_ACID);
   }
-  
+
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(Operator<?> input,
-      ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols, 
-      String sortOrder, int numReducers) throws SemanticException {
+      ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols,
+      String sortOrder, int numReducers, AcidUtils.Operation acidOp) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-    
+
     Operator dummy = Operator.createDummy();
     dummy.setParentOperators(Arrays.asList(input));
 
@@ -7166,9 +7105,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     dummy.setParentOperators(null);
 
-    // TODO Not 100% sure NOT_ACID is always right here.
     ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(sortCols, valueCols, outputColumns,
-        false, -1, partitionCols, sortOrder, numReducers, AcidUtils.Operation.NOT_ACID);
+        false, -1, partitionCols, sortOrder, numReducers, acidOp);
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input), rsRR);
 
@@ -11894,13 +11832,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   void buildPTFReduceSinkDetails(PartitionedTableFunctionDef tabDef,
       RowResolver inputRR,
       ArrayList<ExprNodeDesc> partCols,
-      ArrayList<ExprNodeDesc> valueCols,
       ArrayList<ExprNodeDesc> orderCols,
-      Map<String, ExprNodeDesc> colExprMap,
-      List<String> outputColumnNames,
-      StringBuilder orderString,
-      RowResolver rsOpRR,
-      RowResolver extractRR) throws SemanticException {
+      StringBuilder orderString) throws SemanticException {
 
     List<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
 
@@ -11928,68 +11861,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       orderCols.add(colDef.getExprNode());
     }
-
-    ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
-    /*
-     * construct the ReduceSinkRR
-     */
-    int pos = 0;
-    for (ColumnInfo colInfo : colInfoList) {
-        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo);
-        valueCols.add(valueColExpr);
-        String internalName = SemanticAnalyzer.getColumnInternalName(pos++);
-        outputColumnNames.add(internalName);
-        colExprMap.put(internalName, valueColExpr);
-
-        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-        ColumnInfo newColInfo = new ColumnInfo(
-            internalName, colInfo.getType(), alias[0],
-            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-        rsOpRR.put(alias[0], alias[1], newColInfo);
-    }
-
-    /*
-     * construct the ExtractRR
-     */
-    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
-        new LinkedHashMap<String[], ColumnInfo>();
-    pos = 0;
-    for (ColumnInfo colInfo : colInfoList) {
-      String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-      /*
-       * if we have already encountered this colInfo internalName.
-       * We encounter it again because it must be put for the Having clause.
-       * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
-       */
-      if ( colsAddedByHaving.containsKey(alias)) {
-        continue;
-      }
-      ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
-      ColumnInfo eColInfo = new ColumnInfo(
-          SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
-          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-
-      if ( astNode == null ) {
-        extractRR.put(alias[0], alias[1], eColInfo);
-      }
-      else {
-        /*
-         * in case having clause refers to this column may have been added twice;
-         * once with the ASTNode.toStringTree as the alias
-         * and then with the real alias.
-         */
-        extractRR.putExpression(astNode, eColInfo);
-        if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
-          colsAddedByHaving.put(alias, eColInfo);
-        }
-      }
-    }
-
-    for(Map.Entry<String[], ColumnInfo> columnAddedByHaving : colsAddedByHaving.entrySet() ) {
-      String[] alias = columnAddedByHaving.getKey();
-      ColumnInfo eColInfo = columnAddedByHaving.getValue();
-      extractRR.put(alias[0], alias[1], eColInfo);
-    }
   }
 
   private Operator genPTFPlanForComponentQuery(PTFInvocationSpec ptfQSpec, Operator input)
@@ -11999,27 +11870,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     RowResolver rr = opParseCtx.get(input).getRowResolver();
     PTFDesc ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
-
-    RowResolver rsOpRR = new RowResolver();
-    /*
-     * Build an RR for the Extract Op from the ReduceSink Op's RR.
-     * Why?
-     * We need to remove the Virtual Columns present in the RS's RR. The OI
-     * that gets passed to Extract at runtime doesn't contain the Virtual Columns.
-     * So internal names get changed. Consider testCase testJoinWithLeadLag,
-     * which is a self join on part and also has a Windowing expression.
-     * The RR of the RS op at translation time looks something like this:
-     * (_co1,_col2,..,_col7, _col8(vc=true),_col9(vc=true),
-     * _col10,_col11,.._col15(vc=true),_col16(vc=true),..)
-     * At runtime the Virtual columns are removed and all the columns after _col7
-     * are shifted 1 or 2 positions.
-     * So in child Operators ColumnExprNodeDesc's are no longer referring to the right columns.
-     *
-     * So we build a new RR for the Extract Op, with the Virtual Columns removed.
-     * We hand this to the PTFTranslator as the
-     * starting RR to use to translate a PTF Chain.
-     */
-    RowResolver extractOpRR = new RowResolver();
 
     /*
      * 2. build Map-side Op Graph. Graph template is either:
@@ -12051,10 +11901,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        */
 
       ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
-      ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
       ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
-      Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-      List<String> outputColumnNames = new ArrayList<String>();
       StringBuilder orderString = new StringBuilder();
 
       /*
@@ -12063,45 +11910,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        * If the parent of ReduceSinkOperator is PTFOperator, use it's
        * output RR.
        */
-      buildPTFReduceSinkDetails(tabDef,
-          rr,
-          partCols,
-          valueCols,
-          orderCols,
-          colExprMap,
-          outputColumnNames,
-          orderString,
-          rsOpRR,
-          extractOpRR);
-
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
-          .getReduceSinkDesc(orderCols,
-              valueCols, outputColumnNames, false,
-              -1, partCols, orderString.toString(), -1, AcidUtils.Operation.NOT_ACID),
-          new RowSchema(rsOpRR.getColumnInfos()), input), rsOpRR);
-      input.setColumnExprMap(colExprMap);
+      buildPTFReduceSinkDetails(tabDef, rr, partCols, orderCols, orderString);
+      input = genReduceSinkPlan(input, partCols, orderCols, orderString.toString(), -1, Operation.NOT_ACID);
     }
 
     /*
      * 3. build Reduce-side Op Graph
      */
     {
-      /*
-       * b. Construct Extract Operator.
-       */
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(
-          new ExtractDesc(
-              new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-                  Utilities.ReduceField.VALUE
-                  .toString(), "", false)),
-          new RowSchema(extractOpRR.getColumnInfos()),
-          input), extractOpRR);
 
       /*
        * c. Rebuilt the QueryDef.
        * Why?
        * - so that the ExprNodeDescriptors in the QueryDef are based on the
-       *   Extract Operator's RowResolver
+       *   Select Operator's RowResolver
        */
       rr = opParseCtx.get(input).getRowResolver();
       ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
@@ -12115,9 +11937,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           input), ptfOpRR);
 
     }
-
     return input;
-
   }
 
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
@@ -12145,7 +11965,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Operator genReduceSinkPlanForWindowing(WindowingSpec spec,
       RowResolver inputRR, Operator input) throws SemanticException{
-    
+
     ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
     StringBuilder order = new StringBuilder();
@@ -12169,7 +11989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    return genReduceSinkPlan(input, partCols, orderCols, order.toString(), -1);
+    return genReduceSinkPlan(input, partCols, orderCols, order.toString(), -1, Operation.NOT_ACID);
   }
 
   public static ArrayList<WindowExpressionSpec> parseSelect(String selectExprStr)

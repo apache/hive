@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorAppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
@@ -39,7 +36,6 @@ import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
@@ -89,7 +85,6 @@ public final class OperatorFactory {
     opvec.add(new OpTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
     opvec.add(new OpTuple<PTFDesc>(PTFDesc.class, PTFOperator.class));
     opvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class, ReduceSinkOperator.class));
-    opvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
     opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
     opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
     opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
@@ -143,7 +138,6 @@ public final class OperatorFactory {
     vectorOpvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, VectorFileSinkOperator.class));
     vectorOpvec.add(new OpTuple<FilterDesc>(FilterDesc.class, VectorFilterOperator.class));
     vectorOpvec.add(new OpTuple<LimitDesc>(LimitDesc.class, VectorLimitOperator.class));
-    vectorOpvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, VectorExtractOperator.class));
   }
 
   private static final class OpTuple<T extends OperatorDesc> {

@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -76,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
@@ -283,7 +281,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class VectorizationDispatcher implements Dispatcher {
 
-    private PhysicalContext pctx;
+    private final PhysicalContext pctx;
 
     private List<String> reduceColumnNames;
     private List<TypeInfo> reduceTypeInfos;
@@ -449,9 +447,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     private void addReduceWorkRules(Map<Rule, NodeProcessor> opRules, NodeProcessor np) {
-      opRules.put(new RuleRegExp("R1", ExtractOperator.getOperatorName() + ".*"), np);
-      opRules.put(new RuleRegExp("R2", GroupByOperator.getOperatorName() + ".*"), np);
-      opRules.put(new RuleRegExp("R3", SelectOperator.getOperatorName() + ".*"), np);
+      opRules.put(new RuleRegExp("R1", GroupByOperator.getOperatorName() + ".*"), np);
+      opRules.put(new RuleRegExp("R2", SelectOperator.getOperatorName() + ".*"), np);
     }
 
     private boolean validateReduceWork(ReduceWork reduceWork) throws SemanticException {
@@ -485,7 +482,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void vectorizeReduceWork(ReduceWork reduceWork) throws SemanticException {
       LOG.info("Vectorizing ReduceWork...");
       reduceWork.setVectorMode(true);
- 
+
       // For some reason, the DefaultGraphWalker does not descend down from the reducer Operator as
       // expected.  We need to descend down, otherwise it breaks our algorithm that determines
       // VectorizationContext...  Do we use PreOrderWalker instead of DefaultGraphWalker.
@@ -506,11 +503,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Necessary since we are vectorizing the root operator in reduce.
       reduceWork.setReducer(vnp.getRootVectorOp());
 
-      Operator<? extends OperatorDesc> reducer = reduceWork.getReducer();
-      if (reducer.getType().equals(OperatorType.EXTRACT)) {
-        ((VectorExtractOperator)reducer).setReduceTypeInfos(reduceTypeInfos);
-      }
-
       Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps = vnp.getAllScratchColumnVectorTypeMaps();
       reduceWork.setAllScratchColumnVectorTypeMaps(allScratchColumnVectorTypeMaps);
       Map<String, Map<String, Integer>> allColumnVectorMaps = vnp.getAllColumnVectorMaps();
@@ -525,8 +517,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class MapWorkValidationNodeProcessor implements NodeProcessor {
 
-    private MapWork mapWork;
-    private boolean isTez;
+    private final MapWork mapWork;
+    private final boolean isTez;
 
     public MapWorkValidationNodeProcessor(MapWork mapWork, boolean isTez) {
       this.mapWork = mapWork;
@@ -658,7 +650,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       throw new SemanticException("Must be overridden");
     }
   }
-  
+
   class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
     private final MapWork mWork;
@@ -723,8 +715,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Vectorized MapWork operator " + vectorOp.getName() + " vectorization context " + vContext.toString());
         if (vectorOp instanceof VectorizationContextRegion) {
-          VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
-          VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
           LOG.debug("Vectorized MapWork operator " + vectorOp.getName() + " added vectorization context " + vContext.toString());
         }
       }
@@ -735,8 +725,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class ReduceWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
-    private List<String> reduceColumnNames;
-    
+    private final List<String> reduceColumnNames;
+
     private VectorizationContext reduceShuffleVectorizationContext;
 
     private Operator<? extends OperatorDesc> rootVectorOp;
@@ -801,8 +791,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Vectorized ReduceWork operator " + vectorOp.getName() + " vectorization context " + vContext.toString());
         if (vectorOp instanceof VectorizationContextRegion) {
-          VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
-          VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
           LOG.debug("Vectorized ReduceWork operator " + vectorOp.getName() + " added vectorization context " + vContext.toString());
         }
       }
@@ -897,9 +885,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   boolean validateReduceWorkOperator(Operator<? extends OperatorDesc> op) {
     boolean ret = false;
     switch (op.getType()) {
-      case EXTRACT:
-        ret = validateExtractOperator((ExtractOperator) op);
-        break;
       case MAPJOIN:
         // Does MAPJOIN actually get planned in Reduce?
         if (op instanceof MapJoinOperator) {
@@ -1034,7 +1019,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     MapJoinDesc desc = op.getConf();
     return validateMapJoinDesc(desc);
   }
-  
+
   private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
@@ -1119,15 +1104,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
       vectorDesc.setVectorOutput(true);
       vectorDesc.setIsReduce(true);
-    }
-    return true;
-  }
-
-  private boolean validateExtractOperator(ExtractOperator op) {
-    ExprNodeDesc expr = op.getConf().getCol();
-    boolean ret = validateExprNodeDesc(expr);
-    if (!ret) {
-      return false;
     }
     return true;
   }
@@ -1300,7 +1276,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return vContext;
   }
 
-  private void fixupParentChildOperators(Operator<? extends OperatorDesc> op, 
+  private void fixupParentChildOperators(Operator<? extends OperatorDesc> op,
           Operator<? extends OperatorDesc> vectorOp) {
     if (op.getParentOperators() != null) {
       vectorOp.setParentOperators(op.getParentOperators());
@@ -1354,7 +1330,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
-  public void debugDisplayAllMaps(Map<String, Map<String, Integer>> allColumnVectorMaps, 
+  public void debugDisplayAllMaps(Map<String, Map<String, Integer>> allColumnVectorMaps,
           Map<String, Map<Integer, String>> allScratchColumnVectorTypeMaps) {
 
     // Context keys grow in length since they are a path...

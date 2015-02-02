@@ -34,14 +34,15 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -59,12 +60,12 @@ import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -224,19 +225,28 @@ public class SortedDynPartitionOptimizer implements Transform {
               rsConf, new RowSchema(outRS.getSignature()), fsParent);
       rsOp.setColumnExprMap(colExprMap);
 
-      // Create ExtractDesc
-      RowSchema exRR = new RowSchema(outRS);
-      ExtractDesc exConf = new ExtractDesc(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-          Utilities.ReduceField.VALUE.toString(), "", false));
+      List<ExprNodeDesc> valCols = rsConf.getValueCols();
+      List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(valCols.size());
+      List<String> colNames = new ArrayList<String>();
+      String colName;
+      for (ExprNodeDesc valCol : valCols) {
+        colName = PlanUtils.stripQuotes(valCol.getExprString());
+        colNames.add(colName);
+        descs.add(new ExprNodeColumnDesc(valCol.getTypeInfo(), ReduceField.VALUE.toString()+"."+colName, null, false));
+      }
 
-      // Create Extract Operator
-      ExtractOperator exOp = (ExtractOperator) OperatorFactory.getAndMakeChild(
-              exConf, exRR, rsOp);
+      // Create SelectDesc
+      SelectDesc selConf = new SelectDesc(descs, colNames);
+      RowSchema selRS = new RowSchema(outRS);
 
-      // link EX to FS
+      // Create Select Operator
+      SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(
+              selConf, selRS, rsOp);
+
+      // link SEL to FS
       fsOp.getParentOperators().clear();
-      fsOp.getParentOperators().add(exOp);
-      exOp.getChildOperators().add(fsOp);
+      fsOp.getParentOperators().add(selOp);
+      selOp.getChildOperators().add(fsOp);
 
       // Set if partition sorted or partition bucket sorted
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
@@ -249,13 +259,13 @@ public class SortedDynPartitionOptimizer implements Transform {
           .getSchema().getSignature());
       fsOp.getConf().setPartitionCols(partitionColumns);
 
-      LOG.info("Inserted " + rsOp.getOperatorId() + " and " + exOp.getOperatorId()
+      LOG.info("Inserted " + rsOp.getOperatorId() + " and " + selOp.getOperatorId()
           + " as parent of " + fsOp.getOperatorId() + " and child of " + fsParent.getOperatorId());
       return null;
     }
 
-    // Remove RS and EX introduced by enforce bucketing/sorting config
-    // Convert PARENT -> RS -> EX -> FS to PARENT -> FS
+    // Remove RS and SEL introduced by enforce bucketing/sorting config
+    // Convert PARENT -> RS -> SEL -> FS to PARENT -> FS
     private boolean removeRSInsertedByEnforceBucketing(FileSinkOperator fsOp) {
       HiveConf hconf = parseCtx.getConf();
       boolean enforceBucketing = HiveConf.getBoolVar(hconf, ConfVars.HIVEENFORCEBUCKETING);
@@ -290,7 +300,7 @@ public class SortedDynPartitionOptimizer implements Transform {
           Operator<? extends OperatorDesc> rsChild = rsToRemove.getChildOperators().get(0);
           Operator<? extends OperatorDesc> rsGrandChild = rsChild.getChildOperators().get(0);
 
-          if (rsChild instanceof ExtractOperator) {
+          if (rsChild instanceof SelectOperator) {
             // if schema size cannot be matched, then it could be because of constant folding
             // converting partition column expression to constant expression. The constant
             // expression will then get pruned by column pruner since it will not reference to
