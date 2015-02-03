@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -101,6 +102,11 @@ public class ColumnarStorageBench {
   private FileSystem fs;
 
   /**
+   * LazySimpleSerDe is used to create our testing rows.
+   */
+  private LazySimpleSerDe lazySimpleSerDe;
+
+  /**
    * Contains implementation for the storage format to test
    */
   private StorageFormatTest storageFormatTest;
@@ -113,7 +119,7 @@ public class ColumnarStorageBench {
    */
   private Writable recordWritable[];
   private Object rows[];
-  private StructObjectInspector oi;
+  private ObjectInspector oi;
 
   /**
    * These column types are used for the record that will be tested.
@@ -126,14 +132,24 @@ public class ColumnarStorageBench {
     recordProperties.setProperty("columns", getColumnNames(DEFAULT_COLUMN_TYPES));
     recordProperties.setProperty("columns.types", DEFAULT_COLUMN_TYPES);
 
-    oi = getObjectInspector(DEFAULT_COLUMN_TYPES);
-
     final int NUMBER_OF_ROWS_TO_TEST = 100;
     rows = new Object[NUMBER_OF_ROWS_TO_TEST];
     recordWritable = new Writable[NUMBER_OF_ROWS_TO_TEST];
 
-    for (int i=0; i<NUMBER_OF_ROWS_TO_TEST; i++) {
-      rows[i] = createRandomRow(DEFAULT_COLUMN_TYPES);
+    /**
+     * We use LazySimpleSerDe to generate our testing rows.
+     */
+
+    try {
+      lazySimpleSerDe = new LazySimpleSerDe();
+      SerDeUtils.initializeSerDe(lazySimpleSerDe, new Configuration(), recordProperties, null);
+      oi = lazySimpleSerDe.getObjectInspector();
+
+      for (int i = 0; i < NUMBER_OF_ROWS_TO_TEST; i++) {
+        rows[i] = createRandomRow(DEFAULT_COLUMN_TYPES);
+      }
+    } catch(SerDeException e) {
+      e.printStackTrace();
     }
   }
 
@@ -213,7 +229,7 @@ public class ColumnarStorageBench {
     return record(fields);
   }
 
-  private StructObjectInspector getObjectInspector(final String columnTypes) {
+  private ObjectInspector getArrayWritableObjectInspector(final String columnTypes) {
     List<TypeInfo> columnTypeList = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
     List<String> columnNameList = Arrays.asList(getColumnNames(columnTypes).split(","));
     StructTypeInfo rowTypeInfo = (StructTypeInfo)TypeInfoFactory.getStructTypeInfo(columnNameList, columnTypeList);
@@ -221,8 +237,10 @@ public class ColumnarStorageBench {
     return new ArrayWritableObjectInspector(rowTypeInfo);
   }
 
-  private Object createRandomRow(final String columnTypes) {
-    return createRecord(TypeInfoUtils.getTypeInfosFromTypeString(columnTypes));
+  private Object createRandomRow(final String columnTypes) throws SerDeException {
+    Writable recordWritable = createRecord(TypeInfoUtils.getTypeInfosFromTypeString(columnTypes));
+    Writable simpleWritable = lazySimpleSerDe.serialize(recordWritable, getArrayWritableObjectInspector(columnTypes));
+    return lazySimpleSerDe.deserialize(simpleWritable);
   }
 
   /**
@@ -245,7 +263,7 @@ public class ColumnarStorageBench {
       SerDeUtils.initializeSerDe(serDe, conf, recordProperties, null);
     }
 
-    public Writable serialize(Object row, StructObjectInspector oi) throws SerDeException {
+    public Writable serialize(Object row, ObjectInspector oi) throws SerDeException {
       return serDe.serialize(row, oi);
     }
 
