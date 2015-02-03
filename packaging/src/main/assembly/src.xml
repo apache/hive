@@ -39,6 +39,7 @@
         <exclude>**/.classpath</exclude>
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
       </excludes>
 
       <includes>
