@@ -138,7 +138,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   private int fixedRunLength = 0;
   private int variableRunLength = 0;
   private final long[] literals = new long[MAX_SCOPE];
-  private final PositionedOutputStream output;
+  private final OutStream output;
   private final boolean signed;
   private EncodingType encoding;
   private int numLiterals;
@@ -160,11 +160,11 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
   private SerializationUtils utils;
   private boolean alignedBitpacking;
 
-  RunLengthIntegerWriterV2(PositionedOutputStream output, boolean signed) {
+  RunLengthIntegerWriterV2(OutStream output, boolean signed) {
     this(output, signed, true);
   }
 
-  RunLengthIntegerWriterV2(PositionedOutputStream output, boolean signed,
+  RunLengthIntegerWriterV2(OutStream output, boolean signed,
       boolean alignedBitpacking) {
     this.output = output;
     this.signed = signed;
@@ -816,6 +816,11 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
         }
       }
     }
+  }
+
+  @Override
+  public void suppress() {
+    this.output.suppress();
   }
 
   private void initializeLiterals(long val) {
