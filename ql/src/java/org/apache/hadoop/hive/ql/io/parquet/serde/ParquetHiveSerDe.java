@@ -310,6 +310,10 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   }
 
   private Writable createObject(final Object obj, final ObjectInspector inspector) throws SerDeException {
+    if (obj == null) {
+      return null;
+    }
+
     switch (inspector.getCategory()) {
     case STRUCT:
       return createStruct(obj, (StructObjectInspector) inspector);
