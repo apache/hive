@@ -630,7 +630,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       return rowIndexEntry;
     }
 
-    IntegerWriter createIntegerWriter(PositionedOutputStream output,
+    IntegerWriter createIntegerWriter(OutStream output,
                                       boolean signed, boolean isDirectV2,
                                       StreamFactory writer) {
       if (isDirectV2) {
@@ -882,7 +882,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                       StreamFactory writer,
                       boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
-      PositionedOutputStream out = writer.createStream(id,
+      OutStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
@@ -1162,6 +1162,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         // Write the dictionary by traversing the red-black tree writing out
         // the bytes and lengths; and creating the map from the original order
         // to the final sorted order.
+        if (dictionary.size() == 0) {
+          if (LOG.isWarnEnabled()) {
+            LOG.warn("Empty dictionary. Suppressing dictionary stream.");
+          }
+          stringOutput.suppress();
+          lengthOutput.suppress();
+        }
+
         dictionary.visit(new StringRedBlackTree.Visitor() {
           private int currentId = 0;
           @Override
@@ -1467,7 +1475,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
                    StreamFactory writer,
                    boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
-      PositionedOutputStream out = writer.createStream(id,
+      OutStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
