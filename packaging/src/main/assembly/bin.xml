@@ -89,6 +89,7 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>lib/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
       </excludes>
 
       <includes>
