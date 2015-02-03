@@ -206,6 +206,11 @@
 </property>
 
 <property>
+  <name>spark.io.compression.codec</name>
+  <value>org.apache.spark.io.LZFCompressionCodec</value>
+</property>
+
+<property>
   <name>spark.akka.logLifecycleEvents</name>
   <value>true</value>
 </property>
