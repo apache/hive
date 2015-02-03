@@ -68,7 +68,6 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
   @Override
   protected void initializeOp(Configuration jobConf) throws HiveException {
     hiveConf = jobConf;
-    // if the parent is ExtractOperator, this invocation is from reduce-side
     isMapOperator = conf.isMapSide();
 
     reconstructQueryDef(hiveConf);
@@ -157,7 +156,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       /*
        * Why cannot we just use the ExprNodeEvaluator on the column?
        * - because on the reduce-side it is initialized based on the rowOI of the HiveTable
-       *   and not the OI of the ExtractOp ( the parent of this Operator on the reduce-side)
+       *   and not the OI of the parent of this Operator on the reduce-side
        */
       keyFields[i] = ExprNodeEvaluatorFactory.get(exprDef.getExprNode());
       keyOIs[i] = keyFields[i].initialize(inputOI);

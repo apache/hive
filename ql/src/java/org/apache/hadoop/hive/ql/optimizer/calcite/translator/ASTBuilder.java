@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
@@ -144,7 +145,8 @@ class ASTBuilder {
 
     switch (sqlType) {
     case BINARY:
-      val = literal.byteValue();
+      ByteString bs = (ByteString) literal.getValue();
+      val = bs.byteAt(0);
       type = HiveParser.BigintLiteral;
       break;
     case TINYINT:

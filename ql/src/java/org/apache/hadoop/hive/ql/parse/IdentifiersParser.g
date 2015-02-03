@@ -173,11 +173,29 @@ function
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)?)
     ;
 
+nonParenthesizedFunction
+@init { gParent.pushMsg("non-parenthesized function name", state); }
+@after { gParent.popMsg(state); }
+    :
+    nonParenthesizedFunctionName
+        -> ^(TOK_FUNCTION nonParenthesizedFunctionName)
+    ;
+
+nonParenthesizedFunctionName
+@init { gParent.pushMsg("non-parenthesized function name", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP
+    ;
+
 functionName
 @init { gParent.pushMsg("function name", state); }
 @after { gParent.popMsg(state); }
     : // Keyword IF is also a function name
     KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE | functionIdentifier
+    |
+    // This allows current_timestamp() to work as well as current_timestamp
+    nonParenthesizedFunctionName
     ;
 
 castExpression
@@ -273,6 +291,7 @@ atomExpression
     | castExpression
     | caseExpression
     | whenExpression
+    | nonParenthesizedFunction
     | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!

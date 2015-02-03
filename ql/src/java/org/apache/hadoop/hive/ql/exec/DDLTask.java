@@ -169,6 +169,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -4228,10 +4231,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       // this is not transactional
+      HadoopShims shim = ShimLoader.getHadoopShims();
       for (Path location : getLocations(db, table, partSpec)) {
         FileSystem fs = location.getFileSystem(conf);
+        
+        HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, location);
         fs.delete(location, true);
         fs.mkdirs(location);
+        try {
+          shim.setFullFileStatus(conf, fullFileStatus, fs, location);
+        } catch (Exception e) {
+          LOG.warn("Error setting permissions of " + location, e);
+        }
       }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);

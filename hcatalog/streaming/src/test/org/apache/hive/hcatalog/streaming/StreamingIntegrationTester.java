@@ -107,7 +107,7 @@ public class StreamingIntegrationTester {
          .hasArgs()
          .withArgName("partition-values")
          .withDescription("partition values, must be provided in order of partition columns, " +
-                 "if not provided table is assumed to not be partitioned")
+             "if not provided table is assumed to not be partitioned")
          .withLongOpt("partition")
          .withValueSeparator(',')
          .create('p'));
@@ -264,7 +264,7 @@ public class StreamingIntegrationTester {
       this.batches = batches;
       this.writerNumber = writerNumber;
       this.recordsPerTxn = recordsPerTxn;
-      this.frequency = frequency;
+      this.frequency = frequency * 1000;
       this.abortPct = abortPct;
       this.cols = cols;
       this.types = types;
@@ -279,8 +279,8 @@ public class StreamingIntegrationTester {
         conn = endPoint.newConnection(true);
         RecordWriter writer = new DelimitedInputWriter(cols, ",", endPoint);
 
-        long start = System.currentTimeMillis();
         for (int i = 0; i < batches; i++) {
+          long start = System.currentTimeMillis();
           LOG.info("Starting batch " + i);
           TransactionBatch batch = conn.fetchTransactionBatch(txnsPerBatch, writer);
           try {

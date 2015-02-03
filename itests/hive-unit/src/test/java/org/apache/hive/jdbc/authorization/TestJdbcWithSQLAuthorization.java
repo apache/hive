@@ -140,4 +140,39 @@ public class TestJdbcWithSQLAuthorization {
     }
   }
 
+  @Test
+  public void testBlackListedUdfUsage() throws Exception {
+
+    // create tables as user1
+    Connection hs2Conn = getConnection("user1");
+
+    Statement stmt = hs2Conn.createStatement();
+    String tableName1 = "test_jdbc_sql_auth_udf";
+    stmt.execute("create table " + tableName1 + "(i int) ");
+
+    verifyUDFNotAllowed(stmt, tableName1, "reflect('java.lang.String', 'valueOf', 1)", "reflect");
+    verifyUDFNotAllowed(stmt, tableName1, "reflect2('java.lang.String', 'valueOf', 1)", "reflect2");
+    verifyUDFNotAllowed(stmt, tableName1, "java_method('java.lang.String', 'valueOf', 1)",
+        "java_method");
+
+    stmt.close();
+    hs2Conn.close();
+  }
+
+  private void verifyUDFNotAllowed(Statement stmt, String tableName, String udfcall, String udfname) {
+    try {
+      stmt.execute("SELECT " + udfcall + " from " + tableName);
+      fail("Disallowed udf usage should have resulted in error");
+    } catch (SQLException e) {
+      checkAssertContains("UDF " + udfname + " is not allowed", e.getMessage());
+    }
+  }
+
+  private void checkAssertContains(String expectedSubString, String message) {
+    if (message.contains(expectedSubString)) {
+      return;
+    }
+    fail("Message [" + message + "] does not contain substring [" + expectedSubString + "]");
+  }
+
 }

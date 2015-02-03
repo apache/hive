@@ -99,7 +99,7 @@ public class SparkSkewJoinProcFactory {
   private static void splitTask(SparkTask currentTask, ReduceWork reduceWork,
       ParseContext parseContext) throws SemanticException {
     SparkWork currentWork = currentTask.getWork();
-    Set<Operator<? extends OperatorDesc>> reduceSinkSet =
+    Set<Operator<?>> reduceSinkSet =
         SparkMapJoinResolver.getOp(reduceWork, ReduceSinkOperator.class);
     if (currentWork.getChildren(reduceWork).size() == 1 && canSplit(currentWork)
       && reduceSinkSet.size() == 1) {

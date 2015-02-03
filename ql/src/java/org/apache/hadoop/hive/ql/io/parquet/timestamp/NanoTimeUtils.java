@@ -28,19 +28,31 @@ public class NanoTimeUtils {
    static final long SECONDS_PER_MINUTE = 60;
    static final long MINUTES_PER_HOUR = 60;
 
-   private static final ThreadLocal<Calendar> parquetTsCalendar = new ThreadLocal<Calendar>();
+   private static final ThreadLocal<Calendar> parquetGMTCalendar = new ThreadLocal<Calendar>();
+   private static final ThreadLocal<Calendar> parquetLocalCalendar = new ThreadLocal<Calendar>();
 
-   private static Calendar getCalendar() {
+   private static Calendar getGMTCalendar() {
      //Calendar.getInstance calculates the current-time needlessly, so cache an instance.
-     if (parquetTsCalendar.get() == null) {
-       parquetTsCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
+     if (parquetGMTCalendar.get() == null) {
+       parquetGMTCalendar.set(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
      }
-     return parquetTsCalendar.get();
+     return parquetGMTCalendar.get();
    }
 
-   public static NanoTime getNanoTime(Timestamp ts) {
+   private static Calendar getLocalCalendar() {
+     if (parquetLocalCalendar.get() == null) {
+       parquetLocalCalendar.set(Calendar.getInstance());
+     }
+     return parquetLocalCalendar.get();
+   }
 
-     Calendar calendar = getCalendar();
+   private static Calendar getCalendar(boolean skipConversion) {
+     return skipConversion ? getLocalCalendar() : getGMTCalendar();
+   }
+
+   public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
+
+     Calendar calendar = getCalendar(skipConversion);
      calendar.setTime(ts);
      JDateTime jDateTime = new JDateTime(calendar.get(Calendar.YEAR),
        calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
@@ -53,15 +65,16 @@ public class NanoTimeUtils {
      long nanos = ts.getNanos();
      long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_SECOND * SECONDS_PER_MINUTE * minute +
          NANOS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * hour;
+
      return new NanoTime(days, nanosOfDay);
    }
 
-   public static Timestamp getTimestamp(NanoTime nt) {
+   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
      int julianDay = nt.getJulianDay();
      long nanosOfDay = nt.getTimeOfDayNanos();
 
      JDateTime jDateTime = new JDateTime((double) julianDay);
-     Calendar calendar = getCalendar();
+     Calendar calendar = getCalendar(skipConversion);
      calendar.set(Calendar.YEAR, jDateTime.getYear());
      calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calender index starting at 1.
      calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());

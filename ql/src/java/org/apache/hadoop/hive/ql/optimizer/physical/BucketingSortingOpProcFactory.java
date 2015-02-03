@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -487,49 +486,13 @@ public class BucketingSortingOpProcFactory {
 
   }
 
-  /**
-   * Processor for Extract operator.
-   *
-   * Only handles the case where the tree looks like
-   *
-   * ReduceSinkOperator --- ExtractOperator
-   *
-   * This is the case for distribute by, sort by, order by, cluster by operators.
-   */
-  public static class ExtractInferrer extends DefaultInferrer implements NodeProcessor {
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
-      ExtractOperator exop = (ExtractOperator)nd;
-
-      // As of writing this, there is no case where this could be false, this is just protection
-      // from possible future changes
-      if (exop.getParentOperators().size() != 1) {
-        return null;
-      }
-
-      Operator<? extends OperatorDesc> parent = exop.getParentOperators().get(0);
-
-      // The caller of this method should guarantee this
-      if (parent instanceof ReduceSinkOperator) {
-        extractTraits(bctx, (ReduceSinkOperator)parent, exop);
-      }
-
-      return null;
-    }
-  }
-
-  static void extractTraits(BucketingSortingCtx bctx, ReduceSinkOperator rop, Operator<?> exop)
+  static void extractTraits(BucketingSortingCtx bctx, ReduceSinkOperator rop, Operator<?> childop)
       throws SemanticException {
 
     List<ExprNodeDesc> outputValues = Collections.emptyList();
-    if (exop instanceof ExtractOperator) {
-      outputValues = rop.getConf().getValueCols();
-    } else if (exop instanceof SelectOperator) {
-      SelectDesc select = ((SelectOperator)exop).getConf();
-      outputValues = ExprNodeDescUtils.backtrack(select.getColList(), exop, rop);
+    if (childop instanceof SelectOperator) {
+      SelectDesc select = ((SelectOperator)childop).getConf();
+      outputValues = ExprNodeDescUtils.backtrack(select.getColList(), childop, rop);
     }
     if (outputValues.isEmpty()) {
       return;
@@ -543,16 +506,16 @@ public class BucketingSortingOpProcFactory {
     // These represent the sorted columns
     List<SortCol> sortCols = extractSortCols(rop, outputValues);
 
-    List<ColumnInfo> colInfos = exop.getSchema().getSignature();
+    List<ColumnInfo> colInfos = childop.getSchema().getSignature();
 
     if (!bucketCols.isEmpty()) {
       List<BucketCol> newBucketCols = getNewBucketCols(bucketCols, colInfos);
-      bctx.setBucketedCols(exop, newBucketCols);
+      bctx.setBucketedCols(childop, newBucketCols);
     }
 
     if (!sortCols.isEmpty()) {
       List<SortCol> newSortCols = getNewSortCols(sortCols, colInfos);
-      bctx.setSortedCols(exop, newSortCols);
+      bctx.setSortedCols(childop, newSortCols);
     }
   }
 
@@ -776,10 +739,6 @@ public class BucketingSortingOpProcFactory {
 
   public static NodeProcessor getFileSinkProc() {
     return new FileSinkInferrer();
-  }
-
-  public static NodeProcessor getExtractProc() {
-    return new ExtractInferrer();
   }
 
   public static NodeProcessor getFilterProc() {

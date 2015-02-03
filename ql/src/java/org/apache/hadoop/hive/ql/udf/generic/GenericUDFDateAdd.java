@@ -32,7 +32,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddColCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddColScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -66,10 +68,8 @@ import org.apache.hadoop.io.IntWritable;
 @VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient TimestampConverter timestampConverter;
-  private transient Converter textConverter;
-  private transient Converter dateWritableConverter;
-  private transient Converter intWritableConverter;
+  private transient Converter dateConverter;
+  private transient Converter daysConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
   private final Calendar calendar = Calendar.getInstance();
@@ -99,16 +99,16 @@ public class GenericUDFDateAdd extends GenericUDF {
     case VARCHAR:
     case CHAR:
       inputType1 = PrimitiveCategory.STRING;
-      textConverter = ObjectInspectorConverters.getConverter(
+      dateConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       break;
     case TIMESTAMP:
-      timestampConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
+      dateConverter = new TimestampConverter((PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
       break;
     case DATE:
-      dateWritableConverter = ObjectInspectorConverters.getConverter(
+      dateConverter = ObjectInspectorConverters.getConverter(
         (PrimitiveObjectInspector) arguments[0],
         PrimitiveObjectInspectorFactory.writableDateObjectInspector);
       break;
@@ -119,52 +119,76 @@ public class GenericUDFDateAdd extends GenericUDF {
     }
 
     inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
-    if (inputType2 != PrimitiveCategory.INT) {
-      throw new UDFArgumentException(
-        " DATE_ADD() only takes INT types as second  argument, got " + inputType2);
+    switch (inputType2) {
+      case BYTE:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+        break;
+      case SHORT:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableShortObjectInspector);
+        break;
+      case INT:
+        daysConverter = ObjectInspectorConverters.getConverter(
+            (PrimitiveObjectInspector) arguments[1],
+            PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+        break;
+      default:
+        throw new UDFArgumentException(
+            " DATE_ADD() only takes TINYINT/SMALLINT/INT types as second argument, got " + inputType2);
     }
-    intWritableConverter = ObjectInspectorConverters.getConverter(
-      (PrimitiveObjectInspector) arguments[1],
-      PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+
     return outputOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-
     if (arguments[0].get() == null) {
       return null;
     }
-    IntWritable toBeAdded = (IntWritable) intWritableConverter.convert(arguments[1].get());
-    if (toBeAdded == null) {
+
+    Object daysWritableObject = daysConverter.convert(arguments[1].get());
+    if (daysWritableObject == null) {
+      return null;
+    }
+
+    int toBeAdded;
+    if (daysWritableObject instanceof ByteWritable) {
+      toBeAdded = ((ByteWritable) daysWritableObject).get();
+    } else if (daysWritableObject instanceof ShortWritable) {
+      toBeAdded = ((ShortWritable) daysWritableObject).get();
+    } else if (daysWritableObject instanceof IntWritable) {
+      toBeAdded = ((IntWritable) daysWritableObject).get();
+    } else {
       return null;
     }
 
     switch (inputType1) {
     case STRING:
-      String dateString = textConverter.convert(arguments[0].get()).toString();
+      String dateString = dateConverter.convert(arguments[0].get()).toString();
       try {
         calendar.setTime(formatter.parse(dateString.toString()));
-        calendar.add(Calendar.DAY_OF_MONTH, toBeAdded.get());
       } catch (ParseException e) {
         return null;
       }
       break;
     case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
+      Timestamp ts = ((TimestampWritable) dateConverter.convert(arguments[0].get()))
         .getTimestamp();
       calendar.setTime(ts);
-      calendar.add(Calendar.DAY_OF_MONTH, toBeAdded.get());
       break;
     case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
+      DateWritable dw = (DateWritable) dateConverter.convert(arguments[0].get());
       calendar.setTime(dw.get());
-      calendar.add(Calendar.DAY_OF_MONTH, toBeAdded.get());
       break;
     default:
       throw new UDFArgumentException(
         "DATE_ADD() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
+
+    calendar.add(Calendar.DAY_OF_MONTH, toBeAdded);
     Date newDate = calendar.getTime();
     output.set(formatter.format(newDate));
     return output;

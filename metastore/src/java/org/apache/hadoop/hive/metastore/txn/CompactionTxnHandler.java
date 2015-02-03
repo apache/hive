@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.util.StringUtils;
@@ -575,6 +576,25 @@ public class CompactionTxnHandler extends TxnHandler {
     } catch (RetryException ex) {
       return findColumnsWithStats(ci);
     }
+  }
+
+  /**
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
+   * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
+   * compact the files, and thus treats only open transactions as invalid.
+   * @param txns txn list from the metastore
+   * @return a valid txn list.
+   */
+  public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
+    long highWater = txns.getTxn_high_water_mark();
+    long minOpenTxn = Long.MAX_VALUE;
+    long[] exceptions = new long[txns.getOpen_txnsSize()];
+    int i = 0;
+    for (TxnInfo txn : txns.getOpen_txns()) {
+      if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
+      exceptions[i++] = txn.getId();
+    }
+    return new ValidCompactorTxnList(exceptions, minOpenTxn, highWater);
   }
 }
 

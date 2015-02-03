@@ -159,6 +159,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
+      HiveConf.ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
       HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
       HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -545,6 +546,11 @@ public class HiveConf extends Configuration {
         "select query has incorrect syntax or something similar inside a transaction, the\n" +
         "entire transaction will fail and fall-back to DataNucleus will not be possible. You\n" +
         "should disable the usage of direct SQL inside transactions if that happens in your case."),
+    METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
+        "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
+        "either be pruned or converted to empty strings. Some backing dbs such as Oracle persist empty strings " +
+        "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
+        "pruning is the correct behaviour"),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
         "hive.metastore.disallow.incompatible.col.type.changes", false,
         "If true (default is false), ALTER TABLE operations which change the type of a\n" +
@@ -836,20 +842,22 @@ public class HiveConf extends Configuration {
 
     // test mode in hive mode
     HIVETESTMODE("hive.test.mode", false,
-        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename."),
+        "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
+        false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
-        "In test mode, specfies prefixes for the output table"),
+        "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
         "In test mode, specfies sampling frequency for table, which is not bucketed,\n" +
         "For example, the following query:\n" +
         "  INSERT OVERWRITE TABLE dest SELECT col1 from src\n" +
         "would be converted to\n" +
         "  INSERT OVERWRITE TABLE test_dest\n" +
-        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))"),
+        "  SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))", false),
     HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", "",
-        "In test mode, specifies comma separated table names which would not apply sampling"),
-    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test"),
-    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test"),
+        "In test mode, specifies comma separated table names which would not apply sampling", false),
+    HIVETESTMODEDUMMYSTATAGGR("hive.test.dummystats.aggregator", "", "internal variable for test", false),
+    HIVETESTMODEDUMMYSTATPUB("hive.test.dummystats.publisher", "", "internal variable for test", false),
+    HIVETESTCURRENTTIMESTAMP("hive.test.currenttimestamp", null, "current timestamp for test", false),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
@@ -885,7 +893,9 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
-
+    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
+      "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
+      "on reading parquet files from other tools"),
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
         "Maximum fraction of heap that can be used by ORC file writers"),
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
@@ -2008,7 +2018,7 @@ public class HiveConf extends Configuration {
       "1000ms", new TimeValidator(TimeUnit.MILLISECONDS),
       "Timeout for remote Spark driver in connecting back to Hive client."),
     SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT("hive.spark.client.server.connect.timeout",
-      "20000ms", new TimeValidator(TimeUnit.MILLISECONDS),
+      "90000ms", new TimeValidator(TimeUnit.MILLISECONDS),
       "Timeout for handshake between Hive client and remote Spark driver.  Checked by both processes."),
     SPARK_RPC_SECRET_RANDOM_BITS("hive.spark.client.secret.bits", "256",
       "Number of bits of randomness in the generated secret for communication between Hive client and remote Spark driver. " +

@@ -107,40 +107,38 @@ STAGE PLANS:
         /src [src]
       Needs Tagging: false
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: UDFToInteger(VALUE._col0) (type: int), VALUE._col1 (type: string)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 1
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  SORTBUCKETCOLSPREFIX TRUE
+                  bucket_count 2
+                  bucket_field_name key
+                  columns key,value
+                  columns.comments 
+                  columns.types int:string
 #### A masked pattern was here ####
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    SORTBUCKETCOLSPREFIX TRUE
-                    bucket_count 2
-                    bucket_field_name key
-                    columns key,value
-                    columns.comments 
-                    columns.types int:string
+                  name default.bucket4_1
+                  serialization.ddl struct bucket4_1 { i32 key, string value}
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                    name default.bucket4_1
-                    serialization.ddl struct bucket4_1 { i32 key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.bucket4_1
-              TotalFiles: 2
-              GatherStats: true
-              MultiFileSpray: true
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.bucket4_1
+            TotalFiles: 2
+            GatherStats: true
+            MultiFileSpray: true
 
   Stage: Stage-0
     Move Operator

@@ -249,7 +249,7 @@ public class TestWebHCatE2e {
     Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
     Assert.assertEquals("hive", props.get("module"));
     Assert.assertTrue(p.getAssertMsg(),
-        ((String) props.get("version")).matches("0.[0-9]+.[0-9]+.*"));
+        ((String) props.get("version")).matches("[0-9]+.[0-9]+.[0-9]+.*"));
   }
 
   @Test

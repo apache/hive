@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.thrift.TException;
@@ -211,7 +212,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return tables;
   }
 
-
   @Override
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
   TException, UnknownDBException {
@@ -223,6 +223,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Try underlying client
     return super.tableExists(databaseName, tableName);
+  }
+
+  @Override
+  public List<FieldSchema> getSchema(String dbName, String tableName)
+      throws MetaException, TException, UnknownTableException,
+      UnknownDBException {
+    // First check temp tables
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table != null) {
+      return deepCopyFieldSchemas(table.getSd().getCols());
+    }
+
+    // Try underlying client
+    return super.getSchema(dbName, tableName);
   }
 
   @Override
@@ -373,7 +387,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     org.apache.hadoop.hive.metastore.api.Table newtCopy = deepCopyAndLowerCaseTable(newt);
     MetaStoreUtils.updateUnpartitionedTableStatsFast(newtCopy,
-        wh.getFileStatusesForSD(newtCopy.getSd()), false, true);
+        getWh().getFileStatusesForSD(newtCopy.getSd()), false, true);
     Table newTable = new Table(newtCopy);
     String newDbName = newTable.getDbName();
     String newTableName = newTable.getTableName();

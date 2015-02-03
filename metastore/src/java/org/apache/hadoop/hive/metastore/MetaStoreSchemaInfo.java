@@ -43,10 +43,12 @@ public class MetaStoreSchemaInfo {
   private final HiveConf hiveConf;
   private final String hiveHome;
 
-  // Minor version upgrades often don't change schema. So they are equivalent to a version
+  // Some version upgrades often don't change schema. So they are equivalent to
+  // a version
   // that has a corresponding schema. eg "0.13.1" is equivalent to "0.13.0"
   private static final Map<String, String> EQUIVALENT_VERSIONS =
-      ImmutableMap.of("0.13.1", "0.13.0");
+      ImmutableMap.of("0.13.1", "0.13.0",
+          "1.0.0", "0.14.0");
 
   public MetaStoreSchemaInfo(String hiveHome, HiveConf hiveConf, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;

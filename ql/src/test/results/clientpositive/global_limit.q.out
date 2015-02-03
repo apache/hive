@@ -1633,6 +1633,15 @@ POSTHOOK: Input: default@gl_src_part1@p=12
 495
 495
 495
+PREHOOK: query: select * from gl_src1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from gl_src1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+#### A masked pattern was here ####
+165	val_165
 PREHOOK: query: drop table gl_src1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@gl_src1

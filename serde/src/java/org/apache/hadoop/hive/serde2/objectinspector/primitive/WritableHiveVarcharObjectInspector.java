@@ -106,6 +106,14 @@ implements SettableHiveVarcharObjectInspector {
     if (o == null) {
       return null;
     }
+
+    if (o instanceof Text) {
+      String str = ((Text)o).toString();
+      HiveVarcharWritable hcw = new HiveVarcharWritable();
+      hcw.set(str, ((VarcharTypeInfo)typeInfo).getLength());
+      return hcw;
+    }
+
     HiveVarcharWritable writable = (HiveVarcharWritable)o;
     if (doesWritableMatchTypeParams((HiveVarcharWritable)o)) {
       return new HiveVarcharWritable(writable);

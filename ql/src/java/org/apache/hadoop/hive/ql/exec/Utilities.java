@@ -1081,7 +1081,6 @@ public final class Utilities {
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
-      removeField(kryo, MapWork.class, "opParseCtxMap");
       return kryo;
     };
   };

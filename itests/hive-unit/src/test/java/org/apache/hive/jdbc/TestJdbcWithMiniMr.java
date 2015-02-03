@@ -23,10 +23,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -225,6 +227,46 @@ public class TestJdbcWithMiniMr {
     String queryStr = "SELECT * FROM " + tempTableName +
         " where value = '" + resultVal + "'";
     verifyResult(queryStr, resultVal, 2);
+
+
+    // Test getTables()
+    DatabaseMetaData md = hs2Conn.getMetaData();
+    assertTrue(md.getConnection() == hs2Conn);
+
+    ResultSet rs = md.getTables(null, null, tempTableName, null);
+    boolean foundTable = false;
+    while (rs.next()) {
+      String tableName = rs.getString(3);
+      if (tableName.equalsIgnoreCase(tempTableName)) {
+        assertFalse("Table not found yet", foundTable);
+        foundTable = true;
+      }
+    }
+    assertTrue("Found temp table", foundTable);
+
+    // Test getTables() with no table name pattern
+    rs = md.getTables(null, null, null, null);
+    foundTable = false;
+    while (rs.next()) {
+      String tableName = rs.getString(3);
+      if (tableName.equalsIgnoreCase(tempTableName)) {
+        assertFalse("Table not found yet", foundTable);
+        foundTable = true;
+      }
+    }
+    assertTrue("Found temp table", foundTable);
+
+    // Test getColumns()
+    rs = md.getColumns(null, null, tempTableName, null);
+    assertTrue("First row", rs.next());
+    assertTrue(rs.getString(3).equalsIgnoreCase(tempTableName));
+    assertTrue(rs.getString(4).equalsIgnoreCase("key"));
+    assertEquals(Types.VARCHAR, rs.getInt(5));
+
+    assertTrue("Second row", rs.next());
+    assertTrue(rs.getString(3).equalsIgnoreCase(tempTableName));
+    assertTrue(rs.getString(4).equalsIgnoreCase("value"));
+    assertEquals(Types.VARCHAR, rs.getInt(5));
 
     // A second connection should not be able to see the table
     Connection conn2 = DriverManager.getConnection(miniHS2.getJdbcURL(dbName),

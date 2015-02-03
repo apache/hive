@@ -43,7 +43,14 @@ public class AcidUtils {
   // This key will be put in the conf file when planning an acid operation
   public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
+  public static final PathFilter baseFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(BASE_PREFIX);
+    }
+  };
   public static final String DELTA_PREFIX = "delta_";
+  public static final String DELTA_SIDE_FILE_SUFFIX = "_flush_length";
   public static final PathFilter deltaFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -54,7 +61,8 @@ public class AcidUtils {
   public static final PathFilter bucketFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
-      return path.getName().startsWith(BUCKET_PREFIX);
+      return path.getName().startsWith(BUCKET_PREFIX) &&
+          !path.getName().endsWith(DELTA_SIDE_FILE_SUFFIX);
     }
   };
   public static final String BUCKET_DIGITS = "%05d";
@@ -369,7 +377,7 @@ public class AcidUtils {
         }
       } else if (fn.startsWith(DELTA_PREFIX) && child.isDir()) {
         ParsedDelta delta = parseDelta(child);
-        if (txnList.isTxnRangeCommitted(delta.minTransaction,
+        if (txnList.isTxnRangeValid(delta.minTransaction,
             delta.maxTransaction) !=
             ValidTxnList.RangeResponse.NONE) {
           working.add(delta);
@@ -402,7 +410,7 @@ public class AcidUtils {
     for(ParsedDelta next: working) {
       if (next.maxTransaction > current) {
         // are any of the new transactions ones that we care about?
-        if (txnList.isTxnRangeCommitted(current+1, next.maxTransaction) !=
+        if (txnList.isTxnRangeValid(current+1, next.maxTransaction) !=
             ValidTxnList.RangeResponse.NONE) {
           deltas.add(next);
           current = next.maxTransaction;
