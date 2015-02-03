@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import jodd.datetime.JDateTime;
 
@@ -24,9 +25,9 @@ import jodd.datetime.JDateTime;
  * This utilizes the Jodd library.
  */
 public class NanoTimeUtils {
-   static final long NANOS_PER_SECOND = 1000000000;
-   static final long SECONDS_PER_MINUTE = 60;
-   static final long MINUTES_PER_HOUR = 60;
+   static final long NANOS_PER_HOUR = TimeUnit.HOURS.toNanos(1);
+   static final long NANOS_PER_MINUTE = TimeUnit.MINUTES.toNanos(1);
+   static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
    private static final ThreadLocal<Calendar> parquetGMTCalendar = new ThreadLocal<Calendar>();
    private static final ThreadLocal<Calendar> parquetLocalCalendar = new ThreadLocal<Calendar>();
@@ -63,8 +64,8 @@ public class NanoTimeUtils {
      long minute = calendar.get(Calendar.MINUTE);
      long second = calendar.get(Calendar.SECOND);
      long nanos = ts.getNanos();
-     long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_SECOND * SECONDS_PER_MINUTE * minute +
-         NANOS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * hour;
+     long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_MINUTE * minute +
+         NANOS_PER_HOUR * hour;
 
      return new NanoTime(days, nanosOfDay);
    }
@@ -80,10 +81,10 @@ public class NanoTimeUtils {
      calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
 
      long remainder = nanosOfDay;
-     int hour = (int) (remainder / (NANOS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR));
-     remainder = remainder % (NANOS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR);
-     int minutes = (int) (remainder / (NANOS_PER_SECOND * SECONDS_PER_MINUTE));
-     remainder = remainder % (NANOS_PER_SECOND * SECONDS_PER_MINUTE);
+     int hour = (int) (remainder / (NANOS_PER_HOUR));
+     remainder = remainder % (NANOS_PER_HOUR);
+     int minutes = (int) (remainder / (NANOS_PER_MINUTE));
+     remainder = remainder % (NANOS_PER_MINUTE);
      int seconds = (int) (remainder / (NANOS_PER_SECOND));
      long nanos = remainder % NANOS_PER_SECOND;
 
