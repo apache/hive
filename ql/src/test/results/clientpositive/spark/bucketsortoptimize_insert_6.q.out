@@ -131,12 +131,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -308,12 +310,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -485,12 +489,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -597,12 +603,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -715,12 +723,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -910,12 +920,14 @@ STAGE PLANS:
                           sort order: +-
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -1115,12 +1127,14 @@ STAGE PLANS:
                           sort order: --
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                           Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                          value expressions: _col2 (type: string)
             Local Work:
               Map Reduce Local Work
         Reducer 3 
             Reduce Operator Tree:
-              Extract
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 23 Data size: 268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false

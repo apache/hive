@@ -1024,7 +1024,9 @@ public class QTestUtil {
       }
       command = "";
     }
-
+    if (SessionState.get() != null) {
+      SessionState.get().setLastCommand(null);  // reset
+    }
     return rc;
   }
 

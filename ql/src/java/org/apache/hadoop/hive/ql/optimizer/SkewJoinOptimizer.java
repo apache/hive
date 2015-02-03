@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -223,9 +222,6 @@ public class SkewJoinOptimizer implements Transform {
         OperatorFactory.getAndMakeChild(
           new UnionDesc(), new RowSchema(currOp.getSchema().getSignature()), oplist);
 
-      RowResolver unionRR = parseContext.getOpParseCtx().get(currOp).getRowResolver();
-      GenMapRedUtils.putOpInsertMap(unionOp, unionRR, parseContext);
-
       // Introduce a select after the union
       List<Operator<? extends OperatorDesc>> unionList =
         new ArrayList<Operator<? extends OperatorDesc>>();
@@ -235,7 +231,6 @@ public class SkewJoinOptimizer implements Transform {
         OperatorFactory.getAndMakeChild(
           new SelectDesc(true),
           new RowSchema(unionOp.getSchema().getSignature()), unionList);
-      GenMapRedUtils.putOpInsertMap(selectUnionOp, unionRR, parseContext);
 
       // add the finalOp after the union
       selectUnionOp.setChildOperators(finalOps);
@@ -472,12 +467,10 @@ public class SkewJoinOptimizer implements Transform {
       currChild.setParentOperators(null);
 
       Operator<FilterDesc> filter = OperatorFactory.getAndMakeChild(
-        new FilterDesc(filterExpr, false), tableScanOp);
-      filter.setSchema(new RowSchema(tableScanOp.getSchema().getSignature()));
+        new FilterDesc(filterExpr, false),
+        new RowSchema(tableScanOp.getSchema().getSignature()),
+        tableScanOp);
       OperatorFactory.makeChild(filter, currChild);
-
-      RowResolver filterRR = parseContext.getOpParseCtx().get(tableScanOp).getRowResolver();
-      GenMapRedUtils.putOpInsertMap(filter, filterRR, parseContext);
     }
 
     /**
@@ -603,9 +596,6 @@ public class SkewJoinOptimizer implements Transform {
       if (op instanceof TableScanOperator) {
         ctx.getCloneTSOpMap().put((TableScanOperator)opClone, (TableScanOperator)op);
       }
-
-      GenMapRedUtils.putOpInsertMap(
-        opClone, parseContext.getOpParseCtx().get(op).getRowResolver(), parseContext);
 
       List<Operator<? extends OperatorDesc>> parents = op.getParentOperators();
       List<Operator<? extends OperatorDesc>> parentClones = opClone.getParentOperators();

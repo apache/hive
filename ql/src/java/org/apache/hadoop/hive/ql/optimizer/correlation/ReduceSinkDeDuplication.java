@@ -29,7 +29,6 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -146,6 +145,7 @@ public class ReduceSinkDeDuplication implements Transform {
 
   public abstract static class AbsctractReducerReducerProc implements NodeProcessor {
 
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkDeduplicateProcCtx dedupCtx = (ReduceSinkDeduplicateProcCtx) procCtx;
@@ -164,7 +164,7 @@ public class ReduceSinkDeDuplication implements Transform {
         }
         return false;
       }
-      if (child instanceof ExtractOperator || child instanceof SelectOperator) {
+      if (child instanceof SelectOperator) {
         return process(cRS, dedupCtx);
       }
       return false;

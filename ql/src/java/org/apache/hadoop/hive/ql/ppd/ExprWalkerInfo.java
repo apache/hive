@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -62,7 +61,6 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   protected static final Log LOG = LogFactory.getLog(OpProcFactory.class
       .getName());;
   private Operator<? extends OperatorDesc> op = null;
-  private RowResolver toRR = null;
 
   /**
    * Values the expression sub-trees (predicates) that can be pushed down for
@@ -104,10 +102,8 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
-  public ExprWalkerInfo(Operator<? extends OperatorDesc> op,
-      final RowResolver toRR) {
+  public ExprWalkerInfo(Operator<? extends OperatorDesc> op) {
     this.op = op;
-    this.toRR = toRR;
 
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
     exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
@@ -120,13 +116,6 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    */
   public Operator<? extends OperatorDesc> getOp() {
     return op;
-  }
-
-  /**
-   * @return the row resolver of the operator of this expression.
-   */
-  public RowResolver getToRR() {
-    return toRR;
   }
 
   /**

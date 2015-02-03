@@ -85,8 +85,7 @@ public class LogDivertAppender extends WriterAppender {
     } else {
       // in non verbose mode, show only select logger messages
       String[] inclLoggerNames = { "org.apache.hadoop.mapreduce.JobSubmitter",
-          "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName(),
-          "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor" };
+          "org.apache.hadoop.mapreduce.Job", "SessionState", Task.class.getName() };
       addFilter(new NameFilter(false, inclLoggerNames));
     }
   }

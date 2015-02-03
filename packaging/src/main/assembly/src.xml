@@ -42,6 +42,11 @@
       </excludes>
 
       <includes>
+        <include>.arcconfig</include>
+        <include>.checkstyle</include>
+        <include>.gitattributes</include>
+        <include>.gitignore</include>
+        <include>.reviewboardrc</include>
         <include>DEVNOTES</include>
         <include>README.txt</include>
         <include>LICENSE</include>

@@ -106,6 +106,15 @@ enum GrantRevokeType {
     REVOKE = 2,
 }
 
+// Types of events the client can request that the metastore fire.  For now just support DML operations, as the metastore knows
+// about DDL operations and there's no reason for the client to request such an event.
+enum EventRequestType {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3,
+}
+
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -664,6 +673,14 @@ struct CurrentNotificationEventId {
     1: required i64 eventId,
 }
 
+struct FireEventRequest {
+    1: required EventRequestType eventType,
+    2: required string dbName,
+    3: required bool successful,
+    4: optional string tableName,
+    5: optional list<string> partitionVals
+}
+
 
 exception MetaException {
   1: string message
@@ -1134,6 +1151,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
+  void fire_notification_event(1:FireEventRequest rqst)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

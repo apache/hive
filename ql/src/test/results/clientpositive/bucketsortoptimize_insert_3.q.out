@@ -184,20 +184,18 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
-        Extract
+        Select Operator
+          expressions: VALUE._col0 (type: int), UDFToInteger(VALUE._col1) (type: int)
+          outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
-            outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table2
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.test_table2
 
   Stage: Stage-0
     Move Operator

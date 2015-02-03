@@ -106,6 +106,16 @@ struct GrantRevokeType {
 
 extern const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES;
 
+struct EventRequestType {
+  enum type {
+    INSERT = 1,
+    UPDATE = 2,
+    DELETE = 3
+  };
+};
+
+extern const std::map<int, const char*> _EventRequestType_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -5289,6 +5299,84 @@ class CurrentNotificationEventId {
 };
 
 void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
+
+typedef struct _FireEventRequest__isset {
+  _FireEventRequest__isset() : tableName(false), partitionVals(false) {}
+  bool tableName;
+  bool partitionVals;
+} _FireEventRequest__isset;
+
+class FireEventRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "252423A2C6348E0FFCA35061FD783C8F";
+  static const uint8_t binary_fingerprint[16]; // = {0x25,0x24,0x23,0xA2,0xC6,0x34,0x8E,0x0F,0xFC,0xA3,0x50,0x61,0xFD,0x78,0x3C,0x8F};
+
+  FireEventRequest() : eventType((EventRequestType::type)0), dbName(), successful(0), tableName() {
+  }
+
+  virtual ~FireEventRequest() throw() {}
+
+  EventRequestType::type eventType;
+  std::string dbName;
+  bool successful;
+  std::string tableName;
+  std::vector<std::string>  partitionVals;
+
+  _FireEventRequest__isset __isset;
+
+  void __set_eventType(const EventRequestType::type val) {
+    eventType = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_successful(const bool val) {
+    successful = val;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+    __isset.tableName = true;
+  }
+
+  void __set_partitionVals(const std::vector<std::string> & val) {
+    partitionVals = val;
+    __isset.partitionVals = true;
+  }
+
+  bool operator == (const FireEventRequest & rhs) const
+  {
+    if (!(eventType == rhs.eventType))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(successful == rhs.successful))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.partitionVals != rhs.__isset.partitionVals)
+      return false;
+    else if (__isset.partitionVals && !(partitionVals == rhs.partitionVals))
+      return false;
+    return true;
+  }
+  bool operator != (const FireEventRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FireEventRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(FireEventRequest &a, FireEventRequest &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

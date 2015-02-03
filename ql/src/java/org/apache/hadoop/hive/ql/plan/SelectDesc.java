@@ -56,14 +56,6 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.outputColumnNames = outputColumnNames;
   }
 
-  public SelectDesc(
-    final List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
-    final boolean selectStar, final boolean selStarNoCompute) {
-    this.colList = colList;
-    this.selectStar = selectStar;
-    this.selStarNoCompute = selStarNoCompute;
-  }
-
   @Override
   public Object clone() {
     SelectDesc ret = new SelectDesc();

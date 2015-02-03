@@ -152,6 +152,7 @@ public final class HCatConstants {
   public static final String HCAT_DROP_TABLE_EVENT = "DROP_TABLE";
   public static final String HCAT_CREATE_DATABASE_EVENT = "CREATE_DATABASE";
   public static final String HCAT_DROP_DATABASE_EVENT = "DROP_DATABASE";
+  public static final String HCAT_INSERT_EVENT = "INSERT";
   public static final String HCAT_MESSAGE_VERSION = "HCAT_MESSAGE_VERSION";
   public static final String HCAT_MESSAGE_FORMAT = "HCAT_MESSAGE_FORMAT";
   public static final String CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX = "hcatalog.message.factory.impl.";

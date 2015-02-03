@@ -29,7 +29,7 @@ import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnListImpl;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -249,14 +249,15 @@ public class TxnHandler {
 
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse} to a
-   * {@link org.apache.hadoop.hive.common.ValidTxnList}.
+   * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
+   * read the files, and thus treats both open and aborted transactions as invalid.
    * @param txns txn list from the metastore
    * @param currentTxn Current transaction that the user has open.  If this is greater than 0 it
    *                   will be removed from the exceptions list so that the user sees his own
    *                   transaction as valid.
    * @return a valid txn list.
    */
-  public static ValidTxnList createValidTxnList(GetOpenTxnsResponse txns, long currentTxn) {
+  public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
     long highWater = txns.getTxn_high_water_mark();
     Set<Long> open = txns.getOpen_txns();
     long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
@@ -265,7 +266,7 @@ public class TxnHandler {
       if (currentTxn > 0 && currentTxn == txn) continue;
       exceptions[i++] = txn;
     }
-    return new ValidTxnListImpl(exceptions, highWater);
+    return new ValidReadTxnList(exceptions, highWater);
   }
 
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {

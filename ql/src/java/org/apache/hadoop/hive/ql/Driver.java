@@ -381,6 +381,8 @@ public class Driver implements CommandProcessor {
     String queryId = QueryPlan.makeQueryId();
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
+    SessionState.get().setupQueryCurrentTimestamp();
+
     try {
       command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);

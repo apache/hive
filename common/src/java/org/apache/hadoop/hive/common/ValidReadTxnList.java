@@ -20,16 +20,21 @@ package org.apache.hadoop.hive.common;
 
 import java.util.Arrays;
 
-public class ValidTxnListImpl implements ValidTxnList {
+/**
+ * An implmentation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by readers.
+ * This class will view a transaction as valid only if it is committed.  Both open and aborted
+ * transactions will be seen as invalid.
+ */
+public class ValidReadTxnList implements ValidTxnList {
 
-  private long[] exceptions;
-  private long highWatermark;
+  protected long[] exceptions;
+  protected long highWatermark;
 
-  public ValidTxnListImpl() {
+  public ValidReadTxnList() {
     this(new long[0], Long.MAX_VALUE);
   }
 
-  public ValidTxnListImpl(long[] exceptions, long highWatermark) {
+  public ValidReadTxnList(long[] exceptions, long highWatermark) {
     if (exceptions.length == 0) {
       this.exceptions = exceptions;
     } else {
@@ -39,12 +44,12 @@ public class ValidTxnListImpl implements ValidTxnList {
     this.highWatermark = highWatermark;
   }
 
-  public ValidTxnListImpl(String value) {
+  public ValidReadTxnList(String value) {
     readFromString(value);
   }
 
   @Override
-  public boolean isTxnCommitted(long txnid) {
+  public boolean isTxnValid(long txnid) {
     if (highWatermark < txnid) {
       return false;
     }
@@ -52,7 +57,7 @@ public class ValidTxnListImpl implements ValidTxnList {
   }
 
   @Override
-  public RangeResponse isTxnRangeCommitted(long minTxnId, long maxTxnId) {
+  public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
     // check the easy cases first
     if (highWatermark < minTxnId) {
       return RangeResponse.NONE;
@@ -119,7 +124,7 @@ public class ValidTxnListImpl implements ValidTxnList {
   }
 
   @Override
-  public long[] getOpenTransactions() {
+  public long[] getInvalidTransactions() {
     return exceptions;
   }
 }

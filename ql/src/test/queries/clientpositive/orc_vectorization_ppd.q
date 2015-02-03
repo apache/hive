@@ -13,14 +13,12 @@ stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="10
 
 -- insert creates separate orc files
 insert overwrite table vectororc select "apple", "a", rand(1), "zoo" from srcorc;
-set hive.optimize.constant.propagation=false;
 insert into table vectororc select null, "b", rand(2), "zoo" from srcorc;
 insert into table vectororc select null, "c", rand(3), "zoo" from srcorc;
 insert into table vectororc select "apple", "d", rand(4), "zoo" from srcorc;
 insert into table vectororc select null, "e", rand(5), "z" from srcorc;
 insert into table vectororc select "apple", "f", rand(6), "z" from srcorc;
 insert into table vectororc select null, "g", rand(7), "zoo" from srcorc;
-set hive.optimize.constant.propagation=true;
 
 -- since vectororc table has multiple orc file we will load them into a single file using another table
 create table if not exists testorc

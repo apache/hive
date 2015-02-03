@@ -7,8 +7,6 @@ SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, c
 FROM alltypesorc
 WHERE (cdouble IS NULL) LIMIT 10;
 
-SET hive.optimize.constant.propagation=false;
-   
 EXPLAIN SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) 
 FROM alltypesorc
 WHERE (ctinyint IS NULL) LIMIT 10;
@@ -16,8 +14,6 @@ WHERE (ctinyint IS NULL) LIMIT 10;
 SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) 
 FROM alltypesorc
 WHERE (ctinyint IS NULL) LIMIT 10;
-
-SET hive.optimize.constant.propagation=true;
 
 EXPLAIN SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) 
 FROM alltypesorc

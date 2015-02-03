@@ -126,17 +126,13 @@ $hdt$_0:$hdt$_0:srcpart
             mode: mergepartial
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            Select Operator (SEL_8)
-              expressions: _col0 (type: string), _col1 (type: bigint)
-              outputColumnNames: _col0, _col1
+            File Output Operator (FS_9)
+              compressed: false
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator (FS_9)
-                compressed: false
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
@@ -210,17 +206,13 @@ $hdt$_0:$hdt$_0:src
             mode: mergepartial
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Select Operator (SEL_7)
-              expressions: _col0 (type: string), _col1 (type: bigint)
-              outputColumnNames: _col0, _col1
+            File Output Operator (FS_8)
+              compressed: false
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator (FS_8)
-                compressed: false
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT * FROM (
@@ -296,17 +288,13 @@ null-subquery1:$hdt$_0-subquery1:src
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Union (UNION_6)
         Statistics: Num rows: 2500 Data size: 26560 Basic stats: COMPLETE Column stats: NONE
-        Select Operator (SEL_7)
-          expressions: _col0 (type: string), _col1 (type: string)
-          outputColumnNames: _col0, _col1
+        File Output Operator (FS_8)
+          compressed: false
           Statistics: Num rows: 2500 Data size: 26560 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator (FS_8)
-            compressed: false
-            Statistics: Num rows: 2500 Data size: 26560 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 null-subquery2:$hdt$_0-subquery2:$hdt$_0:srcpart 
   TableScan (TS_2)
     alias: srcpart

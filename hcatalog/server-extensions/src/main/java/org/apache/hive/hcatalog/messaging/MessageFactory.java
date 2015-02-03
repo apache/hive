@@ -170,4 +170,6 @@ public abstract class MessageFactory {
    * @return DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+
+  public abstract InsertMessage buildInsertMessage(String db, String table, List<String> partVals);
 }

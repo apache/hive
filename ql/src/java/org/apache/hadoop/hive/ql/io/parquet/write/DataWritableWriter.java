@@ -229,7 +229,7 @@ public class DataWritableWriter {
       recordConsumer.addBinary((Binary.fromByteArray(((BytesWritable) value).getBytes())));
     } else if (value instanceof TimestampWritable) {
       Timestamp ts = ((TimestampWritable) value).getTimestamp();
-      NanoTime nt = NanoTimeUtils.getNanoTime(ts);
+      NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
       nt.writeValue(recordConsumer);
     } else {
       throw new IllegalArgumentException("Unknown value type: " + value + " " + value.getClass());

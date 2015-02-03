@@ -168,6 +168,23 @@ class GrantRevokeType:
     "REVOKE": 2,
   }
 
+class EventRequestType:
+  INSERT = 1
+  UPDATE = 2
+  DELETE = 3
+
+  _VALUES_TO_NAMES = {
+    1: "INSERT",
+    2: "UPDATE",
+    3: "DELETE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "INSERT": 1,
+    "UPDATE": 2,
+    "DELETE": 3,
+  }
+
 class FunctionType:
   JAVA = 1
 
@@ -8464,6 +8481,128 @@ class CurrentNotificationEventId:
   def validate(self):
     if self.eventId is None:
       raise TProtocol.TProtocolException(message='Required field eventId is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class FireEventRequest:
+  """
+  Attributes:
+   - eventType
+   - dbName
+   - successful
+   - tableName
+   - partitionVals
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'eventType', None, None, ), # 1
+    (2, TType.STRING, 'dbName', None, None, ), # 2
+    (3, TType.BOOL, 'successful', None, None, ), # 3
+    (4, TType.STRING, 'tableName', None, None, ), # 4
+    (5, TType.LIST, 'partitionVals', (TType.STRING,None), None, ), # 5
+  )
+
+  def __init__(self, eventType=None, dbName=None, successful=None, tableName=None, partitionVals=None,):
+    self.eventType = eventType
+    self.dbName = dbName
+    self.successful = successful
+    self.tableName = tableName
+    self.partitionVals = partitionVals
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.eventType = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.successful = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.LIST:
+          self.partitionVals = []
+          (_etype444, _size441) = iprot.readListBegin()
+          for _i445 in xrange(_size441):
+            _elem446 = iprot.readString();
+            self.partitionVals.append(_elem446)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('FireEventRequest')
+    if self.eventType is not None:
+      oprot.writeFieldBegin('eventType', TType.I32, 1)
+      oprot.writeI32(self.eventType)
+      oprot.writeFieldEnd()
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 2)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.successful is not None:
+      oprot.writeFieldBegin('successful', TType.BOOL, 3)
+      oprot.writeBool(self.successful)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 4)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
+    if self.partitionVals is not None:
+      oprot.writeFieldBegin('partitionVals', TType.LIST, 5)
+      oprot.writeListBegin(TType.STRING, len(self.partitionVals))
+      for iter447 in self.partitionVals:
+        oprot.writeString(iter447)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.eventType is None:
+      raise TProtocol.TProtocolException(message='Required field eventType is unset!')
+    if self.dbName is None:
+      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
+    if self.successful is None:
+      raise TProtocol.TProtocolException(message='Required field successful is unset!')
     return
 
 

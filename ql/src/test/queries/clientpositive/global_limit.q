@@ -62,6 +62,9 @@ alter table gl_src_part1 add partition (p='13');
 select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10;
 select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000;
 
+set hive.fetch.task.conversion=none;
+select * from gl_src1 limit 1;
+
 drop table gl_src1;
 drop table gl_src2;
 drop table gl_src_part1;

@@ -155,17 +155,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -207,17 +203,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -342,17 +334,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -404,17 +392,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: bigint)
-            outputColumnNames: _col0
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -747,6 +731,9 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
+101	327	11.48	gabriella ellison
+15	334	11.12	jessica robinson
+7	320	11.54	bob ellison
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
   AND d < 12
@@ -943,6 +930,7 @@ POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
+15	334	11.12	jessica robinson
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
   AND t <> 101

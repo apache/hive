@@ -16,30 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
+import java.util.List;
 
-/**
- * ExtractDesc.
- *
- */
-@Explain(displayName = "Extract")
-public class ExtractDesc extends AbstractOperatorDesc {
-  private static final long serialVersionUID = 1L;
-  private ExprNodeDesc col;
+import org.apache.hadoop.io.Text;
 
-  public ExtractDesc() {
-  }
-
-  public ExtractDesc(final ExprNodeDesc col) {
-    this.col = col;
-  }
-
-  public ExprNodeDesc getCol() {
-    return col;
-  }
-
-  public void setCol(final ExprNodeDesc col) {
-    this.col = col;
-  }
+public interface LazyObjectInspectorParameters {
+  public boolean isEscaped();
+  public byte getEscapeChar();
+  public boolean isExtendedBooleanLiteral();
+  public List<String> getTimestampFormats();
+  public byte[] getSeparators();
+  public Text getNullSequence();
+  public boolean isLastColumnTakesRest();
 }

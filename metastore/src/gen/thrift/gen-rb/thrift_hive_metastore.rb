@@ -2007,6 +2007,20 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
+    def fire_notification_event(rqst)
+      send_fire_notification_event(rqst)
+      recv_fire_notification_event()
+    end
+
+    def send_fire_notification_event(rqst)
+      send_message('fire_notification_event', Fire_notification_event_args, :rqst => rqst)
+    end
+
+    def recv_fire_notification_event()
+      result = receive_message(Fire_notification_event_result)
+      return
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3535,6 +3549,13 @@ module ThriftHiveMetastore
       result = Get_current_notificationEventId_result.new()
       result.success = @handler.get_current_notificationEventId()
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_fire_notification_event(seqid, iprot, oprot)
+      args = read_args(iprot, Fire_notification_event_args)
+      result = Fire_notification_event_result.new()
+      @handler.fire_notification_event(args.rqst)
+      write_result(result, oprot, 'fire_notification_event', seqid)
     end
 
   end
@@ -8078,6 +8099,37 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CurrentNotificationEventId}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Fire_notification_event_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::FireEventRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Fire_notification_event_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
     }
 
     def struct_fields; FIELDS; end

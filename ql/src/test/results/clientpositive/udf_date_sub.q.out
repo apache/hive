@@ -12,3 +12,18 @@ start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_
 Example:
    > SELECT date_sub('2009-07-30', 1) FROM src LIMIT 1;
   '2009-07-29'
+PREHOOK: query: -- Test different numeric data types for date_add
+SELECT date_sub('1900-01-01', cast(10 as tinyint)),
+       date_sub('1900-01-01', cast(10 as smallint)),
+       date_sub('1900-01-01', cast(10 as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test different numeric data types for date_add
+SELECT date_sub('1900-01-01', cast(10 as tinyint)),
+       date_sub('1900-01-01', cast(10 as smallint)),
+       date_sub('1900-01-01', cast(10 as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1899-12-22	1899-12-22	1899-12-22

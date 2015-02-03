@@ -30,7 +30,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -89,7 +91,7 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 1, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, event.getEventType());
-    assertNull(event.getDbName());
+    assertEquals("mydb", event.getDbName());
     assertNull(event.getTableName());
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_DATABASE\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"mydb\",\"timestamp\":[0-9]+}"));
@@ -133,7 +135,7 @@ public class TestDbNotificationListener {
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
     assertEquals("default", event.getDbName());
-    assertNull(event.getTableName());
+    assertEquals("mytable", event.getTableName());
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_TABLE\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"mytable\",\"timestamp\":[0-9]+}"));
   }
@@ -290,6 +292,49 @@ public class TestDbNotificationListener {
     assertTrue(event.getMessage().matches("\\{\"eventType\":\"DROP_PARTITION\",\"server\":\"\"," +
         "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
         "\"dropparttable\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"ds\":\"today\"}]}"));
+  }
+
+  @Test
+  public void insertTable() throws Exception {
+    FireEventRequest rqst = new FireEventRequest(EventRequestType.INSERT, "mydb", true);
+    rqst.setTableName("mytable");
+    msClient.fireNotificationEvent(rqst);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
+    assertEquals("mydb", event.getDbName());
+    assertEquals("mytable", event.getTableName());
+    System.out.println(event.getMessage());
+    assertTrue(event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"mydb\",\"table\":" +
+        "\"mytable\",\"timestamp\":[0-9]+,\"partitionValues\":null}"));
+  }
+
+  @Test
+  public void insertPartition() throws Exception {
+    FireEventRequest rqst = new FireEventRequest(EventRequestType.INSERT, "mydb", true);
+    rqst.setTableName("mytable");
+    rqst.setPartitionVals(Arrays.asList("today"));
+    msClient.fireNotificationEvent(rqst);
+
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
+    assertEquals("mydb", event.getDbName());
+    assertEquals("mytable", event.getTableName());
+    System.out.println(event.getMessage());
+    assertTrue(event.getMessage().matches("\\{\"eventType\":\"INSERT\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"mydb\",\"table\":" +
+        "\"mytable\",\"timestamp\":[0-9]+,\"partitionValues\":\\[\"today\"]}"));
   }
 
   @Test

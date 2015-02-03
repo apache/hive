@@ -1,6 +1,5 @@
 SELECT 'Upgrading MetaStore schema from 0.12.0 to 0.13.0' AS ' ';
 
-SOURCE 015-HIVE-5700.mysql.sql;
 SOURCE 016-HIVE-6386.mysql.sql;
 SOURCE 017-HIVE-6458.mysql.sql;
 SOURCE 018-HIVE-6757.mysql.sql;

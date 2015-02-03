@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:19 Argument type mismatch '2.2': The expressions after greatest should all have the same type: "int" is expected but "double" is found

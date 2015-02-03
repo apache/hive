@@ -111,6 +111,8 @@ public class serdeConstants {
 
   public static final String LIST_COLUMN_TYPES = "columns.types";
 
+  public static final String TIMESTAMP_FORMATS = "timestamp.formats";
+
   public static final Set<String> PrimitiveTypes = new HashSet<String>();
   static {
     PrimitiveTypes.add("void");
