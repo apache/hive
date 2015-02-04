@@ -403,4 +403,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   public LlapMemoryBuffer createUnallocated() {
     return new LlapCacheableBuffer();
   }
+
+  @Override
+  public void notifyReused(LlapMemoryBuffer buffer) {
+    int newVal = ((LlapCacheableBuffer)buffer).incRef();
+    assert newVal > 1;
+  }
 }

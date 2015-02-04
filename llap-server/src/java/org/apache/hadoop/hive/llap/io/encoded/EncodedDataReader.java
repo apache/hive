@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 
 /**
  * Interface for encoded data readers to implement.

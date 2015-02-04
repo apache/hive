@@ -21,20 +21,17 @@ package org.apache.hadoop.hive.llap.io.api;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 
-public class EncodedColumn<BatchKey> {
+public class EncodedColumnBatch<BatchKey> {
   // TODO: temporary class. Will be filled in when reading (ORC) is implemented. Need to balance
   //       generality, and ability to not copy data from underlying low-level cached buffers.
   public static class StreamBuffer {
-    public StreamBuffer(int firstOffset, int lastLength) {
-      this.firstOffset = firstOffset;
-      this.lastLength = lastLength;
-    }
-    // TODO: given how ORC will allocate, it might make sense to share array between all
-    //       returned encodedColumn-s, and store index and length in the array.
+    // Decoder knows which stream this belongs to, and each buffer is a compression block,
+    // so he can figure out the offsets from metadata.
     public List<LlapMemoryBuffer> cacheBuffers;
-    public int firstOffset, lastLength;
+
     // StreamBuffer can be reused for many RGs (e.g. dictionary case). To avoid locking every
     // LlapMemoryBuffer 500 times, have a separate refcount on StreamBuffer itself.
     public AtomicInteger refCount = new AtomicInteger(0);
@@ -42,18 +39,41 @@ public class EncodedColumn<BatchKey> {
       refCount.incrementAndGet();
     }
     public int decRef() {
-      return refCount.decrementAndGet();
+      int i = refCount.decrementAndGet();
+      assert i >= 0;
+      return i;
     }
-  }
-  public EncodedColumn(BatchKey batchKey, int columnIndex, int streamCount) {
-    this.batchKey = batchKey;
-    this.columnIndex = columnIndex;
-    this.streamData = new StreamBuffer[streamCount];
-    this.streamKind = new int[streamCount];
   }
 
   public BatchKey batchKey;
-  public int columnIndex;
-  public StreamBuffer[] streamData;
-  public int[] streamKind; // TODO: can decoder infer this from metadata?
+  public StreamBuffer[][] columnData;
+  public int[] columnIxs;
+  public int colsRemaining = 0;
+
+  public EncodedColumnBatch(BatchKey batchKey, int columnCount, int colsRemaining) {
+    this.batchKey = batchKey;
+    this.columnData = new StreamBuffer[columnCount][];
+    this.columnIxs = new int[columnCount];
+    this.colsRemaining = colsRemaining;
+  }
+
+  public void merge(EncodedColumnBatch<BatchKey> other) {
+    // TODO: this may be called when high-level cache produces several columns and IO produces
+    //       several columns. So, for now this will never be called. Need to merge by columnIx-s.
+    throw new UnsupportedOperationException();
+  }
+
+  public void initColumn(int colIxMod, int colIx, int streamCount) {
+    columnIxs[colIxMod] = colIx;
+    columnData[colIxMod] = new StreamBuffer[streamCount];
+  }
+
+  public void setStreamData(int colIxMod, int streamIx, StreamBuffer sb) {
+    columnData[colIxMod][streamIx] = sb;
+  }
+
+  public void setAllStreams(int colIxMod, int colIx, StreamBuffer[] sbs) {
+    columnIxs[colIxMod] = colIx;
+    columnData[colIxMod] = sbs;
+  }
 }

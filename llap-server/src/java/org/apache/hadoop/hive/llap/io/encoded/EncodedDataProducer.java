@@ -21,12 +21,11 @@ package org.apache.hadoop.hive.llap.io.encoded;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
 public interface EncodedDataProducer<BatchKey> {
   EncodedDataReader<BatchKey> getReader(InputSplit split, List<Integer> columnIds,
-      SearchArgument sarg, String[] columnNames, Consumer<EncodedColumn<BatchKey>> consumer);
+      SearchArgument sarg, String[] columnNames, Consumer<EncodedColumnBatch<BatchKey>> consumer);
 }

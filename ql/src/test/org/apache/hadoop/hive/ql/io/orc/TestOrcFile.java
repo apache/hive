@@ -672,7 +672,7 @@ public class TestOrcFile {
     assertEquals(5000, ((StringColumnStatistics)ss3.getColumnStatistics()[2]).getSum());
 
     RecordReaderImpl recordReader = (RecordReaderImpl) reader.rows();
-    OrcProto.RowIndex[] index = recordReader.readRowIndex(0);
+    OrcProto.RowIndex[] index = recordReader.readRowIndex(0, null);
     assertEquals(3, index.length);
     List<OrcProto.RowIndexEntry> items = index[1].getEntryList();
     assertEquals(1, items.size());
@@ -682,7 +682,7 @@ public class TestOrcFile {
     assertEquals(0, items.get(0).getPositions(2));
     assertEquals(1, 
                  items.get(0).getStatistics().getIntStatistics().getMinimum());
-    index = recordReader.readRowIndex(1);
+    index = recordReader.readRowIndex(1, null);
     assertEquals(3, index.length);
     items = index[1].getEntryList();
     assertEquals(2, 

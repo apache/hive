@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
 
 import java.io.EOFException;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -48,8 +47,8 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
@@ -64,6 +63,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -117,6 +117,8 @@ public class RecordReaderImpl implements RecordReader {
   List<DiskRange> bufferChunks = new ArrayList<DiskRange>(0);
   private final TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
+  private List<OrcProto.ColumnEncoding> encodings;
+  private List<OrcProto.Stream> streamList;
   private final SargApplier sargApp;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
@@ -2654,13 +2656,8 @@ public class RecordReaderImpl implements RecordReader {
     if (sargApp == null) {
       return null;
     }
-    readRowIndex(currentStripe);
+    readRowIndex(currentStripe, included);
     return sargApp.pickRowGroups(stripes.get(currentStripe), indexes);
-  }
-
-  @Override
-  public List<ColumnEncoding> getCurrentColumnEncodings() throws IOException {
-    return stripeFooter.getColumnsList();
   }
 
   private void clearStreams() throws IOException {
@@ -2669,7 +2666,7 @@ public class RecordReaderImpl implements RecordReader {
       is.close();
     }
     if(bufferChunks != null) {
-      if(zcr != null) {
+      if (zcr != null) {
         for (DiskRange range : bufferChunks) {
           if (range instanceof BufferChunk) {
             zcr.releaseBuffer(((BufferChunk)range).chunk);
@@ -2789,6 +2786,15 @@ public class RecordReaderImpl implements RecordReader {
 
   public static class CacheChunk extends DiskRange {
     public LlapMemoryBuffer buffer;
+    /** When we get (or allocate+put) memory buffer to cache, it's locked for us once. All is well
+     * if we unlock it once; but if we use the same buffer for 2+ RGs, we need to incRef again,
+     * or track our own separate refcount so we don't unlock more than once. We do the former.
+     * Every time we get or allocate, we put buffer in one cache chunk that is later used by all
+     * future lookups that happen to land within this DiskRange. When they call "setReused", they
+     * get back previous value. If we have not used this range for any RG yet, we don't need to
+     * notify cache; if it's called more than once, we are re-using this buffer and will incref.
+     */
+    private boolean isReused = false;
 
     public CacheChunk(LlapMemoryBuffer buffer, long offset, long end) {
       super(offset, end);
@@ -2803,6 +2809,12 @@ public class RecordReaderImpl implements RecordReader {
     @Override
     public ByteBuffer getData() {
       return buffer.byteBuffer;
+    }
+
+    public boolean setReused() {
+      boolean result = isReused;
+      isReused = true;
+      return result;
     }
   }
 
@@ -2973,7 +2985,6 @@ public class RecordReaderImpl implements RecordReader {
       long offset, long length, DiskRange lastRange, LinkedList<DiskRange> result) {
     for (int group = 0; group < includedRowGroups.length; ++group) {
       if (!includedRowGroups[group]) continue;
-      // TODO#: this code is relevant
       int posn = getIndexPosition(
           encoding.getKind(), type.getKind(), stream.getKind(), isCompressed, hasNull);
       long start = index.getEntry(group).getPositions(posn);
@@ -3351,18 +3362,8 @@ public class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  @Override
-  public OrcProto.RowIndex[] getCurrentRowIndexEntries() throws IOException {
-    return readRowIndex(currentStripe);
-  }
-
-  @Override
-  public void setRowIndex(OrcProto.RowIndex[] rowIndex) {
-    assert rowIndex.length == indexes.length;
-    System.arraycopy(rowIndex, 0, indexes, 0, rowIndex.length);
-  }
-
-  protected OrcProto.RowIndex[] readRowIndex(int stripeIndex) throws IOException {
+  protected OrcProto.RowIndex[] readRowIndex(
+      int stripeIndex, boolean[] included) throws IOException {
     long offset = stripes.get(stripeIndex).getOffset();
     OrcProto.StripeFooter stripeFooter;
     OrcProto.RowIndex[] indexes;
@@ -3419,7 +3420,7 @@ public class RecordReaderImpl implements RecordReader {
       currentStripe = rightStripe;
       readStripe();
     }
-    readRowIndex(currentStripe);
+    readRowIndex(currentStripe, included);
 
     // if we aren't to the right row yet, advance in the stripe.
     advanceToNextRow(reader, rowNumber, true);
@@ -3458,14 +3459,15 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   @Override
-  public void readEncodedColumns(int stripeIx, boolean[][] colRgs, LowLevelCache cache,
-      Consumer<EncodedColumn<OrcBatchKey>> consumer) throws IOException {
+  public void readEncodedColumns(int stripeIx, boolean[] includes,  boolean[][] colRgs,
+      LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException {
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.
     StripeInformation stripe = stripes.get(currentStripe);
-    // TODO## GET FROM METADATA? same for indexes, remove set... method
-    List<OrcProto.Stream> streamList = stripeFooter.getStreamsList();
-    List<ColumnEncoding> encodings = stripeFooter.getColumnsList();
+    List<OrcProto.Stream> streamList =
+        this.streamList != null ? this.streamList : stripeFooter.getStreamsList();
+    List<ColumnEncoding> encodings =
+        this.encodings != null ? this.encodings : stripeFooter.getColumnsList();
     LinkedList<DiskRange> rangesToRead = new LinkedList<DiskRange>();
     long offset = 0;
     // Figure out which columns have a present stream
@@ -3526,59 +3528,56 @@ public class RecordReaderImpl implements RecordReader {
 
     // Finally, decompress data, map per RG, and return to caller.
     // We go by RG and not by column because that is how data is processed.
-    // TODO# We could build RG x all cols batches here cheaper and avoid building them on higher
-    //       level (except for HL cache data that higher level would add). Esp. useful before we
-    //       implement high-level cache. We could even alloc one return object and not per column!
     int rgCount = (int)Math.ceil((double)rowCountInStripe / rowIndexStride);
     for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
       boolean isLastRg = rgIx == rgCount - 1;
-      OrcBatchKey bk = new OrcBatchKey(fileName, stripeIx, rgIx);
+      EncodedColumnBatch<OrcBatchKey> ecb = new EncodedColumnBatch<OrcBatchKey>(
+          new OrcBatchKey(fileName, stripeIx, rgIx), colRgs.length, 0);
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
         if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) continue; // RG x col filtered.
         ColumnReadContext ctx = colCtxs[colIxMod];
-        EncodedColumn<OrcBatchKey> encodedColumn = new EncodedColumn<OrcBatchKey>(
-            bk, ctx.colIx, ctx.streamCount);
         RowIndexEntry index = indexes[ctx.colIx].getEntry(rgIx);
+        ecb.initColumn(colIxMod, ctx.colIx, ctx.streamCount);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           OrcProto.Stream stream = ctx.streams[streamIx];
+          StreamBuffer cb = null;
           if (isStripeLevelStream(stream.getKind(), ctx.encoding.getKind())) {
             // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
             if (ctx.stripeLevelStreams == null) {
               ctx.stripeLevelStreams = new StreamBuffer[ctx.streamCount];
             }
-            StreamBuffer cb = ctx.stripeLevelStreams[streamIx];
+            cb = ctx.stripeLevelStreams[streamIx];
             if (cb == null) {
-              long streamOffset = ctx.streamOffsets[streamIx];
-              cb = ctx.stripeLevelStreams[streamIx] = new StreamBuffer(0, -1);
+              cb = ctx.stripeLevelStreams[streamIx] = new StreamBuffer();
               // We will be using this for each RG while also sending RGs to processing.
               // To avoid buffers being unlocked, run refcount one ahead; we will not increase
               // it when building the last RG, so each RG processing will decref once, and the
-              // last one will unlock the buffers. Cheaper than locking the buffers 500 times.
+              // last one will unlock the buffers.
               cb.incRef();
-              InStream.uncompressStream(fileName, ctx.bufferIters[streamIx],
+              InStream.uncompressStream(fileName, zcr, ctx.bufferIters[streamIx],
                   codec, bufferSize, cache, -1, -1, cb);
               ctx.buffers[streamIx] = null;
             }
             if (!isLastRg) {
               cb.incRef();
             }
-            encodedColumn.streamData[streamIx] = cb;
           } else {
             // This stream can be separated by RG using index. Let's do that.
             // TODO#: determine start offset, end offset from index; nexts can be end of stream.
+            //        Either see getIndexPosition or
+            //        https://cwiki.apache.org/confluence/display/Hive/LanguageManual+ORC#LanguageManualORC-ColumnEncodings
             long cOffset = 0, nextCOffset = 0, nextNextCOffset = 0;
-            int ucOffset = 0, nextUcOffset = 0;
-            StreamBuffer cb = new StreamBuffer(0, -1);
+            int nextUcOffset = 0;
+            cb = new StreamBuffer();
             cb.incRef();
-            cb.firstOffset = ucOffset; // We go by compression block, so this is always true.
             long startCOffset = cOffset;
             long endCOffset = (nextUcOffset == 0) ? nextCOffset : nextNextCOffset;
-            // TODO#: HERE
-            InStream.uncompressStream(fileName,
-                ctx.bufferIters[streamIx], codec, bufferSize, cache, startCOffset, endCOffset, cb);
+            InStream.uncompressStream(fileName, zcr, ctx.bufferIters[streamIx],
+                codec, bufferSize, cache, startCOffset, endCOffset, cb);
           }
+          ecb.setStreamData(colIxMod, streamIx, cb);
         }
-        consumer.consumeData(encodedColumn);
+        consumer.consumeData(ecb);
       }
     }
 
@@ -3593,86 +3592,28 @@ public class RecordReaderImpl implements RecordReader {
         || encoding == ColumnEncoding.Kind.DICTIONARY_V2));
   }
 
-  /* Old prototype code to read stripes one column at a time, with limited output space.
-  /**
-   * Iterator-like context to read ORC as a sequence of column x stripe "cells".
-   * TODO: for this to actually be an iterator-like thing, we need to clone nested reader state.
-   *       As of now, we advance parent's shared column readers separately, which would cause
-   *       other calls (e.g. nextBatch) to break once nextColumnStripe is called. Currently,
-   *       it is always called alone, so this is ok; context is merely a convenience class.
-   * /
-  private static class ColumnReadContext {
-    public ColumnReadContext(StructTreeReader reader) {
-      StructTreeReader structReader = (StructTreeReader)reader;
-      readers = new TreeReader[structReader.getReaderCount()];
-      for (int i = 0; i < readers.length; ++i) {
-        readers[i] = structReader.getColumnReader(i);
-      }
-    }
-    /** Readers for each separate column; no nulls, just the columns being read. * /
-    private final TreeReader[] readers;
-    /** Remembered row offset after a partial read of one column from stripe. * /
-    private long rowInStripe = 0;
-    /** Next column to be read (index into readers). * /
-    private int columnIx = 0;
-    /** Remaining row count for current stripe; same for every column, so don't recompute. * /
-    private long remainingToReadFromStart = -1;
-    /** Whether the next call will be the first for this column x stripe. TODO: derive? * /
-    private boolean firstCall = true;
+  @Override
+  public List<ColumnEncoding> getCurrentColumnEncodings() throws IOException {
+    return stripeFooter.getColumnsList();
   }
 
   @Override
-  public Object prepareColumnRead() {
-    return new ColumnReadContext((StructTreeReader)this.reader);
+  public OrcProto.RowIndex[] getCurrentRowIndexEntries(boolean[] included) throws IOException {
+    return readRowIndex(currentStripe, included);
   }
 
   @Override
-  public void readNextColumnStripe(Object ctxObj) throws IOException {
-    ColumnReadContext ctx = (ColumnReadContext)ctxObj;
-    if (rowInStripe >= rowCountInStripe) {
-      assert ctx.columnIx == 0;
-      currentStripe += 1;
-      readStripe();
-    }
-    long rowInStripeGlobal = rowInStripe; // Remember the global state.
-    rowInStripe = ctx.rowInStripe;
-    if (ctx.columnIx == 0 && ctx.firstCall) {
-      // We are starting a new stripe - remember the number of rows to read (same for all cols).
-      // Doesn't take into account space remaining in ChunkWriter.
-      ctx.remainingToReadFromStart = computeBatchSize(Long.MAX_VALUE);
-    }
-    long remainingToRead =
-        ctx.firstCall ? ctx.remainingToReadFromStart : computeBatchSize(Long.MAX_VALUE);
-    TreeReader columnReader = ctx.readers[ctx.columnIx];
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Calling nextChunk for " + remainingToRead);
-    }
-    long rowsRead = (read data was here)
-    assert rowsRead <= remainingToRead;
-    rowInStripe += rowsRead;
-    boolean doneWithColumnStripe = (rowsRead == remainingToRead); // always true for stripes
-    ctx.firstCall = doneWithColumnStripe; // If we are not done, there will be more calls.
-    if (!doneWithColumnStripe) {
-      // Note that we are only advancing the reader for the current column.
-      boolean hasRows = advanceToNextRow(columnReader, rowInStripe + rowBaseInStripe, false);
-      ctx.rowInStripe = rowInStripe; // Remember the current value for next call.
-      if (!hasRows) {
-        throw new AssertionError("No rows after advance; read "
-            + rowsRead + " out of " + remainingToRead);
-      }
-    } else {
-      // Done with some column + stripe.
-      ++ctx.columnIx;
-      if (ctx.columnIx == ctx.readers.length) {
-        // Done with the last column in this stripe; advance the global rowInStripe.
-        ctx.columnIx = 0;
-        ctx.rowInStripe = rowInStripeGlobal = rowInStripe;
-      } else {
-        // Revert the state back to start of stripe.
-        ctx.rowInStripe = rowInStripeGlobal;
-      }
-    }
-    rowInStripe = rowInStripeGlobal; // Restore global state.
-    return !doneWithColumnStripe;
-  }*/
+  public List<Stream> getCurrentStreams() throws IOException {
+    return stripeFooter.getStreamsList();
+  }
+
+  @Override
+  public void setMetadata(
+      RowIndex[] index, List<ColumnEncoding> encodings, List<Stream> streams) {
+    assert index.length == indexes.length;
+    System.arraycopy(index, 0, indexes, 0, index.length);
+    this.streamList = streams;
+    this.encodings = encodings;
+  }
+
 }

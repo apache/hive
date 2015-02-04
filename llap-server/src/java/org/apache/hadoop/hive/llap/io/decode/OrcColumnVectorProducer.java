@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
@@ -42,8 +43,8 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   }
 
   @Override
-  protected void decodeBatch(OrcBatchKey batchKey,
-      EncodedColumnBatch batch, Consumer<ColumnVectorBatch> downstreamConsumer) {
+  protected void decodeBatch(EncodedColumnBatch<OrcBatchKey> batch,
+      Consumer<ColumnVectorBatch> downstreamConsumer) {
     throw new UnsupportedOperationException("not implemented");
     // TODO:  HERE decode EncodedColumn-s into ColumnVector-s
     //        sarg columns first, apply sarg, then decode others if needed; can cols skip values?

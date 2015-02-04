@@ -26,8 +26,8 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn;
-import org.apache.hadoop.hive.llap.io.api.EncodedColumn.StreamBuffer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
@@ -42,22 +42,12 @@ public abstract class ColumnVectorProducer<BatchKey> {
     this.executor = executor;
   }
 
-  // TODO#: Given how ORC reads data, it should return this and not separate columns.
-  static class EncodedColumnBatch {
-    public EncodedColumnBatch(int colCount) {
-      columnDatas = new StreamBuffer[colCount][];
-      columnsRemaining = colCount;
-    }
-    public StreamBuffer[][] columnDatas;
-    public int columnsRemaining;
-  }
-
   private class EncodedDataConsumer implements ConsumerFeedback<ColumnVectorBatch>,
-      Consumer<EncodedColumn<BatchKey>> {
+      Consumer<EncodedColumnBatch<BatchKey>> {
     private volatile boolean isStopped = false;
     // TODO: use array, precreate array based on metadata first? Works for ORC. For now keep dumb.
-    private final HashMap<BatchKey, EncodedColumnBatch> pendingData =
-        new HashMap<BatchKey, EncodedColumnBatch>();
+    private final HashMap<BatchKey, EncodedColumnBatch<BatchKey>> pendingData =
+        new HashMap<BatchKey, EncodedColumnBatch<BatchKey>>();
     private ConsumerFeedback<StreamBuffer> upstreamFeedback;
     private final Consumer<ColumnVectorBatch> downstreamConsumer;
     private final int colCount;
@@ -72,32 +62,31 @@ public abstract class ColumnVectorProducer<BatchKey> {
     }
 
     @Override
-    public void consumeData(EncodedColumn<BatchKey> data) {
-      EncodedColumnBatch targetBatch = null;
+    public void consumeData(EncodedColumnBatch<BatchKey> data) {
+      EncodedColumnBatch<BatchKey> targetBatch = null;
       boolean localIsStopped = false;
       synchronized (pendingData) {
         localIsStopped = isStopped;
         if (!localIsStopped) {
           targetBatch = pendingData.get(data.batchKey);
           if (targetBatch == null) {
-            targetBatch = new EncodedColumnBatch(colCount);
-            pendingData.put(data.batchKey, targetBatch);
+            pendingData.put(data.batchKey, data);
+            return;
           }
         }
       }
       if (localIsStopped) {
-        returnProcessed(data.streamData);
+        returnProcessed(data.columnData);
         return;
       }
 
       int colsRemaining = -1;
       synchronized (targetBatch) {
         // Check if we are stopped and the batch was already cleaned.
-        localIsStopped = (targetBatch.columnDatas == null);
+        localIsStopped = (targetBatch.columnData == null);
         if (!localIsStopped) {
-          targetBatch.columnDatas[data.columnIndex] = data.streamData;
-          colsRemaining = --targetBatch.columnsRemaining;
-          if (0 == colsRemaining) {
+          targetBatch.merge(data);
+          if (0 == targetBatch.colsRemaining) {
             synchronized (pendingData) {
               targetBatch = isStopped ? null : pendingData.remove(data.batchKey);
             }
@@ -108,21 +97,20 @@ public abstract class ColumnVectorProducer<BatchKey> {
         }
       }
       if (localIsStopped) {
-        returnProcessed(data.streamData);
+        returnProcessed(data.columnData);
         return;
       }
       if (0 == colsRemaining) {
-        ColumnVectorProducer.this.decodeBatch(data.batchKey, targetBatch, downstreamConsumer);
+        ColumnVectorProducer.this.decodeBatch(targetBatch, downstreamConsumer);
         // Batch has been decoded; unlock the buffers in cache
-        for (StreamBuffer[] columnData : targetBatch.columnDatas) {
-          returnProcessed(columnData);
-        }
+        returnProcessed(targetBatch.columnData);
       }
     }
 
-    private void returnProcessed(StreamBuffer[] data) {
-      for (StreamBuffer sb : data) {
-        if (sb.decRef() == 0) {
+    private void returnProcessed(StreamBuffer[][] data) {
+      for (StreamBuffer[] sbs : data) {
+        for (StreamBuffer sb : sbs) {
+          if (sb.decRef() != 0) continue;
           upstreamFeedback.returnData(sb);
         }
       }
@@ -151,8 +139,8 @@ public abstract class ColumnVectorProducer<BatchKey> {
     }
 
     private void dicardPendingData(boolean isStopped) {
-      List<StreamBuffer> dataToDiscard = new ArrayList<StreamBuffer>(pendingData.size() * colCount);
-      List<EncodedColumnBatch> batches = new ArrayList<EncodedColumnBatch>(pendingData.size());
+      List<EncodedColumnBatch<BatchKey>> batches = new ArrayList<EncodedColumnBatch<BatchKey>>(
+          pendingData.size());
       synchronized (pendingData) {
         if (isStopped) {
           this.isStopped = true;
@@ -160,14 +148,15 @@ public abstract class ColumnVectorProducer<BatchKey> {
         batches.addAll(pendingData.values());
         pendingData.clear();
       }
-      for (EncodedColumnBatch batch : batches) {
+      List<StreamBuffer> dataToDiscard = new ArrayList<StreamBuffer>(batches.size() * colCount * 2);
+      for (EncodedColumnBatch<BatchKey> batch : batches) {
         synchronized (batch) {
-          for (StreamBuffer[] bb : batch.columnDatas) {
+          for (StreamBuffer[] bb : batch.columnData) {
             for (StreamBuffer b : bb) {
               dataToDiscard.add(b);
             }
           }
-          batch.columnDatas = null;
+          batch.columnData = null;
         }
       }
       for (StreamBuffer data : dataToDiscard) {
@@ -211,13 +200,6 @@ public abstract class ColumnVectorProducer<BatchKey> {
     // Get the source of encoded data.
     EncodedDataProducer<BatchKey> edp = getEncodedDataProducer();
     // Then, get the specific reader of encoded data out of the producer.
-    /*
-[ERROR] reason: actual argument 
-org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer<BatchKey>.EncodedDataConsumer
-cannot be converted to 
-org.apache.hadoop.hive.llap.Consumer<
-  org.apache.hadoop.hive.llap.io.api.EncodedColumn<
-    org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey>> by method invocation conversion     * */
     EncodedDataReader<BatchKey> reader = edp.getReader(split, columnIds, sarg, columnNames, edc);
     // Set the encoded data reader as upstream feedback for encoded data consumer, and start.
     edc.init(reader);
@@ -227,6 +209,6 @@ org.apache.hadoop.hive.llap.Consumer<
 
   protected abstract EncodedDataProducer<BatchKey> getEncodedDataProducer();
 
-  protected abstract void decodeBatch(BatchKey batchKey, EncodedColumnBatch batch,
+  protected abstract void decodeBatch(EncodedColumnBatch<BatchKey> batch,
       Consumer<ColumnVectorBatch> downstreamConsumer);
 }

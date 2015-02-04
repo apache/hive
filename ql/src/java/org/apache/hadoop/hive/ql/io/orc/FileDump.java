@@ -148,7 +148,7 @@ public final class FileDump {
           System.out.println(buf);
         }
         if (rowIndexCols != null) {
-          RowIndex[] indices = rows.readRowIndex(stripeIx);
+          RowIndex[] indices = rows.readRowIndex(stripeIx, null);
           for (int col : rowIndexCols) {
             StringBuilder buf = new StringBuilder();
             buf.append("    Row group index column ").append(col).append(":");

@@ -18,23 +18,47 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 
 public class OrcStripeMetadata {
-  // TODO#: add encoding and stream list
-  OrcProto.RowIndex[] rowIndexes;
+  List<ColumnEncoding> encodings;
+  List<Stream> streams;
+  RowIndex[] rowIndexes;
 
-  public OrcStripeMetadata(RecordReader reader, int stripeIx) throws IOException {
-    rowIndexes = reader.getCurrentRowIndexEntries();
+  public OrcStripeMetadata(
+      RecordReader reader, int stripeIx, boolean[] includes) throws IOException {
+    rowIndexes = reader.getCurrentRowIndexEntries(includes);
+    streams = reader.getCurrentStreams();
+    encodings = reader.getCurrentColumnEncodings();
   }
 
-  public OrcProto.RowIndex[] getRowIndexes() {
+  public RowIndex[] getRowIndexes() {
     return rowIndexes;
   }
 
-  public void setRowIndexes(OrcProto.RowIndex[] rowIndexes) {
+  public void setRowIndexes(RowIndex[] rowIndexes) {
     this.rowIndexes = rowIndexes;
   }
+
+  public List<ColumnEncoding> getEncodings() {
+    return encodings;
+  }
+
+  public void setEncodings(List<ColumnEncoding> encodings) {
+    this.encodings = encodings;
+  }
+
+  public List<Stream> getStreams() {
+    return streams;
+  }
+
+  public void setStreams(List<Stream> streams) {
+    this.streams = streams;
+  }
+
 }
