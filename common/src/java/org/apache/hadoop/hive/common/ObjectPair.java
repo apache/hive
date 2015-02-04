@@ -75,6 +75,11 @@ public class ObjectPair<F, S> {
         this.getSecond().equals(that.getSecond());
   }
 
+  @Override
+  public int hashCode() {
+    return first.hashCode() * 31 + second.hashCode();
+  }
+
   public String toString() {
     return first + ":" + second;
   }

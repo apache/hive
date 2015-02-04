@@ -373,6 +373,17 @@ public class HiveConf extends Configuration {
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
 
+    METASTORE_FASTPATH("hive.metastore.fastpath", false,
+        "Used to avoid all of the proxies and object copies in the metastore.  Note, if this is " +
+            "set, you MUST use a local metastore (hive.metastore.uris must be empty) otherwise " +
+            "undefined and most likely undesired behavior will result"),
+    METASTORE_HBASE_CACHE_SIZE("hive.metastore.hbase.cache.size", 100000, "Maximum number of " +
+        "objects we will place in the hbase metastore cache.  The objects will be divided up by " +
+        "types that we need to cache."),
+    METASTORE_HBASE_CACHE_TIME_TO_LIVE("hive.metastore.hbase.cache.ttl", "600s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds for stats items to live in the cache"),
+
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),
     METASTORETHRIFTFAILURERETRIES("hive.metastore.failure.retries", 1,

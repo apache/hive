@@ -617,6 +617,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_current_notificationEventId\n");
   }
 
+  void flushCache() {
+    // Your implementation goes here
+    printf("flushCache\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

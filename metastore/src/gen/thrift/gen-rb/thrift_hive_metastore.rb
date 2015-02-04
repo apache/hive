@@ -2007,6 +2007,20 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
+    def flushCache()
+      send_flushCache()
+      recv_flushCache()
+    end
+
+    def send_flushCache()
+      send_message('flushCache', FlushCache_args)
+    end
+
+    def recv_flushCache()
+      result = receive_message(FlushCache_result)
+      return
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3535,6 +3549,13 @@ module ThriftHiveMetastore
       result = Get_current_notificationEventId_result.new()
       result.success = @handler.get_current_notificationEventId()
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_flushCache(seqid, iprot, oprot)
+      args = read_args(iprot, FlushCache_args)
+      result = FlushCache_result.new()
+      @handler.flushCache()
+      write_result(result, oprot, 'flushCache', seqid)
     end
 
   end
@@ -8078,6 +8099,36 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CurrentNotificationEventId}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class FlushCache_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class FlushCache_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
     }
 
     def struct_fields; FIELDS; end

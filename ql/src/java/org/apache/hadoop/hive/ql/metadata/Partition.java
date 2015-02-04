@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.hbase.SharedStorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -152,6 +153,10 @@ public class Partition implements Serializable {
    * Refactored into a method.
    */
   public static StorageDescriptor cloneSd(Table tbl) throws HiveException {
+    if (tbl.getSd() instanceof SharedStorageDescriptor) {
+      return new SharedStorageDescriptor((SharedStorageDescriptor)tbl.getSd());
+    }
+    // What is the point of this?  Why not just use the copy constructor in StorageDescriptor?
     StorageDescriptor sd = new StorageDescriptor();
     try {
       // replace with THRIFT-138
@@ -615,6 +620,7 @@ public class Partition implements Serializable {
   }
 
   public List<String> getSkewedColNames() {
+    LOG.debug("sd is " + tPartition.getSd().getClass().getName());
     return tPartition.getSd().getSkewedInfo().getSkewedColNames();
   }
 

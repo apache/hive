@@ -751,5 +751,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getCurrentNotificationEventId();
   }
 
-
+  @Override
+  public void flushCache() {
+    objectStore.flushCache();
+  }
 }

@@ -769,6 +769,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
 
+  public void flushCache() {
+
+  }
+
 }
 
 

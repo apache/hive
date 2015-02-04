@@ -6115,6 +6115,11 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
+  @Override
+  public void flushCache() {
+    // NOP as there's no caching
+  }
+
   private List<MPartitionColumnStatistics> getMPartitionColumnStatistics(
       Table table, List<String> partNames, List<String> colNames)
           throws NoSuchObjectException, MetaException {

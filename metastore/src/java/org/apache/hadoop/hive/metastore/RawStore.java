@@ -589,5 +589,10 @@ public interface RawStore extends Configurable {
    * @return
    */
   public CurrentNotificationEventId getCurrentNotificationEventId();
-  
+
+  /*
+   * Flush any catalog objects held by the metastore implementation.  Note that this does not
+   * flush statistics objects.  This should be called at the beginning of each query.
+   */
+  public void flushCache();
 }

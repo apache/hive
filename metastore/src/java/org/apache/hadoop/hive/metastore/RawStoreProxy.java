@@ -26,6 +26,8 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
 
 import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -36,6 +38,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public class RawStoreProxy implements InvocationHandler {
+
+  static final private Log LOG = LogFactory.getLog(RawStoreProxy.class.getName());
 
   private final RawStore base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
@@ -95,6 +99,7 @@ public class RawStoreProxy implements InvocationHandler {
     Object ret = null;
 
     try {
+      LOG.info("Invoking " + method.toGenericString());
       ret = method.invoke(base, args);
     } catch (UndeclaredThrowableException e) {
       throw e.getCause();
