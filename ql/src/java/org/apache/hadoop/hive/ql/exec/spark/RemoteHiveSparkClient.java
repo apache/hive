@@ -17,15 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -48,14 +53,12 @@ import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
 import org.apache.hive.spark.client.SparkClientFactory;
+import org.apache.hive.spark.client.SparkClientUtilities;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaPairRDD;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 
 /**
  * RemoteSparkClient is a wrapper of {@link org.apache.hive.spark.client.SparkClient}, which
@@ -74,8 +77,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient SparkConf sparkConf;
   private transient HiveConf hiveConf;
 
-  private transient List<String> localJars = new ArrayList<String>();
-  private transient List<String> localFiles = new ArrayList<String>();
+  private transient List<URL> localJars = new ArrayList<URL>();
+  private transient List<URL> localFiles = new ArrayList<URL>();
 
   private final transient long sparkClientTimtout;
 
@@ -159,26 +162,28 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
   private void addResources(String addedFiles) {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
-      if (!localFiles.contains(addedFile)) {
-        localFiles.add(addedFile);
-        try {
-          remoteClient.addFile(SparkUtilities.getURL(addedFile));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add file:" + addedFile);
+      try {
+        URL fileUrl = SparkUtilities.getURL(addedFile);
+        if (fileUrl != null && !localFiles.contains(fileUrl)) {
+          localFiles.add(fileUrl);
+          remoteClient.addFile(fileUrl);
         }
+      } catch (MalformedURLException e) {
+        LOG.warn("Failed to add file:" + addedFile);
       }
     }
   }
 
   private void addJars(String addedJars) {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
-      if (!localJars.contains(addedJar)) {
-        localJars.add(addedJar);
-        try {
-          remoteClient.addJar(SparkUtilities.getURL(addedJar));
-        } catch (MalformedURLException e) {
-          LOG.warn("Failed to add jar:" + addedJar);
+      try {
+        URL jarUrl = SparkUtilities.getURL(addedJar);
+        if (jarUrl != null && !localJars.contains(jarUrl)) {
+          localJars.add(jarUrl);
+          remoteClient.addJar(jarUrl);
         }
+      } catch (MalformedURLException e) {
+        LOG.warn("Failed to add jar:" + addedJar);
       }
     }
   }
@@ -208,6 +213,15 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     @Override
     public Serializable call(JobContext jc) throws Exception {
       JobConf localJobConf = KryoSerializer.deserializeJobConf(jobConfBytes);
+
+      // Add jar to current thread class loader dynamically, and add jar paths to JobConf as Spark
+      // may need to load classes from this jar in other threads.
+      List<String> addedJars = jc.getAddedJars();
+      if (addedJars != null && !addedJars.isEmpty()) {
+        SparkClientUtilities.addToClassPath(addedJars.toArray(new String[addedJars.size()]));
+        localJobConf.set(Utilities.HIVE_ADDED_JARS, StringUtils.join(addedJars, ";"));
+      }
+
       Path localScratchDir = KryoSerializer.deserialize(scratchDirBytes, Path.class);
       SparkWork localSparkWork = KryoSerializer.deserialize(sparkWorkBytes, SparkWork.class);
 
@@ -234,7 +248,6 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       jc.monitor(future, sparkCounters, plan.getCachedRDDIds());
       return null;
     }
-
   }
 
 }

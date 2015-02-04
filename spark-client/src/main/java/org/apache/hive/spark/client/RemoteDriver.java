@@ -106,6 +106,8 @@ public class RemoteDriver {
         serverAddress = getArg(args, idx);
       } else if (key.equals("--remote-port")) {
         serverPort = Integer.parseInt(getArg(args, idx));
+      } else if (key.equals("--client-id")) {
+        conf.set(SparkClientFactory.CONF_CLIENT_ID, getArg(args, idx));
       } else if (key.equals("--secret")) {
         conf.set(SparkClientFactory.CONF_KEY_SECRET, getArg(args, idx));
       } else if (key.equals("--conf")) {
@@ -127,6 +129,8 @@ public class RemoteDriver {
       LOG.debug("Remote Driver configured with: " + e._1() + "=" + e._2());
     }
 
+    String clientId = mapConf.get(SparkClientFactory.CONF_CLIENT_ID);
+    Preconditions.checkArgument(clientId != null, "No client ID provided.");
     String secret = mapConf.get(SparkClientFactory.CONF_KEY_SECRET);
     Preconditions.checkArgument(secret != null, "No secret provided.");
 
@@ -140,8 +144,8 @@ public class RemoteDriver {
     this.protocol = new DriverProtocol();
 
     // The RPC library takes care of timing out this.
-    this.clientRpc = Rpc.createClient(mapConf, egroup, serverAddress, serverPort, secret, protocol)
-      .get();
+    this.clientRpc = Rpc.createClient(mapConf, egroup, serverAddress, serverPort,
+      clientId, secret, protocol).get();
     this.running = true;
 
     this.clientRpc.addListener(new Rpc.Listener() {
@@ -353,6 +357,11 @@ public class RemoteDriver {
         SparkCounters counters = null;
         if (sparkCounters != null) {
           counters = sparkCounters.snapshot();
+        }
+        // make sure job has really succeeded
+        // at this point, future.get shall not block us
+        for (JavaFutureAction<?> future : jobs) {
+          future.get();
         }
         protocol.jobFinished(req.id, result, null, counters);
       } catch (Throwable t) {
