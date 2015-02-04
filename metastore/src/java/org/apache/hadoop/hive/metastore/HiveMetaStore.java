@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsResult;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
@@ -5559,19 +5560,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void fire_notification_event(FireEventRequest rqst) throws TException {
-      switch (rqst.getEventType()) {
-        case INSERT:
+    public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
+      switch (rqst.getData().getSetField()) {
+        case INSERT_DATA:
           InsertEvent event = new InsertEvent(rqst.getDbName(), rqst.getTableName(),
-              rqst.getPartitionVals(), rqst.isSuccessful(), this);
+              rqst.getPartitionVals(), rqst.getData().getInsertData().getFilesAdded(),
+              rqst.isSuccessful(), this);
           for (MetaStoreEventListener listener : listeners) {
             listener.onInsert(event);
           }
-          break;
+          return new FireEventResponse();
 
         default:
-          throw new TException("Event type " + rqst.getEventType().toString() + " not currently " +
-              "supported.");
+          throw new TException("Event type " + rqst.getData().getSetField().toString() +
+              " not currently supported.");
       }
 
     }

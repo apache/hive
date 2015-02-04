@@ -2007,18 +2007,19 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
-    def fire_notification_event(rqst)
-      send_fire_notification_event(rqst)
-      recv_fire_notification_event()
+    def fire_listener_event(rqst)
+      send_fire_listener_event(rqst)
+      return recv_fire_listener_event()
     end
 
-    def send_fire_notification_event(rqst)
-      send_message('fire_notification_event', Fire_notification_event_args, :rqst => rqst)
+    def send_fire_listener_event(rqst)
+      send_message('fire_listener_event', Fire_listener_event_args, :rqst => rqst)
     end
 
-    def recv_fire_notification_event()
-      result = receive_message(Fire_notification_event_result)
-      return
+    def recv_fire_listener_event()
+      result = receive_message(Fire_listener_event_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fire_listener_event failed: unknown result')
     end
 
   end
@@ -3551,11 +3552,11 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
     end
 
-    def process_fire_notification_event(seqid, iprot, oprot)
-      args = read_args(iprot, Fire_notification_event_args)
-      result = Fire_notification_event_result.new()
-      @handler.fire_notification_event(args.rqst)
-      write_result(result, oprot, 'fire_notification_event', seqid)
+    def process_fire_listener_event(seqid, iprot, oprot)
+      args = read_args(iprot, Fire_listener_event_args)
+      result = Fire_listener_event_result.new()
+      result.success = @handler.fire_listener_event(args.rqst)
+      write_result(result, oprot, 'fire_listener_event', seqid)
     end
 
   end
@@ -8109,7 +8110,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Fire_notification_event_args
+  class Fire_listener_event_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
@@ -8125,11 +8126,12 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Fire_notification_event_result
+  class Fire_listener_event_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
 
     FIELDS = {
-
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FireEventResponse}
     }
 
     def struct_fields; FIELDS; end
