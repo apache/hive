@@ -647,12 +647,15 @@ public class Table implements Serializable {
    *          If the source directory is LOCAL
    * @param isAcid
    *          True if this is an ACID based insert, update, or delete
+   * @param newFiles optional list of paths.  If non-null, then all files copyied to the table
+   *                 will be added to this list.
    */
-  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid) throws HiveException {
+  protected void copyFiles(Path srcf, boolean isSrcLocal, boolean isAcid, List<Path> newFiles)
+      throws HiveException {
     FileSystem fs;
     try {
       fs = getDataLocation().getFileSystem(Hive.get().getConf());
-      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid);
+      Hive.copyFiles(Hive.get().getConf(), srcf, getPath(), fs, isSrcLocal, isAcid, newFiles);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

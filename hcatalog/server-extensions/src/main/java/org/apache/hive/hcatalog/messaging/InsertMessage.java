@@ -43,6 +43,12 @@ public abstract class InsertMessage extends HCatEventMessage {
    */
   public abstract List<String> getPartitionValues();
 
+  /**
+   * Get the list of files created as a result of this DML operation.  May be null.
+   * @return List of new files, or null.
+   */
+  public abstract List<String> getFiles();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null)

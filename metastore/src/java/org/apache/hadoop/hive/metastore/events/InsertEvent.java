@@ -34,6 +34,7 @@ public class InsertEvent extends ListenerEvent {
   private final String db;
   private final String table;
   private final List<String> partVals;
+  private final List<String> files;
 
   /**
    *
@@ -43,12 +44,13 @@ public class InsertEvent extends ListenerEvent {
    * @param status status of insert, true = success, false = failure
    * @param handler handler that is firing the event
    */
-  public InsertEvent(String db, String table, List<String> partitions, boolean status,
-                     HMSHandler handler) {
+  public InsertEvent(String db, String table, List<String> partitions, List<String> files,
+                     boolean status, HMSHandler handler) {
     super(status, handler);
     this.db = db;
     this.table = table;
     this.partVals = partitions;
+    this.files = files;
   }
 
   public String getDb() {
@@ -66,5 +68,13 @@ public class InsertEvent extends ListenerEvent {
    */
   public List<String> getPartitions() {
     return partVals;
+  }
+
+  /**
+   * Get list of files created as a result of this DML operation
+   * @return list of new files
+   */
+  public List<String> getFiles() {
+    return files;
   }
 }

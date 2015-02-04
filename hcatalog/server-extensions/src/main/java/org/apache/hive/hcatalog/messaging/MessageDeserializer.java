@@ -46,6 +46,8 @@ public abstract class MessageDeserializer {
       return getAlterPartitionMessage(messageBody);
     case DROP_PARTITION:
       return getDropPartitionMessage(messageBody);
+    case INSERT:
+      return getInsertMessage(messageBody);
 
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
@@ -95,6 +97,13 @@ public abstract class MessageDeserializer {
    * Method to de-serialize DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage getDropPartitionMessage(String messageBody);
+
+  /**
+   * Method to deserialize InsertMessage
+   * @param messageBody the message in serialized form
+   * @return message in object form
+   */
+  public abstract InsertMessage getInsertMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

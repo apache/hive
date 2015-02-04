@@ -28,6 +28,7 @@ import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
 import org.apache.hive.hcatalog.messaging.DropTableMessage;
+import org.apache.hive.hcatalog.messaging.InsertMessage;
 import org.apache.hive.hcatalog.messaging.MessageDeserializer;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -120,6 +121,15 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct DropPartitionMessage.", exception);
+    }
+  }
+
+  @Override
+  public InsertMessage getInsertMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONInsertMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct InsertMessage", e);
     }
   }
 }
