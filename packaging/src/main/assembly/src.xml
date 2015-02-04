@@ -64,7 +64,9 @@
         <include>conf/**/*</include>
         <include>contrib/**/*</include>
         <include>data/**/*</include>
+        <include>dev-support/**/*</include>
         <include>docs/**/*</include>
+        <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
         <include>hwi/**/*</include>
@@ -80,6 +82,8 @@
         <include>serde/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
+        <include>spark-client/**/*</include>
+        <include>testlibs/**/*</include>
         <include>testutils/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
