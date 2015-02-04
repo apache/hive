@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -83,7 +82,6 @@ public class ParseContext {
   private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer; // list of map join
   // operators with no
   // reducer
-  private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
   private Map<String, ReadEntity> viewAliasToInput;
 
@@ -153,7 +151,6 @@ public class ParseContext {
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
-      Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
@@ -177,7 +174,6 @@ public class ParseContext {
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
-    this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
     this.nameToSplitSample = nameToSplitSample;
@@ -388,21 +384,6 @@ public class ParseContext {
   public void setOpToSamplePruner(
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
     this.opToSamplePruner = opToSamplePruner;
-  }
-
-  /**
-   * @return the groupOpToInputTables
-   */
-  public Map<GroupByOperator, Set<String>> getGroupOpToInputTables() {
-    return groupOpToInputTables;
-  }
-
-  /**
-   * @param groupOpToInputTables
-   */
-  public void setGroupOpToInputTables(
-      Map<GroupByOperator, Set<String>> groupOpToInputTables) {
-    this.groupOpToInputTables = groupOpToInputTables;
   }
 
   /**
