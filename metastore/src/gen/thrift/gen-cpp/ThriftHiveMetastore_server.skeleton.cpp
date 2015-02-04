@@ -617,9 +617,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_current_notificationEventId\n");
   }
 
-  void fire_notification_event(const FireEventRequest& rqst) {
+  void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) {
     // Your implementation goes here
-    printf("fire_notification_event\n");
+    printf("fire_listener_event\n");
   }
 
 };
