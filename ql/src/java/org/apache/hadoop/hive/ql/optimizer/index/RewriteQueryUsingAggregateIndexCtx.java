@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -267,15 +267,17 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
       String selReplacementCommand = "select sum(`" + rewriteQueryCtx.getAggregateFunction() + "`)"
           + " from " + rewriteQueryCtx.getIndexName() + " group by "
           + rewriteQueryCtx.getIndexKey() + " ";
-      // create a new ParseContext for the query to retrieve its operator tree,
-      // and the required GroupByOperator from it
-      ParseContext newDAGContext = RewriteParseContextGenerator.generateOperatorTree(
-          rewriteQueryCtx.getParseContext().getConf(), selReplacementCommand);
+      // retrieve the operator tree for the query, and the required GroupByOperator from it
+      Operator<?> newOperatorTree = RewriteParseContextGenerator.generateOperatorTree(
+              rewriteQueryCtx.getParseContext().getConf(),
+              selReplacementCommand);
 
       // we get our new GroupByOperator here
-      Map<GroupByOperator, Set<String>> newGbyOpMap = newDAGContext.getGroupOpToInputTables();
-      GroupByOperator newGbyOperator = newGbyOpMap.keySet().iterator().next();
-      GroupByDesc oldConf = operator.getConf();
+      GroupByOperator newGbyOperator = OperatorUtils.findLastOperatorUpstream(
+            newOperatorTree, GroupByOperator.class);
+      if (newGbyOperator == null) {
+        throw new SemanticException("Error replacing GroupBy operator.");
+      }
 
       // we need this information to set the correct colList, outputColumnNames
       // in SelectOperator
@@ -297,6 +299,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
       // Now the GroupByOperator has the new AggregationList;
       // sum(`_count_of_indexed_key`)
       // instead of count(indexed_key)
+      GroupByDesc oldConf = operator.getConf();
       oldConf.setAggregators((ArrayList<AggregationDesc>) newAggrList);
       operator.setConf(oldConf);
 
