@@ -1,0 +1,195 @@
+PREHOOK: query: CREATE TABLE src_bucket(key STRING, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_bucket
+POSTHOOK: query: CREATE TABLE src_bucket(key STRING, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_bucket
+PREHOOK: query: explain
+insert into table src_bucket select key,value from srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert into table src_bucket select key,value from srcpart
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.src_bucket
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_bucket
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: insert into table src_bucket select key,value from srcpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@src_bucket
+POSTHOOK: query: insert into table src_bucket select key,value from srcpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@src_bucket
+POSTHOOK: Lineage: src_bucket.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_bucket.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_bucket limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_bucket
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_bucket limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_bucket
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+103	val_103
+105	val_105
+105	val_105
+105	val_105
+105	val_105
+11	val_11
+11	val_11
+11	val_11
+11	val_11
+114	val_114
+114	val_114
+114	val_114
+114	val_114
+116	val_116
+116	val_116
+116	val_116
+116	val_116
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+118	val_118
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+125	val_125
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+129	val_129
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+134	val_134
+136	val_136
+136	val_136
+136	val_136
+136	val_136
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+143	val_143
+143	val_143
+143	val_143
+145	val_145
+145	val_145
+145	val_145
+145	val_145
+149	val_149
+149	val_149
+149	val_149
+149	val_149
