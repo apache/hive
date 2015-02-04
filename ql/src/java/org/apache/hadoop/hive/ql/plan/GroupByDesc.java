@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -220,6 +221,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
   public void setAggregators(
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators) {
     this.aggregators = aggregators;
+  }
+
+  public boolean isAggregate() {
+    if (this.aggregators != null && !this.aggregators.isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   public boolean getGroupKeyNotReductionKey() {
