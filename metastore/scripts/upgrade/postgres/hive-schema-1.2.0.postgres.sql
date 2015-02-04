@@ -1490,4 +1490,4 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.15.0', 'Hive release version 0.15.0');
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '1.2.0', 'Hive release version 1.2.0');

@@ -53,7 +53,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>0.15.0</hive.version.shortname>
+    <hive.version.shortname>1.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
