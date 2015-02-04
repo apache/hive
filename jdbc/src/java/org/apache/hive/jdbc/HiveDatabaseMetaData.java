@@ -64,8 +64,9 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   private static final char SEARCH_STRING_ESCAPE = '\\';
 
   //  The maximum column length = MFieldSchema.FNAME in metastore/src/model/package.jdo
+  private static final int maxCatalogNameLength = 128;
   private static final int maxColumnNameLength = 128;
-
+  private static final int maxSchemaNameLength = 128;
   //  Cached values, to save on round trips to database.
   private String dbVersion = null;
 
@@ -407,7 +408,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public int getMaxCatalogNameLength() throws SQLException {
-    throw new SQLException("Method not supported");
+    return maxCatalogNameLength;
   }
 
   public int getMaxCharLiteralLength() throws SQLException {
@@ -463,7 +464,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public int getMaxSchemaNameLength() throws SQLException {
-    throw new SQLException("Method not supported");
+    return maxSchemaNameLength;
   }
 
   public int getMaxStatementLength() throws SQLException {
