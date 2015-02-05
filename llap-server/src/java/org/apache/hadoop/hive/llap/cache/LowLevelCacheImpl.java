@@ -167,9 +167,10 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
+        assert !buffer.isLocked(); // TODO: is this always true? does put happen before reuse?
+        buffer.incRef();
         long offset = ranges[i].offset;
         buffer.declaredLength = ranges[i].getLength();
-        assert buffer.isLocked();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapCacheableBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
           if (oldVal == null) {

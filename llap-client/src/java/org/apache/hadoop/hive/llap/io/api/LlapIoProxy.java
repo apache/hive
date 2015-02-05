@@ -62,6 +62,7 @@ public class LlapIoProxy {
       @SuppressWarnings("unchecked")
       Class<? extends LlapIo> clazz = (Class<? extends LlapIo>)Class.forName(IMPL_CLASS);
       Constructor<? extends LlapIo> ctor = clazz.getDeclaredConstructor(Configuration.class);
+      ctor.setAccessible(true);
       return ctor.newInstance(conf);
     } catch (Exception e) {
       throw new RuntimeException("Failed to create impl class", e);

@@ -105,8 +105,16 @@ abstract class InStream extends InputStream {
     }
 
     public void seek(long desired) {
-      for(int i = 0; i < bytes.size(); ++i) {
-        DiskRange curRange = bytes.get(i);
+      if (desired == 0 && bytes.isEmpty()) {
+        logEmptySeek(name);
+        return;
+      }
+      int i = 0;
+      for(DiskRange curRange : bytes) {
+        if (desired == 0 && curRange.getData().remaining() == 0) {
+          logEmptySeek(name);
+          return;
+        }
         if (curRange.offset <= desired &&
             (desired - curRange.offset) < curRange.getLength()) {
           currentOffset = desired;
@@ -117,6 +125,7 @@ abstract class InStream extends InputStream {
           this.range.position(pos);
           return;
         }
+        ++i;
       }
       throw new IllegalArgumentException("Seek in " + name + " to " +
         desired + " is outside of the data");
@@ -358,6 +367,10 @@ abstract class InStream extends InputStream {
     }
 
     private void seek(long desired) throws IOException {
+      if (desired == 0 && bytes.isEmpty()) {
+        logEmptySeek(name);
+        return;
+      }
       int i = 0;
       for (DiskRange range : bytes) {
         if (range.offset <= desired && desired < range.end) {
@@ -432,6 +445,12 @@ abstract class InStream extends InputStream {
   }
 
   public abstract void seek(PositionProvider index) throws IOException;
+
+  private static void logEmptySeek(String name) {
+    if (LOG.isWarnEnabled()) {
+      LOG.warn("Attempting seek into empty stream (" + name + ") Skipping stream.");
+    }
+  }
 
   /**
    * Create an input stream from a list of buffers.

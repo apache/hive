@@ -3465,7 +3465,7 @@ public class RecordReaderImpl implements RecordReader {
     final int colIx;
 
     public void addStream(long offset, OrcProto.Stream stream, int indexIx) {
-      streams[++streamCount] = new StreamContext(stream, offset, indexIx);
+      streams[streamCount++] = new StreamContext(stream, offset, indexIx);
     }
   }
 
@@ -3496,14 +3496,17 @@ public class RecordReaderImpl implements RecordReader {
         this.streamList != null ? this.streamList : stripeFooter.getStreamsList();
     List<ColumnEncoding> encodings =
         this.encodings != null ? this.encodings : stripeFooter.getColumnsList();
+
+    // 1. Figure out what we have to read.
     LinkedList<DiskRange> rangesToRead = new LinkedList<DiskRange>();
     long offset = 0;
-    // Figure out which columns have a present stream
+    // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = findPresentStreamsByColumn(streamList, types);
     DiskRange lastRange = null;
+
     // We assume stream list is sorted by column and that non-data
     // streams do not interleave data streams for the same column.
-    // With that in mind, determine disk ranges to read/get from cache (not by stream).
+    // 1.2. With that in mind, determine disk ranges to read/get from cache (not by stream).
     int colRgIx = -1, lastColIx = -1;
     ColumnReadContext[] colCtxs = new ColumnReadContext[colRgs.length];
     boolean[] includedRgs = null;
@@ -3516,18 +3519,21 @@ public class RecordReaderImpl implements RecordReader {
         offset += length;
         continue;
       }
-      ColumnReadContext ctx = colCtxs[colRgIx];
+      ColumnReadContext ctx = null;
       if (lastColIx != colIx) {
-        assert ctx == null;
         ++colRgIx;
+        assert colCtxs[colRgIx] == null;
         lastColIx = colIx;
         includedRgs = colRgs[colRgIx];
         ctx = colCtxs[colRgIx] = new ColumnReadContext(
             offset, colIx, encodings.get(colIx), indexes[colIx]);
+      } else {
+        ctx = colCtxs[colRgIx];
+        assert ctx != null;
       }
       int indexIx = getIndexPosition(ctx.encoding.getKind(),
           types.get(colIx).getKind(), streamKind, isCompressed, hasNull[colIx]);
-      colCtxs[colRgIx].addStream(offset, stream, indexIx);
+      ctx.addStream(offset, stream, indexIx);
       if (includedRgs == null || isDictionary(streamKind, encodings.get(colIx))) {
         lastRange = addEntireStreamToResult(offset, length, lastRange, rangesToRead);
       } else {
@@ -3538,7 +3544,7 @@ public class RecordReaderImpl implements RecordReader {
       offset += length;
     }
 
-    // Now, read all of these from cache or disk.
+    // 2. Now, read all of the ranges from cache or disk.
     if (LOG.isDebugEnabled()) {
       LOG.debug("chunks = " + stringifyDiskRanges(rangesToRead));
     }
@@ -3548,7 +3554,7 @@ public class RecordReaderImpl implements RecordReader {
     }
     readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead);
 
-    // Separate buffers for each stream from the data we have.
+    // 2.1. Separate buffers for each stream from the data we have.
     // TODO: given how we read, we could potentially get rid of this step?
     for (ColumnReadContext colCtx : colCtxs) {
       for (int i = 0; i < colCtx.streamCount; ++i) {
@@ -3557,7 +3563,7 @@ public class RecordReaderImpl implements RecordReader {
       }
     }
 
-    // Finally, decompress data, map per RG, and return to caller.
+    // 3. Finally, decompress data, map per RG, and return to caller.
     // We go by RG and not by column because that is how data is processed.
     int rgCount = (int)Math.ceil((double)rowCountInStripe / rowIndexStride);
     for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
@@ -3593,8 +3599,6 @@ public class RecordReaderImpl implements RecordReader {
         consumer.consumeData(ecb);
       }
     }
-
-    throw new UnsupportedOperationException("not implemented");
   }
 
   private StreamBuffer getStripeLevelStream(
