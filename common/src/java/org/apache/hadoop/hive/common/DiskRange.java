@@ -69,4 +69,9 @@ public class DiskRange {
   public ByteBuffer getData() {
     throw new UnsupportedOperationException();
   }
+
+  public void shiftBy(long baseOffset) {
+    offset -= baseOffset;
+    end -= baseOffset;
+  }
 }

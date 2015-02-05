@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
 import com.google.common.annotations.VisibleForTesting;
 
 abstract class InStream extends InputStream {
+
   private static final Log LOG = LogFactory.getLog(InStream.class);
 
   private static class UncompressedStream extends InStream {
@@ -328,15 +329,14 @@ abstract class InStream extends InputStream {
       currentOffset += compressed.remaining();
       len -= compressed.remaining();
       copy.put(compressed);
+      ListIterator<DiskRange> iter = bytes.listIterator(currentRange);
 
-      while (len > 0 && (++currentRange) < bytes.size()) {
+      while (len > 0 && iter.hasNext()) {
+        ++currentRange;
         if (LOG.isDebugEnabled()) {
           LOG.debug(String.format("Read slow-path, >1 cross block reads with %s", this.toString()));
         }
-        DiskRange range = bytes.get(currentRange);
-        if (!(range instanceof BufferChunk)) {
-          throw new IOException("Trying to extend compressed block into uncompressed block");
-        }
+        DiskRange range = iter.next();
         compressed = range.getData().duplicate();
         if (compressed.remaining() >= len) {
           slice = compressed.slice();
@@ -358,8 +358,8 @@ abstract class InStream extends InputStream {
     }
 
     private void seek(long desired) throws IOException {
-      for(int i = 0; i < bytes.size(); ++i) {
-        DiskRange range = bytes.get(i);
+      int i = 0;
+      for (DiskRange range : bytes) {
         if (range.offset <= desired && desired < range.end) {
           currentRange = i;
           if (range instanceof BufferChunk) {
@@ -379,6 +379,7 @@ abstract class InStream extends InputStream {
           currentOffset = desired;
           return;
         }
+        ++i;
       }
       // if they are seeking to the precise end, go ahead and let them go there
       int segments = bytes.size();
@@ -406,13 +407,14 @@ abstract class InStream extends InputStream {
 
     private String rangeString() {
       StringBuilder builder = new StringBuilder();
-      for(int i=0; i < bytes.size(); ++i) {
+      int i = 0;
+      for (DiskRange range : bytes) {
         if (i != 0) {
           builder.append("; ");
         }
-        DiskRange range = bytes.get(i);
         builder.append(" range " + i + " = " + range.offset
             + " to " + (range.end - range.offset));
+        ++i;
       }
       return builder.toString();
     }
@@ -537,7 +539,6 @@ abstract class InStream extends InputStream {
         // This is a compressed buffer. We need to uncompress it; the buffer can comprise
         // several disk ranges, so we might need to combine them.
         BufferChunk bc = (BufferChunk)current;
-        // TODO#: DOUBLE check the iterator state.
         if (toDecompress == null) {
           toDecompress = new ArrayList<ProcCacheChunk>();
           toRelease = (zcr == null) ? null : new ArrayList<ByteBuffer>();
