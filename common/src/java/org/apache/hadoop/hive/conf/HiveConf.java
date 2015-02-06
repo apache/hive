@@ -695,20 +695,6 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
-    HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS("hive.optimize.multigroupby.common.distincts", true,
-        "Whether to optimize a multi-groupby query with the same distinct.\n" +
-        "Consider a query like:\n" +
-        "\n" +
-        "  from src\n" +
-        "    insert overwrite table dest1 select col1, count(distinct colx) group by col1\n" +
-        "    insert overwrite table dest2 select col2, count(distinct colx) group by col2;\n" +
-        "\n" +
-        "With this parameter set to true, first we spray by the distinct value (colx), and then\n" +
-        "perform the 2 groups bys. This makes sense if map-side aggregation is turned off. However,\n" +
-        "with maps-side aggregation, it might be useful in some cases to treat the 2 inserts independently, \n" +
-        "thereby performing the query above in 2MR jobs instead of 3 (due to spraying by distinct key first).\n" +
-        "If this parameter is turned off, we don't consider the fact that the distinct key is the same across\n" +
-        "different MR jobs."),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000,
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,

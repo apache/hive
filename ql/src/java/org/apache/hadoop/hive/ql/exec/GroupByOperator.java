@@ -80,7 +80,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   private transient ObjectInspector[][] aggregationParameterObjectInspectors;
   private transient ObjectInspector[][] aggregationParameterStandardObjectInspectors;
   private transient Object[][] aggregationParameterObjects;
-  
+
   // so aggregationIsDistinct is a boolean array instead of a single number.
   private transient boolean[] aggregationIsDistinct;
   // Map from integer tag to distinct aggrs
@@ -107,17 +107,8 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   // Used by hash-based GroupBy: Mode = HASH, PARTIALS
   private transient HashMap<KeyWrapper, AggregationBuffer[]> hashAggregations;
 
-  // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
-  private transient HashSet<KeyWrapper> keysCurrentGroup;
-
   private transient boolean firstRow;
   private transient boolean hashAggr;
-  // The reduction is happening on the reducer, and the grouping key and
-  // reduction keys are different.
-  // For example: select a, count(distinct b) from T group by a
-  // The data is sprayed by 'b' and the reducer is grouping it by 'a'
-  private transient boolean groupKeyIsNotReduceKey;
-  private transient boolean firstRowInGroup;
   private transient long numRowsInput;
   private transient long numRowsHashTbl;
   private transient int groupbyMapAggrInterval;
@@ -133,8 +124,8 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient boolean groupingSetsPresent;      // generates grouping set
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
-  private transient List<Integer> groupingSets;       // declared grouping set values  
-  private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values 
+  private transient List<Integer> groupingSets;       // declared grouping set values
+  private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
   private transient Text[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
@@ -362,10 +353,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       numRowsCompareHashAggr = groupbyMapAggrInterval;
       minReductionHashAggr = HiveConf.getFloatVar(hconf,
           HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
-      groupKeyIsNotReduceKey = conf.getGroupKeyNotReductionKey();
-      if (groupKeyIsNotReduceKey) {
-        keysCurrentGroup = new HashSet<KeyWrapper>();
-      }
     }
 
     List<String> fieldNames = new ArrayList<String>(conf.getOutputColumnNames());
@@ -375,7 +362,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     outputKeyLength = conf.pruneGroupingSetId() ? keyFields.length - 1 : keyFields.length;
 
     // init objectInspectors
-    ObjectInspector[] objectInspectors = 
+    ObjectInspector[] objectInspectors =
         new ObjectInspector[outputKeyLength + aggregationEvaluators.length];
     for (int i = 0; i < outputKeyLength; i++) {
       objectInspectors[i] = currentKeyObjectInspectors[i];
@@ -696,19 +683,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     }
   }
 
-  @Override
-  public void startGroup() throws HiveException {
-    firstRowInGroup = true;
-    super.startGroup();
-  }
-
-  @Override
-  public void endGroup() throws HiveException {
-    if (groupKeyIsNotReduceKey) {
-      keysCurrentGroup.clear();
-    }
-  }
-
   private void processKey(Object row,
       ObjectInspector rowInspector) throws HiveException {
     if (hashAggr) {
@@ -717,8 +691,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     } else {
       processAggr(row, rowInspector, newKeys);
     }
-
-    firstRowInGroup = false;
 
     if (countAfterReport != 0 && (countAfterReport % heartbeatInterval) == 0
       && (reporter != null)) {
@@ -732,7 +704,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     firstRow = false;
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only
-    if (hashAggr && !groupKeyIsNotReduceKey) {
+    if (hashAggr) {
       numRowsInput++;
       // if hash aggregation is not behaving properly, disable it
       if (numRowsInput == numRowsCompareHashAggr) {
@@ -808,15 +780,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       numRowsHashTbl++; // new entry in the hash table
     }
 
-    // If the grouping key and the reduction key are different, a set of
-    // grouping keys for the current reduction key are maintained in
-    // keysCurrentGroup
-    // Peek into the set to find out if a new grouping key is seen for the given
-    // reduction key
-    if (groupKeyIsNotReduceKey) {
-      newEntryForHashAggr = keysCurrentGroup.add(newKeys.copyKey());
-    }
-
     // Update the aggs
     updateAggregations(aggs, row, rowInspector, true, newEntryForHashAggr, null);
 
@@ -826,10 +789,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
     // Based on user-specified parameters, check if the hash table needs to be
     // flushed.
-    // If the grouping key is not the same as reduction key, flushing can only
-    // happen at boundaries
-    if ((!groupKeyIsNotReduceKey || firstRowInGroup)
-        && shouldBeFlushed(newKeys)) {
+    if ( shouldBeFlushed(newKeys)) {
       flushHashTable(false);
     }
   }
