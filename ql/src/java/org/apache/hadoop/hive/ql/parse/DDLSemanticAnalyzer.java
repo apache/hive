@@ -3038,7 +3038,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Entry<String, String> e : partSpec.entrySet()) {
       for (String s : reservedPartitionValues) {
-        if (e.getValue().contains(s)) {
+        String value = e.getValue();
+        if (value != null && value.contains(s)) {
           throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
               "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
         }
