@@ -214,8 +214,10 @@
                   <exclude>org.apache.avro:*</exclude>
                   <exclude>net.sf.opencsv:*</exclude>
                   <exclude>org.antlr:*</exclude>
+                  <exclude>org.slf4j:slf4j-log4j12</exclude>
+                  <exclude>log4j:*</exclude>
                 </excludes>
-              </artifactSet>       
+              </artifactSet>
             </configuration>
           </execution>
         </executions>
