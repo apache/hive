@@ -100,7 +100,7 @@ public interface RecordReader {
   void readEncodedColumns(int stripeIx, boolean[] stripeIncludes, boolean[][] colRgs,
       LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
 
-  RowIndex[] getCurrentRowIndexEntries(boolean[] included) throws IOException;
+  void getCurrentRowIndexEntries(boolean[] included, RowIndex[] indexes) throws IOException;
 
   List<ColumnEncoding> getCurrentColumnEncodings() throws IOException;
 

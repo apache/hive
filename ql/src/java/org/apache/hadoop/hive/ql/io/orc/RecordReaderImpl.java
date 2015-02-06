@@ -3376,16 +3376,20 @@ public class RecordReaderImpl implements RecordReader {
 
   OrcProto.RowIndex[] readRowIndex(
       int stripeIndex, boolean[] included) throws IOException {
+    return readRowIndex(stripeIndex, included, null);
+  }
+
+  OrcProto.RowIndex[] readRowIndex(
+      int stripeIndex, boolean[] included, OrcProto.RowIndex[] indexes) throws IOException {
     long offset = stripes.get(stripeIndex).getOffset();
     OrcProto.StripeFooter stripeFooter;
-    OrcProto.RowIndex[] indexes;
     // if this is the current stripe, use the cached objects.
     if (stripeIndex == currentStripe) {
       stripeFooter = this.stripeFooter;
-      indexes = this.indexes;
+      indexes = indexes == null ? this.indexes : indexes;
     } else {
       stripeFooter = readStripeFooter(stripes.get(stripeIndex));
-      indexes = new OrcProto.RowIndex[this.indexes.length];
+      indexes = indexes == null ? new OrcProto.RowIndex[this.indexes.length] : indexes;
     }
     for(OrcProto.Stream stream: stripeFooter.getStreamsList()) {
       if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
@@ -3596,8 +3600,8 @@ public class RecordReaderImpl implements RecordReader {
           }
           ecb.setStreamData(colIxMod, streamIx, cb);
         }
-        consumer.consumeData(ecb);
       }
+      consumer.consumeData(ecb);
     }
   }
 
@@ -3626,8 +3630,9 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   @Override
-  public OrcProto.RowIndex[] getCurrentRowIndexEntries(boolean[] included) throws IOException {
-    return readRowIndex(currentStripe, included);
+  public void getCurrentRowIndexEntries(
+      boolean[] included, RowIndex[] indexes) throws IOException {
+    readRowIndex(currentStripe, included, indexes);
   }
 
   @Override

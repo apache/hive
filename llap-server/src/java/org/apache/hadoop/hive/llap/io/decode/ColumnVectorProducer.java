@@ -34,12 +34,38 @@ import org.apache.hadoop.hive.llap.io.encoded.EncodedDataReader;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+
 /** Middle layer - gets encoded blocks, produces proto-VRBs */
 public abstract class ColumnVectorProducer<BatchKey> {
-  private final ExecutorService executor;
+  private final ListeningExecutorService executor;
 
   public ColumnVectorProducer(ExecutorService executor) {
-    this.executor = executor;
+    this.executor = (executor instanceof ListeningExecutorService) ?
+        (ListeningExecutorService)executor : MoreExecutors.listeningDecorator(executor);
+  }
+
+  private final class UncaughtErrorHandler implements FutureCallback<Void> {
+    private final EncodedDataConsumer edc;
+
+    private UncaughtErrorHandler(EncodedDataConsumer edc) {
+      this.edc = edc;
+    }
+
+    @Override
+    public void onSuccess(Void result) {
+      // Successful execution of reader is supposed to call setDone.
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+      // Reader is not supposed to throw AFTER calling setError.
+      edc.setError(t);
+    }
   }
 
   private class EncodedDataConsumer implements ConsumerFeedback<ColumnVectorBatch>,
@@ -70,8 +96,8 @@ public abstract class ColumnVectorProducer<BatchKey> {
         if (!localIsStopped) {
           targetBatch = pendingData.get(data.batchKey);
           if (targetBatch == null) {
+            targetBatch = data;
             pendingData.put(data.batchKey, data);
-            return;
           }
         }
       }
@@ -85,7 +111,9 @@ public abstract class ColumnVectorProducer<BatchKey> {
         // Check if we are stopped and the batch was already cleaned.
         localIsStopped = (targetBatch.columnData == null);
         if (!localIsStopped) {
-          targetBatch.merge(data);
+          if (targetBatch != data) {
+            targetBatch.merge(data);
+          }
           if (0 == targetBatch.colsRemaining) {
             synchronized (pendingData) {
               targetBatch = isStopped ? null : pendingData.remove(data.batchKey);
@@ -196,14 +224,19 @@ public abstract class ColumnVectorProducer<BatchKey> {
       SearchArgument sarg, String[] columnNames, Consumer<ColumnVectorBatch> consumer)
           throws IOException {
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-    EncodedDataConsumer edc = new EncodedDataConsumer(consumer, columnIds.size());
+    final EncodedDataConsumer edc = new EncodedDataConsumer(consumer, columnIds.size());
     // Get the source of encoded data.
     EncodedDataProducer<BatchKey> edp = getEncodedDataProducer();
     // Then, get the specific reader of encoded data out of the producer.
-    EncodedDataReader<BatchKey> reader = edp.getReader(split, columnIds, sarg, columnNames, edc);
+    EncodedDataReader<BatchKey> reader = edp.createReader(
+        split, columnIds, sarg, columnNames, edc);
     // Set the encoded data reader as upstream feedback for encoded data consumer, and start.
     edc.init(reader);
-    executor.submit(reader);
+    // This is where we send execution on separate thread; the only threading boundary for now.
+    // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
+    UncaughtErrorHandler errorHandler =  new UncaughtErrorHandler(edc);
+    ListenableFuture<Void> future = executor.submit(reader);
+    Futures.addCallback(future, errorHandler);
     return edc;
   }
 

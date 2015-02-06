@@ -26,6 +26,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
 public interface EncodedDataProducer<BatchKey> {
-  EncodedDataReader<BatchKey> getReader(InputSplit split, List<Integer> columnIds,
+  EncodedDataReader<BatchKey> createReader(InputSplit split, List<Integer> columnIds,
       SearchArgument sarg, String[] columnNames, Consumer<EncodedColumnBatch<BatchKey>> consumer);
 }

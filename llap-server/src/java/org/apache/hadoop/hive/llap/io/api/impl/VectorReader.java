@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.InputSplit;
 
 /** This used to be the main LLAP interface (next and close). However, since inputformat
- * is used instead at present time, this class is just an extra layer. It could be merged
- * into RecordReader of LlapInputFormat. */
+ * is used instead at present time, this class is just an extra layer.
+ * TODO: It could be merged into RecordReader of LlapInputFormat. */
 public class VectorReader implements Consumer<ColumnVectorBatch> {
   private final InputSplit split;
   private final List<Integer> columnIds;

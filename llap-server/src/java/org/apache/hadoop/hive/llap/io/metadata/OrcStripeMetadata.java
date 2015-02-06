@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
@@ -30,11 +31,22 @@ public class OrcStripeMetadata {
   List<Stream> streams;
   RowIndex[] rowIndexes;
 
-  public OrcStripeMetadata(
-      RecordReader reader, int stripeIx, boolean[] includes) throws IOException {
-    rowIndexes = reader.getCurrentRowIndexEntries(includes);
+  public OrcStripeMetadata(RecordReader reader, boolean[] includes) throws IOException {
+    rowIndexes = new OrcProto.RowIndex[includes.length];
+    reader.getCurrentRowIndexEntries(includes, rowIndexes);
     streams = reader.getCurrentStreams();
     encodings = reader.getCurrentColumnEncodings();
+  }
+
+  public boolean hasAllIndexes(boolean[] includes) {
+    for (int i = 0; i < includes.length; ++i) {
+      if (includes[i] && rowIndexes[i] == null) return true;
+    }
+    return false;
+  }
+
+  public void loadMissingIndexes(RecordReader reader, boolean[] includes) throws IOException {
+    reader.getCurrentRowIndexEntries(includes, rowIndexes);
   }
 
   public RowIndex[] getRowIndexes() {
