@@ -29,17 +29,15 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 public interface HiveAuthorizationValidator {
 
   /**
-   * Check if current user has privileges to perform given operation type
-   * hiveOpType on the given input and output objects
-   *
-   * @param hiveOpType
-   * @param inputHObjs
-   * @param outputHObjs
-   * @param context
-   * @throws HiveAuthzPluginException
-   * @throws HiveAccessControlException
+   * see HiveAuthorizer.checkPrivileges
    */
   void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
       List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException;
+
+  /**
+   * see HiveAuthorizer.filterListCmdObjects
+   */
+  List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
+      HiveAuthzContext context);
 
 }

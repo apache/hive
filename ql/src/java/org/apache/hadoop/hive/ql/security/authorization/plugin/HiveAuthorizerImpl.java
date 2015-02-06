@@ -85,6 +85,13 @@ public class HiveAuthorizerImpl implements HiveAuthorizer {
     authValidator.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, context);
   }
 
+
+  @Override
+  public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
+      HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+    return authValidator.filterListCmdObjects(listObjs, context);
+  }
+
   @Override
   public List<String> getAllRoles() throws HiveAuthzPluginException, HiveAccessControlException {
     return accessController.getAllRoles();
