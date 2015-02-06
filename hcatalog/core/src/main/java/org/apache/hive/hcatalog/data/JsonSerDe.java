@@ -512,15 +512,20 @@ public class JsonSerDe implements SerDe {
         case DECIMAL:
           sb.append(((HiveDecimalObjectInspector)poi).getPrimitiveJavaObject(o));
           break;
-        case VARCHAR:
-          appendWithQuotes(sb, 
-                  ((HiveVarcharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+        case VARCHAR: {
+          String s = SerDeUtils.escapeString(
+              ((HiveVarcharObjectInspector) poi).getPrimitiveJavaObject(o).toString());
+          appendWithQuotes(sb, s);
           break;
-        case CHAR:
+        }
+        case CHAR: {
           //this should use HiveChar.getPaddedValue() but it's protected; currently (v0.13)
           // HiveChar.toString() returns getPaddedValue()
-          appendWithQuotes(sb, ((HiveCharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+          String s = SerDeUtils.escapeString(
+              ((HiveCharObjectInspector) poi).getPrimitiveJavaObject(o).toString());
+          appendWithQuotes(sb, s);
           break;
+        }
         default:
           throw new RuntimeException("Unknown primitive type: " + poi.getPrimitiveCategory());
         }
