@@ -106,7 +106,6 @@ public abstract class ColumnVectorProducer<BatchKey> {
         return;
       }
 
-      int colsRemaining = -1;
       synchronized (targetBatch) {
         // Check if we are stopped and the batch was already cleaned.
         localIsStopped = (targetBatch.columnData == null);
@@ -128,7 +127,7 @@ public abstract class ColumnVectorProducer<BatchKey> {
         returnProcessed(data.columnData);
         return;
       }
-      if (0 == colsRemaining) {
+      if (0 == targetBatch.colsRemaining) {
         ColumnVectorProducer.this.decodeBatch(targetBatch, downstreamConsumer);
         // Batch has been decoded; unlock the buffers in cache
         returnProcessed(targetBatch.columnData);

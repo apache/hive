@@ -40,9 +40,9 @@ public class OrcStripeMetadata {
 
   public boolean hasAllIndexes(boolean[] includes) {
     for (int i = 0; i < includes.length; ++i) {
-      if (includes[i] && rowIndexes[i] == null) return true;
+      if (includes[i] && rowIndexes[i] == null) return false;
     }
-    return false;
+    return true;
   }
 
   public void loadMissingIndexes(RecordReader reader, boolean[] includes) throws IOException {

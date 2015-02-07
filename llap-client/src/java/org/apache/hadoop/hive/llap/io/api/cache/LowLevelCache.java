@@ -28,8 +28,9 @@ public interface LowLevelCache {
   /**
    * Gets file data for particular offsets. Null entries mean no data.
    * @param file File name; MUST be interned.
+   * @param base base offset for the ranges (stripe offset in case of ORC).
    */
-  void getFileData(String fileName, LinkedList<DiskRange> ranges);
+  void getFileData(String fileName, LinkedList<DiskRange> ranges, long base);
 
   /**
    * Puts file data into cache.
@@ -37,7 +38,7 @@ public interface LowLevelCache {
    * @return null if all data was put; bitmask indicating which chunks were not put otherwise;
    *         the replacement chunks from cache are updated directly in the array.
    */
-  long[] putFileData(String file, DiskRange[] ranges, LlapMemoryBuffer[] chunks);
+  long[] putFileData(String file, DiskRange[] ranges, LlapMemoryBuffer[] chunks, long base);
 
   /**
    * Releases the buffer returned by getFileData or allocateMultiple.

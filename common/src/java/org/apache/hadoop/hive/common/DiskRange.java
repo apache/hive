@@ -70,8 +70,8 @@ public class DiskRange {
     throw new UnsupportedOperationException();
   }
 
-  public void shiftBy(long baseOffset) {
-    offset -= baseOffset;
-    end -= baseOffset;
+  public void shiftBy(long offsetDelta) {
+    offset += offsetDelta;
+    end += offsetDelta;
   }
 }

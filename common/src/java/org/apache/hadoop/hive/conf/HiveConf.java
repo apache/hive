@@ -1896,7 +1896,7 @@ public class HiveConf extends Configuration {
         "and use it to run queries."),
 
     // Vectorization enabled
-    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false,
+    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", true,
         "This flag should be set to true to enable vectorized mode of query execution.\n" +
         "The default value is false."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
@@ -2009,7 +2009,7 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "remote spark client JobHandle future timeout value in seconds."),
 
-    LLAP_IO_ENABLED("hive.llap.io.enabled", false, ""),
+    LLAP_IO_ENABLED("hive.llap.io.enabled", true, ""),
     LLAP_LOW_LEVEL_CACHE("hive.llap.io.use.lowlevel.cache", true, ""),
     LLAP_ORC_CACHE_MIN_ALLOC("hive.llap.io.cache.orc.alloc.min", 128 * 1024, ""),
     LLAP_ORC_CACHE_MAX_ALLOC("hive.llap.io.cache.orc.alloc.max", 16 * 1024 * 1024, ""),

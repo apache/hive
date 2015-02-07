@@ -76,24 +76,25 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public void getFileData(String fileName, LinkedList<DiskRange> ranges) {
+  public void getFileData(String fileName, LinkedList<DiskRange> ranges, long baseOffset) {
     FileCache subCache = cache.get(fileName);
     if (subCache == null || !subCache.incRef()) return;
     try {
       ListIterator<DiskRange> dr = ranges.listIterator();
       while (dr.hasNext()) {
-        getOverlappingRanges(dr, subCache.cache);
+        getOverlappingRanges(baseOffset, dr, subCache.cache);
       }
     } finally {
       subCache.decRef();
     }
   }
 
-  private void getOverlappingRanges(ListIterator<DiskRange> drIter,
+  private void getOverlappingRanges(long baseOffset, ListIterator<DiskRange> drIter,
       ConcurrentSkipListMap<Long, LlapCacheableBuffer> cache) {
     DiskRange currentNotCached = drIter.next();
-    Iterator<Map.Entry<Long, LlapCacheableBuffer>> matches =
-        cache.subMap(currentNotCached.offset, currentNotCached.end).entrySet().iterator();
+    Iterator<Map.Entry<Long, LlapCacheableBuffer>> matches = cache.subMap(
+        currentNotCached.offset + baseOffset, currentNotCached.end + baseOffset)
+        .entrySet().iterator();
     long cacheEnd = -1;
     while (matches.hasNext()) {
       assert currentNotCached != null;
@@ -113,11 +114,14 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
       cacheEnd = cacheOffset + buffer.declaredLength;
       CacheChunk currentCached = new CacheChunk(buffer, cacheOffset, cacheEnd);
       currentNotCached = addCachedBufferToIter(drIter, currentNotCached, currentCached);
+      // Now that we've added it into correct position, we can adjust it by base offset.
+      currentCached.shiftBy(-baseOffset);
     }
   }
 
   private DiskRange addCachedBufferToIter(ListIterator<DiskRange> drIter,
       DiskRange currentNotCached, CacheChunk currentCached) {
+    // Both currentNotCached and currentCached already include baseOffset.
     if (currentNotCached.offset == currentCached.offset) {
       if (currentNotCached.end <= currentCached.end) {  // we assume it's always "==" now
         // Replace the entire current DiskRange with new cached range.
@@ -160,7 +164,8 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
   }
 
   @Override
-  public long[] putFileData(String fileName, DiskRange[] ranges, LlapMemoryBuffer[] buffers) {
+  public long[] putFileData(
+      String fileName, DiskRange[] ranges, LlapMemoryBuffer[] buffers, long baseOffset) {
     long[] result = null;
     assert buffers.length == ranges.length;
     FileCache subCache = getOrAddFileSubCache(fileName);
@@ -169,7 +174,7 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
         LlapCacheableBuffer buffer = (LlapCacheableBuffer)buffers[i];
         assert !buffer.isLocked(); // TODO: is this always true? does put happen before reuse?
         buffer.incRef();
-        long offset = ranges[i].offset;
+        long offset = ranges[i].offset + baseOffset;
         buffer.declaredLength = ranges[i].getLength();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapCacheableBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
@@ -180,14 +185,16 @@ public class LowLevelCacheImpl implements LowLevelCache, EvictionListener {
           }
           if (DebugUtils.isTraceCachingEnabled()) {
             LlapIoImpl.LOG.info("Trying to cache when the chunk is already cached for "
-                + fileName + "@" + offset  + "; old " + oldVal + ", new " + buffer);
+                + fileName + "@" + offset  + " (base " + baseOffset + "); old " + oldVal
+                + ", new " + buffer);
           }
           if (lockBuffer(oldVal)) {
             // We don't do proper overlap checking because it would cost cycles and we
             // think it will never happen. We do perform the most basic check here.
             if (oldVal.declaredLength != buffer.declaredLength) {
               throw new RuntimeException("Found a block with different length at the same offset: "
-                  + oldVal.declaredLength + " vs " + buffer.declaredLength + " @" + offset);
+                  + oldVal.declaredLength + " vs " + buffer.declaredLength + " @" + offset
+                  + " (base " + baseOffset + ")");
             }
             // We found an old, valid block for this key in the cache.
             releaseBufferInternal(buffer);

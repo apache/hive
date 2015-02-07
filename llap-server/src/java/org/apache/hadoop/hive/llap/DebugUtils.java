@@ -28,11 +28,6 @@ public class DebugUtils {
     return false;
   }
 
-  /** Very detailed debug messages that dump data */
-  public static boolean isTraceDataEnabled() {
-    return false;
-  }
-
   public static boolean isTraceLockingEnabled() {
     return false;
   }

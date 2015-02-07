@@ -86,7 +86,8 @@ public interface RecordReader {
 
   void prepareEncodedColumnRead() throws IOException;
 
-  // TODO: maybe all of this should be moved to LLAP-specific class
+  // TODO: maybe all of this should be moved to LLAP-specific class.
+  //       See also comment in RecordReaderImpl; class doesn't even have to be RecordReader 
   /**
    *  TODO: assumes the reader is for one stripe, otherwise the signature makes no sense.
    *        Also has no columns passed, because that is in ctor.

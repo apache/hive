@@ -2736,9 +2736,9 @@ public class RecordReaderImpl implements RecordReader {
     LinkedList<DiskRange> rangesToRead = Lists.newLinkedList();
     rangesToRead.add(new DiskRange(start, end));
     if (this.cache != null) {
-      cache.getFileData(fileName, rangesToRead);
+      cache.getFileData(fileName, rangesToRead, stripe.getOffset());
     }
-    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead);
+    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, false);
     bufferChunks = rangesToRead;
     List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
     createStreams(
@@ -3053,7 +3053,8 @@ public class RecordReaderImpl implements RecordReader {
   static void readDiskRanges(FSDataInputStream file,
                                  ZeroCopyReaderShim zcr,
                                  long base,
-                                 LinkedList<DiskRange> ranges) throws IOException {
+                                 LinkedList<DiskRange> ranges,
+                                 boolean doForceDirect) throws IOException {
     ListIterator<DiskRange> rangeIter = ranges.listIterator();
     while (rangeIter.hasNext()) {
       DiskRange range = rangeIter.next();
@@ -3076,6 +3077,22 @@ public class RecordReaderImpl implements RecordReader {
           len -= read;
           off += read;
         }
+      } else if (doForceDirect) {
+        ByteBuffer directBuf = ByteBuffer.allocateDirect(len);
+        try {
+          while (directBuf.remaining() > 0) {
+            int count = file.read(directBuf);
+            if (count < 0) throw new EOFException();
+            directBuf.position(directBuf.position() + count);
+          }
+        } catch (UnsupportedOperationException ex) {
+          LOG.error("Stream does not support direct read; we will copy.");
+          byte[] buffer = new byte[len];
+          file.readFully(buffer, 0, buffer.length);
+          directBuf.put(buffer);
+        }
+        directBuf.position(0);
+        rangeIter.set(new BufferChunk(directBuf, range.offset));
       } else {
         byte[] buffer = new byte[len];
         file.readFully(buffer, 0, buffer.length);
@@ -3152,7 +3169,7 @@ public class RecordReaderImpl implements RecordReader {
         if (range.offset < offset) {
           // Partial first buffer, add a slice of it.
           DiskRange partial = range.slice(offset, Math.min(streamEnd, range.end));
-          partial.shiftBy(offset);
+          partial.shiftBy(-offset);
           buffers.add(partial);
           if (range.end >= streamEnd) break; // Partial first buffer is also partial last buffer.
           continue;
@@ -3163,7 +3180,7 @@ public class RecordReaderImpl implements RecordReader {
       if (range.end > streamEnd) {
         // Partial last buffer (may also be the first buffer), add a slice of it.
         DiskRange partial = range.slice(range.offset, streamEnd);
-        partial.shiftBy(offset);
+        partial.shiftBy(-offset);
         buffers.add(partial);
         break;
       }
@@ -3171,7 +3188,7 @@ public class RecordReaderImpl implements RecordReader {
       // TODO: ideally we would want to reuse the object and remove it from the list, but we cannot
       //       because bufferChunks is also used by clearStreams for zcr. Create a useless dup.
       DiskRange full = range.slice(range.offset, range.end);
-      full.shiftBy(offset);
+      full.shiftBy(-offset);
       buffers.add(full);
       if (range.end == streamEnd) break;
     }
@@ -3194,9 +3211,9 @@ public class RecordReaderImpl implements RecordReader {
     }
     mergeDiskRanges(rangesToRead);
     if (this.cache != null) {
-      cache.getFileData(fileName, rangesToRead);
+      cache.getFileData(fileName, rangesToRead, stripe.getOffset());
     }
-    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead);
+    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, false);
     bufferChunks = rangesToRead;
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + stringifyDiskRanges(rangesToRead));
@@ -3490,12 +3507,24 @@ public class RecordReaderImpl implements RecordReader {
     StreamBuffer stripeLevelStream;
   }
 
+  /*
+   * TODO: this method could be made static or moved to separate class unrelated to RecordReader.
+   *       It's not very well integrated into RecordReader, and violates many RR usage patterns.
+   *       The following fields are used; and how to get rid of them:
+   * currentStripe - always 0 in current usage.
+   * stripes, fileName, codec, zcr, bufferSize - available externally or thru parent Reader
+   * rowCountInStripe, file - derived
+   * types, encodings, indexes - available externally from cache (for initial caching, reader
+   *    is needed to get footer and indexes; or that can be refactored out)
+   */
   @Override
-  public void readEncodedColumns(int stripeIx, boolean[] includes,  boolean[][] colRgs,
+  public void readEncodedColumns(int stripeIx, boolean[] included, boolean[][] colRgs,
       LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException {
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.
     StripeInformation stripe = stripes.get(currentStripe);
+    long stripeOffset = stripe.getOffset();
+    // TODO: we should have avoided reading the footer if we got metadata from cache.
     List<OrcProto.Stream> streamList =
         this.streamList != null ? this.streamList : stripeFooter.getStreamsList();
     List<ColumnEncoding> encodings =
@@ -3553,10 +3582,11 @@ public class RecordReaderImpl implements RecordReader {
       LOG.debug("chunks = " + stringifyDiskRanges(rangesToRead));
     }
     mergeDiskRanges(rangesToRead);
-    if (this.cache != null) {
-      cache.getFileData(fileName, rangesToRead);
+    if (cache != null) {
+      cache.getFileData(fileName, rangesToRead, stripeOffset);
     }
-    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead);
+    // Force direct buffers, since we will be decompressing to cache.
+    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, true);
 
     // 2.1. Separate buffers for each stream from the data we have.
     // TODO: given how we read, we could potentially get rid of this step?
@@ -3583,10 +3613,11 @@ public class RecordReaderImpl implements RecordReader {
         ecb.initColumn(colIxMod, ctx.colIx, ctx.streamCount);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
+          long absStreamOffset = stripeOffset + sctx.offset;
           StreamBuffer cb = null;
           if (isDictionary(sctx.kind, ctx.encoding)) {
             // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
-            cb = getStripeLevelStream(sctx, cache, isLastRg);
+            cb = getStripeLevelStream(absStreamOffset, sctx, cache, isLastRg);
           } else {
             // This stream can be separated by RG using index. Let's do that.
             long cOffset = index.getPositions(sctx.streamIndexOffset),
@@ -3595,7 +3626,7 @@ public class RecordReaderImpl implements RecordReader {
                     sctx.length, bufferSize);
             cb = new StreamBuffer();
             cb.incRef();
-            InStream.uncompressStream(fileName, zcr, sctx.bufferIter,
+            InStream.uncompressStream(fileName, absStreamOffset, zcr, sctx.bufferIter,
                 codec, bufferSize, cache, cOffset, endCOffset, cb);
           }
           ecb.setStreamData(colIxMod, streamIx, cb);
@@ -3605,8 +3636,13 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-  private StreamBuffer getStripeLevelStream(
-      StreamContext ctx, LowLevelCache cache, boolean isLastRg) throws IOException {
+  /**
+   * Reads the entire stream for a column (e.g. a dictionarty stream), or gets it from context.
+   * @param isLastRg Whether the stream is being read for last RG in stripe.
+   * @return StreamBuffer that contains the entire stream.
+   */
+  private StreamBuffer getStripeLevelStream(long baseOffset, StreamContext ctx,
+      LowLevelCache cache, boolean isLastRg) throws IOException {
     if (ctx.stripeLevelStream == null) {
       ctx.stripeLevelStream = new StreamBuffer();
       // We will be using this for each RG while also sending RGs to processing.
@@ -3614,8 +3650,8 @@ public class RecordReaderImpl implements RecordReader {
       // it when building the last RG, so each RG processing will decref once, and the
       // last one will unlock the buffers.
       ctx.stripeLevelStream.incRef();
-      InStream.uncompressStream(
-          fileName, zcr, ctx.bufferIter, codec, bufferSize, cache, -1, -1, ctx.stripeLevelStream);
+      InStream.uncompressStream(fileName, baseOffset, zcr,
+          ctx.bufferIter, codec, bufferSize, cache, -1, -1, ctx.stripeLevelStream);
       ctx.bufferIter = null;
     }
     if (!isLastRg) {
@@ -3648,5 +3684,4 @@ public class RecordReaderImpl implements RecordReader {
     this.streamList = streams;
     this.encodings = encodings;
   }
-
 }
