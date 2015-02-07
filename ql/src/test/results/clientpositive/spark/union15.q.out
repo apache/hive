@@ -27,7 +27,7 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 1)
-        Reducer 3 <- Map 4 (GROUP, 1), Map 5 (GROUP, 1), Reducer 2 (GROUP, 1)
+        Reducer 3 <- Map 4 (GROUP, 2), Map 5 (GROUP, 2), Reducer 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -115,18 +115,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -152,20 +148,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-255	2
-213	2
 238	2
-150	2
 311	2
 146	2
+278	2
+401	2
+128	2
+98	2
+255	2
+213	2
+150	2
 369	2
 66	2
 	20
-278	2
-401	2
 406	2
 tst1	1
-128	2
-98	2
 273	2
 224	2

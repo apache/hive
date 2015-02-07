@@ -89,7 +89,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 3 <- Map 2 (GROUP, 1)
+        Reducer 3 <- Map 2 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -232,6 +232,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1
@@ -252,10 +253,10 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	false               
-	numFiles            	3                   
+	numFiles            	4                   
 	numRows             	-1                  
 	rawDataSize         	-1                  
-	totalSize           	271                 
+	totalSize           	350                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

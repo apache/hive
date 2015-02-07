@@ -35,6 +35,7 @@ import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
 import org.apache.hive.hcatalog.messaging.DropTableMessage;
+import org.apache.hive.hcatalog.messaging.InsertMessage;
 import org.apache.hive.hcatalog.messaging.MessageDeserializer;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
@@ -120,6 +121,13 @@ public class JSONMessageFactory extends MessageFactory {
   public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
     return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
         partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)), now());
+  }
+
+  @Override
+  public InsertMessage buildInsertMessage(String db, String table, List<String> partVals,
+                                          List<String> files) {
+    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, partVals,
+        files, now());
   }
 
   private long now() {

@@ -73,7 +73,10 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
@@ -82,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -657,7 +661,7 @@ public class Hive {
       if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
-      if (tbl.getCols().size() == 0) {
+      if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
@@ -1307,6 +1311,7 @@ public class Hive {
    *          location/inputformat/outputformat/serde details from table spec
    * @param isSrcLocal
    *          If the source directory is LOCAL
+   * @param isAcid true if this is an ACID operation
    */
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
@@ -1354,16 +1359,19 @@ public class Hive {
         newPartPath = oldPartPath;
       }
 
+      List<Path> newFiles = null;
       if (replace) {
         Hive.replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
       } else {
+        newFiles = new ArrayList<Path>();
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
-        Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid);
+        Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
       }
 
       boolean forceCreate = (!holdDDLTime) ? true : false;
-      newTPart = getPartition(tbl, partSpec, forceCreate, newPartPath.toString(), inheritTableSpecs);
+      newTPart = getPartition(tbl, partSpec, forceCreate, newPartPath.toString(),
+          inheritTableSpecs, newFiles);
       // recreate the partition if it existed before
       if (!holdDDLTime) {
         if (isSkewedStoreAsSubdir) {
@@ -1376,7 +1384,8 @@ public class Hive {
           skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
           newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
           alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newCreatedTpart));
-          newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
+          newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs,
+              newFiles);
           return new Partition(tbl, newCreatedTpart);
         }
       }
@@ -1486,6 +1495,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param replace
    * @param numDP number of dynamic partitions
    * @param holdDDLTime
+   * @param listBucketingEnabled
+   * @param isAcid true if this is an ACID operation
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
@@ -1577,11 +1588,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void loadTable(Path loadPath, String tableName, boolean replace,
       boolean holdDDLTime, boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
       throws HiveException {
+    List<Path> newFiles = new ArrayList<Path>();
     Table tbl = getTable(tableName);
     if (replace) {
       tbl.replaceFiles(loadPath, isSrcLocal);
     } else {
-      tbl.copyFiles(loadPath, isSrcLocal, isAcid);
+      tbl.copyFiles(loadPath, isSrcLocal, isAcid, newFiles);
       tbl.getParameters().put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, "true");
     }
 
@@ -1606,6 +1618,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new HiveException(e);
       }
     }
+    fireInsertEvent(tbl, null, newFiles);
   }
 
   /**
@@ -1693,7 +1706,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
-    return getPartition(tbl, partSpec, forceCreate, null, true);
+    return getPartition(tbl, partSpec, forceCreate, null, true, null);
   }
 
   /**
@@ -1711,8 +1724,32 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */
+  public Partition getPartition(Table tbl, Map<String, String> partSpec, boolean forceCreate,
+                                String partPath, boolean inheritTableSpecs)
+      throws HiveException {
+    return getPartition(tbl, partSpec, forceCreate, partPath, inheritTableSpecs, null);
+  }
+
+  /**
+   * Returns partition metadata
+   *
+   * @param tbl
+   *          the partition's table
+   * @param partSpec
+   *          partition keys and values
+   * @param forceCreate
+   *          if this is true and partition doesn't exist then a partition is
+   *          created
+   * @param partPath the path where the partition data is located
+   * @param inheritTableSpecs whether to copy over the table specs for if/of/serde
+   * @param newFiles An optional list of new files that were moved into this partition.  If
+   *                 non-null these will be included in the DML event sent to the metastore.
+   * @return result partition object or null if there is no partition
+   * @throws HiveException
+   */
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
-      boolean forceCreate, String partPath, boolean inheritTableSpecs) throws HiveException {
+      boolean forceCreate, String partPath, boolean inheritTableSpecs, List<Path> newFiles)
+      throws HiveException {
     tbl.validatePartColumnNames(partSpec, true);
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
@@ -1772,6 +1809,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
         else {
           alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
+          fireInsertEvent(tbl, partSpec, newFiles);
         }
       }
       if (tpart == null) {
@@ -1811,6 +1849,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
       fullName = tbl.getDbName() + "." + tbl.getTableName();
     }
     alterPartition(fullName, new Partition(tbl, tpart));
+  }
+
+  private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, List<Path> newFiles)
+      throws HiveException {
+    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
+      LOG.debug("Firing dml insert event");
+      FireEventRequestData data = new FireEventRequestData();
+      InsertEventRequestData insertData = new InsertEventRequestData();
+      data.setInsertData(insertData);
+      if (newFiles != null && newFiles.size() > 0) {
+        for (Path p : newFiles) {
+          insertData.addToFilesAdded(p.toString());
+        }
+      }
+      FireEventRequest rqst = new FireEventRequest(true, data);
+      rqst.setDbName(tbl.getDbName());
+      rqst.setTableName(tbl.getTableName());
+      if (partitionSpec != null && partitionSpec.size() > 0) {
+        List<String> partVals = new ArrayList<String>(partitionSpec.size());
+        for (FieldSchema fs : tbl.getPartitionKeys()) {
+          partVals.add(partitionSpec.get(fs.getName()));
+        }
+        rqst.setPartitionVals(partVals);
+      }
+      try {
+        getMSC().fireListenerEvent(rqst);
+      } catch (TException e) {
+        throw new HiveException(e);
+      }
+    }
   }
 
   public boolean dropPartition(String tblName, List<String> part_vals, boolean deleteData)
@@ -2399,7 +2467,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static String getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
     Path currentWorkingDir = fs.getWorkingDirectory();
     Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
-    return Path.getPathWithoutSchemeAndAuthority(path).toString();
+    return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path).toString();
   }
 
   //it is assumed that parent directory of the destf should already exist when this
@@ -2502,10 +2570,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param fs Filesystem
    * @param isSrcLocal true if source is on local file system
    * @param isAcid true if this is an ACID based write
+   * @param newFiles if this is non-null, a list of files that were created as a result of this
+   *                 move will be returned.
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf,
-      FileSystem fs, boolean isSrcLocal, boolean isAcid) throws HiveException {
+      FileSystem fs, boolean isSrcLocal, boolean isAcid, List<Path> newFiles) throws HiveException {
     boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     try {
@@ -2537,7 +2607,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // If we're moving files around for an ACID write then the rules and paths are all different.
     // You can blame this on Owen.
     if (isAcid) {
-      moveAcidFiles(srcFs, srcs, destf);
+      moveAcidFiles(srcFs, srcs, destf, newFiles);
     } else {
     // check that source and target paths exist
       List<List<Path[]>> result = checkPaths(conf, fs, srcs, srcFs, destf, false);
@@ -2549,6 +2619,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               throw new IOException("Cannot move " + sdpair[0] + " to "
                   + sdpair[1]);
             }
+            if (newFiles != null) newFiles.add(sdpair[1]);
           }
         }
       } catch (IOException e) {
@@ -2557,8 +2628,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst)
-      throws HiveException {
+  private static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
+                                    List<Path> newFiles) throws HiveException {
     // The layout for ACID files is table|partname/base|delta/bucket
     // We will always only be writing delta files.  In the buckets created by FileSinkOperator
     // it will look like bucket/delta/bucket.  So we need to move that into the above structure.
@@ -2622,6 +2693,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
                   bucketDest.toUri().toString());
               fs.rename(bucketSrc, bucketDest);
+              if (newFiles != null) newFiles.add(bucketDest);
             }
           } catch (IOException e) {
             throw new HiveException("Error moving acid files " + e.getMessage(), e);

@@ -134,7 +134,6 @@ public class NonBlockingOpDeDupProc implements Transform {
       pSEL.getConf().setSelectStar(cSEL.getConf().isSelectStar());
       // We need to use the OpParseContext of the child SelectOperator to replace the
       // the OpParseContext of the parent SelectOperator.
-      pctx.updateOpParseCtx(pSEL, pctx.removeOpParseCtx(cSEL));
       pSEL.removeChildAndAdoptItsChildren(cSEL);
       cSEL.setParentOperators(null);
       cSEL.setChildOperators(null);

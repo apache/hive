@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>0.15.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -55,7 +55,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>0.15.0</hive.version.shortname>
+    <hive.version.shortname>1.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -136,6 +136,7 @@
     <jersey.version>1.14</jersey.version>
     <jline.version>2.12</jline.version>
     <jms.version>1.1</jms.version>
+    <joda.version>2.5</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>20090211</json.version>
     <junit.version>4.11</junit.version>
@@ -597,8 +598,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>
@@ -826,6 +827,7 @@
             <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
             <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
+            <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
             <PATH>${env.PATH}${test.extra.path}</PATH>
           </environmentVariables>
           <systemPropertyVariables>

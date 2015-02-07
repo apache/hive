@@ -575,7 +575,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
 
       // if this transaction isn't ok, skip over it
-      if (!validTxnList.isTxnCommitted(
+      if (!validTxnList.isTxnValid(
           ((ReaderKey) recordIdentifier).getCurrentTransactionId())) {
         continue;
       }

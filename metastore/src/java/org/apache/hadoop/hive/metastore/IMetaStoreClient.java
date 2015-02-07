@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.metastore;
 
+
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -29,10 +32,8 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -44,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -78,9 +81,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
 /**
- * TODO Unnecessary when the server sides for both dbstore and filestore are
- * merged
+ * Wrapper around hive metastore thrift api
  */
+@Public
+@Evolving
 public interface IMetaStoreClient {
 
   /**
@@ -1344,6 +1348,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+
+  /**
+   * Request that the metastore fire an event.  Currently this is only supported for DML
+   * operations, since the metastore knows when DDL operations happen.
+   * @param request
+   * @return response, type depends on type of request
+   * @throws TException
+   */
+  FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

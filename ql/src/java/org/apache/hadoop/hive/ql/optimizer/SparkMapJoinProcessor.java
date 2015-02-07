@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,7 +25,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -49,10 +47,9 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
    */
   @Override
   public MapJoinOperator convertMapJoin(HiveConf conf,
-                                        LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-                                        JoinOperator op, boolean leftSrc, String[] baseSrc, List<String> mapAliases,
-                                        int bigTablePos, boolean noCheckOuterJoin,
-                                        boolean validateMapJoinTree) throws SemanticException {
+      JoinOperator op, boolean leftSrc, String[] baseSrc, List<String> mapAliases,
+      int bigTablePos, boolean noCheckOuterJoin, boolean validateMapJoinTree)
+          throws SemanticException {
 
     // outer join cannot be performed on a table which is being cached
     JoinCondDesc[] condns = op.getConf().getConds();
@@ -64,7 +61,7 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
     }
 
     // create the map-join operator
-    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
+    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf,
         op, op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(),
         op.getConf().getMapAliases(), bigTablePos, noCheckOuterJoin);
 

@@ -431,6 +431,73 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  /**
+   * Returns a shim to wrap MiniSparkOnYARNCluster
+   */
+  @Override
+  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
+    String nameNode, int numDir) throws IOException {
+    return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  /**
+   * Shim for MiniSparkOnYARNCluster
+   */
+  public class MiniSparkShim extends Hadoop23Shims.MiniMrShim {
+
+    private final MiniSparkOnYARNCluster mr;
+    private final Configuration conf;
+
+    public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
+      String nameNode, int numDir) throws IOException {
+
+      mr = new MiniSparkOnYARNCluster("sparkOnYarn");
+      conf.set("fs.defaultFS", nameNode);
+      mr.init(conf);
+      mr.start();
+      this.conf = mr.getConfig();
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      String address = conf.get("yarn.resourcemanager.address");
+      address = StringUtils.substringAfterLast(address, ":");
+
+      if (StringUtils.isBlank(address)) {
+        throw new IllegalArgumentException("Invalid YARN resource manager port.");
+      }
+
+      return Integer.parseInt(address);
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      mr.stop();
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      Configuration config = mr.getConfig();
+      for (Map.Entry<String, String> pair : config) {
+        conf.set(pair.getKey(), pair.getValue());
+      }
+
+      Path jarPath = new Path("hdfs:///user/hive");
+      Path hdfsPath = new Path("hdfs:///user/");
+      try {
+        FileSystem fs = cluster.getFileSystem();
+        jarPath = fs.makeQualified(jarPath);
+        conf.set("hive.jar.directory", jarPath.toString());
+        fs.mkdirs(jarPath);
+        hdfsPath = fs.makeQualified(hdfsPath);
+        conf.set("hive.user.install.directory", hdfsPath.toString());
+        fs.mkdirs(hdfsPath);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   // Don't move this code to the parent class. There's a binary
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
@@ -1228,5 +1295,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       return new HdfsEncryptionShim(uri, conf);
     }
     return new HadoopShims.NoopHdfsEncryptionShim();
+  }
+
+  @Override
+  public Path getPathWithoutSchemeAndAuthority(Path path) {
+    return Path.getPathWithoutSchemeAndAuthority(path);
   }
 }

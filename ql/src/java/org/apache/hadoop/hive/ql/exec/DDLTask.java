@@ -18,6 +18,35 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.util.StringUtils.stringifyException;
+
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -60,6 +89,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -140,6 +170,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
@@ -169,41 +200,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.stringtemplate.v4.ST;
-
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 /**
  * DDLTask implementation.
@@ -564,6 +569,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // merge work only needs input and output.
     MergeFileWork mergeWork = new MergeFileWork(mergeFilesDesc.getInputDir(),
         mergeFilesDesc.getOutputDir(), mergeFilesDesc.getInputFormatClass().getName());
+    LinkedHashMap<String, ArrayList<String>> pathToAliases =
+        new LinkedHashMap<String, ArrayList<String>>();
+    ArrayList<String> inputDirstr = new ArrayList<String>(1);
+    inputDirstr.add(mergeFilesDesc.getInputDir().toString());
+    pathToAliases.put(mergeFilesDesc.getInputDir().get(0).toString(), inputDirstr);
+    mergeWork.setPathToAliases(pathToAliases);
     mergeWork.setListBucketingCtx(mergeFilesDesc.getLbCtx());
     mergeWork.resolveConcatenateMerge(db.getConf());
     mergeWork.setMapperCannotSpanPartns(true);
@@ -589,12 +600,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
     mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
-    MergeFileTask taskExec = new MergeFileTask();
-    taskExec.initialize(db.getConf(), null, driverCxt);
-    taskExec.setWork(mergeWork);
-    taskExec.setQueryPlan(this.getQueryPlan());
-    int ret = taskExec.execute(driverCxt);
+    Task task = null;
+    if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      TezWork tezWork = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+      mergeWork.setName("File Merge");
+      tezWork.add(mergeWork);
+      task = new TezTask();
+      task.setWork(tezWork);
+    } else {
+      task = new MergeFileTask();
+      task.setWork(mergeWork);
+    }
 
+    // initialize the task and execute
+    task.initialize(db.getConf(), getQueryPlan(), driverCxt);
+    int ret = task.execute(driverCxt);
     return ret;
   }
 
@@ -4228,10 +4248,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       // this is not transactional
+      HadoopShims shim = ShimLoader.getHadoopShims();
       for (Path location : getLocations(db, table, partSpec)) {
         FileSystem fs = location.getFileSystem(conf);
+        
+        HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, location);
         fs.delete(location, true);
         fs.mkdirs(location);
+        try {
+          shim.setFullFileStatus(conf, fullFileStatus, fs, location);
+        } catch (Exception e) {
+          LOG.warn("Error setting permissions of " + location, e);
+        }
       }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);

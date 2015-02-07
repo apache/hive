@@ -21,14 +21,18 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkException;
 
@@ -38,6 +42,7 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
   private static final String SPARK_DEFAULT_MASTER = "local";
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
+  private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
 
   public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf)
     throws IOException, SparkException {
@@ -60,8 +65,7 @@ public class HiveSparkClientFactory {
     // set default spark configurations.
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
     sparkConf.put("spark.app.name", SPARK_DEFAULT_APP_NAME);
-    sparkConf.put("spark.serializer",
-      "org.apache.spark.serializer.KryoSerializer");
+    sparkConf.put("spark.serializer", SPARK_DEFAULT_SERIALIZER);
 
     // load properties from spark-defaults.conf.
     InputStream inputStream = null;
@@ -77,7 +81,7 @@ public class HiveSparkClientFactory {
             String value = properties.getProperty(propertyName);
             sparkConf.put(propertyName, properties.getProperty(propertyName));
             LOG.info(String.format(
-              "load spark configuration from %s (%s -> %s).",
+              "load spark property from %s (%s -> %s).",
               SPARK_DEFAULT_CONF_FILE, propertyName, value));
           }
         }
@@ -95,14 +99,36 @@ public class HiveSparkClientFactory {
       }
     }
 
-    // load properties from hive configurations.
+    // load properties from hive configurations, including both spark.* properties,
+    // properties for remote driver RPC, and yarn properties for Spark on YARN mode.
+    String sparkMaster = hiveConf.get("spark.master");
+    if (sparkMaster == null) {
+      sparkMaster = sparkConf.get("spark.master");
+    }
     for (Map.Entry<String, String> entry : hiveConf) {
       String propertyName = entry.getKey();
       if (propertyName.startsWith("spark")) {
         String value = hiveConf.get(propertyName);
         sparkConf.put(propertyName, value);
         LOG.info(String.format(
-          "load spark configuration from hive configuration (%s -> %s).",
+          "load spark property from hive configuration (%s -> %s).",
+          propertyName, value));
+      } else if (propertyName.startsWith("yarn") &&
+        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+        String value = hiveConf.get(propertyName);
+        // Add spark.hadoop prefix for yarn properties as SparkConf only accept properties
+        // started with spark prefix, Spark would remove spark.hadoop prefix lately and add
+        // it to its hadoop configuration.
+        sparkConf.put("spark.hadoop." + propertyName, value);
+        LOG.info(String.format(
+          "load yarn property from hive configuration in %s mode (%s -> %s).",
+          sparkMaster, propertyName, value));
+      }
+      if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
+        String value = RpcConfiguration.getValue(hiveConf, propertyName);
+        sparkConf.put(propertyName, value);
+        LOG.info(String.format(
+          "load RPC property from hive configuration (%s -> %s).",
           propertyName, value));
       }
     }

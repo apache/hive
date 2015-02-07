@@ -751,7 +751,7 @@ public class TestRecordReaderImpl {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf
         (PredicateLeaf.Operator.IS_NULL, PredicateLeaf.Type.STRING,
             "x", null, null);
-    assertEquals(TruthValue.YES,
+    assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", true), pred));
     assertEquals(TruthValue.NO,
         RecordReaderImpl.evaluatePredicate(createStringStats("c", "d", false), pred));

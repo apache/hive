@@ -16,10 +16,12 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
@@ -246,6 +248,7 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
         LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
         split = null;
       } else {
+        populateReadMetadata(readContext.getReadSupportMetadata(), fileMetaData, conf);
         split = new ParquetInputSplit(finalPath,
                 splitStart,
                 splitLength,
@@ -260,5 +263,17 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       throw new IllegalArgumentException("Unknown split type: " + oldSplit);
     }
     return split;
+  }
+
+  /**
+   * Method populates the read metadata, using filemetadata and Hive configuration.
+   * @param metadata read metadata to populate
+   * @param fileMetaData parquet file metadata
+   * @param conf hive configuration
+   */
+  private void populateReadMetadata(Map<String, String> metadata, FileMetaData fileMetaData, JobConf conf) {
+    metadata.put("createdBy", fileMetaData.getCreatedBy());
+    metadata.put(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname,
+      String.valueOf(HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
   }
 }

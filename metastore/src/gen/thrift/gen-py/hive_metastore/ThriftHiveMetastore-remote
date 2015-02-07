@@ -142,6 +142,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  ShowCompactResponse show_compact(ShowCompactRequest rqst)'
   print '  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)'
   print '  CurrentNotificationEventId get_current_notificationEventId()'
+  print '  FireEventResponse fire_listener_event(FireEventRequest rqst)'
   print ''
   sys.exit(0)
 
@@ -906,6 +907,12 @@ elif cmd == 'get_current_notificationEventId':
     print 'get_current_notificationEventId requires 0 args'
     sys.exit(1)
   pp.pprint(client.get_current_notificationEventId())
+
+elif cmd == 'fire_listener_event':
+  if len(args) != 1:
+    print 'fire_listener_event requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.fire_listener_event(eval(args[0]),))
 
 else:
   print 'Unrecognized method %s' % cmd

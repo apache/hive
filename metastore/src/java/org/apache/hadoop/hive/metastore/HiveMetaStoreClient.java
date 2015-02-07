@@ -47,6 +47,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
@@ -68,6 +70,8 @@ import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -127,7 +131,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
-import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -145,7 +148,11 @@ import org.apache.thrift.transport.TTransportException;
 
 /**
  * Hive Metastore Client.
+ * The public implementation of IMetaStoreClient. Methods not inherited from IMetaStoreClient
+ * are not public and can change. Hence this is marked as unstable.
  */
+@Public
+@Unstable
 public class HiveMetaStoreClient implements IMetaStoreClient {
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
@@ -1203,7 +1210,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException {
     try {
-      return filterHook.filterTable(client.get_table(databaseName, tableName)) == null;
+      return filterHook.filterTable(client.get_table(databaseName, tableName)) != null;
     } catch (NoSuchObjectException e) {
       return false;
     }
@@ -1575,7 +1582,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return copy;
   }
 
-  private List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
+  protected List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
     List<FieldSchema> copy = null;
     if (schemas != null) {
       copy = new ArrayList<FieldSchema>();
@@ -1742,12 +1749,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnHandler.createValidTxnList(client.get_open_txns(), 0);
+    return TxnHandler.createValidReadTxnList(client.get_open_txns(), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    return TxnHandler.createValidTxnList(client.get_open_txns(), currentTxn);
+    return TxnHandler.createValidReadTxnList(client.get_open_txns(), currentTxn);
   }
 
   @Override
@@ -1865,6 +1872,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
     return client.get_current_notificationEventId();
+  }
+
+  @Override
+  public FireEventResponse fireListenerEvent(FireEventRequest rqst) throws TException {
+    return client.fire_listener_event(rqst);
   }
 
   /**

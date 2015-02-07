@@ -116,6 +116,18 @@ const char* _kGrantRevokeTypeNames[] = {
 };
 const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kGrantRevokeTypeValues, _kGrantRevokeTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kEventRequestTypeValues[] = {
+  EventRequestType::INSERT,
+  EventRequestType::UPDATE,
+  EventRequestType::DELETE
+};
+const char* _kEventRequestTypeNames[] = {
+  "INSERT",
+  "UPDATE",
+  "DELETE"
+};
+const std::map<int, const char*> _EventRequestType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kEventRequestTypeValues, _kEventRequestTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 int _kFunctionTypeValues[] = {
   FunctionType::JAVA
 };
@@ -9648,6 +9660,340 @@ uint32_t CurrentNotificationEventId::write(::apache::thrift::protocol::TProtocol
 void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b) {
   using ::std::swap;
   swap(a.eventId, b.eventId);
+}
+
+const char* InsertEventRequestData::ascii_fingerprint = "ACE4F644F0FDD289DDC4EE5B83BC13C0";
+const uint8_t InsertEventRequestData::binary_fingerprint[16] = {0xAC,0xE4,0xF6,0x44,0xF0,0xFD,0xD2,0x89,0xDD,0xC4,0xEE,0x5B,0x83,0xBC,0x13,0xC0};
+
+uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_filesAdded = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->filesAdded.clear();
+            uint32_t _size407;
+            ::apache::thrift::protocol::TType _etype410;
+            xfer += iprot->readListBegin(_etype410, _size407);
+            this->filesAdded.resize(_size407);
+            uint32_t _i411;
+            for (_i411 = 0; _i411 < _size407; ++_i411)
+            {
+              xfer += iprot->readString(this->filesAdded[_i411]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          isset_filesAdded = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_filesAdded)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("InsertEventRequestData");
+
+  xfer += oprot->writeFieldBegin("filesAdded", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAdded.size()));
+    std::vector<std::string> ::const_iterator _iter412;
+    for (_iter412 = this->filesAdded.begin(); _iter412 != this->filesAdded.end(); ++_iter412)
+    {
+      xfer += oprot->writeString((*_iter412));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(InsertEventRequestData &a, InsertEventRequestData &b) {
+  using ::std::swap;
+  swap(a.filesAdded, b.filesAdded);
+}
+
+const char* FireEventRequestData::ascii_fingerprint = "187E754B26707EE32451E6A27FB672CE";
+const uint8_t FireEventRequestData::binary_fingerprint[16] = {0x18,0x7E,0x75,0x4B,0x26,0x70,0x7E,0xE3,0x24,0x51,0xE6,0xA2,0x7F,0xB6,0x72,0xCE};
+
+uint32_t FireEventRequestData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->insertData.read(iprot);
+          this->__isset.insertData = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t FireEventRequestData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("FireEventRequestData");
+
+  xfer += oprot->writeFieldBegin("insertData", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->insertData.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(FireEventRequestData &a, FireEventRequestData &b) {
+  using ::std::swap;
+  swap(a.insertData, b.insertData);
+  swap(a.__isset, b.__isset);
+}
+
+const char* FireEventRequest::ascii_fingerprint = "1BA3A7F00159254072C3979B1429B50B";
+const uint8_t FireEventRequest::binary_fingerprint[16] = {0x1B,0xA3,0xA7,0xF0,0x01,0x59,0x25,0x40,0x72,0xC3,0x97,0x9B,0x14,0x29,0xB5,0x0B};
+
+uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_successful = false;
+  bool isset_data = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->successful);
+          isset_successful = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->data.read(iprot);
+          isset_data = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tableName);
+          this->__isset.tableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->partitionVals.clear();
+            uint32_t _size413;
+            ::apache::thrift::protocol::TType _etype416;
+            xfer += iprot->readListBegin(_etype416, _size413);
+            this->partitionVals.resize(_size413);
+            uint32_t _i417;
+            for (_i417 = 0; _i417 < _size413; ++_i417)
+            {
+              xfer += iprot->readString(this->partitionVals[_i417]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.partitionVals = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_successful)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_data)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("FireEventRequest");
+
+  xfer += oprot->writeFieldBegin("successful", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->successful);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("data", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += this->data.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->dbName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.tableName) {
+    xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->tableName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.partitionVals) {
+    xfer += oprot->writeFieldBegin("partitionVals", ::apache::thrift::protocol::T_LIST, 5);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionVals.size()));
+      std::vector<std::string> ::const_iterator _iter418;
+      for (_iter418 = this->partitionVals.begin(); _iter418 != this->partitionVals.end(); ++_iter418)
+      {
+        xfer += oprot->writeString((*_iter418));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(FireEventRequest &a, FireEventRequest &b) {
+  using ::std::swap;
+  swap(a.successful, b.successful);
+  swap(a.data, b.data);
+  swap(a.dbName, b.dbName);
+  swap(a.tableName, b.tableName);
+  swap(a.partitionVals, b.partitionVals);
+  swap(a.__isset, b.__isset);
+}
+
+const char* FireEventResponse::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
+const uint8_t FireEventResponse::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
+
+uint32_t FireEventResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    xfer += iprot->skip(ftype);
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t FireEventResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("FireEventResponse");
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(FireEventResponse &a, FireEventResponse &b) {
+  using ::std::swap;
+  (void) a;
+  (void) b;
 }
 
 const char* MetaException::ascii_fingerprint = "EFB929595D312AC8F305D5A794CFEDA1";

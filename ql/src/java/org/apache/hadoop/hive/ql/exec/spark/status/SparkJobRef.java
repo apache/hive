@@ -17,36 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
-public class SparkJobRef {
+public interface SparkJobRef {
 
-  private String jobId;
+  public String getJobId();
 
-  private SparkJobStatus sparkJobStatus;
+  public SparkJobStatus getSparkJobStatus();
 
-  public SparkJobRef() { }
+  public boolean cancelJob();
 
-  public SparkJobRef(String jobId) {
-    this.jobId = jobId;
-  }
-
-  public SparkJobRef(String jobId, SparkJobStatus sparkJobStatus) {
-    this.jobId = jobId;
-    this.sparkJobStatus = sparkJobStatus;
-  }
-
-  public String getJobId() {
-    return jobId;
-  }
-
-  public void setJobId(String jobId) {
-    this.jobId = jobId;
-  }
-
-  public SparkJobStatus getSparkJobStatus() {
-    return sparkJobStatus;
-  }
-
-  public void setSparkJobStatus(SparkJobStatus sparkJobStatus) {
-    this.sparkJobStatus = sparkJobStatus;
-  }
+  public int monitorJob();
 }

@@ -85,6 +85,8 @@ LIST_COLUMNS = %q"columns"
 
 LIST_COLUMN_TYPES = %q"columns.types"
 
+TIMESTAMP_FORMATS = %q"timestamp.formats"
+
 PrimitiveTypes = Set.new([
   %q"void",
   %q"boolean",

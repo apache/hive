@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.hive.spark.counter.SparkCounters;
 
@@ -32,11 +33,13 @@ class JobContextImpl implements JobContext {
   private final JavaSparkContext sc;
   private final ThreadLocal<MonitorCallback> monitorCb;
   private final Map<String, List<JavaFutureAction<?>>> monitoredJobs;
+  private final List<String> addedJars;
 
   public JobContextImpl(JavaSparkContext sc) {
     this.sc = sc;
     this.monitorCb = new ThreadLocal<MonitorCallback>();
     monitoredJobs = new ConcurrentHashMap<String, List<JavaFutureAction<?>>>();
+    addedJars = new CopyOnWriteArrayList<String>();
   }
 
 
@@ -55,6 +58,11 @@ class JobContextImpl implements JobContext {
   @Override
   public Map<String, List<JavaFutureAction<?>>> getMonitoredJobs() {
     return monitoredJobs;
+  }
+
+  @Override
+  public List<String> getAddedJars() {
+    return addedJars;
   }
 
   void setMonitorCb(MonitorCallback cb) {

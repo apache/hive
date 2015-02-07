@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * RowSchema Implementation.
@@ -47,6 +49,57 @@ public class RowSchema implements Serializable {
 
   public ArrayList<ColumnInfo> getSignature() {
     return signature;
+  }
+
+  public ColumnInfo getColumnInfo(String internalName) {
+    for (ColumnInfo columnInfo: this.signature) {
+      if (columnInfo.getInternalName().equals(internalName)) {
+        return columnInfo;
+      }
+    }
+    return null;
+  }
+
+  public ColumnInfo getColumnInfo(String tabAlias, String alias) {
+    for (ColumnInfo columnInfo: this.signature) {
+      if (columnInfo.getTabAlias() == null) {
+        if (tabAlias == null) {
+          if(columnInfo.getAlias() != null && alias != null &&
+                  columnInfo.getAlias().equals(alias)) {
+            return columnInfo;
+          }
+        }
+      }
+      else {
+        if (tabAlias != null) {
+          if (columnInfo.getTabAlias().equals(tabAlias) &&
+                  columnInfo.getAlias() != null && alias != null &&
+                  columnInfo.getAlias().equals(alias)) {
+            return columnInfo;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  public int getPosition(String internalName) {
+    int pos = -1;
+    for (ColumnInfo var : this.signature) {
+      ++pos;
+      if (var.getInternalName().equals(internalName)) {
+        return pos;
+      }
+    }
+    return -1;
+  }
+
+  public Set<String> getTableNames() {
+    Set<String> tableNames = new HashSet<String>();
+    for (ColumnInfo var : this.signature) {
+      tableNames.add(var.getTabAlias());
+    }
+    return tableNames;
   }
 
   @Override
@@ -103,6 +156,13 @@ public class RowSchema implements Serializable {
         sb.append(',');
       }
       sb.append(col.toString());
+      sb.append('|');
+      sb.append('{');
+      sb.append(col.getTabAlias());
+      sb.append('}');
+      if (col.getAlias() != null) {
+        sb.append(col.getAlias());
+      }
     }
     sb.append(')');
     return sb.toString();

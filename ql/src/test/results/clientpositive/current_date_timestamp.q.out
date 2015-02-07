@@ -1,0 +1,26 @@
+PREHOOK: query: select current_timestamp = current_timestamp(), current_date = current_date() from src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select current_timestamp = current_timestamp(), current_date = current_date() from src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true
+true	true
+true	true
+true	true
+true	true
+PREHOOK: query: select current_date, current_timestamp from src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select current_date, current_timestamp from src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03

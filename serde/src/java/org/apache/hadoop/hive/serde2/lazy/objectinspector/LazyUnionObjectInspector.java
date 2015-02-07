@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyUnion;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
@@ -44,19 +46,16 @@ public class LazyUnionObjectInspector implements UnionObjectInspector {
 
   private  List<ObjectInspector> ois;
   private byte separator;
-  private Text nullSequence;
-  private boolean escaped;
-  private byte escapeChar;
+  private LazyObjectInspectorParameters lazyParams;
 
   protected LazyUnionObjectInspector() {
     super();
   }
+
   protected LazyUnionObjectInspector(
       List<ObjectInspector> ois, byte separator,
-      Text nullSequence, boolean escaped,
-      byte escapeChar) {
-    init(ois, separator,
-        nullSequence, escaped, escapeChar);
+      LazyObjectInspectorParameters lazyParams) {
+    init(ois, separator, lazyParams);
   }
 
   @Override
@@ -66,25 +65,9 @@ public class LazyUnionObjectInspector implements UnionObjectInspector {
 
   protected void init(
       List<ObjectInspector> ois, byte separator,
-      Text nullSequence, boolean escaped,
-      byte escapeChar) {
+      LazyObjectInspectorParameters lazyParams) {
     this.separator = separator;
-    this.nullSequence = nullSequence;
-    this.escaped = escaped;
-    this.escapeChar = escapeChar;
-    this.ois = new ArrayList<ObjectInspector>();
-    this.ois.addAll(ois);
-  }
-
-  protected LazyUnionObjectInspector(List<ObjectInspector> ois,
-      byte separator, Text nullSequence) {
-    init(ois, separator, nullSequence);
-  }
-
-  protected void init(List<ObjectInspector> ois, byte separator,
-      Text nullSequence) {
-    this.separator = separator;
-    this.nullSequence = nullSequence;
+    this.lazyParams = lazyParams;
     this.ois = new ArrayList<ObjectInspector>();
     this.ois.addAll(ois);
   }
@@ -99,17 +82,20 @@ public class LazyUnionObjectInspector implements UnionObjectInspector {
   }
 
   public Text getNullSequence() {
-    return nullSequence;
+    return lazyParams.getNullSequence();
   }
 
   public boolean isEscaped() {
-    return escaped;
+    return lazyParams.isEscaped();
   }
 
   public byte getEscapeChar() {
-    return escapeChar;
+    return lazyParams.getEscapeChar();
   }
 
+  public LazyObjectInspectorParameters getLazyParams() {
+    return lazyParams;
+  }
   @Override
   public Object getField(Object data) {
     if (data == null) {

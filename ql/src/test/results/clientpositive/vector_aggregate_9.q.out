@@ -138,17 +138,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: decimal(38,18)), _col1 (type: decimal(38,18)), _col2 (type: decimal(38,18)), _col3 (type: decimal(38,18))
-            outputColumnNames: _col0, _col1, _col2, _col3
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

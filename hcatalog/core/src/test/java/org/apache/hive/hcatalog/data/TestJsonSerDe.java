@@ -56,7 +56,7 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(new Long(1000L));
     rlist.add(new Double(5.3D));
     rlist.add(new Float(2.39F));
-    rlist.add(new String("hcat and hadoop"));
+    rlist.add(new String("hcat\nand\nhadoop"));
     rlist.add(null);
 
     List<Object> innerStruct = new ArrayList<Object>(2);
@@ -94,8 +94,8 @@ public class TestJsonSerDe extends TestCase {
     c1.add(c1_1);
     rlist.add(c1);
     rlist.add(HiveDecimal.create(new BigDecimal("123.45")));//prec 5, scale 2
-    rlist.add(new HiveChar("hive_char", 10));
-    rlist.add(new HiveVarchar("hive_varchar", 20));
+    rlist.add(new HiveChar("hive\nchar", 10));
+    rlist.add(new HiveVarchar("hive\nvarchar", 20));
     rlist.add(Date.valueOf("2014-01-07"));
     rlist.add(new Timestamp(System.currentTimeMillis()));
 

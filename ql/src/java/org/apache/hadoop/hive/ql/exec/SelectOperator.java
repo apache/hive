@@ -171,7 +171,7 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
         return false;
       }
 
-      if(!origColumn.equals(destColumn)) {
+      if(!origColumn.internalEquals(destColumn)) {
         return false;
       }
 

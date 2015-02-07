@@ -24,6 +24,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.security.sasl.SaslException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -32,6 +33,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +51,7 @@ public class TestRpc {
 
   private Collection<Closeable> closeables;
   private Map<String, String> emptyConfig =
-      ImmutableMap.of(RpcConfiguration.RPC_CHANNEL_LOG_LEVEL_KEY, "DEBUG");
+      ImmutableMap.of(HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname, "DEBUG");
 
   @Before
   public void setUp() {
@@ -119,20 +121,21 @@ public class TestRpc {
   public void testBadHello() throws Exception {
     RpcServer server = autoClose(new RpcServer(emptyConfig));
 
-    Future<Rpc> serverRpcFuture = server.registerClient("newClient", new TestDispatcher());
+    Future<Rpc> serverRpcFuture = server.registerClient("client", "newClient",
+        new TestDispatcher());
     NioEventLoopGroup eloop = new NioEventLoopGroup();
 
     Future<Rpc> clientRpcFuture = Rpc.createClient(emptyConfig, eloop,
-        "localhost", server.getPort(), "wrongClient", new TestDispatcher());
+        "localhost", server.getPort(), "client", "wrongClient", new TestDispatcher());
 
     try {
       autoClose(clientRpcFuture.get(10, TimeUnit.SECONDS));
       fail("Should have failed to create client with wrong secret.");
     } catch (ExecutionException ee) {
-      // On failure, the server will close the channel. This will cause the client's promise
-      // to be cancelled.
+      // On failure, the SASL handler will throw an exception indicating that the SASL
+      // negotiation failed.
       assertTrue("Unexpected exception: " + ee.getCause(),
-        ee.getCause() instanceof CancellationException);
+        ee.getCause() instanceof SaslException);
     }
 
     serverRpcFuture.cancel(true);
@@ -171,6 +174,22 @@ public class TestRpc {
     }
   }
 
+  @Test
+  public void testEncryption() throws Exception {
+    Map<String, String> eConf = ImmutableMap.<String,String>builder()
+      .putAll(emptyConfig)
+      .put(RpcConfiguration.RPC_SASL_OPT_PREFIX + "qop", Rpc.SASL_AUTH_CONF)
+      .build();
+    RpcServer server = autoClose(new RpcServer(eConf));
+    Rpc[] rpcs = createRpcConnection(server, eConf);
+    Rpc client = rpcs[1];
+
+    TestMessage outbound = new TestMessage("Hello World!");
+    Future<TestMessage> call = client.call(outbound, TestMessage.class);
+    TestMessage reply = call.get(10, TimeUnit.SECONDS);
+    assertEquals(outbound.message, reply.message);
+  }
+
   private void transfer(Rpc serverRpc, Rpc clientRpc) {
     EmbeddedChannel client = (EmbeddedChannel) clientRpc.getChannel();
     EmbeddedChannel server = (EmbeddedChannel) serverRpc.getChannel();
@@ -198,11 +217,16 @@ public class TestRpc {
    * @return two-tuple (server rpc, client rpc)
    */
   private Rpc[] createRpcConnection(RpcServer server) throws Exception {
+    return createRpcConnection(server, emptyConfig);
+  }
+
+  private Rpc[] createRpcConnection(RpcServer server, Map<String, String> clientConf)
+      throws Exception {
     String secret = server.createSecret();
-    Future<Rpc> serverRpcFuture = server.registerClient(secret, new TestDispatcher());
+    Future<Rpc> serverRpcFuture = server.registerClient("client", secret, new TestDispatcher());
     NioEventLoopGroup eloop = new NioEventLoopGroup();
-    Future<Rpc> clientRpcFuture = Rpc.createClient(emptyConfig, eloop,
-        "localhost", server.getPort(), secret, new TestDispatcher());
+    Future<Rpc> clientRpcFuture = Rpc.createClient(clientConf, eloop,
+        "localhost", server.getPort(), "client", secret, new TestDispatcher());
 
     Rpc serverRpc = autoClose(serverRpcFuture.get(10, TimeUnit.SECONDS));
     Rpc clientRpc = autoClose(clientRpcFuture.get(10, TimeUnit.SECONDS));

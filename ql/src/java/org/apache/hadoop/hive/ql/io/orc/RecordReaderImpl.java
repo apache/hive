@@ -1569,32 +1569,36 @@ public class RecordReaderImpl implements RecordReader {
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       InStream in = streams.get(name);
-      if (in.available() > 0) {
-        dictionaryBuffer = new DynamicByteArray(64, in.available());
-        dictionaryBuffer.readAll(in);
-        // Since its start of strip invalidate the cache.
-        dictionaryBufferInBytesCache = null;
+      if (in != null) { // Guard against empty dictionary stream.
+        if (in.available() > 0) {
+          dictionaryBuffer = new DynamicByteArray(64, in.available());
+          dictionaryBuffer.readAll(in);
+          // Since its start of strip invalidate the cache.
+          dictionaryBufferInBytesCache = null;
+        }
+        in.close();
       } else {
         dictionaryBuffer = null;
       }
-      in.close();
 
       // read the lengths
       name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
       in = streams.get(name);
-      IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
-          .getKind(), in, false);
-      int offset = 0;
-      if (dictionaryOffsets == null ||
-          dictionaryOffsets.length < dictionarySize + 1) {
-        dictionaryOffsets = new int[dictionarySize + 1];
+      if (in != null) { // Guard against empty LENGTH stream.
+        IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
+            .getKind(), in, false);
+        int offset = 0;
+        if (dictionaryOffsets == null ||
+            dictionaryOffsets.length < dictionarySize + 1) {
+          dictionaryOffsets = new int[dictionarySize + 1];
+        }
+        for (int i = 0; i < dictionarySize; ++i) {
+          dictionaryOffsets[i] = offset;
+          offset += (int) lenReader.next();
+        }
+        dictionaryOffsets[dictionarySize] = offset;
+        in.close();
       }
-      for(int i=0; i < dictionarySize; ++i) {
-        dictionaryOffsets[i] = offset;
-        offset += (int) lenReader.next();
-      }
-      dictionaryOffsets[dictionarySize] = offset;
-      in.close();
 
       // set up the row reader
       name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
@@ -2520,7 +2524,8 @@ public class RecordReaderImpl implements RecordReader {
           return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
         }
       case IS_NULL:
-        return hasNull ? TruthValue.YES : TruthValue.NO;
+        // min = null condition above handles the all-nulls YES case
+        return hasNull ? TruthValue.YES_NO : TruthValue.NO;
       default:
         return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
       }

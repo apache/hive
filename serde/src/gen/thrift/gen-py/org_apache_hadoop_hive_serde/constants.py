@@ -48,6 +48,7 @@ STRUCT_TYPE_NAME = "struct"
 UNION_TYPE_NAME = "uniontype"
 LIST_COLUMNS = "columns"
 LIST_COLUMN_TYPES = "columns.types"
+TIMESTAMP_FORMATS = "timestamp.formats"
 PrimitiveTypes = set([
   "void",
   "boolean",

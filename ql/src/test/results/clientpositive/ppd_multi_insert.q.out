@@ -26,6 +26,14 @@ POSTHOOK: query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mi3
+PREHOOK: query: CREATE TABLE mi4(value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mi4
+POSTHOOK: query: CREATE TABLE mi4(value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mi4
 PREHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -813,6 +821,22 @@ POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 298	2008-04-08	12
 298	2008-04-08	12
 298	2008-04-08	12
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@mi4
+PREHOOK: query: SELECT mi4.* FROM mi4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi4.* FROM mi4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi4
+#### A masked pattern was here ####
 val_302
 val_305
 val_306
@@ -2062,6 +2086,22 @@ POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 298	2008-04-08	12
 298	2008-04-08	12
 298	2008-04-08	12
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@mi4
+PREHOOK: query: SELECT mi4.* FROM mi4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mi4.* FROM mi4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi4
+#### A masked pattern was here ####
 val_302
 val_305
 val_306

@@ -72,7 +72,7 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
       logExceptionMessage(bytes, start, length, "TIMESTAMP");
     } else {
       try {
-        t = Timestamp.valueOf(s);
+        t = oi.getTimestampParser().parseTimestamp(s);
         isNull = false;
       } catch (IllegalArgumentException e) {
         isNull = true;

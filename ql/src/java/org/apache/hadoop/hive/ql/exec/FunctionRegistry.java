@@ -304,6 +304,9 @@ public final class FunctionRegistry {
     registerUDF("~", UDFOPBitNot.class, true);
 
     registerGenericUDF("current_database", UDFCurrentDB.class);
+    registerGenericUDF("current_date", GenericUDFCurrentDate.class);
+    registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
+    registerGenericUDF("current_user", GenericUDFCurrentUser.class);
 
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -423,6 +426,8 @@ public final class FunctionRegistry {
     registerGenericUDF("map_values", GenericUDFMapValues.class);
     registerGenericUDF("format_number", GenericUDFFormatNumber.class);
     registerGenericUDF("printf", GenericUDFPrintf.class);
+    registerGenericUDF("greatest", GenericUDFGreatest.class);
+    registerGenericUDF("least", GenericUDFLeast.class);
 
     registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
