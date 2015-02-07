@@ -86,6 +86,15 @@ message RowIndex {
   repeated RowIndexEntry entry = 1;
 }
 
+message BloomFilter {
+  optional uint32 numHashFunctions = 1;
+  repeated fixed64 bitset = 2;
+}
+
+message BloomFilterIndex {
+  repeated BloomFilter bloomFilter = 1;
+}
+
 message Stream {
   // if you add new index stream kinds, you need to make sure to update
   // StreamName to ensure it is added to the stripe in the right area
@@ -97,6 +106,7 @@ message Stream {
     DICTIONARY_COUNT = 4;
     SECONDARY = 5;
     ROW_INDEX = 6;
+    BLOOM_FILTER = 7;
   }
   required Kind kind = 1;
   optional uint32 column = 2;
