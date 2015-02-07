@@ -21,14 +21,14 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:$hdt$_0:v1 
           TableScan
             alias: v1
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ctinyint is not null and csmallint is not null) (type: boolean)
-              Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cdouble (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3072 Data size: 94309 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3072 Data size: 660491 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: tinyint)
@@ -36,14 +36,14 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:v1 
           TableScan
             alias: v1
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: csmallint is not null (type: boolean)
-              Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: smallint)
@@ -54,14 +54,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: v1
-            Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
-              Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 188618 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -69,11 +69,11 @@ STAGE PLANS:
                     0 _col0 (type: tinyint)
                     1 _col0 (type: tinyint)
                   outputColumnNames: _col1, _col2
-                  Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: smallint), _col2 (type: double)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6758 Data size: 207479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -81,11 +81,11 @@ STAGE PLANS:
                         0 _col0 (type: smallint)
                         1 _col0 (type: smallint)
                       outputColumnNames: _col1
-                      Statistics: Num rows: 7433 Data size: 228226 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 7433 Data size: 1598388 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col1 (type: double)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 7433 Data size: 228226 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 7433 Data size: 1598388 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col0)
                           mode: hash
