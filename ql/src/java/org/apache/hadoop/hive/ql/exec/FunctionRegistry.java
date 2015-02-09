@@ -273,6 +273,7 @@ public final class FunctionRegistry {
     registerGenericUDF("to_date", GenericUDFDate.class);
     registerUDF("weekofyear", UDFWeekOfYear.class, false);
     registerGenericUDF("last_day", GenericUDFLastDay.class);
+    registerGenericUDF("next_day", GenericUDFNextDay.class);
 
     registerGenericUDF("date_add", GenericUDFDateAdd.class);
     registerGenericUDF("date_sub", GenericUDFDateSub.class);
