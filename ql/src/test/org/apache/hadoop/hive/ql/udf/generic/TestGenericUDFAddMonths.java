@@ -46,6 +46,7 @@ public class TestGenericUDFAddMonths extends TestCase {
     runAndVerify("2016-02-29", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29", -1, "2016-01-31", udf);
+    runAndVerify("2014-01-32", 1, "2014-03-01", udf);
   }
 
   private void runAndVerify(String str, int months, String expResult, GenericUDF udf)
