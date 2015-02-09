@@ -105,8 +105,7 @@ public class StatsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator tsop = (TableScanOperator) nd;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
-      PrunedPartitionList partList =
-          aspCtx.getParseContext().getPrunedPartitions(tsop.getName(), tsop);
+      PrunedPartitionList partList = aspCtx.getParseContext().getPrunedPartitions(tsop);
       Table table = tsop.getConf().getTableMetadata();
 
       try {
