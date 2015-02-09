@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -38,7 +37,7 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<String> filterDatabases(List<String> dbList) throws MetaException {
+  public List<String> filterDatabases(List<String> dbList) {
     return dbList;
   }
 
@@ -48,7 +47,7 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+  public List<String> filterTableNames(String dbName, List<String> tableList) {
     return tableList;
   }
 
@@ -58,18 +57,18 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<Table> filterTables(List<Table> tableList) throws MetaException {
+  public List<Table> filterTables(List<Table> tableList) {
     return tableList;
   }
 
   @Override
-  public List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException {
+  public List<Partition> filterPartitions(List<Partition> partitionList) {
     return partitionList;
   }
 
   @Override
   public List<PartitionSpec> filterPartitionSpecs(
-      List<PartitionSpec> partitionSpecList) throws MetaException {
+      List<PartitionSpec> partitionSpecList) {
     return partitionSpecList;
   }
 
@@ -80,7 +79,7 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
 
   @Override
   public List<String> filterPartitionNames(String dbName, String tblName,
-      List<String> partitionNames) throws MetaException {
+      List<String> partitionNames) {
     return partitionNames;
   }
 
@@ -91,12 +90,12 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
 
   @Override
   public List<String> filterIndexNames(String dbName, String tblName,
-      List<String> indexList) throws MetaException {
+      List<String> indexList) {
     return indexList;
   }
 
   @Override
-  public List<Index> filterIndexes(List<Index> indexeList) throws MetaException {
+  public List<Index> filterIndexes(List<Index> indexeList) {
     return indexeList;
   }
 }

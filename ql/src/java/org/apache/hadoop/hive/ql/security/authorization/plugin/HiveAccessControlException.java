@@ -24,7 +24,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Exception thrown by the Authorization plugin api (v2). Indicates
- * a authorization check denying permissions for an action.
+ * an error while performing authorization, and not a authorization being
+ * denied.
  */
 @LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
