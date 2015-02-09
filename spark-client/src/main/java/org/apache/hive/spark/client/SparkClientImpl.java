@@ -64,6 +64,8 @@ class SparkClientImpl implements SparkClient {
 
   private static final long DEFAULT_SHUTDOWN_TIMEOUT = 10000; // In milliseconds
 
+  private static final String SPARK_HOME_ENV = "SPARK_HOME";
+  private static final String SPARK_HOME_KEY = "spark.home";
   private static final String DRIVER_OPTS_KEY = "spark.driver.extraJavaOptions";
   private static final String EXECUTOR_OPTS_KEY = "spark.executor.extraJavaOptions";
   private static final String DRIVER_EXTRA_CLASSPATH = "spark.driver.extraClassPath";
@@ -211,9 +213,12 @@ class SparkClientImpl implements SparkClient {
       // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
       // SparkSubmit class directly, which has some caveats (like having to provide a proper
       // version of Guava on the classpath depending on the deploy mode).
-      String sparkHome = conf.get("spark.home");
+      String sparkHome = conf.get(SPARK_HOME_KEY);
       if (sparkHome == null) {
-        sparkHome = System.getProperty("spark.home");
+        sparkHome = System.getenv(SPARK_HOME_ENV);
+      }
+      if (sparkHome == null) {
+        sparkHome = System.getProperty(SPARK_HOME_KEY);
       }
       String sparkLogDir = conf.get("hive.spark.log.dir");
       if (sparkLogDir == null) {
