@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:32 Argument type mismatch '2.4': ADD_MONTHS() only takes INT types as second argument, got DOUBLE
