@@ -420,7 +420,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbexpr.setQB(qb);
     }
       break;
-    case HiveParser.TOK_UNION: {
+    case HiveParser.TOK_UNIONALL: {
       qbexpr.setOpcode(QBExpr.Opcode.UNION);
       // query 1
       assert (ast.getChild(0) != null);
@@ -430,7 +430,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
-      assert (ast.getChild(0) != null);
+      assert (ast.getChild(1) != null);
       QBExpr qbexpr2 = new QBExpr(alias + "-subquery2");
       doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + "-subquery2",
           alias + "-subquery2");
@@ -1324,7 +1324,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         break;
 
-      case HiveParser.TOK_UNION:
+      case HiveParser.TOK_UNIONALL:
         if (!qbp.getIsSubQ()) {
           // this shouldn't happen. The parser should have converted the union to be
           // contained in a subquery. Just in case, we keep the error as a fallback.
