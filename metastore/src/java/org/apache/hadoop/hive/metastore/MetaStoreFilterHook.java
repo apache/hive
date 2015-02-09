@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -44,7 +43,7 @@ public interface MetaStoreFilterHook {
    * @param dbList
    * @return List of filtered Db names
    */
-  public List<String> filterDatabases(List<String> dbList) throws MetaException;
+  public List<String> filterDatabases(List<String> dbList);
 
   /**
    * filter to given database object if applicable
@@ -52,7 +51,7 @@ public interface MetaStoreFilterHook {
    * @return the same database if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Database filterDatabase(Database dataBase) throws MetaException, NoSuchObjectException;
+  public Database filterDatabase(Database dataBase) throws NoSuchObjectException;
 
   /**
    * Filter given list of tables
@@ -60,7 +59,7 @@ public interface MetaStoreFilterHook {
    * @param tableList
    * @returnList of filtered table names
    */
-  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException;
+  public List<String> filterTableNames(String dbName, List<String> tableList);
 
   /**
    * filter to given table object if applicable
@@ -68,7 +67,7 @@ public interface MetaStoreFilterHook {
    * @return the same table if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Table filterTable(Table table) throws MetaException, NoSuchObjectException;
+  public Table filterTable(Table table) throws NoSuchObjectException;
 
   /**
    * Filter given list of tables
@@ -76,22 +75,21 @@ public interface MetaStoreFilterHook {
    * @param tableList
    * @returnList of filtered table names
    */
-  public List<Table> filterTables(List<Table> tableList) throws MetaException;
+  public List<Table> filterTables(List<Table> tableList);
 
   /**
    * Filter given list of partitions
    * @param partitionList
    * @return
    */
-  public List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException;
+  public List<Partition> filterPartitions(List<Partition> partitionList);
 
   /**
    * Filter given list of partition specs
    * @param partitionSpecList
    * @return
    */
-  public List<PartitionSpec> filterPartitionSpecs(List<PartitionSpec> partitionSpecList)
-      throws MetaException;
+  public List<PartitionSpec> filterPartitionSpecs(List<PartitionSpec> partitionSpecList);
 
   /**
    * filter to given partition object if applicable
@@ -99,7 +97,7 @@ public interface MetaStoreFilterHook {
    * @return the same partition object if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Partition filterPartition(Partition partition) throws MetaException, NoSuchObjectException;
+  public Partition filterPartition(Partition partition) throws NoSuchObjectException;
 
   /**
    * Filter given list of partition names
@@ -109,9 +107,9 @@ public interface MetaStoreFilterHook {
    * @return
    */
   public List<String> filterPartitionNames(String dbName, String tblName,
-      List<String> partitionNames) throws MetaException;
+      List<String> partitionNames);
 
-  public Index filterIndex(Index index) throws MetaException, NoSuchObjectException;
+  public Index filterIndex(Index index) throws NoSuchObjectException;
 
   /**
    * Filter given list of index names
@@ -121,13 +119,13 @@ public interface MetaStoreFilterHook {
    * @return
    */
   public List<String> filterIndexNames(String dbName, String tblName,
-      List<String> indexList) throws MetaException;
+      List<String> indexList);
 
   /**
    * Filter given list of index objects
    * @param indexeList
    * @return
    */
-  public List<Index> filterIndexes(List<Index> indexeList) throws MetaException;
+  public List<Index> filterIndexes(List<Index> indexeList);
 }
 

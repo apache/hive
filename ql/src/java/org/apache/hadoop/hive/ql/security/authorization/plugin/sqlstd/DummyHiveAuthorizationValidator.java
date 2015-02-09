@@ -42,10 +42,4 @@ public class DummyHiveAuthorizationValidator implements HiveAuthorizationValidat
     // no-op
   }
 
-  @Override
-  public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context) {
-    return listObjs;
-  }
-
 }

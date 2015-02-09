@@ -149,10 +149,4 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
     }
   }
 
-  @Override
-  public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context) {
-    return listObjs;
-  }
-
 }
