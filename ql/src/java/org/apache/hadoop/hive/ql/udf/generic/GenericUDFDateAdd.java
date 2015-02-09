@@ -89,7 +89,7 @@ public class GenericUDFDateAdd extends GenericUDF {
     if (arguments[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(1,
         "Only primitive type arguments are accepted but "
-        + arguments[2].getTypeName() + " is passed. as second arguments");
+        + arguments[1].getTypeName() + " is passed. as second arguments");
     }
 
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
