@@ -722,7 +722,7 @@ public class ASTConverter {
 
   public ASTNode getUnionAllAST(ASTNode leftAST, ASTNode rightAST) {
 
-    ASTNode unionTokAST = ASTBuilder.construct(HiveParser.TOK_UNION, "TOK_UNION").add(leftAST)
+    ASTNode unionTokAST = ASTBuilder.construct(HiveParser.TOK_UNIONALL, "TOK_UNIONALL").add(leftAST)
         .add(rightAST).node();
 
     return unionTokAST;

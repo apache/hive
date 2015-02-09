@@ -1332,24 +1332,23 @@ POSTHOOK: Input: default@src
 96
 97
 98
-PREHOOK: query: select k from (SELECT '1' as k from src limit 0 union all select key as k from src limit 1)tab
+PREHOOK: query: select k from (select * from (SELECT '1' as k from src limit 0)a union all select key as k from src limit 1)tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select k from (SELECT '1' as k from src limit 0 union all select key as k from src limit 1)tab
+POSTHOOK: query: select k from (select * from (SELECT '1' as k from src limit 0)a union all select key as k from src limit 1)tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238
-PREHOOK: query: select k from (SELECT '1' as k from src limit 1 union all select key as k from src limit 0)tab
+PREHOOK: query: select k from (select * from (SELECT '1' as k from src limit 1)a union all select key as k from src limit 0)tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select k from (SELECT '1' as k from src limit 1 union all select key as k from src limit 0)tab
+POSTHOOK: query: select k from (select * from (SELECT '1' as k from src limit 1)a union all select key as k from src limit 0)tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1
 PREHOOK: query: select max(ds) from srcpart
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

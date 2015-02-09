@@ -69,9 +69,9 @@ ABSTRACT SYNTAX TREE:
 TOK_QUERY
    TOK_FROM
       TOK_SUBQUERY
-         TOK_UNION
-            TOK_UNION
-               TOK_UNION
+         TOK_UNIONALL
+            TOK_UNIONALL
+               TOK_UNIONALL
                   TOK_QUERY
                      TOK_FROM
                         TOK_TABREF
@@ -666,8 +666,8 @@ ABSTRACT SYNTAX TREE:
 TOK_QUERY
    TOK_FROM
       TOK_SUBQUERY
-         TOK_UNION
-            TOK_UNION
+         TOK_UNIONALL
+            TOK_UNIONALL
                TOK_QUERY
                   TOK_FROM
                      TOK_TABREF
@@ -1225,8 +1225,8 @@ ABSTRACT SYNTAX TREE:
 TOK_QUERY
    TOK_FROM
       TOK_SUBQUERY
-         TOK_UNION
-            TOK_UNION
+         TOK_UNIONALL
+            TOK_UNIONALL
                TOK_QUERY
                   TOK_FROM
                      TOK_TABREF
