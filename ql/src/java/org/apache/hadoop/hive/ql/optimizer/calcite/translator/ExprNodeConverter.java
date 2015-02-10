@@ -33,12 +33,15 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 
 /*
  * convert a RexNode to an ExprNodeDesc
@@ -48,8 +51,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   RelDataType rType;
   String      tabAlias;
   boolean     partitioningExpr;
+  private final RelDataTypeFactory dTFactory;
 
-  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr) {
+  public ExprNodeConverter(String tabAlias, RelDataType rType, boolean partitioningExpr, RelDataTypeFactory dTFactory) {
     super(true);
     /*
      * hb: 6/25/14 for now we only support expressions that only contain
@@ -62,6 +66,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     this.tabAlias = tabAlias;
     this.rType = rType;
     this.partitioningExpr = partitioningExpr;
+    this.dTFactory = dTFactory;
   }
 
   @Override
@@ -85,9 +90,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       args.add(operand.accept(this));
     }
 
-    // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
-    // exprnode
-    if (ASTConverter.isFlat(call)) {
+    // If Call is a redundant cast then bail out. Ex: cast(true)BOOLEAN
+    if (call.isA(SqlKind.CAST)
+        && (call.operands.size() == 1)
+        && SqlTypeUtil.equalSansNullability(dTFactory, call.getType(),
+            call.operands.get(0).getType())) {
+      return args.get(0);
+    } else if (ASTConverter.isFlat(call)) {
+      // If Expr is flat (and[p,q,r,s] or[p,q,r,s]) then recursively build the
+      // exprnode
       ArrayList<ExprNodeDesc> tmpExprArgs = new ArrayList<ExprNodeDesc>();
       tmpExprArgs.addAll(args.subList(0, 2));
       gfDesc = new ExprNodeGenericFuncDesc(TypeConverter.convert(call.getType()),

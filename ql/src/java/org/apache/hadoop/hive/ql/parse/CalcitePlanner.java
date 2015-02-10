@@ -78,12 +78,14 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Schemas;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlExplainLevel;
@@ -716,7 +718,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.JOIN_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.FILTER_INSTANCE);
       hepPgmBldr.addRuleInstance(ReduceExpressionsRule.PROJECT_INSTANCE);
-      hepPgmBldr.addRuleInstance(ProjectRemoveRule.INSTANCE);
+      hepPgmBldr.addRuleInstance(ProjectRemoveRule.NAME_CALC_INSTANCE);
       hepPgmBldr.addRuleInstance(UnionMergeRule.INSTANCE);
 
       hepPgm = hepPgmBldr.build();
@@ -790,7 +792,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelFieldTrimmer fieldTrimmer = new RelFieldTrimmer(null, HiveProject.DEFAULT_PROJECT_FACTORY,
           HiveFilter.DEFAULT_FILTER_FACTORY, HiveJoin.HIVE_JOIN_FACTORY,
           RelFactories.DEFAULT_SEMI_JOIN_FACTORY, HiveSort.HIVE_SORT_REL_FACTORY,
-          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY);
+          HiveAggregate.HIVE_AGGR_REL_FACTORY, HiveUnion.UNION_REL_FACTORY, true);
       basePlan = fieldTrimmer.trim(basePlan);
 
       // 5. Rerun PPD through Project as column pruning would have introduced DT
@@ -832,6 +834,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
       basePlan.getCluster().setMetadataProvider(
           new CachingRelMetadataProvider(chainedProvider, planner));
+
+      // Executor is required for constant-reduction rules; see [CALCITE-566]
+      final RexExecutorImpl executor =
+          new RexExecutorImpl(Schemas.createDataContext(null));
+      basePlan.getCluster().getPlanner().setExecutor(executor);
 
       planner.setRoot(basePlan);
       optimizedRelNode = planner.findBestExp();
