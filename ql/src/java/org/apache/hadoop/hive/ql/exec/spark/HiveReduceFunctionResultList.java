@@ -17,29 +17,29 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.io.BytesWritable;
-import scala.Tuple2;
-
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.io.BytesWritable;
+
+import scala.Tuple2;
+
 public class HiveReduceFunctionResultList extends
     HiveBaseFunctionResultList<Tuple2<HiveKey, Iterable<BytesWritable>>> {
+  private static final long serialVersionUID = 1L;
   private final SparkReduceRecordHandler reduceRecordHandler;
 
   /**
    * Instantiate result set Iterable for Reduce function output.
    *
-   * @param conf Hive configuration.
    * @param inputIterator Input record iterator.
    * @param reducer Initialized {@link org.apache.hadoop.hive.ql.exec.mr.ExecReducer} instance.
    */
-  public HiveReduceFunctionResultList(Configuration conf,
+  public HiveReduceFunctionResultList(
       Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> inputIterator,
-    SparkReduceRecordHandler reducer) {
-    super(conf, inputIterator);
+      SparkReduceRecordHandler reducer) {
+    super(inputIterator);
     this.reduceRecordHandler = reducer;
   }
 

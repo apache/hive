@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -49,9 +48,9 @@ public abstract class HiveBaseFunctionResultList<T> implements
   private final HiveKVResultCache lastRecordOutput;
   private boolean iteratorAlreadyCreated = false;
 
-  public HiveBaseFunctionResultList(Configuration conf, Iterator<T> inputIterator) {
+  public HiveBaseFunctionResultList(Iterator<T> inputIterator) {
     this.inputIterator = inputIterator;
-    this.lastRecordOutput = new HiveKVResultCache(conf);
+    this.lastRecordOutput = new HiveKVResultCache();
   }
 
   @Override
@@ -86,8 +85,6 @@ public abstract class HiveBaseFunctionResultList<T> implements
       if (lastRecordOutput.hasNext()) {
         return true;
       }
-
-      lastRecordOutput.clear();
 
       // Process the records in the input iterator until
       //  - new output records are available for serving downstream operator,

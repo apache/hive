@@ -17,141 +17,251 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.mapred.Reporter;
 
 import scala.Tuple2;
 
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
- * Wrapper around {@link org.apache.hadoop.hive.ql.exec.persistence.RowContainer}
- *
- * This class is thread safe.
+ * A cache with fixed buffer. If the buffer is full, new entries will
+ * be written to disk. This class is thread safe since multiple threads
+ * could access it (doesn't have to be concurrently), for example,
+ * the StreamThread in ScriptOperator.
  */
-@SuppressWarnings({"deprecation", "unchecked", "rawtypes"})
-public class HiveKVResultCache {
+@SuppressWarnings("unchecked")
+class HiveKVResultCache {
+  private static final Log LOG = LogFactory.getLog(HiveKVResultCache.class);
 
-  public static final int IN_MEMORY_CACHE_SIZE = 512;
-  private static final String COL_NAMES = "key,value";
-  private static final String COL_TYPES =
-      serdeConstants.BINARY_TYPE_NAME + ":" + serdeConstants.BINARY_TYPE_NAME;
+  @VisibleForTesting
+  static final int IN_MEMORY_NUM_ROWS = 1024;
 
-  // Used to cache rows added while container is iterated.
-  private RowContainer backupContainer;
+  private ObjectPair<HiveKey, BytesWritable>[] writeBuffer;
+  private ObjectPair<HiveKey, BytesWritable>[] readBuffer;
 
-  private RowContainer container;
-  private Configuration conf;
-  private int cursor = 0;
+  private File parentFile;
+  private File tmpFile;
 
-  public HiveKVResultCache(Configuration conf) {
-    container = initRowContainer(conf);
-    this.conf = conf;
-  }
+  private int readCursor = 0;
+  private int writeCursor = 0;
 
-  private static RowContainer initRowContainer(Configuration conf) {
-    RowContainer container;
-    try {
-      container = new RowContainer(IN_MEMORY_CACHE_SIZE, conf, Reporter.NULL);
+  // Indicate if the read buffer has data, for example,
+  // when in reading, data on disk could be pull in
+  private boolean readBufferUsed = false;
+  private int rowsInReadBuffer = 0;
 
-      String fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-      TableDesc tableDesc =
-          PlanUtils.getDefaultQueryOutputTableDesc(COL_NAMES, COL_TYPES, fileFormat);
+  private Input input;
+  private Output output;
 
-      SerDe serDe = (SerDe) tableDesc.getDeserializer();
-      ObjectInspector oi = ObjectInspectorUtils.getStandardObjectInspector(
-          serDe.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
-
-      container.setSerDe(serDe, oi);
-      container.setTableDesc(tableDesc);
-    } catch (Exception ex) {
-      throw new RuntimeException("Failed to create RowContainer", ex);
+  public HiveKVResultCache() {
+    writeBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
+    readBuffer = new ObjectPair[IN_MEMORY_NUM_ROWS];
+    for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
+      writeBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
+      readBuffer[i] = new ObjectPair<HiveKey, BytesWritable>();
     }
-    return container;
   }
 
-  public void add(HiveKey key, BytesWritable value) {
-    byte[] hiveKeyBytes = KryoSerializer.serialize(key);
-    BytesWritable wrappedHiveKey = new BytesWritable(hiveKeyBytes);
-    List<BytesWritable> row = new ArrayList<BytesWritable>(2);
-    row.add(wrappedHiveKey);
-    row.add(value);
+  private void switchBufferAndResetCursor() {
+    ObjectPair<HiveKey, BytesWritable>[] tmp = readBuffer;
+    rowsInReadBuffer = writeCursor;
+    readBuffer = writeBuffer;
+    readBufferUsed = true;
+    readCursor = 0;
+    writeBuffer = tmp;
+    writeCursor = 0;
+  }
 
-    synchronized (this) {
-      try {
-        if (cursor == 0) {
-          container.addRow(row);
-        } else {
-          if (backupContainer == null) {
-            backupContainer = initRowContainer(conf);
-          }
-          backupContainer.addRow(row);
+  private void setupOutput() throws IOException {
+    if (parentFile == null) {
+      while (true) {
+        parentFile = File.createTempFile("hive-resultcache", "");
+        if (parentFile.delete() && parentFile.mkdir()) {
+          parentFile.deleteOnExit();
+          break;
         }
-      } catch (HiveException ex) {
-        throw new RuntimeException("Failed to add KV pair to RowContainer", ex);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Retry creating tmp result-cache directory...");
+        }
       }
     }
+
+    if (tmpFile == null || input != null) {
+      tmpFile = File.createTempFile("ResultCache", ".tmp", parentFile);
+      LOG.info("ResultCache created temp file " + tmpFile.getAbsolutePath());
+      tmpFile.deleteOnExit();
+    }
+
+    FileOutputStream fos = null;
+    try {
+      fos = new FileOutputStream(tmpFile);
+      output = new Output(fos);
+    } finally {
+      if (output == null && fos != null) {
+        fos.close();
+      }
+    }
+  }
+
+  private BytesWritable readValue(Input input) {
+    return new BytesWritable(input.readBytes(input.readInt()));
+  }
+
+  private void writeValue(Output output, BytesWritable bytesWritable) {
+    int size = bytesWritable.getLength();
+    output.writeInt(size);
+    output.writeBytes(bytesWritable.getBytes(), 0, size);
+  }
+
+  private HiveKey readHiveKey(Input input) {
+    HiveKey hiveKey = new HiveKey(
+      input.readBytes(input.readInt()), input.readInt());
+    hiveKey.setDistKeyLength(input.readInt());
+    return hiveKey;
+  }
+
+  private void writeHiveKey(Output output, HiveKey hiveKey) {
+    int size = hiveKey.getLength();
+    output.writeInt(size);
+    output.writeBytes(hiveKey.getBytes(), 0, size);
+    output.writeInt(hiveKey.hashCode());
+    output.writeInt(hiveKey.getDistKeyLength());
+  }
+
+  public synchronized void add(HiveKey key, BytesWritable value) {
+    if (writeCursor >= IN_MEMORY_NUM_ROWS) { // Write buffer is full
+      if (!readBufferUsed) { // Read buffer isn't used, switch buffer
+        switchBufferAndResetCursor();
+      } else {
+        // Need to spill from write buffer to disk
+        try {
+          if (output == null) {
+            setupOutput();
+          }
+          for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
+            ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[i];
+            writeHiveKey(output, pair.getFirst());
+            writeValue(output, pair.getSecond());
+            pair.setFirst(null);
+            pair.setSecond(null);
+          }
+          writeCursor = 0;
+        } catch (Exception e) {
+          clear(); // Clean up the cache
+          throw new RuntimeException("Failed to spill rows to disk", e);
+        }
+      }
+    }
+    ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[writeCursor++];
+    pair.setFirst(key);
+    pair.setSecond(value);
   }
 
   public synchronized void clear() {
-    if (cursor == 0) {
-      return;
+    writeCursor = readCursor = rowsInReadBuffer = 0;
+    readBufferUsed = false;
+
+    if (parentFile != null) {
+      if (input != null) {
+        try {
+          input.close();
+        } catch (Throwable ignored) {
+        }
+        input = null;
+      }
+      if (output != null) {
+        try {
+          output.close();
+        } catch (Throwable ignored) {
+        }
+        output = null;
+      }
+      try {
+        FileUtil.fullyDelete(parentFile);
+      } catch (Throwable ignored) {
+      }
+      parentFile = null;
+      tmpFile = null;
     }
-    try {
-      container.clearRows();
-    } catch (HiveException ex) {
-      throw new RuntimeException("Failed to clear rows in RowContainer", ex);
-    }
-    cursor = 0;
   }
 
   public synchronized boolean hasNext() {
-    if (container.rowCount() > 0 && cursor < container.rowCount()) {
-      return true;
-    }
-    if (backupContainer == null
-        || backupContainer.rowCount() == 0) {
-      return false;
-    }
-    clear();
-    // Switch containers
-    RowContainer tmp = container;
-    container = backupContainer;
-    backupContainer = tmp;
-    return true;
+    return readBufferUsed || writeCursor > 0;
   }
 
-  public Tuple2<HiveKey, BytesWritable> next() {
-    try {
-      List<BytesWritable> row;
-      synchronized (this) {
-        Preconditions.checkState(hasNext());
-        if (cursor == 0) {
-          row = container.first();
-        } else {
-          row = container.next();
+  public synchronized Tuple2<HiveKey, BytesWritable> next() {
+    Preconditions.checkState(hasNext());
+    if (!readBufferUsed) {
+      try {
+        if (input == null && output != null) {
+          // Close output stream if open
+          output.close();
+          output = null;
+
+          FileInputStream fis = null;
+          try {
+            fis = new FileInputStream(tmpFile);
+            input = new Input(fis);
+          } finally {
+            if (input == null && fis != null) {
+              fis.close();
+            }
+          }
         }
-        cursor++;
+        if (input != null) {
+          // Load next batch from disk
+          for (int i = 0; i < IN_MEMORY_NUM_ROWS; i++) {
+            ObjectPair<HiveKey, BytesWritable> pair = readBuffer[i];
+            pair.setFirst(readHiveKey(input));
+            pair.setSecond(readValue(input));
+          }
+          if (input.eof()) {
+            input.close();
+            input = null;
+          }
+          rowsInReadBuffer = IN_MEMORY_NUM_ROWS;
+          readBufferUsed = true;
+          readCursor = 0;
+        } else if (writeCursor == 1) {
+          ObjectPair<HiveKey, BytesWritable> pair = writeBuffer[0];
+          Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(
+            pair.getFirst(), pair.getSecond());
+          pair.setFirst(null);
+          pair.setSecond(null);
+          writeCursor = 0;
+          return row;
+        } else {
+          // No record on disk, more data in write buffer
+          switchBufferAndResetCursor();
+        }
+      } catch (Exception e) {
+        clear(); // Clean up the cache
+        throw new RuntimeException("Failed to load rows from disk", e);
       }
-      HiveKey key = KryoSerializer.deserialize(row.get(0).getBytes(), HiveKey.class);
-      return new Tuple2<HiveKey, BytesWritable>(key, row.get(1));
-    } catch (HiveException ex) {
-      throw new RuntimeException("Failed to get row from RowContainer", ex);
     }
+    ObjectPair<HiveKey, BytesWritable> pair = readBuffer[readCursor];
+    Tuple2<HiveKey, BytesWritable> row = new Tuple2<HiveKey, BytesWritable>(
+      pair.getFirst(), pair.getSecond());
+    pair.setFirst(null);
+    pair.setSecond(null);
+    if (++readCursor >= rowsInReadBuffer) {
+      readBufferUsed = false;
+      rowsInReadBuffer = 0;
+      readCursor = 0;
+    }
+    return row;
   }
 }
