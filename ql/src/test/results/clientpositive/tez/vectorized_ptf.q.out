@@ -5357,14 +5357,18 @@ STAGE PLANS:
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: +++
-                    Map-reduce partition columns: _col2 (type: string)
+                  Select Operator
+                    expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _wcol0 (type: bigint)
+                    outputColumnNames: _col1, _col2, _col5, _wcol0
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _wcol0 (type: bigint), _col5 (type: int)
-                    auto parallelism: true
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
+                      tag: -1
+                      value expressions: _wcol0 (type: bigint), _col5 (type: int)
+                      auto parallelism: true
         Reducer 5 
             Needs Tagging: false
             Reduce Operator Tree:

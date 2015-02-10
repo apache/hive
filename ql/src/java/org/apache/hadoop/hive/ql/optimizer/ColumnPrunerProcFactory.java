@@ -269,6 +269,7 @@ public final class ColumnPrunerProcFactory {
       WindowTableFunctionDef def = null;
       if (conf.forWindowing()) {
         def = (WindowTableFunctionDef) conf.getFuncDef();
+        prunedCols = Utilities.mergeUniqElems(getWindowFunctionColumns(def), prunedCols);
         prunedCols = prunedColumnsList(prunedCols, def);
       }
 
@@ -293,6 +294,17 @@ public final class ColumnPrunerProcFactory {
       return sig;
     }
 
+    // always should be in this order (see PTFDeserializer#initializeWindowing)
+    private List<String> getWindowFunctionColumns(WindowTableFunctionDef tDef) {
+      List<String> columns = new ArrayList<String>();
+      if (tDef.getWindowFunctions() != null) {
+        for (WindowFunctionDef wDef : tDef.getWindowFunctions()) {
+          columns.add(wDef.getAlias());
+        }
+      }
+      return columns;
+    }
+    
     /*
      * add any input columns referenced in WindowFn args or expressions.
      */
