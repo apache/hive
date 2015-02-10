@@ -180,7 +180,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       }
 
       // We have valid pruning expressions, only retrieve qualifying partitions
-      ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(), true));
+      ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(), true, getRelOptSchema().getTypeFactory()));
 
       partitionList = PartitionPruner.prune(hiveTblMetadata, pruneExpr, conf, getName(), partitionCache);
     } catch (HiveException he) {
