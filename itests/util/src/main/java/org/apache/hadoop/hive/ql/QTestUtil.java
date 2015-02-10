@@ -242,10 +242,10 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, String initScript,
-		   String cleanupScript, String tezDirectory) throws
-		     Exception {
+       String cleanupScript, String tezDirectory) throws
+         Exception {
     this(outDir, logDir, MiniClusterType.none, null, "0.20", initScript,
-	 cleanupScript, tezDirectory);
+   cleanupScript, tezDirectory);
   }
 
   public String getOutputDirectory() {
@@ -348,8 +348,8 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-		   String confDir, String hadoopVer, String initScript,
-		   String cleanupScript, String tezDirectory)
+       String confDir, String hadoopVer, String initScript,
+       String cleanupScript, String tezDirectory)
     throws Exception {
 
     this.outDir = outDir;
@@ -398,10 +398,10 @@ public class QTestUtil {
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
         mr = shims.getMiniTezCluster(conf, 4, uriString, 1, false,
-				     tezDir + "/staging"););
+             tezDir + "/staging");
       } else if (clusterType == MiniClusterType.tezlocal) {
-	mr = shims.getMiniTezCluster(conf, 4, uriString, 1, true,
-				     tezDir + "/staging");
+        mr = shims.getMiniTezCluster(conf, 4, uriString, 1, true,
+             tezDir + "/staging");
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
         mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
@@ -1581,7 +1581,7 @@ public class QTestUtil {
       // close it first.
       SessionState ss = SessionState.get();
       if (ss != null && ss.out != null && ss.out != System.out) {
-	ss.out.close();
+  ss.out.close();
       }
 
       String inSorted = inFileName + SORT_SUFFIX;

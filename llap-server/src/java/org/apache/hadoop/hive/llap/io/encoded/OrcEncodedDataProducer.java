@@ -230,11 +230,19 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
             stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
             if (stripeMetadata == null) {
               stripeMetadata = new OrcStripeMetadata(stripeReader, stripeIncludes);
+              if (DebugUtils.isTraceOrcEnabled()) {
+                LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
+                    + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
+              }
               metadataCache.putStripeMetadata(stripeKey, stripeMetadata);
               stripeKey = new OrcBatchKey(internedFilePath, -1, 0);
             }
           }
           if (!stripeMetadata.hasAllIndexes(stripeIncludes)) {
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
+                  + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
+            }
             updateLoadedIndexes(stripeMetadata, stripeReader, stripeIncludes);
           }
           // Set stripe metadata externally in the reader.
@@ -320,8 +328,13 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
       if (existingReader != null) return existingReader;
       // Create RecordReader that will be used to read only this stripe.
+      // TODO: use separate class instead.
       StripeInformation si = metadata.getStripes().get(stripeIx);
       ensureOrcReader();
+      if (DebugUtils.isTraceOrcEnabled()) {
+        LlapIoImpl.LOG.info("Creating stripe reader " + stripeIx + ": "
+            + si.getOffset() + ", " + si.getLength());
+      }
       existingReader = orcReader.rows(si.getOffset(), si.getLength(), globalIncludes);
       existingReader.prepareEncodedColumnRead();
       return existingReader;
@@ -366,14 +379,26 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         if (value == null || !value.hasAllIndexes(globalInc)) {
           ensureOrcReader();
           StripeInformation si = metadata.getStripes().get(stripeKey.stripeIx);
+          if (DebugUtils.isTraceOrcEnabled()) {
+            LlapIoImpl.LOG.info("Creating stripe reader " + stripeKey.stripeIx + ": " 
+                + si.getOffset() + ", " + si.getLength());
+          }
           stripeReaders[stripeIxMod] = orcReader.rows(si.getOffset(), si.getLength(), globalInc);
           stripeReaders[stripeIxMod].prepareEncodedColumnRead();
           if (value == null) {
             value = new OrcStripeMetadata(stripeReaders[stripeIxMod], globalInc);
             metadataCache.putStripeMetadata(stripeKey, value);
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
+                  + " metadata with includes: " + DebugUtils.toString(globalInc));
+            }
             // Create new key object to reuse for gets; we've used the old one to put in cache.
             stripeKey = new OrcBatchKey(internedFilePath, 0, 0);
           } else {
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
+                  + " metadata for includes: " + DebugUtils.toString(globalInc));
+            }
             updateLoadedIndexes(value, stripeReaders[stripeIxMod], globalInc);
           }
         }
@@ -404,12 +429,20 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       }
       // readState should have been initialized by this time with an empty array.
       for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
-        int originalStripeIx = stripeIxMod + stripeIxFrom;
-        StripeInformation stripe = stripes.get(originalStripeIx);
+        int stripeIx = stripeIxMod + stripeIxFrom;
+        StripeInformation stripe = stripes.get(stripeIx);
         int rgCount = getRgCount(stripe, rowIndexStride);
         boolean[] rgsToRead = null;
         if (sargApp != null) {
           rgsToRead = sargApp.pickRowGroups(stripe, metadata.get(stripeIxMod).getRowIndexes());
+        }
+        if (DebugUtils.isTraceOrcEnabled()) {
+          if (rgsToRead != null ) {
+            LlapIoImpl.LOG.info("SARG picked RGs for stripe " + stripeIx + ": "
+                + DebugUtils.toString(rgsToRead));
+          } else {
+            LlapIoImpl.LOG.info("Will read all " + rgCount + " RGs for stripe " + stripeIx);
+          }
         }
         assert rgsToRead == null || rgsToRead.length == rgCount;
         readState[stripeIxMod] = new boolean[columnIds.size()][];
@@ -445,16 +478,16 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         long stripeStart = stripe.getOffset();
         if (offset > stripeStart) continue;
         if (stripeIxFrom == -1) {
-          if (DebugUtils.isTraceEnabled()) {
-            LlapIoImpl.LOG.info("Including from " + stripeIx
+          if (DebugUtils.isTraceOrcEnabled()) {
+            LlapIoImpl.LOG.info("Including stripes from " + stripeIx
                 + " (" + stripeStart + " >= " + offset + ")");
           }
           stripeIxFrom = stripeIx;
         }
         if (stripeStart >= maxOffset) {
-          if (DebugUtils.isTraceEnabled()) {
-            LlapIoImpl.LOG.info("Including until " + stripeIxTo
-                + " (" + stripeStart + " >= " + maxOffset + ")");
+          if (DebugUtils.isTraceOrcEnabled()) {
+            LlapIoImpl.LOG.info("Including stripes until " + stripeIxTo + " (" + stripeStart
+                + " >= " + maxOffset + "); " + (stripeIxTo - stripeIxFrom) + " stripes");
           }
           stripeIxTo = stripeIx;
           break;
@@ -462,10 +495,11 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         ++stripeIx;
       }
       if (stripeIxTo == -1) {
-        if (DebugUtils.isTraceEnabled()) {
-          LlapIoImpl.LOG.info("Including until " + stripeIx + " (end of file)");
-        }
         stripeIxTo = stripeIx;
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LlapIoImpl.LOG.info("Including stripes until " + stripeIx + " (end of file); "
+              + (stripeIxTo - stripeIxFrom) + " stripes");
+        }
       }
       readState = new boolean[stripeIxTo - stripeIxFrom][][];
     }

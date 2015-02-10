@@ -28,6 +28,10 @@ public class DebugUtils {
     return false;
   }
 
+  public static boolean isTraceOrcEnabled() {
+    return true;
+  }
+
   public static boolean isTraceLockingEnabled() {
     return false;
   }

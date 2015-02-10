@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.DiskRange;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
@@ -2770,8 +2771,9 @@ public class RecordReaderImpl implements RecordReader {
 
     @Override
     public final String toString() {
-      return "range start: " + offset + " size: " + chunk.remaining() + " type: "
-          + (chunk.isDirect() ? "direct" : "array-backed");
+      boolean makesSense = chunk.remaining() == (end - offset);
+      return "data range [" + offset + ", " + end + "), size: " + chunk.remaining()
+          + (makesSense ? "" : "(!)") + " type: " + (chunk.isDirect() ? "direct" : "array-backed");
     }
 
     @Override
@@ -2822,6 +2824,11 @@ public class RecordReaderImpl implements RecordReader {
       boolean result = isReused;
       isReused = true;
       return result;
+    }
+
+    @Override
+    public String toString() {
+      return "start: " + offset + " end: " + end + " cache buffer: " + buffer;
     }
   }
 
@@ -3008,6 +3015,10 @@ public class RecordReaderImpl implements RecordReader {
         lastRange.offset = Math.min(lastRange.offset, start);
         lastRange.end = Math.max(lastRange.end, end);
       } else {
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Creating new range for RG read; last range (which can include some "
+              + "previous RGs) was " + lastRange);
+        }
         lastRange = new DiskRange(start, end);
         result.add(lastRange);
       }
@@ -3474,7 +3485,7 @@ public class RecordReaderImpl implements RecordReader {
 
   /** Helper context for each column being read */
   private static final class ColumnReadContext {
-    public ColumnReadContext(long offset, int colIx, ColumnEncoding encoding, RowIndex rowIndex) {
+    public ColumnReadContext(int colIx, ColumnEncoding encoding, RowIndex rowIndex) {
       this.encoding = encoding;
       this.rowIndex = rowIndex;
       this.colIx = colIx;
@@ -3523,6 +3534,7 @@ public class RecordReaderImpl implements RecordReader {
    *    is needed to get footer and indexes; or that can be refactored out)
    */
   @Override
+  // TODO#: HERE
   public void readEncodedColumns(int stripeIx, boolean[] included, boolean[][] colRgs,
       LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException {
     // Note: for now we don't have to setError here, caller will setError if we throw.
@@ -3537,9 +3549,12 @@ public class RecordReaderImpl implements RecordReader {
 
     // 1. Figure out what we have to read.
     LinkedList<DiskRange> rangesToRead = new LinkedList<DiskRange>();
-    long offset = 0;
+    long offset = 0; // Stream offset in relation to the stripe.
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = findPresentStreamsByColumn(streamList, types);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("The following columns have PRESENT streams: " + DebugUtils.toString(hasNull));
+    }
     DiskRange lastRange = null;
 
     // We assume stream list is sorted by column and that non-data
@@ -3554,6 +3569,9 @@ public class RecordReaderImpl implements RecordReader {
       int colIx = stream.getColumn();
       OrcProto.Stream.Kind streamKind = stream.getKind();
       if (!included[colIx] || StreamName.getArea(streamKind) != StreamName.Area.DATA) {
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Skipping stream: " + streamKind + " at " + offset + ", " + length);
+        }
         offset += length;
         continue;
       }
@@ -3564,7 +3582,11 @@ public class RecordReaderImpl implements RecordReader {
         lastColIx = colIx;
         includedRgs = colRgs[colRgIx];
         ctx = colCtxs[colRgIx] = new ColumnReadContext(
-            offset, colIx, encodings.get(colIx), indexes[colIx]);
+            colIx, encodings.get(colIx), indexes[colIx]);
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Creating context " + colRgIx + " for column " + colIx + " with encoding "
+              + encodings.get(colIx) + " and rowIndex " + indexes[colIx]);
+        }
       } else {
         ctx = colCtxs[colRgIx];
         assert ctx != null;
@@ -3572,8 +3594,15 @@ public class RecordReaderImpl implements RecordReader {
       int indexIx = getIndexPosition(ctx.encoding.getKind(),
           types.get(colIx).getKind(), streamKind, isCompressed, hasNull[colIx]);
       ctx.addStream(offset, stream, indexIx);
+      if (DebugUtils.isTraceOrcEnabled()) {
+        LOG.info("Adding stream for column " + colIx + ": " + streamKind + " at " + offset
+            + ", " + length + ", index position " + indexIx);
+      }
       if (includedRgs == null || isDictionary(streamKind, encodings.get(colIx))) {
         lastRange = addEntireStreamToResult(offset, length, lastRange, rangesToRead);
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Will read whole stream " + streamKind + "; added to " + lastRange);
+        }
       } else {
         lastRange = addRgFilteredStreamToResult(stream, includedRgs,
             codec != null, indexes[colIx], encodings.get(colIx), types.get(colIx),
@@ -3583,22 +3612,34 @@ public class RecordReaderImpl implements RecordReader {
     }
 
     // 2. Now, read all of the ranges from cache or disk.
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("chunks = " + stringifyDiskRanges(rangesToRead));
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Resulting disk ranges to read: " + stringifyDiskRanges(rangesToRead));
     }
-    mergeDiskRanges(rangesToRead);
     if (cache != null) {
       cache.getFileData(fileName, rangesToRead, stripeOffset);
+      if (DebugUtils.isTraceOrcEnabled()) {
+        LOG.info("Disk ranges after cache (base offset " + stripeOffset
+            + "): " + stringifyDiskRanges(rangesToRead));
+      }
     }
     // Force direct buffers, since we will be decompressing to cache.
-    readDiskRanges(file, zcr, stripe.getOffset(), rangesToRead, true);
+    readDiskRanges(file, zcr, stripeOffset, rangesToRead, true);
+    if (DebugUtils.isTraceOrcEnabled()) {
+      LOG.info("Disk ranges after disk read (" + (zcr == null ? "no " : "") + " zero-copy, base"
+          + " offset " + stripeOffset + "): " + stringifyDiskRanges(rangesToRead));
+    }
 
-    // 2.1. Separate buffers for each stream from the data we have.
+    // 2.1. Separate buffers (relative to stream offset) for each stream from the data we have.
     // TODO: given how we read, we could potentially get rid of this step?
     for (ColumnReadContext colCtx : colCtxs) {
       for (int i = 0; i < colCtx.streamCount; ++i) {
         StreamContext sctx = colCtx.streams[i];
-        sctx.bufferIter = getStreamBuffers(rangesToRead, sctx.offset, sctx.length).listIterator();
+        List<DiskRange> sb = getStreamBuffers(rangesToRead, sctx.offset, sctx.length);
+        sctx.bufferIter = sb.listIterator();
+        if (DebugUtils.isTraceOrcEnabled()) {
+          LOG.info("Column " + colCtx.colIx + " stream " + sctx.kind + " at " + sctx.offset + ","
+              + sctx.length + " got ranges (relative to stream) " + stringifyDiskRanges(sb));
+        }
       }
     }
 
@@ -3622,6 +3663,10 @@ public class RecordReaderImpl implements RecordReader {
           StreamBuffer cb = null;
           if (isDictionary(sctx.kind, ctx.encoding)) {
             // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LOG.info("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
+                  + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
+            }
             cb = getStripeLevelStream(absStreamOffset, sctx, cache, isLastRg);
           } else {
             // This stream can be separated by RG using index. Let's do that.
@@ -3631,6 +3676,12 @@ public class RecordReaderImpl implements RecordReader {
                     sctx.length, bufferSize);
             cb = new StreamBuffer();
             cb.incRef();
+            if (DebugUtils.isTraceOrcEnabled()) {
+              LOG.info("Getting data for column "+ ctx.colIx + " " + (isLastRg ? "last " : "")
+                  + "RG " + rgIx + " stream " + sctx.kind  + " at " + sctx.offset + ", "
+                  + sctx.length + " index position " + sctx.streamIndexOffset + ": compressed ["
+                  + cOffset + ", " + endCOffset + ")");
+            }
             InStream.uncompressStream(fileName, absStreamOffset, zcr, sctx.bufferIter,
                 codec, bufferSize, cache, cOffset, endCOffset, cb);
           }
