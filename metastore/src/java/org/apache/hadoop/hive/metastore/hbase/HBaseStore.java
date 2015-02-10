@@ -322,18 +322,31 @@ public class HBaseStore implements RawStore {
 
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      List<Table> tables = getHBase().scanTables(dbName, likeToRegex(pattern));
+      List<String> tableNames = new ArrayList<String>(tables.size());
+      for (Table table : tables) tableNames.add(table.getTableName());
+      return tableNames;
+    } catch (IOException e) {
+      LOG.error("Unable to get tables ", e);
+      throw new MetaException("Unable to get tables, " + e.getMessage());
+    }
   }
 
   @Override
   public List<Table> getTableObjectsByName(String dbname, List<String> tableNames) throws
       MetaException, UnknownDBException {
-    throw new UnsupportedOperationException();
+    try {
+      return getHBase().getTables(dbname, tableNames);
+    } catch (IOException e) {
+      LOG.error("Unable to get tables ", e);
+      throw new MetaException("Unable to get tables, " + e.getMessage());
+    }
   }
 
   @Override
   public List<String> getAllTables(String dbName) throws MetaException {
-    throw new UnsupportedOperationException();
+    return getTables(dbName, null);
   }
 
   @Override

@@ -245,6 +245,56 @@ public class TestHBaseStoreIntegration {
   }
 
   @Test
+  public void getAllTables() throws Exception {
+    String dbNames[] = new String[]{"db0", "db1"}; // named to match getAllDbs so we get the
+    // right number of databases in that test.
+    String tableNames[] = new String[]{"curly", "larry", "moe"};
+
+    for (int i = 0; i < dbNames.length; i++) {
+      store.createDatabase(new Database(dbNames[i], "no description", "file:///tmp",
+          emptyParameters));
+    }
+
+    for (int i = 0; i < dbNames.length; i++) {
+      for (int j = 0; j < tableNames.length; j++) {
+        int startTime = (int) (System.currentTimeMillis() / 1000);
+        List<FieldSchema> cols = new ArrayList<FieldSchema>();
+        cols.add(new FieldSchema("col1", "int", "nocomment"));
+        SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+        StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false,
+            0,
+            serde, null, null, emptyParameters);
+        Table table = new Table(tableNames[j], dbNames[i], "me", startTime, startTime, 0, sd,
+            null,
+            emptyParameters, null, null, null);
+        store.createTable(table);
+      }
+    }
+
+    List<String> fetchedNames = store.getAllTables(dbNames[0]);
+    Assert.assertEquals(3, fetchedNames.size());
+    String[] sortedFetchedNames = fetchedNames.toArray(new String[fetchedNames.size()]);
+    Arrays.sort(sortedFetchedNames);
+    Assert.assertArrayEquals(tableNames, sortedFetchedNames);
+
+    List<String> regexNames = store.getTables(dbNames[0], "*y");
+    Assert.assertEquals(2, regexNames.size());
+    String[] sortedRegexNames = regexNames.toArray(new String[regexNames.size()]);
+    Arrays.sort(sortedRegexNames);
+    Assert.assertArrayEquals(Arrays.copyOfRange(tableNames, 0, 2), sortedRegexNames);
+
+    List<Table> fetchedTables = store.getTableObjectsByName(dbNames[1],
+        Arrays.asList(Arrays.copyOfRange(tableNames, 1, 3)));
+    Assert.assertEquals(2, fetchedTables.size());
+    sortedFetchedNames = new String[fetchedTables.size()];
+    for (int i = 0; i < fetchedTables.size(); i++) {
+      sortedFetchedNames[i] = fetchedTables.get(i).getTableName();
+    }
+    Arrays.sort(sortedFetchedNames);
+    Assert.assertArrayEquals(Arrays.copyOfRange(tableNames, 1, 3), sortedFetchedNames);
+  }
+
+  @Test
   public void dropTable() throws Exception {
     String tableName = "dtable";
     int startTime = (int)(System.currentTimeMillis() / 1000);

@@ -199,13 +199,10 @@ class HBaseReadWrite {
   // Synchronize this so not everyone's doing it at once.
   static synchronized void createTablesIfNotExist() throws IOException {
     if (!tablesCreated) {
-      LOG.debug("Determing which tables need created");
       HBaseAdmin admin = new HBaseAdmin(self.get().conn);
-      LOG.debug("Got hbase admin");
       for (String name : tableNames) {
-        LOG.debug("Checking for table " + name);
         if (self.get().getHTable(name) == null) {
-          LOG.debug("Creating table " + name);
+          LOG.info("Creating HBase table " + name);
           HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(name));
           tableDesc.addFamily(new HColumnDescriptor(CATALOG_CF));
           // Only table and partitions need stats
@@ -471,6 +468,81 @@ class HBaseReadWrite {
    */
   Table getTable(String dbName, String tableName) throws IOException {
     return getTable(dbName, tableName, true);
+  }
+
+  /**
+   * Fetch a list of table objects.
+   * @param dbName Database that all fetched tables are in
+   * @param tableNames list of table names
+   * @return list of tables, in the same order as the provided names.
+   * @throws IOException
+   */
+  List<Table> getTables(String dbName, List<String> tableNames) throws IOException {
+    // I could implement getTable in terms of this method.  But it is such a core function
+    // that I don't want to slow it down for the much less common fetching of multiple tables.
+    List<Table> results = new ArrayList<Table>(tableNames.size());
+    ObjectPair<String, String>[] hashKeys = new ObjectPair[tableNames.size()];
+    boolean atLeastOneMissing = false;
+    for (int i = 0; i < tableNames.size(); i++) {
+      hashKeys[i] = new ObjectPair<String, String>(dbName, tableNames.get(i));
+      // The result may be null, but we still want to add it so that we have a slot in the list
+      // for it.
+      results.add(tableCache.get(hashKeys[i]));
+      if (results.get(i) == null) atLeastOneMissing = true;
+    }
+    if (!atLeastOneMissing) return results;
+
+    // Now build a single get that will fetch the remaining tables
+    List<Get> gets = new ArrayList<Get>();
+    HTableInterface htab = getHTable(TABLE_TABLE);
+    for (int i = 0; i < tableNames.size(); i++) {
+      if (results.get(i) != null) continue;
+      byte[] key = HBaseUtils.buildKey(dbName, tableNames.get(i));
+      Get g = new Get(key);
+      g.addColumn(CATALOG_CF, CATALOG_COL);
+      gets.add(g);
+    }
+    Result[] res = htab.get(gets);
+    for (int i = 0, nextGet = 0; i < tableNames.size(); i++) {
+      if (results.get(i) != null) continue;
+      byte[] serialized = res[nextGet++].getValue(CATALOG_CF, CATALOG_COL);
+      if (serialized != null) {
+        TableWritable table = new TableWritable();
+        HBaseUtils.deserialize(table, serialized);
+        tableCache.put(hashKeys[i], table.table);
+        results.set(i, table.table);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Get a list of tables.
+   * @param dbName Database these tables are in
+   * @param regex Regular expression to use in searching for table names.  It is expected to
+   *              be a Java regular expression.  If it is null then all tables in the indicated
+   *              database will be returned.
+   * @return list of tables matching the regular expression.
+   * @throws IOException
+   */
+  List<Table> scanTables(String dbName, String regex) throws IOException {
+    // There's no way to know whether all the tables we are looking for are
+    // in the cache, so we would need to scan one way or another.  Thus there's no value in hitting
+    // the cache for this function.
+    Filter filter = null;
+    if (regex != null) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    }
+    byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName);
+    Iterator<Result> iter =
+        scanWithFilter(TABLE_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, filter);
+    List<Table> tables = new ArrayList<Table>();
+    while (iter.hasNext()) {
+      TableWritable table = new TableWritable();
+      HBaseUtils.deserialize(table, iter.next().getValue(CATALOG_CF, CATALOG_COL));
+      tables.add(table.table);
+    }
+    return tables;
   }
 
   /**
