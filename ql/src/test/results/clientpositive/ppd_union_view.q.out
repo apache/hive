@@ -471,8 +471,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string), _col2 (type: string)
-            1 _col1 (type: string), _col2 (type: string)
+            0 _col0 (type: string)
+            1 _col1 (type: string)
           outputColumnNames: _col1, _col3
           Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
           Select Operator
