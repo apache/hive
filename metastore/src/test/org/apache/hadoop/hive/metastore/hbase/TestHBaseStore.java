@@ -105,6 +105,20 @@ public class TestHBaseStore {
   }
 
   @Test
+  public void alterDb() throws Exception {
+    String dbname = "mydb";
+    Database db = new Database(dbname, "no description", "file:///tmp", emptyParameters);
+    store.createDatabase(db);
+    db.setDescription("a description");
+    store.alterDatabase(dbname, db);
+
+    Database d = store.getDatabase(dbname);
+    Assert.assertEquals(dbname, d.getName());
+    Assert.assertEquals("a description", d.getDescription());
+    Assert.assertEquals("file:///tmp", d.getLocationUri());
+  }
+
+  @Test
   public void dropDb() throws Exception {
     String dbname = "anotherdb";
     Database db = new Database(dbname, "no description", "file:///tmp", emptyParameters);
@@ -352,7 +366,7 @@ public class TestHBaseStore {
 
   @Test
   public void createRole() throws Exception {
-    int now = (int)System.currentTimeMillis();
+    int now = (int)System.currentTimeMillis()/1000;
     String roleName = "myrole";
     store.addRole(roleName, "me");
 

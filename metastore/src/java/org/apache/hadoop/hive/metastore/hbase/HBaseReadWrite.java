@@ -259,6 +259,29 @@ class HBaseReadWrite {
   }
 
   /**
+   * Get a list of databases.
+   * @param regex Regular expression to use in searching for database names.  It is expected to
+   *              be a Java regular expression.  If it is null then all databases will be returned.
+   * @return list of databases matching the regular expression.
+   * @throws IOException
+   */
+  List<Database> scanDatabases(String regex) throws IOException {
+    Filter filter = null;
+    if (regex != null) {
+      filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new RegexStringComparator(regex));
+    }
+    Iterator<Result> iter =
+        scanWithFilter(DB_TABLE, null, CATALOG_CF, CATALOG_COL, filter);
+    List<Database> databases = new ArrayList<Database>();
+    while (iter.hasNext()) {
+      DatabaseWritable db = new DatabaseWritable();
+      HBaseUtils.deserialize(db, iter.next().getValue(CATALOG_CF, CATALOG_COL));
+      databases.add(db.db);
+    }
+    return databases;
+  }
+
+  /**
    * Store a database object
    * @param database database object to store
    * @throws IOException
@@ -328,7 +351,7 @@ class HBaseReadWrite {
           : new ArrayList<Partition>(cached);
     }
     byte[] keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-    List<Partition> parts = scanOnPrefix(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, -1);
+    List<Partition> parts = scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, -1);
     partCache.put(dbName, tableName, parts, true);
     return maxPartitions < parts.size() ? parts.subList(0, maxPartitions) : parts;
   }
@@ -352,7 +375,7 @@ class HBaseReadWrite {
     byte[] keyPrefix;
     if (partVals == null || partVals.size() == 0) {
       keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, tableName);
-      return scanOnPrefix(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
+      return scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
     }
     int firstNull = 0;
     for (; firstNull < partVals.size(); firstNull++) {
@@ -360,7 +383,7 @@ class HBaseReadWrite {
     }
     if (firstNull == partVals.size()) {
       keyPrefix = buildPartitionKey(dbName, tableName, partVals);
-      return scanOnPrefix(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
+      return scanPartitions(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions);
     }
     keyPrefix = buildPartitionKey(dbName, tableName, partVals.subList(0, firstNull));
     StringBuilder regex = new StringBuilder();
@@ -377,8 +400,8 @@ class HBaseReadWrite {
     Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL,
         new RegexStringComparator(regex.toString()));
 
-    List<Partition> parts = scanOnPrefixWithFilter(PART_TABLE, keyPrefix, CATALOG_CF, CATALOG_COL,
-        maxPartitions, filter);
+    List<Partition> parts =
+        scanPartitionsWithFilter(keyPrefix, CATALOG_CF, CATALOG_COL, maxPartitions, filter);
     partCache.put(dbName, tableName, parts, false);
     return parts;
   }
@@ -835,30 +858,41 @@ class HBaseReadWrite {
     htab.delete(d);
   }
 
-  private List<Partition> scanOnPrefix(String table, byte[] keyPrefix, byte[] colFam, byte[] colName,
-                                       int maxResults) throws IOException {
-    return scanOnPrefixWithFilter(table, keyPrefix, colFam, colName, maxResults, null);
+  private List<Partition> scanPartitions(byte[] keyPrefix, byte[] colFam, byte[] colName,
+                                         int maxResults) throws IOException {
+    return scanPartitionsWithFilter(keyPrefix, colFam, colName, maxResults, null);
   }
 
-  private List<Partition> scanOnPrefixWithFilter(String table, byte[] keyPrefix, byte[] colFam,
-                                                 byte[] colName, int maxResults, Filter filter)
+  private List<Partition> scanPartitionsWithFilter(byte[] keyPrefix, byte[] colFam, byte[] colName,
+                                                   int maxResults, Filter filter)
       throws IOException {
-    HTableInterface htab = getHTable(table);
-    byte[] stop = Arrays.copyOf(keyPrefix, keyPrefix.length);
-    stop[stop.length - 1]++;
-    Scan s = new Scan(keyPrefix, stop);
-    s.addColumn(colFam, colName);
-    if (filter != null) s.setFilter(filter);
-    ResultScanner scanner = htab.getScanner(s);
+    Iterator<Result> iter =
+        scanWithFilter(PART_TABLE, keyPrefix, colFam, colName, filter);
     List<Partition> parts = new ArrayList<Partition>();
     int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
-    Iterator<Result> iter = scanner.iterator();
     for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
       PartitionWritable p = new PartitionWritable();
       HBaseUtils.deserialize(p, iter.next().getValue(colFam, colName));
       parts.add(p.part);
     }
     return parts;
+  }
+
+  private Iterator<Result> scanWithFilter(String table, byte[] keyPrefix, byte[] colFam,
+                                          byte[] colName, Filter filter) throws IOException {
+    HTableInterface htab = getHTable(table);
+    Scan s;
+    if (keyPrefix == null) {
+      s = new Scan();
+    } else {
+      byte[] stop = Arrays.copyOf(keyPrefix, keyPrefix.length);
+      stop[stop.length - 1]++;
+      s = new Scan(keyPrefix, stop);
+    }
+    s.addColumn(colFam, colName);
+    if (filter != null) s.setFilter(filter);
+    ResultScanner scanner = htab.getScanner(s);
+    return scanner.iterator();
   }
 
   private HTableInterface getHTable(String table) throws IOException {

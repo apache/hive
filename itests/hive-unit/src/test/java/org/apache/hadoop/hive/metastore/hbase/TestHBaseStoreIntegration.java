@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.hbase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HTableInterface;
@@ -145,6 +144,44 @@ public class TestHBaseStoreIntegration {
     store.dropDatabase(dbname);
     thrown.expect(NoSuchObjectException.class);
     store.getDatabase(dbname);
+  }
+
+  @Test
+  public void getAllDbs() throws Exception {
+    String[] dbNames = new String[3];
+    for (int i = 0; i < dbNames.length; i++) {
+      dbNames[i] = "db" + i;
+      Database db = new Database(dbNames[i], "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+    }
+
+    List<String> dbs = store.getAllDatabases();
+    Assert.assertEquals(3, dbs.size());
+    String[] namesFromStore = dbs.toArray(new String[3]);
+    Arrays.sort(namesFromStore);
+    Assert.assertArrayEquals(dbNames, namesFromStore);
+  }
+
+  @Test
+  public void getDbsRegex() throws Exception {
+    String[] dbNames = new String[3];
+    for (int i = 0; i < dbNames.length; i++) {
+      dbNames[i] = "db" + i;
+      Database db = new Database(dbNames[i], "no description", "file:///tmp", emptyParameters);
+      store.createDatabase(db);
+    }
+
+    List<String> dbs = store.getDatabases("db1|db2");
+    Assert.assertEquals(2, dbs.size());
+    String[] namesFromStore = dbs.toArray(new String[2]);
+    Arrays.sort(namesFromStore);
+    Assert.assertArrayEquals(Arrays.copyOfRange(dbNames, 1, 3), namesFromStore);
+
+    dbs = store.getDatabases("db*");
+    Assert.assertEquals(3, dbs.size());
+    namesFromStore = dbs.toArray(new String[3]);
+    Arrays.sort(namesFromStore);
+    Assert.assertArrayEquals(dbNames, namesFromStore);
   }
 
   @Test
@@ -432,7 +469,7 @@ public class TestHBaseStoreIntegration {
 
   @Test
   public void createRole() throws Exception {
-    int now = (int)System.currentTimeMillis();
+    int now = (int)System.currentTimeMillis()/1000;
     String roleName = "myrole";
     store.addRole(roleName, "me");
 
@@ -444,14 +481,11 @@ public class TestHBaseStoreIntegration {
 
   @Test
   public void dropRole() throws Exception {
-    int now = (int)System.currentTimeMillis();
     String roleName = "anotherrole";
     store.addRole(roleName, "me");
 
     Role r = store.getRole(roleName);
     Assert.assertEquals(roleName, r.getRoleName());
-    Assert.assertEquals("me", r.getOwnerName());
-    Assert.assertTrue(now <= r.getCreateTime());
 
     store.removeRole(roleName);
     thrown.expect(NoSuchObjectException.class);

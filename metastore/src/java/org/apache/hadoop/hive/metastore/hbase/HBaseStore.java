@@ -148,17 +148,33 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean alterDatabase(String dbname, Database db) throws NoSuchObjectException,
       MetaException {
-    throw new UnsupportedOperationException();
+    // ObjectStore fetches the old db before updating it, but I can't see the possible value of
+    // that since the caller will have needed to call getDatabase to have the db object.
+    try {
+      getHBase().putDb(db);
+      return true;
+    } catch (IOException e) {
+      LOG.error("Unable to alter database ", e);
+      throw new MetaException("Unable to read from or write to hbase " + e.getMessage());
+    }
   }
 
   @Override
   public List<String> getDatabases(String pattern) throws MetaException {
-    throw new UnsupportedOperationException();
+    try {
+      List<Database> dbs = getHBase().scanDatabases(likeToRegex(pattern));
+      List<String> dbNames = new ArrayList<String>(dbs.size());
+      for (Database db : dbs) dbNames.add(db.getName());
+      return dbNames;
+    } catch (IOException e) {
+      LOG.error("Unable to get databases ", e);
+      throw new MetaException("Unable to get databases, " + e.getMessage());
+    }
   }
 
   @Override
   public List<String> getAllDatabases() throws MetaException {
-    throw new UnsupportedOperationException();
+    return getDatabases(null);
   }
 
   @Override
@@ -963,5 +979,15 @@ public class HBaseStore implements RawStore {
       vals.add(kv.substring(kv.indexOf('=') + 1));
     }
     return vals;
+  }
+
+  private String likeToRegex(String like) {
+    if (like == null) return null;
+    // Convert Hive's strange like syntax to Java regex.  Per
+    // https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-Show
+    // the supported syntax is that * means Java .* and | means 'or'
+    // This implementation leaves other regular expression syntax alone, which means people can
+    // use it, even though it wouldn't work on RDBMS backed metastores.
+    return like.replace("*", ".*");
   }
 }
