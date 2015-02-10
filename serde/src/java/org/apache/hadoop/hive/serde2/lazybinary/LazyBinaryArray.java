@@ -214,7 +214,7 @@ public class LazyBinaryArray extends
 
   /**
    * cachedList is reused every time getList is called. Different
-   * LazyBianryArray instances cannot share the same cachedList.
+   * LazyBinaryArray instances cannot share the same cachedList.
    */
   ArrayList<Object> cachedList;
 

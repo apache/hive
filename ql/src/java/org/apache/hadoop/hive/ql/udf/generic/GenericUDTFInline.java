@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -57,8 +58,11 @@ public class GenericUDTFInline extends GenericUDTF {
 
   @Override
   public void process(Object[] os) throws HiveException {
-    for (Object row : new ArrayList<Object>(li.getList(os[0]))) {
-      forward(row);
+    List<?> list = li.getList(os[0]);
+    if (list != null && !list.isEmpty()) {
+      for (Object row : list.toArray()) {
+        forward(row);
+      }
     }
   }
 
