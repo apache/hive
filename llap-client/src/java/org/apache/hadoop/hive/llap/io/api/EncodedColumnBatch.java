@@ -31,10 +31,16 @@ public class EncodedColumnBatch<BatchKey> {
     // Decoder knows which stream this belongs to, and each buffer is a compression block,
     // so he can figure out the offsets from metadata.
     public List<LlapMemoryBuffer> cacheBuffers;
+    public int streamKind;
 
     // StreamBuffer can be reused for many RGs (e.g. dictionary case). To avoid locking every
     // LlapMemoryBuffer 500 times, have a separate refcount on StreamBuffer itself.
     public AtomicInteger refCount = new AtomicInteger(0);
+
+    public StreamBuffer(int kind) {
+      this.streamKind = kind;
+    }
+
     public void incRef() {
       refCount.incrementAndGet();
     }

@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 
-import com.clearspring.analytics.util.Lists;
+import com.google.common.collect.Lists;
 
 public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer edp;

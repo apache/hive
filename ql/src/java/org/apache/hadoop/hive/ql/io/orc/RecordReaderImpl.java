@@ -3701,7 +3701,7 @@ public class RecordReaderImpl implements RecordReader {
                 endCOffset = estimateRgEndOffset(isCompressed, isLastRg, isLastRg
                     ? sctx.length : nextIndex.getPositions(sctx.streamIndexOffset),
                     sctx.length, bufferSize);
-            cb = new StreamBuffer();
+            cb = new StreamBuffer(sctx.kind.getNumber());
             cb.incRef();
             if (DebugUtils.isTraceOrcEnabled()) {
               LOG.info("Getting data for column "+ ctx.colIx + " " + (isLastRg ? "last " : "")
@@ -3722,14 +3722,14 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   /**
-   * Reads the entire stream for a column (e.g. a dictionarty stream), or gets it from context.
+   * Reads the entire stream for a column (e.g. a dictionary stream), or gets it from context.
    * @param isLastRg Whether the stream is being read for last RG in stripe.
    * @return StreamBuffer that contains the entire stream.
    */
   private StreamBuffer getStripeLevelStream(long baseOffset, StreamContext ctx,
       LowLevelCache cache, boolean isLastRg) throws IOException {
     if (ctx.stripeLevelStream == null) {
-      ctx.stripeLevelStream = new StreamBuffer();
+      ctx.stripeLevelStream = new StreamBuffer(ctx.kind.getNumber());
       // We will be using this for each RG while also sending RGs to processing.
       // To avoid buffers being unlocked, run refcount one ahead; we will not increase
       // it when building the last RG, so each RG processing will decref once, and the
