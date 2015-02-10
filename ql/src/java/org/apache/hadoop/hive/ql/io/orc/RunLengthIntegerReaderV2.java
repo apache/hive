@@ -23,12 +23,8 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
 
 /**
@@ -36,7 +32,7 @@ import org.apache.hadoop.hive.ql.io.orc.RunLengthIntegerWriterV2.EncodingType;
  * {@link RunLengthIntegerWriterV2} for description of various lightweight
  * compression techniques.
  */
-class RunLengthIntegerReaderV2 implements IntegerReader {
+public class RunLengthIntegerReaderV2 implements IntegerReader {
   public static final Log LOG = LogFactory.getLog(RunLengthIntegerReaderV2.class);
 
   private final InStream input;
@@ -49,11 +45,11 @@ class RunLengthIntegerReaderV2 implements IntegerReader {
   private final SerializationUtils utils;
   private EncodingType currentEncoding;
 
-  RunLengthIntegerReaderV2(InStream input, boolean signed,
-      Configuration conf) throws IOException {
+  public RunLengthIntegerReaderV2(InStream input, boolean signed,
+      boolean skipCorrupt) throws IOException {
     this.input = input;
     this.signed = signed;
-    this.skipCorrupt = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this.skipCorrupt = skipCorrupt;
     this.utils = new SerializationUtils();
   }
 

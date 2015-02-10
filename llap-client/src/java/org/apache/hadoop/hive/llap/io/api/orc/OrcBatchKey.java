@@ -49,4 +49,9 @@ public class OrcBatchKey {
     // Strings are interned and can thus be compared like this.
     return stripeIx == other.stripeIx && rgIx == other.rgIx && file == other.file;
   }
+
+  @Override
+  public OrcBatchKey clone() throws CloneNotSupportedException {
+    return new OrcBatchKey(file, stripeIx, rgIx);
+  }
 }

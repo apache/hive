@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
  * Unlike VRB, doesn't have some fields, and doesn't have all columns
@@ -27,4 +28,13 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 public class ColumnVectorBatch {
   public ColumnVector[] cols;
   public int size;
+
+  public ColumnVectorBatch(int columnCount) {
+    this(columnCount, VectorizedRowBatch.DEFAULT_SIZE);
+  }
+
+  public ColumnVectorBatch(int columnCount, int batchSize) {
+    this.cols = new ColumnVector[columnCount];
+    this.size = batchSize;
+  }
 }

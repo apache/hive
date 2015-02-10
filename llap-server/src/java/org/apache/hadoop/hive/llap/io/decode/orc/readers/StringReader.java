@@ -15,22 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.hadoop.hive.llap.io.decode.orc.readers;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.io.orc.PositionProvider;
+import org.apache.hadoop.io.Text;
 
 /**
- * Interface for reading integers.
+ *
  */
-public interface IntegerReader {
+public interface StringReader {
 
   /**
    * Seek to the position provided by index.
    * @param index
-   * @throws IOException
+   * @throws java.io.IOException
    */
   void seek(PositionProvider index) throws IOException;
 
@@ -53,13 +54,13 @@ public interface IntegerReader {
    * @return
    * @throws IOException
    */
-  long next() throws IOException;
+  Text next() throws IOException;
 
   /**
    * Return the next available vector for values.
    * @return
    * @throws IOException
    */
-   void nextVector(LongColumnVector previous, long previousLen)
+  ColumnVector nextVector(ColumnVector previous, long previousLen)
       throws IOException;
 }

@@ -20,10 +20,16 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,16 +76,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -94,7 +94,7 @@ import java.util.TreeMap;
  * particular, because the MemoryManager is shared between writers, this class
  * assumes that checkMemory may be called from a separate thread.
  */
-class WriterImpl implements Writer, MemoryManager.Callback {
+public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final Log LOG = LogFactory.getLog(WriterImpl.class);
 
@@ -274,7 +274,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     return totalMemoryPool;
   }
 
-  static CompressionCodec createCodec(CompressionKind kind) {
+  public static CompressionCodec createCodec(CompressionKind kind) {
     switch (kind) {
       case NONE:
         return null;

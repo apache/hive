@@ -44,12 +44,14 @@ public class LlapInputFormat
   implements InputFormat<NullWritable, VectorizedRowBatch>, VectorizedInputFormatInterface {
   private static final Log LOG = LogFactory.getLog(LlapInputFormat.class);
   private final LlapIoImpl llapIo;
+  private InputFormat sourceInputFormat;
 
   LlapInputFormat(LlapIoImpl llapIo, InputFormat sourceInputFormat) {
     // TODO: right now, we do nothing with source input format, ORC-only in the first cut.
     //       We'd need to plumb it thru and use it to get data to cache/etc.
     assert sourceInputFormat instanceof OrcInputFormat;
     this.llapIo = llapIo;
+    this.sourceInputFormat = sourceInputFormat;
   }
 
   @Override
@@ -79,7 +81,7 @@ public class LlapInputFormat
 
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    throw new UnsupportedOperationException();
+    return sourceInputFormat.getSplits(job, numSplits);
   }
 
   private static class LlapRecordReader

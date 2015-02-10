@@ -19,15 +19,17 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.util.List;
-import java.util.Map;
 
+import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
+import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 
 public class OrcFileMetadata {
   private CompressionKind compressionKind;
+  private CompressionCodec codec;
   private int compressionBufferSize;
   private List<OrcProto.Type> types;
   private List<StripeInformation> stripes;
@@ -35,6 +37,7 @@ public class OrcFileMetadata {
 
   public OrcFileMetadata(Reader reader) {
     setCompressionKind(reader.getCompression());
+    setCompressionCodec(WriterImpl.createCodec(compressionKind));
     setCompressionBufferSize(reader.getCompressionSize());
     setStripes(reader.getStripes());
     setTypes(reader.getTypes());
@@ -79,5 +82,21 @@ public class OrcFileMetadata {
 
   public void setRowIndexStride(int rowIndexStride) {
     this.rowIndexStride = rowIndexStride;
+  }
+
+  public int getColumnCount() {
+    return types.size();
+  }
+
+  public int getFlattenedColumnCount() {
+    return types.get(0).getSubtypesCount();
+  }
+
+  public CompressionCodec getCompressionCodec() {
+    return codec;
+  }
+
+  public void setCompressionCodec(CompressionCodec codec) {
+    this.codec = codec;
   }
 }

@@ -609,7 +609,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     this.cache = cache;
     this.lowLevelCache = lowLevelCache;
     this.conf = conf;
-    this.metadataCache = new OrcMetadataCache();
+    this.metadataCache = OrcMetadataCache.getInstance();
   }
 
   @Override

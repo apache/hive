@@ -27,30 +27,50 @@ import java.util.ListIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.DiskRange;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch.StreamBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LlapMemoryBuffer;
 import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.BufferChunk;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.CacheChunk;
+import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
 
 import com.google.common.annotations.VisibleForTesting;
 
-abstract class InStream extends InputStream {
+public abstract class InStream extends InputStream {
 
   private static final Log LOG = LogFactory.getLog(InStream.class);
+  protected final String fileName;
+  protected final String name;
+  protected final long length;
+
+  public InStream(String fileName, String name, long length) {
+    this.fileName = fileName;
+    this.name = name;
+    this.length = length;
+  }
+
+  public String getFileName() {
+    return fileName;
+  }
+
+  public String getStreamName() {
+    return name;
+  }
+
+  public long getStreamLength() {
+    return length;
+  }
 
   private static class UncompressedStream extends InStream {
-    private final String name;
     private final List<DiskRange> bytes;
     private final long length;
     private long currentOffset;
     private ByteBuffer range;
     private int currentRange;
 
-    public UncompressedStream(String name, List<DiskRange> input, long length) {
-      this.name = name;
+    public UncompressedStream(String fileName, String name, List<DiskRange> input, long length) {
+      super(fileName, name, length);
       this.bytes = input;
       this.length = length;
       currentRange = 0;
@@ -149,11 +169,8 @@ abstract class InStream extends InputStream {
   }
 
   private static class CompressedStream extends InStream {
-    private final String fileName;
-    private final String name;
     private final List<DiskRange> bytes;
     private final int bufferSize;
-    private final long length;
     private LlapMemoryBuffer cacheBuffer;
     private ByteBuffer uncompressed;
     private final CompressionCodec codec;
@@ -166,11 +183,9 @@ abstract class InStream extends InputStream {
 
     public CompressedStream(String fileName, String name, List<DiskRange> input, long length,
                             CompressionCodec codec, int bufferSize, LowLevelCache cache) {
-      this.fileName = fileName;
+      super(fileName, name, length);
       this.bytes = input;
-      this.name = name;
       this.codec = codec;
-      this.length = length;
       this.bufferSize = bufferSize;
       currentOffset = 0;
       currentRange = 0;
@@ -456,7 +471,7 @@ abstract class InStream extends InputStream {
   /**
    * Create an input stream from a list of buffers.
    * @param name the name of the stream
-   * @param input the list of ranges of bytes for the stream
+   * @param buffers the list of ranges of bytes for the stream
    * @param offsets a list of offsets (the same length as input) that must
    *                contain the first offset of the each set of bytes in input
    * @param length the length in bytes of the stream
@@ -499,7 +514,7 @@ abstract class InStream extends InputStream {
                                 int bufferSize,
                                 LowLevelCache cache) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(name, input, length);
+      return new UncompressedStream(fileName, name, input, length);
     } else {
       return new CompressedStream(fileName, name, input, length, codec, bufferSize, cache);
     }

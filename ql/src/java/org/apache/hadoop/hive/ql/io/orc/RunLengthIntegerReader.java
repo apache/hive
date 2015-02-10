@@ -21,12 +21,11 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 
 /**
  * A reader that reads a sequence of integers.
  * */
-class RunLengthIntegerReader implements IntegerReader {
+public class RunLengthIntegerReader implements IntegerReader {
   private final InStream input;
   private final boolean signed;
   private final long[] literals =
@@ -37,7 +36,7 @@ class RunLengthIntegerReader implements IntegerReader {
   private boolean repeat = false;
   private SerializationUtils utils;
 
-  RunLengthIntegerReader(InStream input, boolean signed) throws IOException {
+  public RunLengthIntegerReader(InStream input, boolean signed) throws IOException {
     this.input = input;
     this.signed = signed;
     this.utils = new SerializationUtils();

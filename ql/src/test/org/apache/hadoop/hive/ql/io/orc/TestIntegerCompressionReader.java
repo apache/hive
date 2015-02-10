@@ -22,7 +22,6 @@ import static junit.framework.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
 public class TestIntegerCompressionReader {
@@ -59,7 +58,7 @@ public class TestIntegerCompressionReader {
                                    ("test", new ByteBuffer[]{inBuf},
                                     new long[]{0}, inBuf.remaining(),
                                     codec, 1000), true,
-                                    new Configuration());
+                                    false);
     for(int i=0; i < 2048; ++i) {
       int x = (int) in.next();
       if (i < 1024) {
@@ -115,7 +114,7 @@ public class TestIntegerCompressionReader {
                                                    new long[]{0},
                                                    inBuf.remaining(),
                                                    null, 100), true,
-                                                   new Configuration());
+                                                   false);
     for(int i=0; i < 2048; i += 10) {
       int x = (int) in.next();
       if (i < 1024) {

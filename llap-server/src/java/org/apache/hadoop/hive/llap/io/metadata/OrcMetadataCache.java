@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 
@@ -36,6 +35,8 @@ public class OrcMetadataCache {
   private static final int DEFAULT_MAX_STRIPE_ENTRIES = 10000;
   private static Cache<String, OrcFileMetadata> METADATA;
   private static Cache<OrcBatchKey, OrcStripeMetadata> STRIPE_METADATA;
+  private static OrcMetadataCache instance = new OrcMetadataCache();
+  private OrcMetadataCache() {}
 
   static {
     METADATA = CacheBuilder.newBuilder()
@@ -46,7 +47,11 @@ public class OrcMetadataCache {
         .concurrencyLevel(DEFAULT_CACHE_ACCESS_CONCURRENCY)
         .maximumSize(DEFAULT_MAX_STRIPE_ENTRIES)
         .build();
-    }
+  }
+
+  public static OrcMetadataCache getInstance() {
+    return instance;
+  }
 
   public void putFileMetadata(String filePath, OrcFileMetadata metaData) {
     METADATA.put(filePath, metaData);

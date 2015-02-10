@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -303,12 +302,17 @@ public class RecordReaderImpl implements RecordReader {
     advanceToNextRow(reader, 0L, true);
   }
 
-  private static final class PositionProviderImpl implements PositionProvider {
+  public static final class PositionProviderImpl implements PositionProvider {
     private final OrcProto.RowIndexEntry entry;
-    private int index = 0;
+    private int index;
 
-    PositionProviderImpl(OrcProto.RowIndexEntry entry) {
+    public PositionProviderImpl(OrcProto.RowIndexEntry entry) {
+      this(entry, 0);
+    }
+
+    public PositionProviderImpl(OrcProto.RowIndexEntry entry, int startPos) {
       this.entry = entry;
+      this.index = startPos;
     }
 
     @Override
@@ -343,7 +347,8 @@ public class RecordReaderImpl implements RecordReader {
       switch (kind) {
       case DIRECT_V2:
       case DICTIONARY_V2:
-        return new RunLengthIntegerReaderV2(in, signed, conf);
+        boolean skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+        return new RunLengthIntegerReaderV2(in, signed, skipCorrupt);
       case DIRECT:
       case DICTIONARY:
         return new RunLengthIntegerReader(in, signed);
@@ -1369,7 +1374,7 @@ public class RecordReaderImpl implements RecordReader {
   // This class collects together very similar methods for reading an ORC vector of byte arrays and
   // creating the BytesColumnVector.
   //
-  private static class BytesColumnVectorUtil {
+   public static class BytesColumnVectorUtil {
 
     private static byte[] commonReadByteArrays(InStream stream, IntegerReader lengths, LongColumnVector scratchlcv,
             BytesColumnVector result, long batchSize) throws IOException {
@@ -2832,35 +2837,32 @@ public class RecordReaderImpl implements RecordReader {
     }
   }
 
-
   private static final int BYTE_STREAM_POSITIONS = 1;
-  private static final int RUN_LENGTH_BYTE_POSITIONS =
-      BYTE_STREAM_POSITIONS + 1;
+  private static final int RUN_LENGTH_BYTE_POSITIONS = BYTE_STREAM_POSITIONS + 1;
   private static final int BITFIELD_POSITIONS = RUN_LENGTH_BYTE_POSITIONS + 1;
-  private static final int RUN_LENGTH_INT_POSITIONS =
-    BYTE_STREAM_POSITIONS + 1;
+  private static final int RUN_LENGTH_INT_POSITIONS = BYTE_STREAM_POSITIONS + 1;
 
   /**
    * Get the offset in the index positions for the column that the given
    * stream starts.
-   * @param encoding the encoding of the column
-   * @param type the type of the column
-   * @param stream the kind of the stream
+   * @param columnEncoding the encoding of the column
+   * @param columnType the type of the column
+   * @param streamType the kind of the stream
    * @param isCompressed is the file compressed
    * @param hasNulls does the column have a PRESENT stream?
    * @return the number of positions that will be used for that stream
    */
-  static int getIndexPosition(OrcProto.ColumnEncoding.Kind encoding,
-                              OrcProto.Type.Kind type,
-                              OrcProto.Stream.Kind stream,
+  public static int getIndexPosition(OrcProto.ColumnEncoding.Kind columnEncoding,
+                              OrcProto.Type.Kind columnType,
+                              OrcProto.Stream.Kind streamType,
                               boolean isCompressed,
                               boolean hasNulls) {
-    if (stream == OrcProto.Stream.Kind.PRESENT) {
+    if (streamType == OrcProto.Stream.Kind.PRESENT) {
       return 0;
     }
     int compressionValue = isCompressed ? 1 : 0;
     int base = hasNulls ? (BITFIELD_POSITIONS + compressionValue) : 0;
-    switch (type) {
+    switch (columnType) {
       case BOOLEAN:
       case BYTE:
       case SHORT:
@@ -2877,33 +2879,33 @@ public class RecordReaderImpl implements RecordReader {
       case CHAR:
       case VARCHAR:
       case STRING:
-        if (encoding == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
-            encoding == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
+        if (columnEncoding == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
+            columnEncoding == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
           return base;
         } else {
-          if (stream == OrcProto.Stream.Kind.DATA) {
+          if (streamType == OrcProto.Stream.Kind.DATA) {
             return base;
           } else {
             return base + BYTE_STREAM_POSITIONS + compressionValue;
           }
         }
       case BINARY:
-        if (stream == OrcProto.Stream.Kind.DATA) {
+        if (streamType == OrcProto.Stream.Kind.DATA) {
           return base;
         }
         return base + BYTE_STREAM_POSITIONS + compressionValue;
       case DECIMAL:
-        if (stream == OrcProto.Stream.Kind.DATA) {
+        if (streamType == OrcProto.Stream.Kind.DATA) {
           return base;
         }
         return base + BYTE_STREAM_POSITIONS + compressionValue;
       case TIMESTAMP:
-        if (stream == OrcProto.Stream.Kind.DATA) {
+        if (streamType == OrcProto.Stream.Kind.DATA) {
           return base;
         }
         return base + RUN_LENGTH_INT_POSITIONS + compressionValue;
       default:
-        throw new IllegalArgumentException("Unknown type " + type);
+        throw new IllegalArgumentException("Unknown type " + columnType);
     }
   }
 
@@ -3504,6 +3506,22 @@ public class RecordReaderImpl implements RecordReader {
     public void addStream(long offset, OrcProto.Stream stream, int indexIx) {
       streams[streamCount++] = new StreamContext(stream, offset, indexIx);
     }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(" column_index: ").append(colIx);
+      sb.append(" encoding: ").append(encoding);
+      sb.append(" stream_count: ").append(streamCount);
+      int i = 0;
+      for (StreamContext sc : streams) {
+        if (sc != null) {
+          sb.append(" stream_").append(i).append(":").append(sc.toString());
+        }
+        i++;
+      }
+      return sb.toString();
+    }
   }
 
   private static final class StreamContext {
@@ -3521,6 +3539,16 @@ public class RecordReaderImpl implements RecordReader {
     ListIterator<DiskRange> bufferIter;
     /** Saved stripe-level stream, to reuse for each RG (e.g. dictionaries). */
     StreamBuffer stripeLevelStream;
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(" kind: ").append(kind);
+      sb.append(" offset: ").append(offset);
+      sb.append(" length: ").append(length);
+      sb.append(" index_offset: ").append(streamIndexOffset);
+      return sb.toString();
+    }
   }
 
   /*
@@ -3584,8 +3612,7 @@ public class RecordReaderImpl implements RecordReader {
         ctx = colCtxs[colRgIx] = new ColumnReadContext(
             colIx, encodings.get(colIx), indexes[colIx]);
         if (DebugUtils.isTraceOrcEnabled()) {
-          LOG.info("Creating context " + colRgIx + " for column " + colIx + " with encoding "
-              + encodings.get(colIx) + " and rowIndex " + indexes[colIx]);
+          LOG.info("Creating context " + colRgIx + " for column " + colIx + ":" + ctx.toString());
         }
       } else {
         ctx = colCtxs[colRgIx];
@@ -3624,10 +3651,6 @@ public class RecordReaderImpl implements RecordReader {
     }
     // Force direct buffers, since we will be decompressing to cache.
     readDiskRanges(file, zcr, stripeOffset, rangesToRead, true);
-    if (DebugUtils.isTraceOrcEnabled()) {
-      LOG.info("Disk ranges after disk read (" + (zcr == null ? "no " : "") + " zero-copy, base"
-          + " offset " + stripeOffset + "): " + stringifyDiskRanges(rangesToRead));
-    }
 
     // 2.1. Separate buffers (relative to stream offset) for each stream from the data we have.
     // TODO: given how we read, we could potentially get rid of this step?
@@ -3651,8 +3674,12 @@ public class RecordReaderImpl implements RecordReader {
       // Create the batch we will use to return data for this RG.
       EncodedColumnBatch<OrcBatchKey> ecb = new EncodedColumnBatch<OrcBatchKey>(
           new OrcBatchKey(fileName, stripeIx, rgIx), colRgs.length, 0);
+      boolean isRGSelected = true;
       for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
-        if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) continue; // RG x col filtered.
+        if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
+          isRGSelected = false;
+          continue;
+        } // RG x col filtered.
         ColumnReadContext ctx = colCtxs[colIxMod];
         RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
             nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
@@ -3688,7 +3715,9 @@ public class RecordReaderImpl implements RecordReader {
           ecb.setStreamData(colIxMod, streamIx, cb);
         }
       }
-      consumer.consumeData(ecb);
+      if (isRGSelected) {
+        consumer.consumeData(ecb);
+      }
     }
   }
 

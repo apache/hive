@@ -15,12 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap.io.decode.orc.streams;
 
-package org.apache.hadoop.hive.ql.io.orc;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
 /**
- * An interface used for seeking to a row index.
+ * Column stream reader interface.
  */
-public interface PositionProvider {
-  long getNext();
+public interface ColumnStream {
+  /**
+   * Closes all internal stream readers.
+   * @throws IOException
+   */
+  public void close() throws IOException;
+
+  /**
+   * Returns next column vector from the stream.
+   * @param previousVector
+   * @param batchSize
+   * @return
+   * @throws IOException
+   */
+  public ColumnVector nextVector(ColumnVector previousVector, int batchSize) throws IOException;
 }

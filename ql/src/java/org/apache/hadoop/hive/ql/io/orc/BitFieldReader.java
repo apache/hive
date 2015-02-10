@@ -21,9 +21,8 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.io.orc.LlapUtils.PresentStreamReadResult;
 
-class BitFieldReader {
+public class BitFieldReader {
   private final RunLengthByteReader input;
   /** The number of bits in one item. Non-test code always uses 1. */
   private final int bitSize;
@@ -31,8 +30,8 @@ class BitFieldReader {
   private int bitsLeft;
   private final int mask;
 
-  BitFieldReader(InStream input,
-                 int bitSize) throws IOException {
+  public BitFieldReader(InStream input,
+      int bitSize) throws IOException {
     this.input = new RunLengthByteReader(input);
     this.bitSize = bitSize;
     mask = (1 << bitSize) - 1;
@@ -47,7 +46,7 @@ class BitFieldReader {
     }
   }
 
-  int next() throws IOException {
+  public int next() throws IOException {
     int result = 0;
     int bitsLeftToRead = bitSize;
     while (bitsLeftToRead > bitsLeft) {
@@ -149,7 +148,7 @@ class BitFieldReader {
     }
   }
 
-  void seek(PositionProvider index) throws IOException {
+  public void seek(PositionProvider index) throws IOException {
     input.seek(index);
     int consumed = (int) index.getNext();
     if (consumed > 8) {
