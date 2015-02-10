@@ -17,27 +17,28 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.BytesWritable;
-import scala.Tuple2;
-
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.hadoop.io.BytesWritable;
+
+import scala.Tuple2;
+
 public class HiveMapFunctionResultList extends
     HiveBaseFunctionResultList<Tuple2<BytesWritable, BytesWritable>> {
+  private static final long serialVersionUID = 1L;
   private final SparkRecordHandler recordHandler;
 
   /**
    * Instantiate result set Iterable for Map function output.
    *
-   * @param conf Hive configuration.
    * @param inputIterator Input record iterator.
    * @param handler Initialized {@link SparkMapRecordHandler} instance.
    */
-  public HiveMapFunctionResultList(Configuration conf,
-      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator, SparkRecordHandler handler) {
-    super(conf, inputIterator);
+  public HiveMapFunctionResultList(
+      Iterator<Tuple2<BytesWritable, BytesWritable>> inputIterator,
+      SparkRecordHandler handler) {
+    super(inputIterator);
     recordHandler = handler;
   }
 
