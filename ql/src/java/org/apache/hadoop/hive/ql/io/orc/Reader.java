@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -317,5 +321,10 @@ public interface Reader {
   RecordReader rows(long offset, long length,
                     boolean[] include, SearchArgument sarg,
                     String[] neededColumns) throws IOException;
+
+  MetadataReader metadata() throws IOException;
+
+  EncodedReader encodedReader(LowLevelCache lowLevelCache,
+      Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
 
 }

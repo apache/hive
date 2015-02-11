@@ -20,22 +20,24 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream;
-import org.apache.hadoop.hive.ql.io.orc.RecordReader;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter;
+import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 
 public class OrcStripeMetadata {
   List<ColumnEncoding> encodings;
   List<Stream> streams;
   RowIndex[] rowIndexes;
 
-  public OrcStripeMetadata(RecordReader reader, boolean[] includes) throws IOException {
-    rowIndexes = new OrcProto.RowIndex[includes.length];
-    reader.getCurrentRowIndexEntries(includes, rowIndexes);
-    streams = reader.getCurrentStreams();
-    encodings = reader.getCurrentColumnEncodings();
+  public OrcStripeMetadata(
+      MetadataReader mr, StripeInformation stripe, boolean[] includes) throws IOException {
+    StripeFooter footer = mr.readStripeFooter(stripe);
+    streams = footer.getStreamsList();
+    encodings = footer.getColumnsList();
+    rowIndexes = mr.readRowIndex(stripe, footer, includes, null);
   }
 
   public boolean hasAllIndexes(boolean[] includes) {
@@ -45,8 +47,10 @@ public class OrcStripeMetadata {
     return true;
   }
 
-  public void loadMissingIndexes(RecordReader reader, boolean[] includes) throws IOException {
-    reader.getCurrentRowIndexEntries(includes, rowIndexes);
+  public void loadMissingIndexes(
+      MetadataReader mr, StripeInformation stripe, boolean[] includes) throws IOException {
+    // TODO: should we save footer to avoid a read here?
+    rowIndexes = mr.readRowIndex(stripe, null, includes, rowIndexes);
   }
 
   public RowIndex[] getRowIndexes() {

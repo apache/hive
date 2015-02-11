@@ -39,12 +39,13 @@ import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.ql.io.orc.EncodedReader;
+import org.apache.hadoop.hive.ql.io.orc.MetadataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.io.orc.RecordReader;
 import org.apache.hadoop.hive.ql.io.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
@@ -70,6 +71,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
     // Read state.
     private int stripeIxFrom;
     private Reader orcReader;
+    private MetadataReader metadataReader;
     private final String internedFilePath;
     /**
      * readState[stripeIx'][colIx'] => boolean array (could be a bitmask) of rg-s that need to be
@@ -138,26 +140,24 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       int stride = metadata.getRowIndexStride();
       ArrayList<OrcStripeMetadata> stripeMetadatas = null;
       boolean[] globalIncludes = null;
-      RecordReader[] stripeReaders = null;
       try {
         globalIncludes = OrcInputFormat.genIncludedColumns(metadata.getTypes(), columnIds, true);
-        stripeReaders = new RecordReader[readState.length];
         if (sarg != null && stride != 0) {
           // If SARG is present, get relevant stripe metadata from cache or readers.
-          stripeMetadatas = readStripesMetadata(metadata, globalIncludes, stripeReaders);
+          stripeMetadatas = readStripesMetadata(metadata, globalIncludes);
         }
 
         // Now, apply SARG if any; w/o sarg, this will just initialize readState.
         determineRgsToRead(metadata.getStripes(), metadata.getTypes(),
             globalIncludes, stride, stripeMetadatas);
       } catch (Throwable t) {
-        cleanupReaders(stripeReaders);
+        cleanupReaders(null);
         consumer.setError(t);
         return null;
       }
 
       if (isStopped) {
-        cleanupReaders(stripeReaders);
+        cleanupReaders(null);
         return null;
       }
 
@@ -171,48 +171,54 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
         } catch (Throwable t) {
           // produceDataFromCache handles its own cleanup.
           consumer.setError(t);
-          cleanupReaders(stripeReaders);
+          cleanupReaders(null);
           return null;
         }
       }
       // readState has been modified for column x rgs that were fetched from cache.
 
-      // 5. Create the readers for each stripe and prepare to read. We will create reader
-      // with global column list and then separately pass stripe-specific includes below.
+      // 5. Create encoded data reader.
+      ensureOrcReader();
+      // In case if we have high-level cache, we will intercept the data and add it there;
+      // otherwise just pass the data directly to the consumer.
+      Consumer<EncodedColumnBatch<OrcBatchKey>> consumer = (cache == null) ? this.consumer : this;
+      EncodedReader stripeReader = null;
       try {
-        for (int stripeIxMod = 0; stripeIxMod < stripeReaders.length; ++stripeIxMod) {
-          List<Integer> cols = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
-          stripeReaders[stripeIxMod] = prepareStripeReader(stripeIxFrom + stripeIxMod,
-              metadata, globalIncludes, cols, stripeReaders[stripeIxMod]);
-        }
+        orcReader.encodedReader(lowLevelCache, consumer);
       } catch (Throwable t) {
+        // produceDataFromCache handles its own cleanup.
         consumer.setError(t);
-        cleanupReaders(stripeReaders);
+        cleanupReaders(null);
         return null;
       }
 
-      // 6. We now have one reader per stripe that needs to be read. Read data.
+      // 6. Read data.
       // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
       OrcBatchKey stripeKey = new OrcBatchKey(internedFilePath, -1, 0);
-      for (int stripeIxMod = 0; stripeIxMod < stripeReaders.length; ++stripeIxMod) {
+      for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
         try {
-          RecordReader stripeReader = stripeReaders[stripeIxMod];
-          if (stripeReader == null) continue; // No need to read this stripe, see above.
-          List<Integer> colsToRead = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
+          List<Integer> cols = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
+          if (cols != null && cols.isEmpty()) continue; // No need to read this stripe.
+          int stripeIx = stripeIxFrom + stripeIxMod;
+          StripeInformation si = metadata.getStripes().get(stripeIx);
+
+          if (DebugUtils.isTraceOrcEnabled()) {
+            LlapIoImpl.LOG.info("Reading stripe " + stripeIx + ": "
+                + si.getOffset() + ", " + si.getLength());
+          }
           boolean[] stripeIncludes = null;
           boolean[][] colRgs = readState[stripeIxMod];
-          int stripeIx = stripeIxMod + stripeIxFrom;
 
           // 6.1. Determine the columns to read (usually the same as requested).
-          if (colsToRead == null || colsToRead.size() == colRgs.length) {
-            colsToRead = columnIds;
+          if (cols == null || cols.size() == colRgs.length) {
+            cols = columnIds;
             stripeIncludes = globalIncludes;
           } else {
             // We are reading subset of the original columns, remove unnecessary bitmasks/etc.
             // This will never happen w/o high-level cache.
             stripeIncludes = OrcInputFormat.genIncludedColumns(
-                metadata.getTypes(), colsToRead, true);
-            boolean[][] colRgs2 = new boolean[colsToRead.size()][];
+                metadata.getTypes(), cols, true);
+            boolean[][] colRgs2 = new boolean[cols.size()][];
             for (int i = 0, i2 = -1; i < colRgs.length; ++i) {
               if (colRgs[i] == null) continue;
               colRgs2[i2] = colRgs[i];
@@ -229,7 +235,8 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
             stripeKey.stripeIx = stripeIx;
             stripeMetadata = metadataCache.getStripeMetadata(stripeKey);
             if (stripeMetadata == null) {
-              stripeMetadata = new OrcStripeMetadata(stripeReader, stripeIncludes);
+              ensureMetadataReader();
+              stripeMetadata = new OrcStripeMetadata(metadataReader, si, stripeIncludes);
               if (DebugUtils.isTraceOrcEnabled()) {
                 LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
                     + " metadata with includes: " + DebugUtils.toString(stripeIncludes));
@@ -243,24 +250,19 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
               LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
                   + " metadata for includes: " + DebugUtils.toString(stripeIncludes));
             }
-            updateLoadedIndexes(stripeMetadata, stripeReader, stripeIncludes);
+            ensureMetadataReader();
+            updateLoadedIndexes(stripeMetadata, si, stripeIncludes);
           }
-          // Set stripe metadata externally in the reader.
-          stripeReader.setMetadata(stripeMetadata.getRowIndexes(),
-              stripeMetadata.getEncodings(), stripeMetadata.getStreams());
           // 6.3. Finally, hand off to the stripe reader to produce the data.
           //      This is a sync call that will feed data to the consumer.
-          // In case if we have high-level cache, we will intercept the data and add it there;
-          // otherwise just pass the data directly to the consumer.
-          Consumer<EncodedColumnBatch<OrcBatchKey>> consumer =
-              (cache == null) ? this.consumer : this;
           // TODO: readEncodedColumns is not supposed to throw; errors should be propagated thru
           // consumer. It is potentially holding locked buffers, and must perform its own cleanup.
-          stripeReader.readEncodedColumns(stripeIx, stripeIncludes, colRgs, lowLevelCache, consumer);
+          stripeReader.readEncodedColumns(stripeIx, si, stripeMetadata.getRowIndexes(),
+              stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes, colRgs);
           stripeReader.close();
         } catch (Throwable t) {
           consumer.setError(t);
-          cleanupReaders(stripeReaders);
+          cleanupReaders(stripeReader);
           return null;
         }
       }
@@ -289,55 +291,33 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      * the missing one. This is a temporary cludge until real metadata cache becomes available.
      */
     private void updateLoadedIndexes(OrcStripeMetadata stripeMetadata,
-        RecordReader stripeReader, boolean[] stripeIncludes) throws IOException {
+        StripeInformation stripe, boolean[] stripeIncludes) throws IOException {
       // We only synchronize on write for now - design of metadata cache is very temporary;
       // we pre-allocate the array and never remove entries; so readers should be safe.
       synchronized (stripeMetadata) {
         if (stripeMetadata.hasAllIndexes(stripeIncludes)) return;
-        stripeMetadata.loadMissingIndexes(stripeReader, stripeIncludes);
+        stripeMetadata.loadMissingIndexes(metadataReader, stripe, stripeIncludes);
       }
     }
 
     /**
      * Closes the stripe readers (on error).
      */
-    private void cleanupReaders(RecordReader[] stripeReaders) {
-      for (RecordReader reader : stripeReaders) {
-        if (reader == null) continue;
+    private void cleanupReaders(EncodedReader er) {
+      if (metadataReader != null) {
         try {
-          reader.close();
+          metadataReader.close();
         } catch (IOException ex) {
           // Ignore.
         }
       }
-    }
-
-    /**
-     * Creates a reader to read single stripe, if there are any columns to read.
-     * @return The reader; null if stripe does not need to be read.
-     */
-    private RecordReader prepareStripeReader(int stripeIx, OrcFileMetadata metadata,
-        boolean[] globalIncludes, List<Integer> stripeColsToRead, RecordReader existingReader)
-            throws IOException {
-      if (stripeColsToRead != null && stripeColsToRead.isEmpty()) {
-        if (existingReader != null) {
-          existingReader.close();
+      if (er != null) {
+        try {
+          er.close();
+        } catch (IOException ex) {
+          // Ignore.
         }
-        return null;
       }
-
-      if (existingReader != null) return existingReader;
-      // Create RecordReader that will be used to read only this stripe.
-      // TODO: use separate class instead.
-      StripeInformation si = metadata.getStripes().get(stripeIx);
-      ensureOrcReader();
-      if (DebugUtils.isTraceOrcEnabled()) {
-        LlapIoImpl.LOG.info("Creating stripe reader " + stripeIx + ": "
-            + si.getOffset() + ", " + si.getLength());
-      }
-      existingReader = orcReader.rows(si.getOffset(), si.getLength(), globalIncludes);
-      existingReader.prepareEncodedColumnRead();
-      return existingReader;
     }
 
     /**
@@ -369,24 +349,22 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
      * Reads the metadata for all stripes in the file.
      * @param stripeReaders Array to preserve the readers used.
      */
-    private ArrayList<OrcStripeMetadata> readStripesMetadata(OrcFileMetadata metadata,
-        boolean[] globalInc, RecordReader[] stripeReaders) throws IOException {
-      ArrayList<OrcStripeMetadata> result = new ArrayList<OrcStripeMetadata>(stripeReaders.length);
+    private ArrayList<OrcStripeMetadata> readStripesMetadata(
+        OrcFileMetadata metadata, boolean[] globalInc) throws IOException {
+      ArrayList<OrcStripeMetadata> result = new ArrayList<OrcStripeMetadata>(readState.length);
       OrcBatchKey stripeKey = new OrcBatchKey(internedFilePath, 0, 0);
-      for (int stripeIxMod = 0; stripeIxMod < stripeReaders.length; ++stripeIxMod) {
+      for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
         stripeKey.stripeIx = stripeIxMod + stripeIxFrom;
         OrcStripeMetadata value = metadataCache.getStripeMetadata(stripeKey);
         if (value == null || !value.hasAllIndexes(globalInc)) {
-          ensureOrcReader();
+          ensureMetadataReader();
           StripeInformation si = metadata.getStripes().get(stripeKey.stripeIx);
           if (DebugUtils.isTraceOrcEnabled()) {
             LlapIoImpl.LOG.info("Creating stripe reader " + stripeKey.stripeIx + ": " 
                 + si.getOffset() + ", " + si.getLength());
           }
-          stripeReaders[stripeIxMod] = orcReader.rows(si.getOffset(), si.getLength(), globalInc);
-          stripeReaders[stripeIxMod].prepareEncodedColumnRead();
           if (value == null) {
-            value = new OrcStripeMetadata(stripeReaders[stripeIxMod], globalInc);
+            value = new OrcStripeMetadata(metadataReader, si, globalInc);
             metadataCache.putStripeMetadata(stripeKey, value);
             if (DebugUtils.isTraceOrcEnabled()) {
               LlapIoImpl.LOG.info("Caching stripe " + stripeKey.stripeIx
@@ -399,12 +377,18 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
               LlapIoImpl.LOG.info("Updating indexes in stripe " + stripeKey.stripeIx
                   + " metadata for includes: " + DebugUtils.toString(globalInc));
             }
-            updateLoadedIndexes(value, stripeReaders[stripeIxMod], globalInc);
+            updateLoadedIndexes(value, si, globalInc);
           }
         }
         result.add(value);
       }
       return result;
+    }
+
+    private void ensureMetadataReader() throws IOException {
+      ensureOrcReader();
+      if (metadataReader != null) return;
+      metadataReader = orcReader.metadata();
     }
 
     @Override

@@ -83,30 +83,4 @@ public interface RecordReader {
    * Seek to a particular row number.
    */
   void seekToRow(long rowCount) throws IOException;
-
-  void prepareEncodedColumnRead() throws IOException;
-
-  // TODO: maybe all of this should be moved to LLAP-specific class.
-  //       See also comment in RecordReaderImpl; class doesn't even have to be RecordReader 
-  /**
-   *  TODO: assumes the reader is for one stripe, otherwise the signature makes no sense.
-   *        Also has no columns passed, because that is in ctor.
-   * @param stripeIncludes Includes to use for this call. This method ignores reader's includes.
-   * @param colRgs What RGs are to be read. Has # of elements equal to the number of
-   *               included columns; then each boolean is rgCount long.
-   * @param cache Cache to get/put data and allocate memory.
-   * @param consumer Consumer to pass the results too.
-   * @throws IOException
-   */
-  void readEncodedColumns(int stripeIx, boolean[] stripeIncludes, boolean[][] colRgs,
-      LowLevelCache cache, Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException;
-
-  void getCurrentRowIndexEntries(boolean[] included, RowIndex[] indexes) throws IOException;
-
-  List<ColumnEncoding> getCurrentColumnEncodings() throws IOException;
-
-  List<OrcProto.Stream> getCurrentStreams() throws IOException;
-
-  void setMetadata(RowIndex[] index,
-      List<ColumnEncoding> encodings, List<OrcProto.Stream> streams);
 }

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ORC_ZEROCOPY;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -34,6 +36,11 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DiskRange;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.api.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem;
@@ -691,5 +698,18 @@ public class ReaderImpl implements Reader {
 
   public List<UserMetadataItem> getOrcProtoUserMetadata() {
     return footer.getMetadataList();
+  }
+
+  @Override
+  public MetadataReader metadata() throws IOException {
+    return new MetadataReader(fileSystem, path, codec, bufferSize, footer.getTypesCount());
+  }
+
+  @Override
+  public EncodedReader encodedReader(LowLevelCache lowLevelCache,
+      Consumer<EncodedColumnBatch<OrcBatchKey>> consumer) throws IOException {
+    boolean useZeroCopy = (conf != null) && (HiveConf.getBoolVar(conf, HIVE_ORC_ZEROCOPY));
+    return new EncodedReaderImpl(fileSystem, path, useZeroCopy, footer.getTypesList(),
+        codec, bufferSize, footer.getRowIndexStride(), lowLevelCache, consumer);
   }
 }
