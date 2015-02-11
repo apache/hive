@@ -510,8 +510,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     // Need to set the client's KeyProvider to the NN's for JKS,
     // else the updates do not get flushed properly
-    miniDFSCluster.getFileSystem().getClient().setKeyProvider(
-        miniDFSCluster.getNameNode().getNamesystem().getProvider());
+    KeyProvider keyProvider = miniDFSCluster.getNameNode().getNamesystem().getProvider();
+    if (keyProvider != null) {
+      miniDFSCluster.getFileSystem().getClient().setKeyProvider(keyProvider);
+    }
 
     cluster = new MiniDFSShim(miniDFSCluster);
     return cluster;
