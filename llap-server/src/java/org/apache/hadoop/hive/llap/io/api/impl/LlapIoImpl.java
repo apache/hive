@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.cache.NoopCache;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcCacheKey;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -70,14 +71,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     this.cvp = new OrcColumnVectorProducer(threadPool, edp, conf);
   }
 
-  VectorReader getReader(InputSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames) {
-    return new VectorReader(split, columnIds, sarg, columnNames, cvp);
-  }
-
   @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat sourceInputFormat) {
     return new LlapInputFormat(this, sourceInputFormat);
+  }
+
+  public ColumnVectorProducer<?> getCvp() {
+    return cvp;
   }
 }

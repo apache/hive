@@ -20,15 +20,21 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.llap.Consumer;
+import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -70,10 +76,7 @@ public class LlapInputFormat
       if (includedCols.isEmpty()) {
         includedCols = null; // Also means read all columns? WTF?
       }
-      VectorReader reader = llapIo.getReader(fileSplit, includedCols,
-          SearchArgumentFactory.createFromConf(job),
-          ColumnProjectionUtils.getReadColumnNames(job));
-      return new LlapRecordReader(reader, job, fileSplit);
+      return new LlapRecordReader(job, fileSplit, includedCols, llapIo.getCvp());
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -85,13 +88,29 @@ public class LlapInputFormat
   }
 
   private static class LlapRecordReader
-      implements RecordReader<NullWritable, VectorizedRowBatch> {
-    private final VectorReader reader;
-    private VectorizedRowBatchCtx rbCtx;
-    private boolean addPartitionCols = true;
+      implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
+    private final InputSplit split;
+    private final List<Integer> columnIds;
+    private final SearchArgument sarg;
+    private final String[] columnNames;
+    private final ColumnVectorProducer<?> cvp;
+    private final VectorizedRowBatchCtx rbCtx;
 
-    public LlapRecordReader(VectorReader reader, JobConf job, FileSplit split) {
-      this.reader = reader;
+    private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
+    private boolean isFirst = true;
+
+    private Throwable pendingError = null;
+    /** Vector that is currently being processed by our user. */
+    private boolean isDone = false, isClosed = false;
+    private ConsumerFeedback<ColumnVectorBatch> feedback;
+
+    public LlapRecordReader(
+        JobConf job, FileSplit split, List<Integer> includedCols, ColumnVectorProducer<?> cvp) {
+      this.split = split;
+      this.columnIds = includedCols;
+      this.cvp = cvp;
+      this.sarg = SearchArgumentFactory.createFromConf(job);
+      this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(job, split);
@@ -104,12 +123,16 @@ public class LlapInputFormat
     public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
       try {
         assert value != null;
-        // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
-        if (addPartitionCols) {
-          rbCtx.addPartitionColsToBatch(value);
-          addPartitionCols = false;
+        if (isClosed) {
+          throw new AssertionError("next called after close");
         }
-        ColumnVectorBatch cvb = reader.next();
+        // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
+        if (isFirst) {
+          rbCtx.addPartitionColsToBatch(value);
+          feedback = cvp.read(split, columnIds, sarg, columnNames, this);
+          isFirst = false;
+        }
+        ColumnVectorBatch cvb = nextCvb();
         if (cvb == null) return false;
         int[] columnMap = rbCtx.getIncludedColumnIndexes();
         if (columnMap.length != cvb.cols.length) {
@@ -128,6 +151,34 @@ public class LlapInputFormat
         throw new IOException(e);
       }
       return true;
+    }
+
+    ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
+      // TODO: if some collection is needed, return previous ColumnVectorBatch here
+      ColumnVectorBatch current = null;
+      synchronized (pendingData) {
+        // We are waiting for next block. Either we will get it, or be told we are done.
+        boolean doLogBlocking = DebugUtils.isTraceMttEnabled() && isNothingToReport();
+        if (doLogBlocking) {
+          LlapIoImpl.LOG.info("next will block"); // TODO: separate log objects
+        }
+        while (isNothingToReport()) {
+          pendingData.wait(100);
+        }
+        if (doLogBlocking) {
+          LlapIoImpl.LOG.info("next is unblocked");
+        }
+        rethrowErrorIfAny();
+        current = pendingData.poll();
+      }
+      if (DebugUtils.isTraceMttEnabled() && current != null) {
+        LlapIoImpl.LOG.info("Processing will receive vector " + current);
+      }
+      return current;
+    }
+
+    private boolean isNothingToReport() {
+      return !isDone && pendingData.isEmpty() && pendingError == null;
     }
 
     @Override
@@ -151,7 +202,58 @@ public class LlapInputFormat
 
     @Override
     public void close() throws IOException {
-      reader.close();
+      if (DebugUtils.isTraceEnabled()) {
+        LlapIoImpl.LOG.info("close called; closed " + isClosed + ", done " + isDone
+            + ", err " + pendingError + ", pending " + pendingData.size());
+      }
+      feedback.stop();
+      rethrowErrorIfAny();
+    }
+
+    private void rethrowErrorIfAny() throws IOException {
+      if (pendingError == null) return;
+      if (pendingError instanceof IOException) {
+        throw (IOException)pendingError;
+      }
+      throw new IOException(pendingError);
+    }
+
+    @Override
+    public void setDone() {
+      if (DebugUtils.isTraceEnabled()) {
+        LlapIoImpl.LOG.info("setDone called; cclosed " + isClosed
+          + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
+      }
+      synchronized (pendingData) {
+        isDone = true;
+        pendingData.notifyAll();
+      }
+    }
+
+    @Override
+    public void consumeData(ColumnVectorBatch data) {
+      if (DebugUtils.isTraceEnabled()) {
+        LlapIoImpl.LOG.info("consume called; closed " + isClosed + ", done " + isDone
+            + ", err " + pendingError + ", pending " + pendingData.size());
+      }
+      synchronized (pendingData) {
+        if (isClosed) {
+          return;
+        }
+        pendingData.add(data);
+        pendingData.notifyAll();
+      }
+    }
+
+    @Override
+    public void setError(Throwable t) {
+      LlapIoImpl.LOG.info("setError called; closed " + isClosed
+        + ", done " + isDone + ", err " + pendingError + ", pending " + pendingData.size());
+      assert t != null;
+      synchronized (pendingData) {
+        pendingError = t;
+        pendingData.notifyAll();
+      }
     }
 
     @Override
