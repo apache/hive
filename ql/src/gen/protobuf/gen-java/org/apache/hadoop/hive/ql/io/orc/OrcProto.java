@@ -9,7 +9,7 @@ public final class OrcProto {
       com.google.protobuf.ExtensionRegistry registry) {
   }
   /**
-   * Protobuf enum {@code org.apache.hadoop.hive.ql.io.orc.CompressionKind}
+   * Protobuf enum {@code orc.proto.CompressionKind}
    */
   public enum CompressionKind
       implements com.google.protobuf.ProtocolMessageEnum {
@@ -105,7 +105,7 @@ public final class OrcProto {
       this.value = value;
     }
 
-    // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.ql.io.orc.CompressionKind)
+    // @@protoc_insertion_point(enum_scope:orc.proto.CompressionKind)
   }
 
   public interface IntegerStatisticsOrBuilder
@@ -142,7 +142,7 @@ public final class OrcProto {
     long getSum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.IntegerStatistics}
+   * Protobuf type {@code orc.proto.IntegerStatistics}
    */
   public static final class IntegerStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -221,12 +221,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_IntegerStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_IntegerStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder.class);
     }
@@ -421,19 +421,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.IntegerStatistics}
+     * Protobuf type {@code orc.proto.IntegerStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_IntegerStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_IntegerStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder.class);
       }
@@ -473,7 +473,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_IntegerStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics getDefaultInstanceForType() {
@@ -655,7 +655,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.IntegerStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.IntegerStatistics)
     }
 
     static {
@@ -663,7 +663,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.IntegerStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.IntegerStatistics)
   }
 
   public interface DoubleStatisticsOrBuilder
@@ -700,7 +700,7 @@ public final class OrcProto {
     double getSum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DoubleStatistics}
+   * Protobuf type {@code orc.proto.DoubleStatistics}
    */
   public static final class DoubleStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -779,12 +779,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DoubleStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DoubleStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder.class);
     }
@@ -979,19 +979,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DoubleStatistics}
+     * Protobuf type {@code orc.proto.DoubleStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DoubleStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DoubleStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder.class);
       }
@@ -1031,7 +1031,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DoubleStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics getDefaultInstanceForType() {
@@ -1213,7 +1213,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.DoubleStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.DoubleStatistics)
     }
 
     static {
@@ -1221,7 +1221,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.DoubleStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.DoubleStatistics)
   }
 
   public interface StringStatisticsOrBuilder
@@ -1276,7 +1276,7 @@ public final class OrcProto {
     long getSum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StringStatistics}
+   * Protobuf type {@code orc.proto.StringStatistics}
    */
   public static final class StringStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -1355,12 +1355,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StringStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StringStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder.class);
     }
@@ -1617,19 +1617,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StringStatistics}
+     * Protobuf type {@code orc.proto.StringStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StringStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StringStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder.class);
       }
@@ -1669,7 +1669,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StringStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics getDefaultInstanceForType() {
@@ -1953,7 +1953,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.StringStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.StringStatistics)
     }
 
     static {
@@ -1961,7 +1961,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.StringStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.StringStatistics)
   }
 
   public interface BucketStatisticsOrBuilder
@@ -1982,7 +1982,7 @@ public final class OrcProto {
     long getCount(int index);
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BucketStatistics}
+   * Protobuf type {@code orc.proto.BucketStatistics}
    */
   public static final class BucketStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -2070,12 +2070,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BucketStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BucketStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder.class);
     }
@@ -2243,19 +2243,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BucketStatistics}
+     * Protobuf type {@code orc.proto.BucketStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BucketStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BucketStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder.class);
       }
@@ -2291,7 +2291,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BucketStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics getDefaultInstanceForType() {
@@ -2432,7 +2432,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.BucketStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.BucketStatistics)
     }
 
     static {
@@ -2440,7 +2440,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.BucketStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.BucketStatistics)
   }
 
   public interface DecimalStatisticsOrBuilder
@@ -2492,7 +2492,7 @@ public final class OrcProto {
         getSumBytes();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DecimalStatistics}
+   * Protobuf type {@code orc.proto.DecimalStatistics}
    */
   public static final class DecimalStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -2571,12 +2571,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DecimalStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DecimalStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder.class);
     }
@@ -2852,19 +2852,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DecimalStatistics}
+     * Protobuf type {@code orc.proto.DecimalStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DecimalStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DecimalStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder.class);
       }
@@ -2904,7 +2904,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DecimalStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics getDefaultInstanceForType() {
@@ -3215,7 +3215,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.DecimalStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.DecimalStatistics)
     }
 
     static {
@@ -3223,7 +3223,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.DecimalStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.DecimalStatistics)
   }
 
   public interface DateStatisticsOrBuilder
@@ -3258,7 +3258,7 @@ public final class OrcProto {
     int getMaximum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DateStatistics}
+   * Protobuf type {@code orc.proto.DateStatistics}
    */
   public static final class DateStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -3332,12 +3332,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DateStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DateStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder.class);
     }
@@ -3516,19 +3516,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.DateStatistics}
+     * Protobuf type {@code orc.proto.DateStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DateStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DateStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder.class);
       }
@@ -3566,7 +3566,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_DateStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics getDefaultInstanceForType() {
@@ -3724,7 +3724,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.DateStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.DateStatistics)
     }
 
     static {
@@ -3732,7 +3732,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.DateStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.DateStatistics)
   }
 
   public interface TimestampStatisticsOrBuilder
@@ -3767,7 +3767,7 @@ public final class OrcProto {
     long getMaximum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.TimestampStatistics}
+   * Protobuf type {@code orc.proto.TimestampStatistics}
    */
   public static final class TimestampStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -3841,12 +3841,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_TimestampStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_TimestampStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder.class);
     }
@@ -4025,19 +4025,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.TimestampStatistics}
+     * Protobuf type {@code orc.proto.TimestampStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_TimestampStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_TimestampStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder.class);
       }
@@ -4075,7 +4075,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_TimestampStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getDefaultInstanceForType() {
@@ -4233,7 +4233,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.TimestampStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.TimestampStatistics)
     }
 
     static {
@@ -4241,7 +4241,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.TimestampStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.TimestampStatistics)
   }
 
   public interface BinaryStatisticsOrBuilder
@@ -4266,7 +4266,7 @@ public final class OrcProto {
     long getSum();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BinaryStatistics}
+   * Protobuf type {@code orc.proto.BinaryStatistics}
    */
   public static final class BinaryStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -4335,12 +4335,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BinaryStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BinaryStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder.class);
     }
@@ -4495,19 +4495,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BinaryStatistics}
+     * Protobuf type {@code orc.proto.BinaryStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BinaryStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BinaryStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder.class);
       }
@@ -4543,7 +4543,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_BinaryStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics getDefaultInstanceForType() {
@@ -4661,7 +4661,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.BinaryStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.BinaryStatistics)
     }
 
     static {
@@ -4669,7 +4669,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.BinaryStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.BinaryStatistics)
   }
 
   public interface ColumnStatisticsOrBuilder
@@ -4685,120 +4685,120 @@ public final class OrcProto {
      */
     long getNumberOfValues();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;
+    // optional .orc.proto.IntegerStatistics intStatistics = 2;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     boolean hasIntStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics getIntStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder getIntStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;
+    // optional .orc.proto.DoubleStatistics doubleStatistics = 3;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     boolean hasDoubleStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics getDoubleStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder getDoubleStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;
+    // optional .orc.proto.StringStatistics stringStatistics = 4;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     boolean hasStringStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics getStringStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder getStringStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;
+    // optional .orc.proto.BucketStatistics bucketStatistics = 5;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     boolean hasBucketStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics getBucketStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder getBucketStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;
+    // optional .orc.proto.DecimalStatistics decimalStatistics = 6;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     boolean hasDecimalStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics getDecimalStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder getDecimalStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;
+    // optional .orc.proto.DateStatistics dateStatistics = 7;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     boolean hasDateStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics getDateStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder getDateStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;
+    // optional .orc.proto.BinaryStatistics binaryStatistics = 8;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     boolean hasBinaryStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics getBinaryStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder getBinaryStatisticsOrBuilder();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+    // optional .orc.proto.TimestampStatistics timestampStatistics = 9;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     boolean hasTimestampStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.ColumnStatistics}
+   * Protobuf type {@code orc.proto.ColumnStatistics}
    */
   public static final class ColumnStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -4971,12 +4971,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder.class);
     }
@@ -5013,177 +5013,177 @@ public final class OrcProto {
       return numberOfValues_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;
+    // optional .orc.proto.IntegerStatistics intStatistics = 2;
     public static final int INTSTATISTICS_FIELD_NUMBER = 2;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics intStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     public boolean hasIntStatistics() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics getIntStatistics() {
       return intStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+     * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder getIntStatisticsOrBuilder() {
       return intStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;
+    // optional .orc.proto.DoubleStatistics doubleStatistics = 3;
     public static final int DOUBLESTATISTICS_FIELD_NUMBER = 3;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics doubleStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     public boolean hasDoubleStatistics() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics getDoubleStatistics() {
       return doubleStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+     * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder getDoubleStatisticsOrBuilder() {
       return doubleStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;
+    // optional .orc.proto.StringStatistics stringStatistics = 4;
     public static final int STRINGSTATISTICS_FIELD_NUMBER = 4;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics stringStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     public boolean hasStringStatistics() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics getStringStatistics() {
       return stringStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+     * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder getStringStatisticsOrBuilder() {
       return stringStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;
+    // optional .orc.proto.BucketStatistics bucketStatistics = 5;
     public static final int BUCKETSTATISTICS_FIELD_NUMBER = 5;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics bucketStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     public boolean hasBucketStatistics() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics getBucketStatistics() {
       return bucketStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+     * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder getBucketStatisticsOrBuilder() {
       return bucketStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;
+    // optional .orc.proto.DecimalStatistics decimalStatistics = 6;
     public static final int DECIMALSTATISTICS_FIELD_NUMBER = 6;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics decimalStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     public boolean hasDecimalStatistics() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics getDecimalStatistics() {
       return decimalStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+     * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder getDecimalStatisticsOrBuilder() {
       return decimalStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;
+    // optional .orc.proto.DateStatistics dateStatistics = 7;
     public static final int DATESTATISTICS_FIELD_NUMBER = 7;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics dateStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     public boolean hasDateStatistics() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics getDateStatistics() {
       return dateStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+     * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder getDateStatisticsOrBuilder() {
       return dateStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;
+    // optional .orc.proto.BinaryStatistics binaryStatistics = 8;
     public static final int BINARYSTATISTICS_FIELD_NUMBER = 8;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics binaryStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     public boolean hasBinaryStatistics() {
       return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics getBinaryStatistics() {
       return binaryStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+     * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder getBinaryStatisticsOrBuilder() {
       return binaryStatistics_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+    // optional .orc.proto.TimestampStatistics timestampStatistics = 9;
     public static final int TIMESTAMPSTATISTICS_FIELD_NUMBER = 9;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics timestampStatistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     public boolean hasTimestampStatistics() {
       return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics() {
       return timestampStatistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+     * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder() {
       return timestampStatistics_;
@@ -5363,19 +5363,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.ColumnStatistics}
+     * Protobuf type {@code orc.proto.ColumnStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder.class);
       }
@@ -5467,7 +5467,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getDefaultInstanceForType() {
@@ -5657,18 +5657,18 @@ public final class OrcProto {
         return this;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;
+      // optional .orc.proto.IntegerStatistics intStatistics = 2;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics intStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder> intStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public boolean hasIntStatistics() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics getIntStatistics() {
         if (intStatisticsBuilder_ == null) {
@@ -5678,7 +5678,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public Builder setIntStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics value) {
         if (intStatisticsBuilder_ == null) {
@@ -5694,7 +5694,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public Builder setIntStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder builderForValue) {
@@ -5708,7 +5708,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public Builder mergeIntStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics value) {
         if (intStatisticsBuilder_ == null) {
@@ -5727,7 +5727,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public Builder clearIntStatistics() {
         if (intStatisticsBuilder_ == null) {
@@ -5740,7 +5740,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder getIntStatisticsBuilder() {
         bitField0_ |= 0x00000002;
@@ -5748,7 +5748,7 @@ public final class OrcProto {
         return getIntStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder getIntStatisticsOrBuilder() {
         if (intStatisticsBuilder_ != null) {
@@ -5758,7 +5758,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.IntegerStatistics intStatistics = 2;</code>
+       * <code>optional .orc.proto.IntegerStatistics intStatistics = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.IntegerStatisticsOrBuilder> 
@@ -5774,18 +5774,18 @@ public final class OrcProto {
         return intStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;
+      // optional .orc.proto.DoubleStatistics doubleStatistics = 3;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics doubleStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder> doubleStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public boolean hasDoubleStatistics() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics getDoubleStatistics() {
         if (doubleStatisticsBuilder_ == null) {
@@ -5795,7 +5795,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public Builder setDoubleStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics value) {
         if (doubleStatisticsBuilder_ == null) {
@@ -5811,7 +5811,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public Builder setDoubleStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder builderForValue) {
@@ -5825,7 +5825,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public Builder mergeDoubleStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics value) {
         if (doubleStatisticsBuilder_ == null) {
@@ -5844,7 +5844,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public Builder clearDoubleStatistics() {
         if (doubleStatisticsBuilder_ == null) {
@@ -5857,7 +5857,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder getDoubleStatisticsBuilder() {
         bitField0_ |= 0x00000004;
@@ -5865,7 +5865,7 @@ public final class OrcProto {
         return getDoubleStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder getDoubleStatisticsOrBuilder() {
         if (doubleStatisticsBuilder_ != null) {
@@ -5875,7 +5875,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DoubleStatistics doubleStatistics = 3;</code>
+       * <code>optional .orc.proto.DoubleStatistics doubleStatistics = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DoubleStatisticsOrBuilder> 
@@ -5891,18 +5891,18 @@ public final class OrcProto {
         return doubleStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;
+      // optional .orc.proto.StringStatistics stringStatistics = 4;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics stringStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder> stringStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public boolean hasStringStatistics() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics getStringStatistics() {
         if (stringStatisticsBuilder_ == null) {
@@ -5912,7 +5912,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public Builder setStringStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics value) {
         if (stringStatisticsBuilder_ == null) {
@@ -5928,7 +5928,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public Builder setStringStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder builderForValue) {
@@ -5942,7 +5942,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public Builder mergeStringStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics value) {
         if (stringStatisticsBuilder_ == null) {
@@ -5961,7 +5961,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public Builder clearStringStatistics() {
         if (stringStatisticsBuilder_ == null) {
@@ -5974,7 +5974,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder getStringStatisticsBuilder() {
         bitField0_ |= 0x00000008;
@@ -5982,7 +5982,7 @@ public final class OrcProto {
         return getStringStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder getStringStatisticsOrBuilder() {
         if (stringStatisticsBuilder_ != null) {
@@ -5992,7 +5992,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.StringStatistics stringStatistics = 4;</code>
+       * <code>optional .orc.proto.StringStatistics stringStatistics = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.StringStatisticsOrBuilder> 
@@ -6008,18 +6008,18 @@ public final class OrcProto {
         return stringStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;
+      // optional .orc.proto.BucketStatistics bucketStatistics = 5;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics bucketStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder> bucketStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public boolean hasBucketStatistics() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics getBucketStatistics() {
         if (bucketStatisticsBuilder_ == null) {
@@ -6029,7 +6029,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public Builder setBucketStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics value) {
         if (bucketStatisticsBuilder_ == null) {
@@ -6045,7 +6045,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public Builder setBucketStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder builderForValue) {
@@ -6059,7 +6059,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public Builder mergeBucketStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics value) {
         if (bucketStatisticsBuilder_ == null) {
@@ -6078,7 +6078,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public Builder clearBucketStatistics() {
         if (bucketStatisticsBuilder_ == null) {
@@ -6091,7 +6091,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder getBucketStatisticsBuilder() {
         bitField0_ |= 0x00000010;
@@ -6099,7 +6099,7 @@ public final class OrcProto {
         return getBucketStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder getBucketStatisticsOrBuilder() {
         if (bucketStatisticsBuilder_ != null) {
@@ -6109,7 +6109,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BucketStatistics bucketStatistics = 5;</code>
+       * <code>optional .orc.proto.BucketStatistics bucketStatistics = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BucketStatisticsOrBuilder> 
@@ -6125,18 +6125,18 @@ public final class OrcProto {
         return bucketStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;
+      // optional .orc.proto.DecimalStatistics decimalStatistics = 6;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics decimalStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder> decimalStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public boolean hasDecimalStatistics() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics getDecimalStatistics() {
         if (decimalStatisticsBuilder_ == null) {
@@ -6146,7 +6146,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public Builder setDecimalStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics value) {
         if (decimalStatisticsBuilder_ == null) {
@@ -6162,7 +6162,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public Builder setDecimalStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder builderForValue) {
@@ -6176,7 +6176,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public Builder mergeDecimalStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics value) {
         if (decimalStatisticsBuilder_ == null) {
@@ -6195,7 +6195,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public Builder clearDecimalStatistics() {
         if (decimalStatisticsBuilder_ == null) {
@@ -6208,7 +6208,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder getDecimalStatisticsBuilder() {
         bitField0_ |= 0x00000020;
@@ -6216,7 +6216,7 @@ public final class OrcProto {
         return getDecimalStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder getDecimalStatisticsOrBuilder() {
         if (decimalStatisticsBuilder_ != null) {
@@ -6226,7 +6226,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DecimalStatistics decimalStatistics = 6;</code>
+       * <code>optional .orc.proto.DecimalStatistics decimalStatistics = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DecimalStatisticsOrBuilder> 
@@ -6242,18 +6242,18 @@ public final class OrcProto {
         return decimalStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;
+      // optional .orc.proto.DateStatistics dateStatistics = 7;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics dateStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder> dateStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public boolean hasDateStatistics() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics getDateStatistics() {
         if (dateStatisticsBuilder_ == null) {
@@ -6263,7 +6263,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public Builder setDateStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics value) {
         if (dateStatisticsBuilder_ == null) {
@@ -6279,7 +6279,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public Builder setDateStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder builderForValue) {
@@ -6293,7 +6293,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public Builder mergeDateStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics value) {
         if (dateStatisticsBuilder_ == null) {
@@ -6312,7 +6312,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public Builder clearDateStatistics() {
         if (dateStatisticsBuilder_ == null) {
@@ -6325,7 +6325,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder getDateStatisticsBuilder() {
         bitField0_ |= 0x00000040;
@@ -6333,7 +6333,7 @@ public final class OrcProto {
         return getDateStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder getDateStatisticsOrBuilder() {
         if (dateStatisticsBuilder_ != null) {
@@ -6343,7 +6343,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.DateStatistics dateStatistics = 7;</code>
+       * <code>optional .orc.proto.DateStatistics dateStatistics = 7;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.DateStatisticsOrBuilder> 
@@ -6359,18 +6359,18 @@ public final class OrcProto {
         return dateStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;
+      // optional .orc.proto.BinaryStatistics binaryStatistics = 8;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics binaryStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder> binaryStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public boolean hasBinaryStatistics() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics getBinaryStatistics() {
         if (binaryStatisticsBuilder_ == null) {
@@ -6380,7 +6380,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public Builder setBinaryStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics value) {
         if (binaryStatisticsBuilder_ == null) {
@@ -6396,7 +6396,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public Builder setBinaryStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder builderForValue) {
@@ -6410,7 +6410,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public Builder mergeBinaryStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics value) {
         if (binaryStatisticsBuilder_ == null) {
@@ -6429,7 +6429,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public Builder clearBinaryStatistics() {
         if (binaryStatisticsBuilder_ == null) {
@@ -6442,7 +6442,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder getBinaryStatisticsBuilder() {
         bitField0_ |= 0x00000080;
@@ -6450,7 +6450,7 @@ public final class OrcProto {
         return getBinaryStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder getBinaryStatisticsOrBuilder() {
         if (binaryStatisticsBuilder_ != null) {
@@ -6460,7 +6460,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.BinaryStatistics binaryStatistics = 8;</code>
+       * <code>optional .orc.proto.BinaryStatistics binaryStatistics = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BinaryStatisticsOrBuilder> 
@@ -6476,18 +6476,18 @@ public final class OrcProto {
         return binaryStatisticsBuilder_;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;
+      // optional .orc.proto.TimestampStatistics timestampStatistics = 9;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics timestampStatistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder> timestampStatisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public boolean hasTimestampStatistics() {
         return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics getTimestampStatistics() {
         if (timestampStatisticsBuilder_ == null) {
@@ -6497,7 +6497,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public Builder setTimestampStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics value) {
         if (timestampStatisticsBuilder_ == null) {
@@ -6513,7 +6513,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public Builder setTimestampStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder builderForValue) {
@@ -6527,7 +6527,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public Builder mergeTimestampStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics value) {
         if (timestampStatisticsBuilder_ == null) {
@@ -6546,7 +6546,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public Builder clearTimestampStatistics() {
         if (timestampStatisticsBuilder_ == null) {
@@ -6559,7 +6559,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder getTimestampStatisticsBuilder() {
         bitField0_ |= 0x00000100;
@@ -6567,7 +6567,7 @@ public final class OrcProto {
         return getTimestampStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder getTimestampStatisticsOrBuilder() {
         if (timestampStatisticsBuilder_ != null) {
@@ -6577,7 +6577,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.TimestampStatistics timestampStatistics = 9;</code>
+       * <code>optional .orc.proto.TimestampStatistics timestampStatistics = 9;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TimestampStatisticsOrBuilder> 
@@ -6593,7 +6593,7 @@ public final class OrcProto {
         return timestampStatisticsBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.ColumnStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.ColumnStatistics)
     }
 
     static {
@@ -6601,7 +6601,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.ColumnStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.ColumnStatistics)
   }
 
   public interface RowIndexEntryOrBuilder
@@ -6621,22 +6621,22 @@ public final class OrcProto {
      */
     long getPositions(int index);
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;
+    // optional .orc.proto.ColumnStatistics statistics = 2;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     boolean hasStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.RowIndexEntry}
+   * Protobuf type {@code orc.proto.RowIndexEntry}
    */
   public static final class RowIndexEntry extends
       com.google.protobuf.GeneratedMessage
@@ -6737,12 +6737,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndexEntry_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndexEntry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder.class);
     }
@@ -6787,23 +6787,23 @@ public final class OrcProto {
     }
     private int positionsMemoizedSerializedSize = -1;
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;
+    // optional .orc.proto.ColumnStatistics statistics = 2;
     public static final int STATISTICS_FIELD_NUMBER = 2;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics statistics_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     public boolean hasStatistics() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics() {
       return statistics_;
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+     * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder() {
       return statistics_;
@@ -6941,19 +6941,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.RowIndexEntry}
+     * Protobuf type {@code orc.proto.RowIndexEntry}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndexEntry_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndexEntry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder.class);
       }
@@ -6996,7 +6996,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndexEntry_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry getDefaultInstanceForType() {
@@ -7150,18 +7150,18 @@ public final class OrcProto {
         return this;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;
+      // optional .orc.proto.ColumnStatistics statistics = 2;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics statistics_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> statisticsBuilder_;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public boolean hasStatistics() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics() {
         if (statisticsBuilder_ == null) {
@@ -7171,7 +7171,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public Builder setStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
         if (statisticsBuilder_ == null) {
@@ -7187,7 +7187,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public Builder setStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -7201,7 +7201,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public Builder mergeStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
         if (statisticsBuilder_ == null) {
@@ -7220,7 +7220,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public Builder clearStatistics() {
         if (statisticsBuilder_ == null) {
@@ -7233,7 +7233,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder getStatisticsBuilder() {
         bitField0_ |= 0x00000002;
@@ -7241,7 +7241,7 @@ public final class OrcProto {
         return getStatisticsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder() {
         if (statisticsBuilder_ != null) {
@@ -7251,7 +7251,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 2;</code>
+       * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
@@ -7267,7 +7267,7 @@ public final class OrcProto {
         return statisticsBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.RowIndexEntry)
+      // @@protoc_insertion_point(builder_scope:orc.proto.RowIndexEntry)
     }
 
     static {
@@ -7275,39 +7275,39 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.RowIndexEntry)
+    // @@protoc_insertion_point(class_scope:orc.proto.RowIndexEntry)
   }
 
   public interface RowIndexOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;
+    // repeated .orc.proto.RowIndexEntry entry = 1;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> 
         getEntryList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry getEntry(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     int getEntryCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder> 
         getEntryOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder getEntryOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.RowIndex}
+   * Protobuf type {@code orc.proto.RowIndex}
    */
   public static final class RowIndex extends
       com.google.protobuf.GeneratedMessage
@@ -7382,12 +7382,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndex_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndex_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex.Builder.class);
     }
@@ -7407,36 +7407,36 @@ public final class OrcProto {
       return PARSER;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;
+    // repeated .orc.proto.RowIndexEntry entry = 1;
     public static final int ENTRY_FIELD_NUMBER = 1;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> entry_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> getEntryList() {
       return entry_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder> 
         getEntryOrBuilderList() {
       return entry_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     public int getEntryCount() {
       return entry_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry getEntry(int index) {
       return entry_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+     * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder getEntryOrBuilder(
         int index) {
@@ -7553,19 +7553,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.RowIndex}
+     * Protobuf type {@code orc.proto.RowIndex}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndex_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndex_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex.Builder.class);
       }
@@ -7606,7 +7606,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_RowIndex_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndex getDefaultInstanceForType() {
@@ -7701,7 +7701,7 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;
+      // repeated .orc.proto.RowIndexEntry entry = 1;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
@@ -7715,7 +7715,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder> entryBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> getEntryList() {
         if (entryBuilder_ == null) {
@@ -7725,7 +7725,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public int getEntryCount() {
         if (entryBuilder_ == null) {
@@ -7735,7 +7735,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry getEntry(int index) {
         if (entryBuilder_ == null) {
@@ -7745,7 +7745,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder setEntry(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry value) {
@@ -7762,7 +7762,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder setEntry(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder builderForValue) {
@@ -7776,7 +7776,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder addEntry(org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry value) {
         if (entryBuilder_ == null) {
@@ -7792,7 +7792,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder addEntry(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry value) {
@@ -7809,7 +7809,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder addEntry(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder builderForValue) {
@@ -7823,7 +7823,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder addEntry(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder builderForValue) {
@@ -7837,7 +7837,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder addAllEntry(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry> values) {
@@ -7851,7 +7851,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder clearEntry() {
         if (entryBuilder_ == null) {
@@ -7864,7 +7864,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public Builder removeEntry(int index) {
         if (entryBuilder_ == null) {
@@ -7877,14 +7877,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder getEntryBuilder(
           int index) {
         return getEntryFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder getEntryOrBuilder(
           int index) {
@@ -7894,7 +7894,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntryOrBuilder> 
            getEntryOrBuilderList() {
@@ -7905,14 +7905,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder addEntryBuilder() {
         return getEntryFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder addEntryBuilder(
           int index) {
@@ -7920,7 +7920,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.RowIndexEntry entry = 1;</code>
+       * <code>repeated .orc.proto.RowIndexEntry entry = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry.Builder> 
            getEntryBuilderList() {
@@ -7941,7 +7941,7 @@ public final class OrcProto {
         return entryBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.RowIndex)
+      // @@protoc_insertion_point(builder_scope:orc.proto.RowIndex)
     }
 
     static {
@@ -7949,19 +7949,19 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.RowIndex)
+    // @@protoc_insertion_point(class_scope:orc.proto.RowIndex)
   }
 
   public interface StreamOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;
+    // optional .orc.proto.Stream.Kind kind = 1;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
      */
     boolean hasKind();
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind getKind();
 
@@ -7986,7 +7986,7 @@ public final class OrcProto {
     long getLength();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Stream}
+   * Protobuf type {@code orc.proto.Stream}
    */
   public static final class Stream extends
       com.google.protobuf.GeneratedMessage
@@ -8071,12 +8071,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Stream_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Stream_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder.class);
     }
@@ -8097,7 +8097,7 @@ public final class OrcProto {
     }
 
     /**
-     * Protobuf enum {@code org.apache.hadoop.hive.ql.io.orc.Stream.Kind}
+     * Protobuf enum {@code orc.proto.Stream.Kind}
      *
      * <pre>
      * if you add new index stream kinds, you need to make sure to update
@@ -8225,21 +8225,21 @@ public final class OrcProto {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.ql.io.orc.Stream.Kind)
+      // @@protoc_insertion_point(enum_scope:orc.proto.Stream.Kind)
     }
 
     private int bitField0_;
-    // required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;
+    // optional .orc.proto.Stream.Kind kind = 1;
     public static final int KIND_FIELD_NUMBER = 1;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind kind_;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
      */
     public boolean hasKind() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind getKind() {
       return kind_;
@@ -8287,10 +8287,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasKind()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -8407,19 +8403,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Stream}
+     * Protobuf type {@code orc.proto.Stream}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Stream_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Stream_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder.class);
       }
@@ -8459,7 +8455,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Stream_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream getDefaultInstanceForType() {
@@ -8520,10 +8516,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        if (!hasKind()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -8546,22 +8538,22 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;
+      // optional .orc.proto.Stream.Kind kind = 1;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind kind_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind.PRESENT;
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
        */
       public boolean hasKind() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind getKind() {
         return kind_;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
        */
       public Builder setKind(org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Kind value) {
         if (value == null) {
@@ -8573,7 +8565,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Stream.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Stream.Kind kind = 1;</code>
        */
       public Builder clearKind() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -8648,7 +8640,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.Stream)
+      // @@protoc_insertion_point(builder_scope:orc.proto.Stream)
     }
 
     static {
@@ -8656,19 +8648,19 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.Stream)
+    // @@protoc_insertion_point(class_scope:orc.proto.Stream)
   }
 
   public interface ColumnEncodingOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;
+    // optional .orc.proto.ColumnEncoding.Kind kind = 1;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+     * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
      */
     boolean hasKind();
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+     * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind getKind();
 
@@ -8683,7 +8675,7 @@ public final class OrcProto {
     int getDictionarySize();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.ColumnEncoding}
+   * Protobuf type {@code orc.proto.ColumnEncoding}
    */
   public static final class ColumnEncoding extends
       com.google.protobuf.GeneratedMessage
@@ -8763,12 +8755,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnEncoding_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnEncoding_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder.class);
     }
@@ -8789,7 +8781,7 @@ public final class OrcProto {
     }
 
     /**
-     * Protobuf enum {@code org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind}
+     * Protobuf enum {@code orc.proto.ColumnEncoding.Kind}
      */
     public enum Kind
         implements com.google.protobuf.ProtocolMessageEnum {
@@ -8885,21 +8877,21 @@ public final class OrcProto {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind)
+      // @@protoc_insertion_point(enum_scope:orc.proto.ColumnEncoding.Kind)
     }
 
     private int bitField0_;
-    // required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;
+    // optional .orc.proto.ColumnEncoding.Kind kind = 1;
     public static final int KIND_FIELD_NUMBER = 1;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind kind_;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+     * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
      */
     public boolean hasKind() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+     * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind getKind() {
       return kind_;
@@ -8930,10 +8922,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasKind()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -9043,19 +9031,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.ColumnEncoding}
+     * Protobuf type {@code orc.proto.ColumnEncoding}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnEncoding_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnEncoding_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder.class);
       }
@@ -9093,7 +9081,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_ColumnEncoding_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding getDefaultInstanceForType() {
@@ -9147,10 +9135,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        if (!hasKind()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -9173,22 +9157,22 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;
+      // optional .orc.proto.ColumnEncoding.Kind kind = 1;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind kind_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind.DIRECT;
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+       * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
        */
       public boolean hasKind() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+       * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind getKind() {
         return kind_;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+       * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
        */
       public Builder setKind(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Kind value) {
         if (value == null) {
@@ -9200,7 +9184,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding.Kind kind = 1;</code>
+       * <code>optional .orc.proto.ColumnEncoding.Kind kind = 1;</code>
        */
       public Builder clearKind() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -9242,7 +9226,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.ColumnEncoding)
+      // @@protoc_insertion_point(builder_scope:orc.proto.ColumnEncoding)
     }
 
     static {
@@ -9250,64 +9234,64 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.ColumnEncoding)
+    // @@protoc_insertion_point(class_scope:orc.proto.ColumnEncoding)
   }
 
   public interface StripeFooterOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;
+    // repeated .orc.proto.Stream streams = 1;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> 
         getStreamsList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream getStreams(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     int getStreamsCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder> 
         getStreamsOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder getStreamsOrBuilder(
         int index);
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;
+    // repeated .orc.proto.ColumnEncoding columns = 2;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> 
         getColumnsList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding getColumns(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     int getColumnsCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder> 
         getColumnsOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder getColumnsOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeFooter}
+   * Protobuf type {@code orc.proto.StripeFooter}
    */
   public static final class StripeFooter extends
       com.google.protobuf.GeneratedMessage
@@ -9393,12 +9377,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeFooter_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeFooter_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter.Builder.class);
     }
@@ -9418,72 +9402,72 @@ public final class OrcProto {
       return PARSER;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;
+    // repeated .orc.proto.Stream streams = 1;
     public static final int STREAMS_FIELD_NUMBER = 1;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> streams_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> getStreamsList() {
       return streams_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder> 
         getStreamsOrBuilderList() {
       return streams_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     public int getStreamsCount() {
       return streams_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream getStreams(int index) {
       return streams_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+     * <code>repeated .orc.proto.Stream streams = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder getStreamsOrBuilder(
         int index) {
       return streams_.get(index);
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;
+    // repeated .orc.proto.ColumnEncoding columns = 2;
     public static final int COLUMNS_FIELD_NUMBER = 2;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> columns_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> getColumnsList() {
       return columns_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder> 
         getColumnsOrBuilderList() {
       return columns_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     public int getColumnsCount() {
       return columns_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding getColumns(int index) {
       return columns_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+     * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder getColumnsOrBuilder(
         int index) {
@@ -9499,18 +9483,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getStreamsCount(); i++) {
-        if (!getStreams(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      for (int i = 0; i < getColumnsCount(); i++) {
-        if (!getColumns(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -9620,19 +9592,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeFooter}
+     * Protobuf type {@code orc.proto.StripeFooter}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooterOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeFooter_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeFooter_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter.Builder.class);
       }
@@ -9680,7 +9652,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeFooter_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeFooter getDefaultInstanceForType() {
@@ -9788,18 +9760,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getStreamsCount(); i++) {
-          if (!getStreams(i).isInitialized()) {
-            
-            return false;
-          }
-        }
-        for (int i = 0; i < getColumnsCount(); i++) {
-          if (!getColumns(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
 
@@ -9822,7 +9782,7 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;
+      // repeated .orc.proto.Stream streams = 1;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> streams_ =
         java.util.Collections.emptyList();
       private void ensureStreamsIsMutable() {
@@ -9836,7 +9796,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder> streamsBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> getStreamsList() {
         if (streamsBuilder_ == null) {
@@ -9846,7 +9806,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public int getStreamsCount() {
         if (streamsBuilder_ == null) {
@@ -9856,7 +9816,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream getStreams(int index) {
         if (streamsBuilder_ == null) {
@@ -9866,7 +9826,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder setStreams(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream value) {
@@ -9883,7 +9843,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder setStreams(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder builderForValue) {
@@ -9897,7 +9857,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder addStreams(org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream value) {
         if (streamsBuilder_ == null) {
@@ -9913,7 +9873,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder addStreams(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream value) {
@@ -9930,7 +9890,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder addStreams(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder builderForValue) {
@@ -9944,7 +9904,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder addStreams(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder builderForValue) {
@@ -9958,7 +9918,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder addAllStreams(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream> values) {
@@ -9972,7 +9932,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder clearStreams() {
         if (streamsBuilder_ == null) {
@@ -9985,7 +9945,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public Builder removeStreams(int index) {
         if (streamsBuilder_ == null) {
@@ -9998,14 +9958,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder getStreamsBuilder(
           int index) {
         return getStreamsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder getStreamsOrBuilder(
           int index) {
@@ -10015,7 +9975,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StreamOrBuilder> 
            getStreamsOrBuilderList() {
@@ -10026,14 +9986,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder addStreamsBuilder() {
         return getStreamsFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder addStreamsBuilder(
           int index) {
@@ -10041,7 +10001,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Stream streams = 1;</code>
+       * <code>repeated .orc.proto.Stream streams = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Stream.Builder> 
            getStreamsBuilderList() {
@@ -10062,7 +10022,7 @@ public final class OrcProto {
         return streamsBuilder_;
       }
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;
+      // repeated .orc.proto.ColumnEncoding columns = 2;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> columns_ =
         java.util.Collections.emptyList();
       private void ensureColumnsIsMutable() {
@@ -10076,7 +10036,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder> columnsBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> getColumnsList() {
         if (columnsBuilder_ == null) {
@@ -10086,7 +10046,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public int getColumnsCount() {
         if (columnsBuilder_ == null) {
@@ -10096,7 +10056,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding getColumns(int index) {
         if (columnsBuilder_ == null) {
@@ -10106,7 +10066,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder setColumns(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding value) {
@@ -10123,7 +10083,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder setColumns(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder builderForValue) {
@@ -10137,7 +10097,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder addColumns(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding value) {
         if (columnsBuilder_ == null) {
@@ -10153,7 +10113,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder addColumns(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding value) {
@@ -10170,7 +10130,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder addColumns(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder builderForValue) {
@@ -10184,7 +10144,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder addColumns(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder builderForValue) {
@@ -10198,7 +10158,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder addAllColumns(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding> values) {
@@ -10212,7 +10172,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder clearColumns() {
         if (columnsBuilder_ == null) {
@@ -10225,7 +10185,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public Builder removeColumns(int index) {
         if (columnsBuilder_ == null) {
@@ -10238,14 +10198,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder getColumnsBuilder(
           int index) {
         return getColumnsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder getColumnsOrBuilder(
           int index) {
@@ -10255,7 +10215,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncodingOrBuilder> 
            getColumnsOrBuilderList() {
@@ -10266,14 +10226,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder addColumnsBuilder() {
         return getColumnsFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder addColumnsBuilder(
           int index) {
@@ -10281,7 +10241,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnEncoding columns = 2;</code>
+       * <code>repeated .orc.proto.ColumnEncoding columns = 2;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnEncoding.Builder> 
            getColumnsBuilderList() {
@@ -10302,7 +10262,7 @@ public final class OrcProto {
         return columnsBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.StripeFooter)
+      // @@protoc_insertion_point(builder_scope:orc.proto.StripeFooter)
     }
 
     static {
@@ -10310,19 +10270,19 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.StripeFooter)
+    // @@protoc_insertion_point(class_scope:orc.proto.StripeFooter)
   }
 
   public interface TypeOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;
+    // optional .orc.proto.Type.Kind kind = 1;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Type.Kind kind = 1;</code>
      */
     boolean hasKind();
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Type.Kind kind = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind getKind();
 
@@ -10391,7 +10351,7 @@ public final class OrcProto {
     int getScale();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Type}
+   * Protobuf type {@code orc.proto.Type}
    */
   public static final class Type extends
       com.google.protobuf.GeneratedMessage
@@ -10516,12 +10476,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Type_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Type_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder.class);
     }
@@ -10542,7 +10502,7 @@ public final class OrcProto {
     }
 
     /**
-     * Protobuf enum {@code org.apache.hadoop.hive.ql.io.orc.Type.Kind}
+     * Protobuf enum {@code orc.proto.Type.Kind}
      */
     public enum Kind
         implements com.google.protobuf.ProtocolMessageEnum {
@@ -10764,21 +10724,21 @@ public final class OrcProto {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:org.apache.hadoop.hive.ql.io.orc.Type.Kind)
+      // @@protoc_insertion_point(enum_scope:orc.proto.Type.Kind)
     }
 
     private int bitField0_;
-    // required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;
+    // optional .orc.proto.Type.Kind kind = 1;
     public static final int KIND_FIELD_NUMBER = 1;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind kind_;
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Type.Kind kind = 1;</code>
      */
     public boolean hasKind() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+     * <code>optional .orc.proto.Type.Kind kind = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind getKind() {
       return kind_;
@@ -10899,10 +10859,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasKind()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -11059,19 +11015,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Type}
+     * Protobuf type {@code orc.proto.Type}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Type_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Type_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder.class);
       }
@@ -11117,7 +11073,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Type_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type getDefaultInstanceForType() {
@@ -11216,10 +11172,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        if (!hasKind()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -11242,22 +11194,22 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;
+      // optional .orc.proto.Type.Kind kind = 1;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind kind_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind.BOOLEAN;
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Type.Kind kind = 1;</code>
        */
       public boolean hasKind() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Type.Kind kind = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind getKind() {
         return kind_;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Type.Kind kind = 1;</code>
        */
       public Builder setKind(org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind value) {
         if (value == null) {
@@ -11269,7 +11221,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required .org.apache.hadoop.hive.ql.io.orc.Type.Kind kind = 1;</code>
+       * <code>optional .orc.proto.Type.Kind kind = 1;</code>
        */
       public Builder clearKind() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -11536,7 +11488,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.Type)
+      // @@protoc_insertion_point(builder_scope:orc.proto.Type)
     }
 
     static {
@@ -11544,7 +11496,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.Type)
+    // @@protoc_insertion_point(class_scope:orc.proto.Type)
   }
 
   public interface StripeInformationOrBuilder
@@ -11601,7 +11553,7 @@ public final class OrcProto {
     long getNumberOfRows();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeInformation}
+   * Protobuf type {@code orc.proto.StripeInformation}
    */
   public static final class StripeInformation extends
       com.google.protobuf.GeneratedMessage
@@ -11690,12 +11642,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeInformation_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeInformation_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder.class);
     }
@@ -11938,19 +11890,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeInformation}
+     * Protobuf type {@code orc.proto.StripeInformation}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeInformation_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeInformation_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder.class);
       }
@@ -11994,7 +11946,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeInformation_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation getDefaultInstanceForType() {
@@ -12256,7 +12208,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.StripeInformation)
+      // @@protoc_insertion_point(builder_scope:orc.proto.StripeInformation)
     }
 
     static {
@@ -12264,39 +12216,39 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.StripeInformation)
+    // @@protoc_insertion_point(class_scope:orc.proto.StripeInformation)
   }
 
   public interface UserMetadataItemOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required string name = 1;
+    // optional string name = 1;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     boolean hasName();
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     java.lang.String getName();
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // required bytes value = 2;
+    // optional bytes value = 2;
     /**
-     * <code>required bytes value = 2;</code>
+     * <code>optional bytes value = 2;</code>
      */
     boolean hasValue();
     /**
-     * <code>required bytes value = 2;</code>
+     * <code>optional bytes value = 2;</code>
      */
     com.google.protobuf.ByteString getValue();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.UserMetadataItem}
+   * Protobuf type {@code orc.proto.UserMetadataItem}
    */
   public static final class UserMetadataItem extends
       com.google.protobuf.GeneratedMessage
@@ -12370,12 +12322,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_UserMetadataItem_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_UserMetadataItem_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder.class);
     }
@@ -12396,17 +12348,17 @@ public final class OrcProto {
     }
 
     private int bitField0_;
-    // required string name = 1;
+    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public boolean hasName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public java.lang.String getName() {
       java.lang.Object ref = name_;
@@ -12423,7 +12375,7 @@ public final class OrcProto {
       }
     }
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional string name = 1;</code>
      */
     public com.google.protobuf.ByteString
         getNameBytes() {
@@ -12439,17 +12391,17 @@ public final class OrcProto {
       }
     }
 
-    // required bytes value = 2;
+    // optional bytes value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private com.google.protobuf.ByteString value_;
     /**
-     * <code>required bytes value = 2;</code>
+     * <code>optional bytes value = 2;</code>
      */
     public boolean hasValue() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required bytes value = 2;</code>
+     * <code>optional bytes value = 2;</code>
      */
     public com.google.protobuf.ByteString getValue() {
       return value_;
@@ -12464,14 +12416,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasValue()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -12581,19 +12525,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.UserMetadataItem}
+     * Protobuf type {@code orc.proto.UserMetadataItem}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_UserMetadataItem_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_UserMetadataItem_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder.class);
       }
@@ -12631,7 +12575,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_UserMetadataItem_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem getDefaultInstanceForType() {
@@ -12687,14 +12631,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        if (!hasName()) {
-          
-          return false;
-        }
-        if (!hasValue()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -12717,16 +12653,16 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // required string name = 1;
+      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public boolean hasName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public java.lang.String getName() {
         java.lang.Object ref = name_;
@@ -12740,7 +12676,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public com.google.protobuf.ByteString
           getNameBytes() {
@@ -12756,7 +12692,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder setName(
           java.lang.String value) {
@@ -12769,7 +12705,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder clearName() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -12778,7 +12714,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional string name = 1;</code>
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
@@ -12791,22 +12727,22 @@ public final class OrcProto {
         return this;
       }
 
-      // required bytes value = 2;
+      // optional bytes value = 2;
       private com.google.protobuf.ByteString value_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>required bytes value = 2;</code>
+       * <code>optional bytes value = 2;</code>
        */
       public boolean hasValue() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required bytes value = 2;</code>
+       * <code>optional bytes value = 2;</code>
        */
       public com.google.protobuf.ByteString getValue() {
         return value_;
       }
       /**
-       * <code>required bytes value = 2;</code>
+       * <code>optional bytes value = 2;</code>
        */
       public Builder setValue(com.google.protobuf.ByteString value) {
         if (value == null) {
@@ -12818,7 +12754,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>required bytes value = 2;</code>
+       * <code>optional bytes value = 2;</code>
        */
       public Builder clearValue() {
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -12827,7 +12763,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.UserMetadataItem)
+      // @@protoc_insertion_point(builder_scope:orc.proto.UserMetadataItem)
     }
 
     static {
@@ -12835,39 +12771,39 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.UserMetadataItem)
+    // @@protoc_insertion_point(class_scope:orc.proto.UserMetadataItem)
   }
 
   public interface StripeStatisticsOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;
+    // repeated .orc.proto.ColumnStatistics colStats = 1;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> 
         getColStatsList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getColStats(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     int getColStatsCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
         getColStatsOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getColStatsOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeStatistics}
+   * Protobuf type {@code orc.proto.StripeStatistics}
    */
   public static final class StripeStatistics extends
       com.google.protobuf.GeneratedMessage
@@ -12942,12 +12878,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeStatistics_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeStatistics_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder.class);
     }
@@ -12967,36 +12903,36 @@ public final class OrcProto {
       return PARSER;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;
+    // repeated .orc.proto.ColumnStatistics colStats = 1;
     public static final int COLSTATS_FIELD_NUMBER = 1;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> colStats_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> getColStatsList() {
       return colStats_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
         getColStatsOrBuilderList() {
       return colStats_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     public int getColStatsCount() {
       return colStats_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getColStats(int index) {
       return colStats_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+     * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getColStatsOrBuilder(
         int index) {
@@ -13113,19 +13049,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.StripeStatistics}
+     * Protobuf type {@code orc.proto.StripeStatistics}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeStatistics_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeStatistics_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder.class);
       }
@@ -13166,7 +13102,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_StripeStatistics_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics getDefaultInstanceForType() {
@@ -13261,7 +13197,7 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;
+      // repeated .orc.proto.ColumnStatistics colStats = 1;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> colStats_ =
         java.util.Collections.emptyList();
       private void ensureColStatsIsMutable() {
@@ -13275,7 +13211,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> colStatsBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> getColStatsList() {
         if (colStatsBuilder_ == null) {
@@ -13285,7 +13221,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public int getColStatsCount() {
         if (colStatsBuilder_ == null) {
@@ -13295,7 +13231,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getColStats(int index) {
         if (colStatsBuilder_ == null) {
@@ -13305,7 +13241,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder setColStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
@@ -13322,7 +13258,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder setColStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -13336,7 +13272,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder addColStats(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
         if (colStatsBuilder_ == null) {
@@ -13352,7 +13288,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder addColStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
@@ -13369,7 +13305,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder addColStats(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -13383,7 +13319,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder addColStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -13397,7 +13333,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder addAllColStats(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> values) {
@@ -13411,7 +13347,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder clearColStats() {
         if (colStatsBuilder_ == null) {
@@ -13424,7 +13360,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public Builder removeColStats(int index) {
         if (colStatsBuilder_ == null) {
@@ -13437,14 +13373,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder getColStatsBuilder(
           int index) {
         return getColStatsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getColStatsOrBuilder(
           int index) {
@@ -13454,7 +13390,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
            getColStatsOrBuilderList() {
@@ -13465,14 +13401,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder addColStatsBuilder() {
         return getColStatsFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder addColStatsBuilder(
           int index) {
@@ -13480,7 +13416,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics colStats = 1;</code>
+       * <code>repeated .orc.proto.ColumnStatistics colStats = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder> 
            getColStatsBuilderList() {
@@ -13501,7 +13437,7 @@ public final class OrcProto {
         return colStatsBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.StripeStatistics)
+      // @@protoc_insertion_point(builder_scope:orc.proto.StripeStatistics)
     }
 
     static {
@@ -13509,39 +13445,39 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.StripeStatistics)
+    // @@protoc_insertion_point(class_scope:orc.proto.StripeStatistics)
   }
 
   public interface MetadataOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;
+    // repeated .orc.proto.StripeStatistics stripeStats = 1;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> 
         getStripeStatsList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics getStripeStats(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     int getStripeStatsCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder> 
         getStripeStatsOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder getStripeStatsOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Metadata}
+   * Protobuf type {@code orc.proto.Metadata}
    */
   public static final class Metadata extends
       com.google.protobuf.GeneratedMessage
@@ -13616,12 +13552,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Metadata_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Metadata_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.Metadata.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Metadata.Builder.class);
     }
@@ -13641,36 +13577,36 @@ public final class OrcProto {
       return PARSER;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;
+    // repeated .orc.proto.StripeStatistics stripeStats = 1;
     public static final int STRIPESTATS_FIELD_NUMBER = 1;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> stripeStats_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> getStripeStatsList() {
       return stripeStats_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder> 
         getStripeStatsOrBuilderList() {
       return stripeStats_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     public int getStripeStatsCount() {
       return stripeStats_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics getStripeStats(int index) {
       return stripeStats_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+     * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder getStripeStatsOrBuilder(
         int index) {
@@ -13787,19 +13723,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Metadata}
+     * Protobuf type {@code orc.proto.Metadata}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.MetadataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Metadata_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Metadata_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.Metadata.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Metadata.Builder.class);
       }
@@ -13840,7 +13776,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Metadata_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Metadata getDefaultInstanceForType() {
@@ -13935,7 +13871,7 @@ public final class OrcProto {
       }
       private int bitField0_;
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;
+      // repeated .orc.proto.StripeStatistics stripeStats = 1;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> stripeStats_ =
         java.util.Collections.emptyList();
       private void ensureStripeStatsIsMutable() {
@@ -13949,7 +13885,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder> stripeStatsBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> getStripeStatsList() {
         if (stripeStatsBuilder_ == null) {
@@ -13959,7 +13895,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public int getStripeStatsCount() {
         if (stripeStatsBuilder_ == null) {
@@ -13969,7 +13905,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics getStripeStats(int index) {
         if (stripeStatsBuilder_ == null) {
@@ -13979,7 +13915,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder setStripeStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics value) {
@@ -13996,7 +13932,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder setStripeStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder builderForValue) {
@@ -14010,7 +13946,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder addStripeStats(org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics value) {
         if (stripeStatsBuilder_ == null) {
@@ -14026,7 +13962,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder addStripeStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics value) {
@@ -14043,7 +13979,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder addStripeStats(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder builderForValue) {
@@ -14057,7 +13993,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder addStripeStats(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder builderForValue) {
@@ -14071,7 +14007,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder addAllStripeStats(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics> values) {
@@ -14085,7 +14021,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder clearStripeStats() {
         if (stripeStatsBuilder_ == null) {
@@ -14098,7 +14034,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public Builder removeStripeStats(int index) {
         if (stripeStatsBuilder_ == null) {
@@ -14111,14 +14047,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder getStripeStatsBuilder(
           int index) {
         return getStripeStatsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder getStripeStatsOrBuilder(
           int index) {
@@ -14128,7 +14064,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatisticsOrBuilder> 
            getStripeStatsOrBuilderList() {
@@ -14139,14 +14075,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder addStripeStatsBuilder() {
         return getStripeStatsFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder addStripeStatsBuilder(
           int index) {
@@ -14154,7 +14090,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeStatistics stripeStats = 1;</code>
+       * <code>repeated .orc.proto.StripeStatistics stripeStats = 1;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeStatistics.Builder> 
            getStripeStatsBuilderList() {
@@ -14175,7 +14111,7 @@ public final class OrcProto {
         return stripeStatsBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.Metadata)
+      // @@protoc_insertion_point(builder_scope:orc.proto.Metadata)
     }
 
     static {
@@ -14183,7 +14119,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.Metadata)
+    // @@protoc_insertion_point(class_scope:orc.proto.Metadata)
   }
 
   public interface FooterOrBuilder
@@ -14209,77 +14145,77 @@ public final class OrcProto {
      */
     long getContentLength();
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;
+    // repeated .orc.proto.StripeInformation stripes = 3;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> 
         getStripesList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation getStripes(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     int getStripesCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder> 
         getStripesOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder getStripesOrBuilder(
         int index);
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;
+    // repeated .orc.proto.Type types = 4;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> 
         getTypesList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.Type getTypes(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     int getTypesCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder> 
         getTypesOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder getTypesOrBuilder(
         int index);
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;
+    // repeated .orc.proto.UserMetadataItem metadata = 5;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> 
         getMetadataList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem getMetadata(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     int getMetadataCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder> 
         getMetadataOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder getMetadataOrBuilder(
         int index);
@@ -14294,27 +14230,27 @@ public final class OrcProto {
      */
     long getNumberOfRows();
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;
+    // repeated .orc.proto.ColumnStatistics statistics = 7;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> 
         getStatisticsList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics(int index);
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     int getStatisticsCount();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
         getStatisticsOrBuilderList();
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder(
         int index);
@@ -14330,7 +14266,7 @@ public final class OrcProto {
     int getRowIndexStride();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Footer}
+   * Protobuf type {@code orc.proto.Footer}
    */
   public static final class Footer extends
       com.google.protobuf.GeneratedMessage
@@ -14458,12 +14394,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Footer_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Footer_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer.Builder.class);
     }
@@ -14516,108 +14452,108 @@ public final class OrcProto {
       return contentLength_;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;
+    // repeated .orc.proto.StripeInformation stripes = 3;
     public static final int STRIPES_FIELD_NUMBER = 3;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> stripes_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> getStripesList() {
       return stripes_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder> 
         getStripesOrBuilderList() {
       return stripes_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     public int getStripesCount() {
       return stripes_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation getStripes(int index) {
       return stripes_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+     * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder getStripesOrBuilder(
         int index) {
       return stripes_.get(index);
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;
+    // repeated .orc.proto.Type types = 4;
     public static final int TYPES_FIELD_NUMBER = 4;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> types_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> getTypesList() {
       return types_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder> 
         getTypesOrBuilderList() {
       return types_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     public int getTypesCount() {
       return types_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type getTypes(int index) {
       return types_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+     * <code>repeated .orc.proto.Type types = 4;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder getTypesOrBuilder(
         int index) {
       return types_.get(index);
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;
+    // repeated .orc.proto.UserMetadataItem metadata = 5;
     public static final int METADATA_FIELD_NUMBER = 5;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> metadata_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> getMetadataList() {
       return metadata_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder> 
         getMetadataOrBuilderList() {
       return metadata_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     public int getMetadataCount() {
       return metadata_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem getMetadata(int index) {
       return metadata_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+     * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder getMetadataOrBuilder(
         int index) {
@@ -14640,36 +14576,36 @@ public final class OrcProto {
       return numberOfRows_;
     }
 
-    // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;
+    // repeated .orc.proto.ColumnStatistics statistics = 7;
     public static final int STATISTICS_FIELD_NUMBER = 7;
     private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> statistics_;
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> getStatisticsList() {
       return statistics_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
         getStatisticsOrBuilderList() {
       return statistics_;
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     public int getStatisticsCount() {
       return statistics_.size();
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics(int index) {
       return statistics_.get(index);
     }
     /**
-     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+     * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder(
         int index) {
@@ -14707,18 +14643,6 @@ public final class OrcProto {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getTypesCount(); i++) {
-        if (!getTypes(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      for (int i = 0; i < getMetadataCount(); i++) {
-        if (!getMetadata(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -14870,19 +14794,19 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Footer}
+     * Protobuf type {@code orc.proto.Footer}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.FooterOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Footer_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Footer_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer.Builder.class);
       }
@@ -14952,7 +14876,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_Footer_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Footer getDefaultInstanceForType() {
@@ -15160,18 +15084,6 @@ public final class OrcProto {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getTypesCount(); i++) {
-          if (!getTypes(i).isInitialized()) {
-            
-            return false;
-          }
-        }
-        for (int i = 0; i < getMetadataCount(); i++) {
-          if (!getMetadata(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
 
@@ -15260,7 +15172,7 @@ public final class OrcProto {
         return this;
       }
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;
+      // repeated .orc.proto.StripeInformation stripes = 3;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> stripes_ =
         java.util.Collections.emptyList();
       private void ensureStripesIsMutable() {
@@ -15274,7 +15186,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder> stripesBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> getStripesList() {
         if (stripesBuilder_ == null) {
@@ -15284,7 +15196,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public int getStripesCount() {
         if (stripesBuilder_ == null) {
@@ -15294,7 +15206,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation getStripes(int index) {
         if (stripesBuilder_ == null) {
@@ -15304,7 +15216,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder setStripes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation value) {
@@ -15321,7 +15233,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder setStripes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder builderForValue) {
@@ -15335,7 +15247,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder addStripes(org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation value) {
         if (stripesBuilder_ == null) {
@@ -15351,7 +15263,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder addStripes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation value) {
@@ -15368,7 +15280,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder addStripes(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder builderForValue) {
@@ -15382,7 +15294,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder addStripes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder builderForValue) {
@@ -15396,7 +15308,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder addAllStripes(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation> values) {
@@ -15410,7 +15322,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder clearStripes() {
         if (stripesBuilder_ == null) {
@@ -15423,7 +15335,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public Builder removeStripes(int index) {
         if (stripesBuilder_ == null) {
@@ -15436,14 +15348,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder getStripesBuilder(
           int index) {
         return getStripesFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder getStripesOrBuilder(
           int index) {
@@ -15453,7 +15365,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformationOrBuilder> 
            getStripesOrBuilderList() {
@@ -15464,14 +15376,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder addStripesBuilder() {
         return getStripesFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder addStripesBuilder(
           int index) {
@@ -15479,7 +15391,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.StripeInformation stripes = 3;</code>
+       * <code>repeated .orc.proto.StripeInformation stripes = 3;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.StripeInformation.Builder> 
            getStripesBuilderList() {
@@ -15500,7 +15412,7 @@ public final class OrcProto {
         return stripesBuilder_;
       }
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;
+      // repeated .orc.proto.Type types = 4;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> types_ =
         java.util.Collections.emptyList();
       private void ensureTypesIsMutable() {
@@ -15514,7 +15426,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.Type, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder> typesBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> getTypesList() {
         if (typesBuilder_ == null) {
@@ -15524,7 +15436,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public int getTypesCount() {
         if (typesBuilder_ == null) {
@@ -15534,7 +15446,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type getTypes(int index) {
         if (typesBuilder_ == null) {
@@ -15544,7 +15456,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder setTypes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type value) {
@@ -15561,7 +15473,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder setTypes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder builderForValue) {
@@ -15575,7 +15487,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder addTypes(org.apache.hadoop.hive.ql.io.orc.OrcProto.Type value) {
         if (typesBuilder_ == null) {
@@ -15591,7 +15503,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder addTypes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type value) {
@@ -15608,7 +15520,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder addTypes(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder builderForValue) {
@@ -15622,7 +15534,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder addTypes(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder builderForValue) {
@@ -15636,7 +15548,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder addAllTypes(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.Type> values) {
@@ -15650,7 +15562,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder clearTypes() {
         if (typesBuilder_ == null) {
@@ -15663,7 +15575,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public Builder removeTypes(int index) {
         if (typesBuilder_ == null) {
@@ -15676,14 +15588,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder getTypesBuilder(
           int index) {
         return getTypesFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder getTypesOrBuilder(
           int index) {
@@ -15693,7 +15605,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.TypeOrBuilder> 
            getTypesOrBuilderList() {
@@ -15704,14 +15616,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder addTypesBuilder() {
         return getTypesFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder addTypesBuilder(
           int index) {
@@ -15719,7 +15631,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.Type types = 4;</code>
+       * <code>repeated .orc.proto.Type types = 4;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Builder> 
            getTypesBuilderList() {
@@ -15740,7 +15652,7 @@ public final class OrcProto {
         return typesBuilder_;
       }
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;
+      // repeated .orc.proto.UserMetadataItem metadata = 5;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> metadata_ =
         java.util.Collections.emptyList();
       private void ensureMetadataIsMutable() {
@@ -15754,7 +15666,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder> metadataBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> getMetadataList() {
         if (metadataBuilder_ == null) {
@@ -15764,7 +15676,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public int getMetadataCount() {
         if (metadataBuilder_ == null) {
@@ -15774,7 +15686,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem getMetadata(int index) {
         if (metadataBuilder_ == null) {
@@ -15784,7 +15696,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder setMetadata(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem value) {
@@ -15801,7 +15713,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder setMetadata(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder builderForValue) {
@@ -15815,7 +15727,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder addMetadata(org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem value) {
         if (metadataBuilder_ == null) {
@@ -15831,7 +15743,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder addMetadata(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem value) {
@@ -15848,7 +15760,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder addMetadata(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder builderForValue) {
@@ -15862,7 +15774,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder addMetadata(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder builderForValue) {
@@ -15876,7 +15788,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder addAllMetadata(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem> values) {
@@ -15890,7 +15802,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder clearMetadata() {
         if (metadataBuilder_ == null) {
@@ -15903,7 +15815,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public Builder removeMetadata(int index) {
         if (metadataBuilder_ == null) {
@@ -15916,14 +15828,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder getMetadataBuilder(
           int index) {
         return getMetadataFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder getMetadataOrBuilder(
           int index) {
@@ -15933,7 +15845,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItemOrBuilder> 
            getMetadataOrBuilderList() {
@@ -15944,14 +15856,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder addMetadataBuilder() {
         return getMetadataFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder addMetadataBuilder(
           int index) {
@@ -15959,7 +15871,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.UserMetadataItem metadata = 5;</code>
+       * <code>repeated .orc.proto.UserMetadataItem metadata = 5;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.UserMetadataItem.Builder> 
            getMetadataBuilderList() {
@@ -16013,7 +15925,7 @@ public final class OrcProto {
         return this;
       }
 
-      // repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;
+      // repeated .orc.proto.ColumnStatistics statistics = 7;
       private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> statistics_ =
         java.util.Collections.emptyList();
       private void ensureStatisticsIsMutable() {
@@ -16027,7 +15939,7 @@ public final class OrcProto {
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> statisticsBuilder_;
 
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> getStatisticsList() {
         if (statisticsBuilder_ == null) {
@@ -16037,7 +15949,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public int getStatisticsCount() {
         if (statisticsBuilder_ == null) {
@@ -16047,7 +15959,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics getStatistics(int index) {
         if (statisticsBuilder_ == null) {
@@ -16057,7 +15969,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder setStatistics(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
@@ -16074,7 +15986,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder setStatistics(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -16088,7 +16000,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder addStatistics(org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
         if (statisticsBuilder_ == null) {
@@ -16104,7 +16016,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder addStatistics(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics value) {
@@ -16121,7 +16033,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder addStatistics(
           org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -16135,7 +16047,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder addStatistics(
           int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder builderForValue) {
@@ -16149,7 +16061,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder addAllStatistics(
           java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics> values) {
@@ -16163,7 +16075,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder clearStatistics() {
         if (statisticsBuilder_ == null) {
@@ -16176,7 +16088,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public Builder removeStatistics(int index) {
         if (statisticsBuilder_ == null) {
@@ -16189,14 +16101,14 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder getStatisticsBuilder(
           int index) {
         return getStatisticsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder(
           int index) {
@@ -16206,7 +16118,7 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatisticsOrBuilder> 
            getStatisticsOrBuilderList() {
@@ -16217,14 +16129,14 @@ public final class OrcProto {
         }
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder addStatisticsBuilder() {
         return getStatisticsFieldBuilder().addBuilder(
             org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder addStatisticsBuilder(
           int index) {
@@ -16232,7 +16144,7 @@ public final class OrcProto {
             index, org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.ColumnStatistics statistics = 7;</code>
+       * <code>repeated .orc.proto.ColumnStatistics statistics = 7;</code>
        */
       public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.ColumnStatistics.Builder> 
            getStatisticsBuilderList() {
@@ -16286,7 +16198,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.Footer)
+      // @@protoc_insertion_point(builder_scope:orc.proto.Footer)
     }
 
     static {
@@ -16294,7 +16206,7 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.Footer)
+    // @@protoc_insertion_point(class_scope:orc.proto.Footer)
   }
 
   public interface PostScriptOrBuilder
@@ -16310,13 +16222,13 @@ public final class OrcProto {
      */
     long getFooterLength();
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;
+    // optional .orc.proto.CompressionKind compression = 2;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+     * <code>optional .orc.proto.CompressionKind compression = 2;</code>
      */
     boolean hasCompression();
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+     * <code>optional .orc.proto.CompressionKind compression = 2;</code>
      */
     org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind getCompression();
 
@@ -16422,7 +16334,7 @@ public final class OrcProto {
         getMagicBytes();
   }
   /**
-   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.PostScript}
+   * Protobuf type {@code orc.proto.PostScript}
    *
    * <pre>
    * Serialized length must be less that 255 bytes
@@ -16550,12 +16462,12 @@ public final class OrcProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor;
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_PostScript_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_PostScript_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.Builder.class);
     }
@@ -16592,17 +16504,17 @@ public final class OrcProto {
       return footerLength_;
     }
 
-    // optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;
+    // optional .orc.proto.CompressionKind compression = 2;
     public static final int COMPRESSION_FIELD_NUMBER = 2;
     private org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind compression_;
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+     * <code>optional .orc.proto.CompressionKind compression = 2;</code>
      */
     public boolean hasCompression() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+     * <code>optional .orc.proto.CompressionKind compression = 2;</code>
      */
     public org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind getCompression() {
       return compression_;
@@ -16937,7 +16849,7 @@ public final class OrcProto {
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.PostScript}
+     * Protobuf type {@code orc.proto.PostScript}
      *
      * <pre>
      * Serialized length must be less that 255 bytes
@@ -16948,12 +16860,12 @@ public final class OrcProto {
        implements org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScriptOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_PostScript_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_PostScript_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.Builder.class);
       }
@@ -17001,7 +16913,7 @@ public final class OrcProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor;
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_orc_proto_PostScript_descriptor;
       }
 
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript getDefaultInstanceForType() {
@@ -17155,22 +17067,22 @@ public final class OrcProto {
         return this;
       }
 
-      // optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;
+      // optional .orc.proto.CompressionKind compression = 2;
       private org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind compression_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind.NONE;
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+       * <code>optional .orc.proto.CompressionKind compression = 2;</code>
        */
       public boolean hasCompression() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+       * <code>optional .orc.proto.CompressionKind compression = 2;</code>
        */
       public org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind getCompression() {
         return compression_;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+       * <code>optional .orc.proto.CompressionKind compression = 2;</code>
        */
       public Builder setCompression(org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind value) {
         if (value == null) {
@@ -17182,7 +17094,7 @@ public final class OrcProto {
         return this;
       }
       /**
-       * <code>optional .org.apache.hadoop.hive.ql.io.orc.CompressionKind compression = 2;</code>
+       * <code>optional .orc.proto.CompressionKind compression = 2;</code>
        */
       public Builder clearCompression() {
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -17520,7 +17432,7 @@ public final class OrcProto {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.PostScript)
+      // @@protoc_insertion_point(builder_scope:orc.proto.PostScript)
     }
 
     static {
@@ -17528,114 +17440,114 @@ public final class OrcProto {
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.PostScript)
+    // @@protoc_insertion_point(class_scope:orc.proto.PostScript)
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor;
+    internal_static_orc_proto_IntegerStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_fieldAccessorTable;
+      internal_static_orc_proto_IntegerStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor;
+    internal_static_orc_proto_DoubleStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_fieldAccessorTable;
+      internal_static_orc_proto_DoubleStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor;
+    internal_static_orc_proto_StringStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_fieldAccessorTable;
+      internal_static_orc_proto_StringStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor;
+    internal_static_orc_proto_BucketStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_fieldAccessorTable;
+      internal_static_orc_proto_BucketStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor;
+    internal_static_orc_proto_DecimalStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_fieldAccessorTable;
+      internal_static_orc_proto_DecimalStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor;
+    internal_static_orc_proto_DateStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_fieldAccessorTable;
+      internal_static_orc_proto_DateStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor;
+    internal_static_orc_proto_TimestampStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable;
+      internal_static_orc_proto_TimestampStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor;
+    internal_static_orc_proto_BinaryStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_fieldAccessorTable;
+      internal_static_orc_proto_BinaryStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor;
+    internal_static_orc_proto_ColumnStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_fieldAccessorTable;
+      internal_static_orc_proto_ColumnStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor;
+    internal_static_orc_proto_RowIndexEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_fieldAccessorTable;
+      internal_static_orc_proto_RowIndexEntry_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor;
+    internal_static_orc_proto_RowIndex_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable;
+      internal_static_orc_proto_RowIndex_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor;
+    internal_static_orc_proto_Stream_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable;
+      internal_static_orc_proto_Stream_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor;
+    internal_static_orc_proto_ColumnEncoding_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable;
+      internal_static_orc_proto_ColumnEncoding_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor;
+    internal_static_orc_proto_StripeFooter_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable;
+      internal_static_orc_proto_StripeFooter_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor;
+    internal_static_orc_proto_Type_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable;
+      internal_static_orc_proto_Type_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor;
+    internal_static_orc_proto_StripeInformation_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable;
+      internal_static_orc_proto_StripeInformation_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor;
+    internal_static_orc_proto_UserMetadataItem_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable;
+      internal_static_orc_proto_UserMetadataItem_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor;
+    internal_static_orc_proto_StripeStatistics_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable;
+      internal_static_orc_proto_StripeStatistics_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor;
+    internal_static_orc_proto_Metadata_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable;
+      internal_static_orc_proto_Metadata_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor;
+    internal_static_orc_proto_Footer_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable;
+      internal_static_orc_proto_Footer_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor;
+    internal_static_orc_proto_PostScript_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable;
+      internal_static_orc_proto_PostScript_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -17645,220 +17557,207 @@ public final class OrcProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017orc_proto.proto\022 org.apache.hadoop.hiv" +
-      "e.ql.io.orc\"B\n\021IntegerStatistics\022\017\n\007mini" +
-      "mum\030\001 \001(\022\022\017\n\007maximum\030\002 \001(\022\022\013\n\003sum\030\003 \001(\022\"" +
-      "A\n\020DoubleStatistics\022\017\n\007minimum\030\001 \001(\001\022\017\n\007" +
-      "maximum\030\002 \001(\001\022\013\n\003sum\030\003 \001(\001\"A\n\020StringStat" +
-      "istics\022\017\n\007minimum\030\001 \001(\t\022\017\n\007maximum\030\002 \001(\t" +
-      "\022\013\n\003sum\030\003 \001(\022\"%\n\020BucketStatistics\022\021\n\005cou" +
-      "nt\030\001 \003(\004B\002\020\001\"B\n\021DecimalStatistics\022\017\n\007min" +
-      "imum\030\001 \001(\t\022\017\n\007maximum\030\002 \001(\t\022\013\n\003sum\030\003 \001(\t" +
-      "\"2\n\016DateStatistics\022\017\n\007minimum\030\001 \001(\021\022\017\n\007m",
-      "aximum\030\002 \001(\021\"7\n\023TimestampStatistics\022\017\n\007m" +
-      "inimum\030\001 \001(\022\022\017\n\007maximum\030\002 \001(\022\"\037\n\020BinaryS" +
-      "tatistics\022\013\n\003sum\030\001 \001(\022\"\234\005\n\020ColumnStatist" +
-      "ics\022\026\n\016numberOfValues\030\001 \001(\004\022J\n\rintStatis" +
-      "tics\030\002 \001(\01323.org.apache.hadoop.hive.ql.i" +
-      "o.orc.IntegerStatistics\022L\n\020doubleStatist" +
-      "ics\030\003 \001(\01322.org.apache.hadoop.hive.ql.io" +
-      ".orc.DoubleStatistics\022L\n\020stringStatistic" +
-      "s\030\004 \001(\01322.org.apache.hadoop.hive.ql.io.o" +
-      "rc.StringStatistics\022L\n\020bucketStatistics\030",
-      "\005 \001(\01322.org.apache.hadoop.hive.ql.io.orc" +
-      ".BucketStatistics\022N\n\021decimalStatistics\030\006" +
-      " \001(\01323.org.apache.hadoop.hive.ql.io.orc." +
-      "DecimalStatistics\022H\n\016dateStatistics\030\007 \001(" +
-      "\01320.org.apache.hadoop.hive.ql.io.orc.Dat" +
-      "eStatistics\022L\n\020binaryStatistics\030\010 \001(\01322." +
-      "org.apache.hadoop.hive.ql.io.orc.BinaryS" +
-      "tatistics\022R\n\023timestampStatistics\030\t \001(\01325" +
-      ".org.apache.hadoop.hive.ql.io.orc.Timest" +
-      "ampStatistics\"n\n\rRowIndexEntry\022\025\n\tpositi",
-      "ons\030\001 \003(\004B\002\020\001\022F\n\nstatistics\030\002 \001(\01322.org." +
-      "apache.hadoop.hive.ql.io.orc.ColumnStati" +
-      "stics\"J\n\010RowIndex\022>\n\005entry\030\001 \003(\0132/.org.a" +
-      "pache.hadoop.hive.ql.io.orc.RowIndexEntr" +
-      "y\"\331\001\n\006Stream\022;\n\004kind\030\001 \002(\0162-.org.apache." +
-      "hadoop.hive.ql.io.orc.Stream.Kind\022\016\n\006col" +
-      "umn\030\002 \001(\r\022\016\n\006length\030\003 \001(\004\"r\n\004Kind\022\013\n\007PRE" +
-      "SENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGTH\020\002\022\023\n\017DICTIONA" +
-      "RY_DATA\020\003\022\024\n\020DICTIONARY_COUNT\020\004\022\r\n\tSECON" +
-      "DARY\020\005\022\r\n\tROW_INDEX\020\006\"\263\001\n\016ColumnEncoding",
-      "\022C\n\004kind\030\001 \002(\01625.org.apache.hadoop.hive." +
-      "ql.io.orc.ColumnEncoding.Kind\022\026\n\016diction" +
-      "arySize\030\002 \001(\r\"D\n\004Kind\022\n\n\006DIRECT\020\000\022\016\n\nDIC" +
-      "TIONARY\020\001\022\r\n\tDIRECT_V2\020\002\022\021\n\rDICTIONARY_V" +
-      "2\020\003\"\214\001\n\014StripeFooter\0229\n\007streams\030\001 \003(\0132(." +
-      "org.apache.hadoop.hive.ql.io.orc.Stream\022" +
-      "A\n\007columns\030\002 \003(\01320.org.apache.hadoop.hiv" +
-      "e.ql.io.orc.ColumnEncoding\"\370\002\n\004Type\0229\n\004k" +
-      "ind\030\001 \002(\0162+.org.apache.hadoop.hive.ql.io" +
-      ".orc.Type.Kind\022\024\n\010subtypes\030\002 \003(\rB\002\020\001\022\022\n\n",
-      "fieldNames\030\003 \003(\t\022\025\n\rmaximumLength\030\004 \001(\r\022" +
-      "\021\n\tprecision\030\005 \001(\r\022\r\n\005scale\030\006 \001(\r\"\321\001\n\004Ki" +
-      "nd\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003" +
-      "INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n" +
-      "\n\006STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n" +
-      "\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022" +
-      "\013\n\007DECIMAL\020\016\022\010\n\004DATE\020\017\022\013\n\007VARCHAR\020\020\022\010\n\004C" +
-      "HAR\020\021\"x\n\021StripeInformation\022\016\n\006offset\030\001 \001" +
-      "(\004\022\023\n\013indexLength\030\002 \001(\004\022\022\n\ndataLength\030\003 " +
-      "\001(\004\022\024\n\014footerLength\030\004 \001(\004\022\024\n\014numberOfRow",
-      "s\030\005 \001(\004\"/\n\020UserMetadataItem\022\014\n\004name\030\001 \002(" +
-      "\t\022\r\n\005value\030\002 \002(\014\"X\n\020StripeStatistics\022D\n\010" +
-      "colStats\030\001 \003(\01322.org.apache.hadoop.hive." +
-      "ql.io.orc.ColumnStatistics\"S\n\010Metadata\022G" +
-      "\n\013stripeStats\030\001 \003(\01322.org.apache.hadoop." +
-      "hive.ql.io.orc.StripeStatistics\"\356\002\n\006Foot" +
-      "er\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rcontentLengt" +
-      "h\030\002 \001(\004\022D\n\007stripes\030\003 \003(\01323.org.apache.ha" +
-      "doop.hive.ql.io.orc.StripeInformation\0225\n" +
-      "\005types\030\004 \003(\0132&.org.apache.hadoop.hive.ql",
-      ".io.orc.Type\022D\n\010metadata\030\005 \003(\01322.org.apa" +
-      "che.hadoop.hive.ql.io.orc.UserMetadataIt" +
-      "em\022\024\n\014numberOfRows\030\006 \001(\004\022F\n\nstatistics\030\007" +
-      " \003(\01322.org.apache.hadoop.hive.ql.io.orc." +
-      "ColumnStatistics\022\026\n\016rowIndexStride\030\010 \001(\r" +
-      "\"\334\001\n\nPostScript\022\024\n\014footerLength\030\001 \001(\004\022F\n" +
-      "\013compression\030\002 \001(\01621.org.apache.hadoop.h" +
-      "ive.ql.io.orc.CompressionKind\022\034\n\024compres" +
-      "sionBlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001" +
-      "\022\026\n\016metadataLength\030\005 \001(\004\022\025\n\rwriterVersio",
-      "n\030\006 \001(\r\022\016\n\005magic\030\300> \001(\t*:\n\017CompressionKi" +
-      "nd\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZ" +
-      "O\020\003"
+      "\n\017orc_proto.proto\022\torc.proto\"B\n\021IntegerS" +
+      "tatistics\022\017\n\007minimum\030\001 \001(\022\022\017\n\007maximum\030\002 " +
+      "\001(\022\022\013\n\003sum\030\003 \001(\022\"A\n\020DoubleStatistics\022\017\n\007" +
+      "minimum\030\001 \001(\001\022\017\n\007maximum\030\002 \001(\001\022\013\n\003sum\030\003 " +
+      "\001(\001\"A\n\020StringStatistics\022\017\n\007minimum\030\001 \001(\t" +
+      "\022\017\n\007maximum\030\002 \001(\t\022\013\n\003sum\030\003 \001(\022\"%\n\020Bucket" +
+      "Statistics\022\021\n\005count\030\001 \003(\004B\002\020\001\"B\n\021Decimal" +
+      "Statistics\022\017\n\007minimum\030\001 \001(\t\022\017\n\007maximum\030\002" +
+      " \001(\t\022\013\n\003sum\030\003 \001(\t\"2\n\016DateStatistics\022\017\n\007m" +
+      "inimum\030\001 \001(\021\022\017\n\007maximum\030\002 \001(\021\"7\n\023Timesta",
+      "mpStatistics\022\017\n\007minimum\030\001 \001(\022\022\017\n\007maximum" +
+      "\030\002 \001(\022\"\037\n\020BinaryStatistics\022\013\n\003sum\030\001 \001(\022\"" +
+      "\344\003\n\020ColumnStatistics\022\026\n\016numberOfValues\030\001" +
+      " \001(\004\0223\n\rintStatistics\030\002 \001(\0132\034.orc.proto." +
+      "IntegerStatistics\0225\n\020doubleStatistics\030\003 " +
+      "\001(\0132\033.orc.proto.DoubleStatistics\0225\n\020stri" +
+      "ngStatistics\030\004 \001(\0132\033.orc.proto.StringSta" +
+      "tistics\0225\n\020bucketStatistics\030\005 \001(\0132\033.orc." +
+      "proto.BucketStatistics\0227\n\021decimalStatist" +
+      "ics\030\006 \001(\0132\034.orc.proto.DecimalStatistics\022",
+      "1\n\016dateStatistics\030\007 \001(\0132\031.orc.proto.Date" +
+      "Statistics\0225\n\020binaryStatistics\030\010 \001(\0132\033.o" +
+      "rc.proto.BinaryStatistics\022;\n\023timestampSt" +
+      "atistics\030\t \001(\0132\036.orc.proto.TimestampStat" +
+      "istics\"W\n\rRowIndexEntry\022\025\n\tpositions\030\001 \003" +
+      "(\004B\002\020\001\022/\n\nstatistics\030\002 \001(\0132\033.orc.proto.C" +
+      "olumnStatistics\"3\n\010RowIndex\022\'\n\005entry\030\001 \003" +
+      "(\0132\030.orc.proto.RowIndexEntry\"\302\001\n\006Stream\022" +
+      "$\n\004kind\030\001 \001(\0162\026.orc.proto.Stream.Kind\022\016\n" +
+      "\006column\030\002 \001(\r\022\016\n\006length\030\003 \001(\004\"r\n\004Kind\022\013\n",
+      "\007PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGTH\020\002\022\023\n\017DICT" +
+      "IONARY_DATA\020\003\022\024\n\020DICTIONARY_COUNT\020\004\022\r\n\tS" +
+      "ECONDARY\020\005\022\r\n\tROW_INDEX\020\006\"\234\001\n\016ColumnEnco" +
+      "ding\022,\n\004kind\030\001 \001(\0162\036.orc.proto.ColumnEnc" +
+      "oding.Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Ki" +
+      "nd\022\n\n\006DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT" +
+      "_V2\020\002\022\021\n\rDICTIONARY_V2\020\003\"^\n\014StripeFooter" +
+      "\022\"\n\007streams\030\001 \003(\0132\021.orc.proto.Stream\022*\n\007" +
+      "columns\030\002 \003(\0132\031.orc.proto.ColumnEncoding" +
+      "\"\341\002\n\004Type\022\"\n\004kind\030\001 \001(\0162\024.orc.proto.Type",
+      ".Kind\022\024\n\010subtypes\030\002 \003(\rB\002\020\001\022\022\n\nfieldName" +
+      "s\030\003 \003(\t\022\025\n\rmaximumLength\030\004 \001(\r\022\021\n\tprecis" +
+      "ion\030\005 \001(\r\022\r\n\005scale\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007BOO" +
+      "LEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004" +
+      "LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRING\020" +
+      "\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020\n\022\007" +
+      "\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DECIMA" +
+      "L\020\016\022\010\n\004DATE\020\017\022\013\n\007VARCHAR\020\020\022\010\n\004CHAR\020\021\"x\n\021" +
+      "StripeInformation\022\016\n\006offset\030\001 \001(\004\022\023\n\013ind" +
+      "exLength\030\002 \001(\004\022\022\n\ndataLength\030\003 \001(\004\022\024\n\014fo",
+      "oterLength\030\004 \001(\004\022\024\n\014numberOfRows\030\005 \001(\004\"/" +
+      "\n\020UserMetadataItem\022\014\n\004name\030\001 \001(\t\022\r\n\005valu" +
+      "e\030\002 \001(\014\"A\n\020StripeStatistics\022-\n\010colStats\030" +
+      "\001 \003(\0132\033.orc.proto.ColumnStatistics\"<\n\010Me" +
+      "tadata\0220\n\013stripeStats\030\001 \003(\0132\033.orc.proto." +
+      "StripeStatistics\"\222\002\n\006Footer\022\024\n\014headerLen" +
+      "gth\030\001 \001(\004\022\025\n\rcontentLength\030\002 \001(\004\022-\n\007stri" +
+      "pes\030\003 \003(\0132\034.orc.proto.StripeInformation\022" +
+      "\036\n\005types\030\004 \003(\0132\017.orc.proto.Type\022-\n\010metad" +
+      "ata\030\005 \003(\0132\033.orc.proto.UserMetadataItem\022\024",
+      "\n\014numberOfRows\030\006 \001(\004\022/\n\nstatistics\030\007 \003(\013" +
+      "2\033.orc.proto.ColumnStatistics\022\026\n\016rowInde" +
+      "xStride\030\010 \001(\r\"\305\001\n\nPostScript\022\024\n\014footerLe" +
+      "ngth\030\001 \001(\004\022/\n\013compression\030\002 \001(\0162\032.orc.pr" +
+      "oto.CompressionKind\022\034\n\024compressionBlockS" +
+      "ize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001\022\026\n\016metada" +
+      "taLength\030\005 \001(\004\022\025\n\rwriterVersion\030\006 \001(\r\022\016\n" +
+      "\005magic\030\300> \001(\t*:\n\017CompressionKind\022\010\n\004NONE" +
+      "\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003B\"\n org" +
+      ".apache.hadoop.hive.ql.io.orc"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor =
+          internal_static_orc_proto_IntegerStatistics_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_IntegerStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_IntegerStatistics_descriptor,
+              internal_static_orc_proto_IntegerStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", "Sum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor =
+          internal_static_orc_proto_DoubleStatistics_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_DoubleStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_DoubleStatistics_descriptor,
+              internal_static_orc_proto_DoubleStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", "Sum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor =
+          internal_static_orc_proto_StringStatistics_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_StringStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_StringStatistics_descriptor,
+              internal_static_orc_proto_StringStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", "Sum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor =
+          internal_static_orc_proto_BucketStatistics_descriptor =
             getDescriptor().getMessageTypes().get(3);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_BucketStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_BucketStatistics_descriptor,
+              internal_static_orc_proto_BucketStatistics_descriptor,
               new java.lang.String[] { "Count", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor =
+          internal_static_orc_proto_DecimalStatistics_descriptor =
             getDescriptor().getMessageTypes().get(4);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_DecimalStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_DecimalStatistics_descriptor,
+              internal_static_orc_proto_DecimalStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", "Sum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor =
+          internal_static_orc_proto_DateStatistics_descriptor =
             getDescriptor().getMessageTypes().get(5);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_DateStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_DateStatistics_descriptor,
+              internal_static_orc_proto_DateStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor =
+          internal_static_orc_proto_TimestampStatistics_descriptor =
             getDescriptor().getMessageTypes().get(6);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_TimestampStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_TimestampStatistics_descriptor,
+              internal_static_orc_proto_TimestampStatistics_descriptor,
               new java.lang.String[] { "Minimum", "Maximum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor =
+          internal_static_orc_proto_BinaryStatistics_descriptor =
             getDescriptor().getMessageTypes().get(7);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_BinaryStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_BinaryStatistics_descriptor,
+              internal_static_orc_proto_BinaryStatistics_descriptor,
               new java.lang.String[] { "Sum", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor =
+          internal_static_orc_proto_ColumnStatistics_descriptor =
             getDescriptor().getMessageTypes().get(8);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_ColumnStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnStatistics_descriptor,
+              internal_static_orc_proto_ColumnStatistics_descriptor,
               new java.lang.String[] { "NumberOfValues", "IntStatistics", "DoubleStatistics", "StringStatistics", "BucketStatistics", "DecimalStatistics", "DateStatistics", "BinaryStatistics", "TimestampStatistics", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor =
+          internal_static_orc_proto_RowIndexEntry_descriptor =
             getDescriptor().getMessageTypes().get(9);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_fieldAccessorTable = new
+          internal_static_orc_proto_RowIndexEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndexEntry_descriptor,
+              internal_static_orc_proto_RowIndexEntry_descriptor,
               new java.lang.String[] { "Positions", "Statistics", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor =
+          internal_static_orc_proto_RowIndex_descriptor =
             getDescriptor().getMessageTypes().get(10);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable = new
+          internal_static_orc_proto_RowIndex_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor,
+              internal_static_orc_proto_RowIndex_descriptor,
               new java.lang.String[] { "Entry", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor =
+          internal_static_orc_proto_Stream_descriptor =
             getDescriptor().getMessageTypes().get(11);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable = new
+          internal_static_orc_proto_Stream_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor,
+              internal_static_orc_proto_Stream_descriptor,
               new java.lang.String[] { "Kind", "Column", "Length", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor =
+          internal_static_orc_proto_ColumnEncoding_descriptor =
             getDescriptor().getMessageTypes().get(12);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable = new
+          internal_static_orc_proto_ColumnEncoding_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor,
+              internal_static_orc_proto_ColumnEncoding_descriptor,
               new java.lang.String[] { "Kind", "DictionarySize", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor =
+          internal_static_orc_proto_StripeFooter_descriptor =
             getDescriptor().getMessageTypes().get(13);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable = new
+          internal_static_orc_proto_StripeFooter_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor,
+              internal_static_orc_proto_StripeFooter_descriptor,
               new java.lang.String[] { "Streams", "Columns", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor =
+          internal_static_orc_proto_Type_descriptor =
             getDescriptor().getMessageTypes().get(14);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable = new
+          internal_static_orc_proto_Type_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor,
+              internal_static_orc_proto_Type_descriptor,
               new java.lang.String[] { "Kind", "Subtypes", "FieldNames", "MaximumLength", "Precision", "Scale", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor =
+          internal_static_orc_proto_StripeInformation_descriptor =
             getDescriptor().getMessageTypes().get(15);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable = new
+          internal_static_orc_proto_StripeInformation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor,
+              internal_static_orc_proto_StripeInformation_descriptor,
               new java.lang.String[] { "Offset", "IndexLength", "DataLength", "FooterLength", "NumberOfRows", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor =
+          internal_static_orc_proto_UserMetadataItem_descriptor =
             getDescriptor().getMessageTypes().get(16);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable = new
+          internal_static_orc_proto_UserMetadataItem_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor,
+              internal_static_orc_proto_UserMetadataItem_descriptor,
               new java.lang.String[] { "Name", "Value", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor =
+          internal_static_orc_proto_StripeStatistics_descriptor =
             getDescriptor().getMessageTypes().get(17);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable = new
+          internal_static_orc_proto_StripeStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor,
+              internal_static_orc_proto_StripeStatistics_descriptor,
               new java.lang.String[] { "ColStats", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor =
+          internal_static_orc_proto_Metadata_descriptor =
             getDescriptor().getMessageTypes().get(18);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable = new
+          internal_static_orc_proto_Metadata_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor,
+              internal_static_orc_proto_Metadata_descriptor,
               new java.lang.String[] { "StripeStats", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor =
+          internal_static_orc_proto_Footer_descriptor =
             getDescriptor().getMessageTypes().get(19);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable = new
+          internal_static_orc_proto_Footer_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor,
+              internal_static_orc_proto_Footer_descriptor,
               new java.lang.String[] { "HeaderLength", "ContentLength", "Stripes", "Types", "Metadata", "NumberOfRows", "Statistics", "RowIndexStride", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor =
+          internal_static_orc_proto_PostScript_descriptor =
             getDescriptor().getMessageTypes().get(20);
-          internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable = new
+          internal_static_orc_proto_PostScript_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor,
+              internal_static_orc_proto_PostScript_descriptor,
               new java.lang.String[] { "FooterLength", "Compression", "CompressionBlockSize", "Version", "MetadataLength", "WriterVersion", "Magic", });
           return null;
         }
