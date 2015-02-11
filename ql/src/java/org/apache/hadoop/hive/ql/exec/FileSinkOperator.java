@@ -341,7 +341,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
       statsFromRecordWriter = new boolean[numFiles];
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      serializer.initialize(null, conf.getTableInfo().getProperties());
+      serializer.initialize(hconf, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
 
       if (isLogInfoEnabled) {
