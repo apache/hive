@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:16 Argument type mismatch ''test'': Only primitive type arguments are accepted but map<string,string> is passed

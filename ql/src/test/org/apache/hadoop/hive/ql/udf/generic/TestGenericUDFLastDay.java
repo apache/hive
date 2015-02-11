@@ -43,6 +43,8 @@ public class TestGenericUDFLastDay extends TestCase {
     runAndVerify("2016-02-03", "2016-02-29", udf);
     runAndVerify("2016-02-28", "2016-02-29", udf);
     runAndVerify("2016-02-29", "2016-02-29", udf);
+    runAndVerify("01/14/2014", null, udf);
+    runAndVerify(null, null, udf);
 
     runAndVerify("2014-01-01 10:30:45", "2014-01-31", udf);
     runAndVerify("2014-01-14 10:30:45", "2014-01-31", udf);
@@ -56,9 +58,9 @@ public class TestGenericUDFLastDay extends TestCase {
 
   private void runAndVerify(String str, String expResult, GenericUDF udf)
       throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(new Text(str));
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new Text(str) : null);
     DeferredObject[] args = { valueObj0 };
     Text output = (Text) udf.evaluate(args);
-    assertEquals("last_day() test ", expResult, output.toString());
+    assertEquals("last_day() test ", expResult, output != null ? output.toString() : null);
   }
 }
