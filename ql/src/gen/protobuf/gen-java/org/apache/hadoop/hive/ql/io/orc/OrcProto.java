@@ -8033,6 +8033,1230 @@ public final class OrcProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.RowIndex)
   }
 
+  public interface BloomFilterOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional uint32 numHashFunctions = 1;
+    /**
+     * <code>optional uint32 numHashFunctions = 1;</code>
+     */
+    boolean hasNumHashFunctions();
+    /**
+     * <code>optional uint32 numHashFunctions = 1;</code>
+     */
+    int getNumHashFunctions();
+
+    // repeated fixed64 bitset = 2;
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    java.util.List<java.lang.Long> getBitsetList();
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    int getBitsetCount();
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    long getBitset(int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BloomFilter}
+   */
+  public static final class BloomFilter extends
+      com.google.protobuf.GeneratedMessage
+      implements BloomFilterOrBuilder {
+    // Use BloomFilter.newBuilder() to construct.
+    private BloomFilter(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private BloomFilter(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final BloomFilter defaultInstance;
+    public static BloomFilter getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public BloomFilter getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private BloomFilter(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              numHashFunctions_ = input.readUInt32();
+              break;
+            }
+            case 17: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                bitset_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              bitset_.add(input.readFixed64());
+              break;
+            }
+            case 18: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+                bitset_ = new java.util.ArrayList<java.lang.Long>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                bitset_.add(input.readFixed64());
+              }
+              input.popLimit(limit);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          bitset_ = java.util.Collections.unmodifiableList(bitset_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<BloomFilter> PARSER =
+        new com.google.protobuf.AbstractParser<BloomFilter>() {
+      public BloomFilter parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new BloomFilter(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BloomFilter> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional uint32 numHashFunctions = 1;
+    public static final int NUMHASHFUNCTIONS_FIELD_NUMBER = 1;
+    private int numHashFunctions_;
+    /**
+     * <code>optional uint32 numHashFunctions = 1;</code>
+     */
+    public boolean hasNumHashFunctions() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional uint32 numHashFunctions = 1;</code>
+     */
+    public int getNumHashFunctions() {
+      return numHashFunctions_;
+    }
+
+    // repeated fixed64 bitset = 2;
+    public static final int BITSET_FIELD_NUMBER = 2;
+    private java.util.List<java.lang.Long> bitset_;
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    public java.util.List<java.lang.Long>
+        getBitsetList() {
+      return bitset_;
+    }
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    public int getBitsetCount() {
+      return bitset_.size();
+    }
+    /**
+     * <code>repeated fixed64 bitset = 2;</code>
+     */
+    public long getBitset(int index) {
+      return bitset_.get(index);
+    }
+
+    private void initFields() {
+      numHashFunctions_ = 0;
+      bitset_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeUInt32(1, numHashFunctions_);
+      }
+      for (int i = 0; i < bitset_.size(); i++) {
+        output.writeFixed64(2, bitset_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, numHashFunctions_);
+      }
+      {
+        int dataSize = 0;
+        dataSize = 8 * getBitsetList().size();
+        size += dataSize;
+        size += 1 * getBitsetList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BloomFilter}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        numHashFunctions_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        bitset_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter build() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter buildPartial() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter result = new org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.numHashFunctions_ = numHashFunctions_;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          bitset_ = java.util.Collections.unmodifiableList(bitset_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.bitset_ = bitset_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter) {
+          return mergeFrom((org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter other) {
+        if (other == org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.getDefaultInstance()) return this;
+        if (other.hasNumHashFunctions()) {
+          setNumHashFunctions(other.getNumHashFunctions());
+        }
+        if (!other.bitset_.isEmpty()) {
+          if (bitset_.isEmpty()) {
+            bitset_ = other.bitset_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureBitsetIsMutable();
+            bitset_.addAll(other.bitset_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional uint32 numHashFunctions = 1;
+      private int numHashFunctions_ ;
+      /**
+       * <code>optional uint32 numHashFunctions = 1;</code>
+       */
+      public boolean hasNumHashFunctions() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional uint32 numHashFunctions = 1;</code>
+       */
+      public int getNumHashFunctions() {
+        return numHashFunctions_;
+      }
+      /**
+       * <code>optional uint32 numHashFunctions = 1;</code>
+       */
+      public Builder setNumHashFunctions(int value) {
+        bitField0_ |= 0x00000001;
+        numHashFunctions_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 numHashFunctions = 1;</code>
+       */
+      public Builder clearNumHashFunctions() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        numHashFunctions_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // repeated fixed64 bitset = 2;
+      private java.util.List<java.lang.Long> bitset_ = java.util.Collections.emptyList();
+      private void ensureBitsetIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          bitset_ = new java.util.ArrayList<java.lang.Long>(bitset_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public java.util.List<java.lang.Long>
+          getBitsetList() {
+        return java.util.Collections.unmodifiableList(bitset_);
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public int getBitsetCount() {
+        return bitset_.size();
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public long getBitset(int index) {
+        return bitset_.get(index);
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public Builder setBitset(
+          int index, long value) {
+        ensureBitsetIsMutable();
+        bitset_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public Builder addBitset(long value) {
+        ensureBitsetIsMutable();
+        bitset_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public Builder addAllBitset(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        ensureBitsetIsMutable();
+        super.addAll(values, bitset_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated fixed64 bitset = 2;</code>
+       */
+      public Builder clearBitset() {
+        bitset_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.BloomFilter)
+    }
+
+    static {
+      defaultInstance = new BloomFilter(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.BloomFilter)
+  }
+
+  public interface BloomFilterIndexOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> 
+        getBloomFilterList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter getBloomFilter(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    int getBloomFilterCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder> 
+        getBloomFilterOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder getBloomFilterOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BloomFilterIndex}
+   */
+  public static final class BloomFilterIndex extends
+      com.google.protobuf.GeneratedMessage
+      implements BloomFilterIndexOrBuilder {
+    // Use BloomFilterIndex.newBuilder() to construct.
+    private BloomFilterIndex(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private BloomFilterIndex(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final BloomFilterIndex defaultInstance;
+    public static BloomFilterIndex getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public BloomFilterIndex getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private BloomFilterIndex(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                bloomFilter_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              bloomFilter_.add(input.readMessage(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          bloomFilter_ = java.util.Collections.unmodifiableList(bloomFilter_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<BloomFilterIndex> PARSER =
+        new com.google.protobuf.AbstractParser<BloomFilterIndex>() {
+      public BloomFilterIndex parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new BloomFilterIndex(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BloomFilterIndex> getParserForType() {
+      return PARSER;
+    }
+
+    // repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;
+    public static final int BLOOMFILTER_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> bloomFilter_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> getBloomFilterList() {
+      return bloomFilter_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder> 
+        getBloomFilterOrBuilderList() {
+      return bloomFilter_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    public int getBloomFilterCount() {
+      return bloomFilter_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter getBloomFilter(int index) {
+      return bloomFilter_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+     */
+    public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder getBloomFilterOrBuilder(
+        int index) {
+      return bloomFilter_.get(index);
+    }
+
+    private void initFields() {
+      bloomFilter_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < bloomFilter_.size(); i++) {
+        output.writeMessage(1, bloomFilter_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < bloomFilter_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, bloomFilter_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.BloomFilterIndex}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndexOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.class, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getBloomFilterFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (bloomFilterBuilder_ == null) {
+          bloomFilter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          bloomFilterBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex build() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex buildPartial() {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex result = new org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex(this);
+        int from_bitField0_ = bitField0_;
+        if (bloomFilterBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            bloomFilter_ = java.util.Collections.unmodifiableList(bloomFilter_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.bloomFilter_ = bloomFilter_;
+        } else {
+          result.bloomFilter_ = bloomFilterBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex) {
+          return mergeFrom((org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex other) {
+        if (other == org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex.getDefaultInstance()) return this;
+        if (bloomFilterBuilder_ == null) {
+          if (!other.bloomFilter_.isEmpty()) {
+            if (bloomFilter_.isEmpty()) {
+              bloomFilter_ = other.bloomFilter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureBloomFilterIsMutable();
+              bloomFilter_.addAll(other.bloomFilter_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.bloomFilter_.isEmpty()) {
+            if (bloomFilterBuilder_.isEmpty()) {
+              bloomFilterBuilder_.dispose();
+              bloomFilterBuilder_ = null;
+              bloomFilter_ = other.bloomFilter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              bloomFilterBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getBloomFilterFieldBuilder() : null;
+            } else {
+              bloomFilterBuilder_.addAllMessages(other.bloomFilter_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterIndex) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;
+      private java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> bloomFilter_ =
+        java.util.Collections.emptyList();
+      private void ensureBloomFilterIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          bloomFilter_ = new java.util.ArrayList<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter>(bloomFilter_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder> bloomFilterBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> getBloomFilterList() {
+        if (bloomFilterBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(bloomFilter_);
+        } else {
+          return bloomFilterBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public int getBloomFilterCount() {
+        if (bloomFilterBuilder_ == null) {
+          return bloomFilter_.size();
+        } else {
+          return bloomFilterBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter getBloomFilter(int index) {
+        if (bloomFilterBuilder_ == null) {
+          return bloomFilter_.get(index);
+        } else {
+          return bloomFilterBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder setBloomFilter(
+          int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter value) {
+        if (bloomFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureBloomFilterIsMutable();
+          bloomFilter_.set(index, value);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder setBloomFilter(
+          int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder builderForValue) {
+        if (bloomFilterBuilder_ == null) {
+          ensureBloomFilterIsMutable();
+          bloomFilter_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          bloomFilterBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder addBloomFilter(org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter value) {
+        if (bloomFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureBloomFilterIsMutable();
+          bloomFilter_.add(value);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder addBloomFilter(
+          int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter value) {
+        if (bloomFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureBloomFilterIsMutable();
+          bloomFilter_.add(index, value);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder addBloomFilter(
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder builderForValue) {
+        if (bloomFilterBuilder_ == null) {
+          ensureBloomFilterIsMutable();
+          bloomFilter_.add(builderForValue.build());
+          onChanged();
+        } else {
+          bloomFilterBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder addBloomFilter(
+          int index, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder builderForValue) {
+        if (bloomFilterBuilder_ == null) {
+          ensureBloomFilterIsMutable();
+          bloomFilter_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          bloomFilterBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder addAllBloomFilter(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter> values) {
+        if (bloomFilterBuilder_ == null) {
+          ensureBloomFilterIsMutable();
+          super.addAll(values, bloomFilter_);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder clearBloomFilter() {
+        if (bloomFilterBuilder_ == null) {
+          bloomFilter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public Builder removeBloomFilter(int index) {
+        if (bloomFilterBuilder_ == null) {
+          ensureBloomFilterIsMutable();
+          bloomFilter_.remove(index);
+          onChanged();
+        } else {
+          bloomFilterBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder getBloomFilterBuilder(
+          int index) {
+        return getBloomFilterFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder getBloomFilterOrBuilder(
+          int index) {
+        if (bloomFilterBuilder_ == null) {
+          return bloomFilter_.get(index);  } else {
+          return bloomFilterBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder> 
+           getBloomFilterOrBuilderList() {
+        if (bloomFilterBuilder_ != null) {
+          return bloomFilterBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(bloomFilter_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder addBloomFilterBuilder() {
+        return getBloomFilterFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder addBloomFilterBuilder(
+          int index) {
+        return getBloomFilterFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.ql.io.orc.BloomFilter bloomFilter = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder> 
+           getBloomFilterBuilderList() {
+        return getBloomFilterFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder> 
+          getBloomFilterFieldBuilder() {
+        if (bloomFilterBuilder_ == null) {
+          bloomFilterBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilter.Builder, org.apache.hadoop.hive.ql.io.orc.OrcProto.BloomFilterOrBuilder>(
+                  bloomFilter_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          bloomFilter_ = null;
+        }
+        return bloomFilterBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.BloomFilterIndex)
+    }
+
+    static {
+      defaultInstance = new BloomFilterIndex(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.ql.io.orc.BloomFilterIndex)
+  }
+
   public interface StreamOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -8215,6 +9439,10 @@ public final class OrcProto {
        * <code>ROW_INDEX = 6;</code>
        */
       ROW_INDEX(6, 6),
+      /**
+       * <code>BLOOM_FILTER = 7;</code>
+       */
+      BLOOM_FILTER(7, 7),
       ;
 
       /**
@@ -8245,6 +9473,10 @@ public final class OrcProto {
        * <code>ROW_INDEX = 6;</code>
        */
       public static final int ROW_INDEX_VALUE = 6;
+      /**
+       * <code>BLOOM_FILTER = 7;</code>
+       */
+      public static final int BLOOM_FILTER_VALUE = 7;
 
 
       public final int getNumber() { return value; }
@@ -8258,6 +9490,7 @@ public final class OrcProto {
           case 4: return DICTIONARY_COUNT;
           case 5: return SECONDARY;
           case 6: return ROW_INDEX;
+          case 7: return BLOOM_FILTER;
           default: return null;
         }
       }
@@ -17668,6 +18901,16 @@ public final class OrcProto {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -17760,55 +19003,59 @@ public final class OrcProto {
       "tics\030\002 \001(\01322.org.apache.hadoop.hive.ql.i" +
       "o.orc.ColumnStatistics\"J\n\010RowIndex\022>\n\005en" +
       "try\030\001 \003(\0132/.org.apache.hadoop.hive.ql.io" +
-      ".orc.RowIndexEntry\"\331\001\n\006Stream\022;\n\004kind\030\001 " +
-      "\002(\0162-.org.apache.hadoop.hive.ql.io.orc.S" +
-      "tream.Kind\022\016\n\006column\030\002 \001(\r\022\016\n\006length\030\003 \001" +
-      "(\004\"r\n\004Kind\022\013\n\007PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LEN" +
-      "GTH\020\002\022\023\n\017DICTIONARY_DATA\020\003\022\024\n\020DICTIONARY" +
-      "_COUNT\020\004\022\r\n\tSECONDARY\020\005\022\r\n\tROW_INDEX\020\006\"\263",
-      "\001\n\016ColumnEncoding\022C\n\004kind\030\001 \002(\01625.org.ap" +
-      "ache.hadoop.hive.ql.io.orc.ColumnEncodin" +
-      "g.Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Kind\022\n" +
-      "\n\006DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT_V2\020" +
-      "\002\022\021\n\rDICTIONARY_V2\020\003\"\214\001\n\014StripeFooter\0229\n" +
-      "\007streams\030\001 \003(\0132(.org.apache.hadoop.hive." +
-      "ql.io.orc.Stream\022A\n\007columns\030\002 \003(\01320.org." +
-      "apache.hadoop.hive.ql.io.orc.ColumnEncod" +
-      "ing\"\370\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apache." +
-      "hadoop.hive.ql.io.orc.Type.Kind\022\024\n\010subty",
-      "pes\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\022\025\n\rmax" +
-      "imumLength\030\004 \001(\r\022\021\n\tprecision\030\005 \001(\r\022\r\n\005s" +
-      "cale\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE" +
-      "\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOA" +
-      "T\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRING\020\007\022\n\n\006BINARY\020\010\022" +
-      "\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006STR" +
-      "UCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DATE\020\017\022" +
-      "\013\n\007VARCHAR\020\020\022\010\n\004CHAR\020\021\"x\n\021StripeInformat" +
-      "ion\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001(\004" +
-      "\022\022\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength\030\004 \001",
-      "(\004\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMetadata" +
-      "Item\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"X\n\020Str" +
-      "ipeStatistics\022D\n\010colStats\030\001 \003(\01322.org.ap" +
-      "ache.hadoop.hive.ql.io.orc.ColumnStatist" +
-      "ics\"S\n\010Metadata\022G\n\013stripeStats\030\001 \003(\01322.o" +
-      "rg.apache.hadoop.hive.ql.io.orc.StripeSt" +
-      "atistics\"\356\002\n\006Footer\022\024\n\014headerLength\030\001 \001(" +
-      "\004\022\025\n\rcontentLength\030\002 \001(\004\022D\n\007stripes\030\003 \003(" +
-      "\01323.org.apache.hadoop.hive.ql.io.orc.Str" +
-      "ipeInformation\0225\n\005types\030\004 \003(\0132&.org.apac",
-      "he.hadoop.hive.ql.io.orc.Type\022D\n\010metadat" +
-      "a\030\005 \003(\01322.org.apache.hadoop.hive.ql.io.o" +
-      "rc.UserMetadataItem\022\024\n\014numberOfRows\030\006 \001(" +
-      "\004\022F\n\nstatistics\030\007 \003(\01322.org.apache.hadoo" +
-      "p.hive.ql.io.orc.ColumnStatistics\022\026\n\016row" +
-      "IndexStride\030\010 \001(\r\"\334\001\n\nPostScript\022\024\n\014foot" +
-      "erLength\030\001 \001(\004\022F\n\013compression\030\002 \001(\01621.or" +
-      "g.apache.hadoop.hive.ql.io.orc.Compressi" +
-      "onKind\022\034\n\024compressionBlockSize\030\003 \001(\004\022\023\n\007" +
-      "version\030\004 \003(\rB\002\020\001\022\026\n\016metadataLength\030\005 \001(",
-      "\004\022\025\n\rwriterVersion\030\006 \001(\r\022\016\n\005magic\030\300> \001(\t" +
-      "*:\n\017CompressionKind\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022" +
-      "\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
+      ".orc.RowIndexEntry\"7\n\013BloomFilter\022\030\n\020num" +
+      "HashFunctions\030\001 \001(\r\022\016\n\006bitset\030\002 \003(\006\"V\n\020B" +
+      "loomFilterIndex\022B\n\013bloomFilter\030\001 \003(\0132-.o" +
+      "rg.apache.hadoop.hive.ql.io.orc.BloomFil" +
+      "ter\"\354\001\n\006Stream\022;\n\004kind\030\001 \002(\0162-.org.apach" +
+      "e.hadoop.hive.ql.io.orc.Stream.Kind\022\016\n\006c",
+      "olumn\030\002 \001(\r\022\016\n\006length\030\003 \001(\004\"\204\001\n\004Kind\022\013\n\007" +
+      "PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGTH\020\002\022\023\n\017DICTI" +
+      "ONARY_DATA\020\003\022\024\n\020DICTIONARY_COUNT\020\004\022\r\n\tSE" +
+      "CONDARY\020\005\022\r\n\tROW_INDEX\020\006\022\020\n\014BLOOM_FILTER" +
+      "\020\007\"\263\001\n\016ColumnEncoding\022C\n\004kind\030\001 \002(\01625.or" +
+      "g.apache.hadoop.hive.ql.io.orc.ColumnEnc" +
+      "oding.Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Ki" +
+      "nd\022\n\n\006DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT" +
+      "_V2\020\002\022\021\n\rDICTIONARY_V2\020\003\"\214\001\n\014StripeFoote" +
+      "r\0229\n\007streams\030\001 \003(\0132(.org.apache.hadoop.h",
+      "ive.ql.io.orc.Stream\022A\n\007columns\030\002 \003(\01320." +
+      "org.apache.hadoop.hive.ql.io.orc.ColumnE" +
+      "ncoding\"\370\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apa" +
+      "che.hadoop.hive.ql.io.orc.Type.Kind\022\024\n\010s" +
+      "ubtypes\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\022\025\n" +
+      "\rmaximumLength\030\004 \001(\r\022\021\n\tprecision\030\005 \001(\r\022" +
+      "\r\n\005scale\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004" +
+      "BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005" +
+      "FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRING\020\007\022\n\n\006BINAR" +
+      "Y\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n",
+      "\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DAT" +
+      "E\020\017\022\013\n\007VARCHAR\020\020\022\010\n\004CHAR\020\021\"x\n\021StripeInfo" +
+      "rmation\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002" +
+      " \001(\004\022\022\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength" +
+      "\030\004 \001(\004\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMeta" +
+      "dataItem\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"X\n" +
+      "\020StripeStatistics\022D\n\010colStats\030\001 \003(\01322.or" +
+      "g.apache.hadoop.hive.ql.io.orc.ColumnSta" +
+      "tistics\"S\n\010Metadata\022G\n\013stripeStats\030\001 \003(\013" +
+      "22.org.apache.hadoop.hive.ql.io.orc.Stri",
+      "peStatistics\"\356\002\n\006Footer\022\024\n\014headerLength\030" +
+      "\001 \001(\004\022\025\n\rcontentLength\030\002 \001(\004\022D\n\007stripes\030" +
+      "\003 \003(\01323.org.apache.hadoop.hive.ql.io.orc" +
+      ".StripeInformation\0225\n\005types\030\004 \003(\0132&.org." +
+      "apache.hadoop.hive.ql.io.orc.Type\022D\n\010met" +
+      "adata\030\005 \003(\01322.org.apache.hadoop.hive.ql." +
+      "io.orc.UserMetadataItem\022\024\n\014numberOfRows\030" +
+      "\006 \001(\004\022F\n\nstatistics\030\007 \003(\01322.org.apache.h" +
+      "adoop.hive.ql.io.orc.ColumnStatistics\022\026\n" +
+      "\016rowIndexStride\030\010 \001(\r\"\334\001\n\nPostScript\022\024\n\014",
+      "footerLength\030\001 \001(\004\022F\n\013compression\030\002 \001(\0162" +
+      "1.org.apache.hadoop.hive.ql.io.orc.Compr" +
+      "essionKind\022\034\n\024compressionBlockSize\030\003 \001(\004" +
+      "\022\023\n\007version\030\004 \003(\rB\002\020\001\022\026\n\016metadataLength\030" +
+      "\005 \001(\004\022\025\n\rwriterVersion\030\006 \001(\r\022\016\n\005magic\030\300>" +
+      " \001(\t*:\n\017CompressionKind\022\010\n\004NONE\020\000\022\010\n\004ZLI" +
+      "B\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -17881,62 +19128,74 @@ public final class OrcProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_RowIndex_descriptor,
               new java.lang.String[] { "Entry", });
-          internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor =
+          internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor =
             getDescriptor().getMessageTypes().get(11);
+          internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilter_descriptor,
+              new java.lang.String[] { "NumHashFunctions", "Bitset", });
+          internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor =
+            getDescriptor().getMessageTypes().get(12);
+          internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_ql_io_orc_BloomFilterIndex_descriptor,
+              new java.lang.String[] { "BloomFilter", });
+          internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor =
+            getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Stream_descriptor,
               new java.lang.String[] { "Kind", "Column", "Length", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_ColumnEncoding_descriptor,
               new java.lang.String[] { "Kind", "DictionarySize", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeFooter_descriptor,
               new java.lang.String[] { "Streams", "Columns", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor,
               new java.lang.String[] { "Kind", "Subtypes", "FieldNames", "MaximumLength", "Precision", "Scale", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor,
               new java.lang.String[] { "Offset", "IndexLength", "DataLength", "FooterLength", "NumberOfRows", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_UserMetadataItem_descriptor,
               new java.lang.String[] { "Name", "Value", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_StripeStatistics_descriptor,
               new java.lang.String[] { "ColStats", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(20);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Metadata_descriptor,
               new java.lang.String[] { "StripeStats", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor =
-            getDescriptor().getMessageTypes().get(19);
+            getDescriptor().getMessageTypes().get(21);
           internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Footer_descriptor,
               new java.lang.String[] { "HeaderLength", "ContentLength", "Stripes", "Types", "Metadata", "NumberOfRows", "Statistics", "RowIndexStride", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor =
-            getDescriptor().getMessageTypes().get(20);
+            getDescriptor().getMessageTypes().get(22);
           internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor,

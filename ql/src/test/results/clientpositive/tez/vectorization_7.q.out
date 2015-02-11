@@ -63,20 +63,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or ((UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > -15.0) and (3569.0 >= cdouble)))) (type: boolean)
-                    Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
-                      Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 25
-                        Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 25 Data size: 5375 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 25 Data size: 5375 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -235,20 +235,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((ctinyint <> 0) and ((UDFToDouble(ctimestamp1) <= 0.0) or ((UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')))) and ((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005) and (3569.0 >= cdouble)))) (type: boolean)
-                    Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
-                      Statistics: Num rows: 7281 Data size: 223523 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 7281 Data size: 1565441 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 25
-                        Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 25 Data size: 5375 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 25 Data size: 750 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 25 Data size: 5375 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

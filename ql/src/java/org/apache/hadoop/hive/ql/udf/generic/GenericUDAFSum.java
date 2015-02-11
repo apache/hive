@@ -87,6 +87,29 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
   }
 
+  public static PrimitiveObjectInspector.PrimitiveCategory getReturnType(TypeInfo type) {
+    if (type.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      return null;
+    }
+    switch (((PrimitiveTypeInfo) type).getPrimitiveCategory()) {
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+        return PrimitiveObjectInspector.PrimitiveCategory.LONG;
+      case TIMESTAMP:
+      case FLOAT:
+      case DOUBLE:
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        return PrimitiveObjectInspector.PrimitiveCategory.DOUBLE;
+      case DECIMAL:
+        return PrimitiveObjectInspector.PrimitiveCategory.DECIMAL;
+    }
+    return null;
+  }
+
   /**
    * GenericUDAFSumHiveDecimal.
    *

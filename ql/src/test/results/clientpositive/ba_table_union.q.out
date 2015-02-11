@@ -49,9 +49,9 @@ POSTHOOK: Input: default@src
 11
 12
 12
-128
-145
-146
+15
+15
+153
 PREHOOK: query: drop table ba_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ba_test

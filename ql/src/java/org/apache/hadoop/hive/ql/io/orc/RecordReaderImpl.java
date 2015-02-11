@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.hadoop.hive.ql.io.filters.BloomFilter;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -101,17 +104,38 @@ class RecordReaderImpl implements RecordReader {
   List<BufferChunk> bufferChunks = new ArrayList<BufferChunk>(0);
   private final TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
+  private final OrcProto.BloomFilterIndex[] bloomFilterIndices;
   private final SearchArgument sarg;
   // the leaf predicates for the sarg
   private final List<PredicateLeaf> sargLeaves;
   // an array the same length as the sargLeaves that map them to column ids
   private final int[] filterColumns;
+  // same as the above array, but indices are set to true
+  private final boolean[] sargColumns;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
   private final Configuration conf;
 
   private final ByteBufferAllocatorPool pool = new ByteBufferAllocatorPool();
   private final ZeroCopyReaderShim zcr;
+
+  public final static class Index {
+    OrcProto.RowIndex[] rowGroupIndex;
+    OrcProto.BloomFilterIndex[] bloomFilterIndex;
+
+    Index(OrcProto.RowIndex[] rgIndex, OrcProto.BloomFilterIndex[] bfIndex) {
+      this.rowGroupIndex = rgIndex;
+      this.bloomFilterIndex = bfIndex;
+    }
+
+    public OrcProto.RowIndex[] getRowGroupIndex() {
+      return rowGroupIndex;
+    }
+
+    public OrcProto.BloomFilterIndex[] getBloomFilterIndex() {
+      return bloomFilterIndex;
+    }
+  }
 
   // this is an implementation copied from ElasticByteBufferPool in hadoop-2,
   // which lacks a clear()/clean() operation
@@ -251,9 +275,18 @@ class RecordReaderImpl implements RecordReader {
     if (sarg != null) {
       sargLeaves = sarg.getLeaves();
       filterColumns = mapSargColumns(sargLeaves, options.getColumnNames(), 0);
+      // included will not be null, row options will fill the array with trues if null
+      sargColumns = new boolean[included.length];
+      for (int i : filterColumns) {
+        // filter columns may have -1 as index which could be partition column in SARG.
+        if (i > 0) {
+          sargColumns[i] = true;
+        }
+      }
     } else {
       sargLeaves = null;
       filterColumns = null;
+      sargColumns = null;
     }
     long rows = 0;
     long skippedRows = 0;
@@ -285,6 +318,7 @@ class RecordReaderImpl implements RecordReader {
     totalRowCount = rows;
     reader = createTreeReader(path, 0, types, included, conf);
     indexes = new OrcProto.RowIndex[types.size()];
+    bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
     rowIndexStride = strideRate;
     advanceToNextRow(0L);
   }
@@ -1387,7 +1421,7 @@ class RecordReaderImpl implements RecordReader {
         }
         len -= bytesRead;
         offset += bytesRead;
-      } 
+      }
 
       return allBytes;
     }
@@ -1557,32 +1591,36 @@ class RecordReaderImpl implements RecordReader {
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       InStream in = streams.get(name);
-      if (in.available() > 0) {
-        dictionaryBuffer = new DynamicByteArray(64, in.available());
-        dictionaryBuffer.readAll(in);
-        // Since its start of strip invalidate the cache.
-        dictionaryBufferInBytesCache = null;
+      if (in != null) { // Guard against empty dictionary stream.
+        if (in.available() > 0) {
+          dictionaryBuffer = new DynamicByteArray(64, in.available());
+          dictionaryBuffer.readAll(in);
+          // Since its start of strip invalidate the cache.
+          dictionaryBufferInBytesCache = null;
+        }
+        in.close();
       } else {
         dictionaryBuffer = null;
       }
-      in.close();
 
       // read the lengths
       name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
       in = streams.get(name);
-      IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
-          .getKind(), in, false);
-      int offset = 0;
-      if (dictionaryOffsets == null ||
-          dictionaryOffsets.length < dictionarySize + 1) {
-        dictionaryOffsets = new int[dictionarySize + 1];
+      if (in != null) { // Guard against empty LENGTH stream.
+        IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
+            .getKind(), in, false);
+        int offset = 0;
+        if (dictionaryOffsets == null ||
+            dictionaryOffsets.length < dictionarySize + 1) {
+          dictionaryOffsets = new int[dictionarySize + 1];
+        }
+        for (int i = 0; i < dictionarySize; ++i) {
+          dictionaryOffsets[i] = offset;
+          offset += (int) lenReader.next();
+        }
+        dictionaryOffsets[dictionarySize] = offset;
+        in.close();
       }
-      for(int i=0; i < dictionarySize; ++i) {
-        dictionaryOffsets[i] = offset;
-        offset += (int) lenReader.next();
-      }
-      dictionaryOffsets[dictionarySize] = offset;
-      in.close();
 
       // set up the row reader
       name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
@@ -1737,7 +1775,7 @@ class RecordReaderImpl implements RecordReader {
           }
         }
       } else {
-        if (result.noNulls){ 
+        if (result.noNulls){
           for (int i = 0; i < batchSize; i++) {
             adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[i], result.start[i], result.length[i], maxLength);
             if (adjustedDownLen < result.length[i]) {
@@ -1801,7 +1839,7 @@ class RecordReaderImpl implements RecordReader {
           }
         }
       } else {
-        if (result.noNulls){ 
+        if (result.noNulls){
           for (int i = 0; i < batchSize; i++) {
             adjustedDownLen = StringExpr.truncate(result.vector[i], result.start[i], result.length[i], maxLength);
             if (adjustedDownLen < result.length[i]) {
@@ -2358,15 +2396,20 @@ class RecordReaderImpl implements RecordReader {
    * that is referenced in the predicate.
    * @param statsProto the statistics for the column mentioned in the predicate
    * @param predicate the leaf predicate we need to evaluation
+   * @param bloomFilter
    * @return the set of truth values that may be returned for the given
    *   predicate.
    */
-  static TruthValue evaluatePredicate(OrcProto.ColumnStatistics statsProto,
-                                      PredicateLeaf predicate) {
+  static TruthValue evaluatePredicateProto(OrcProto.ColumnStatistics statsProto,
+      PredicateLeaf predicate, OrcProto.BloomFilter bloomFilter) {
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(statsProto);
     Object minValue = getMin(cs);
     Object maxValue = getMax(cs);
-    return evaluatePredicateRange(predicate, minValue, maxValue, cs.hasNull());
+    BloomFilter bf = null;
+    if (bloomFilter != null) {
+      bf = new BloomFilter(bloomFilter);
+    }
+    return evaluatePredicateRange(predicate, minValue, maxValue, cs.hasNull(), bf);
   }
 
   /**
@@ -2378,14 +2421,14 @@ class RecordReaderImpl implements RecordReader {
    *   predicate.
    */
   static TruthValue evaluatePredicate(ColumnStatistics stats,
-      PredicateLeaf predicate) {
+      PredicateLeaf predicate, BloomFilter bloomFilter) {
     Object minValue = getMin(stats);
     Object maxValue = getMax(stats);
-    return evaluatePredicateRange(predicate, minValue, maxValue, stats.hasNull());
+    return evaluatePredicateRange(predicate, minValue, maxValue, stats.hasNull(), bloomFilter);
   }
 
   static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object min,
-      Object max, boolean hasNull) {
+      Object max, boolean hasNull, BloomFilter bloomFilter) {
     // if we didn't have any values, everything must have been null
     if (min == null) {
       if (predicate.getOperator() == PredicateLeaf.Operator.IS_NULL) {
@@ -2395,21 +2438,42 @@ class RecordReaderImpl implements RecordReader {
       }
     }
 
-    Location loc;
+    TruthValue result;
+    // Predicate object and stats object can be one of the following base types
+    // LONG, DOUBLE, STRING, DATE, DECIMAL
+    // Out of these DATE is not implicitly convertible to other types and rest
+    // others are implicitly convertible. In cases where DATE cannot be converted
+    // the stats object is converted to text and comparison is performed.
+    // When STRINGs are converted to other base types, NumberFormat exception
+    // can occur in which case TruthValue.YES_NO_NULL value is returned
     try {
-      // Predicate object and stats object can be one of the following base types
-      // LONG, DOUBLE, STRING, DATE, DECIMAL
-      // Out of these DATE is not implicitly convertible to other types and rest
-      // others are implicitly convertible. In cases where DATE cannot be converted
-      // the stats object is converted to text and comparison is performed.
-      // When STRINGs are converted to other base types, NumberFormat exception
-      // can occur in which case TruthValue.YES_NO_NULL value is returned
       Object baseObj = predicate.getLiteral(PredicateLeaf.FileFormat.ORC);
       Object minValue = getConvertedStatsObj(min, baseObj);
       Object maxValue = getConvertedStatsObj(max, baseObj);
       Object predObj = getBaseObjectForComparison(baseObj, minValue);
 
-      switch (predicate.getOperator()) {
+      result = evaluatePredicateMinMax(predicate, predObj, minValue, maxValue, hasNull);
+      if (bloomFilter != null && result != TruthValue.NO_NULL && result != TruthValue.NO) {
+        result = evaluatePredicateBloomFilter(predicate, predObj, bloomFilter, hasNull);
+      }
+      // in case failed conversion, return the default YES_NO_NULL truth value
+    } catch (NumberFormatException nfe) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("NumberFormatException when type matching predicate object" +
+            " and statistics object. Exception: " + ExceptionUtils.getStackTrace(nfe));
+      }
+      result = hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
+    }
+    return result;
+  }
+
+  private static TruthValue evaluatePredicateMinMax(PredicateLeaf predicate, Object predObj,
+      Object minValue,
+      Object maxValue,
+      boolean hasNull) {
+    Location loc;
+
+    switch (predicate.getOperator()) {
       case NULL_SAFE_EQUALS:
         loc = compareToRange((Comparable) predObj, minValue, maxValue);
         if (loc == Location.BEFORE || loc == Location.AFTER) {
@@ -2494,12 +2558,81 @@ class RecordReaderImpl implements RecordReader {
         return hasNull ? TruthValue.YES_NO : TruthValue.NO;
       default:
         return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
-      }
-
-      // in case failed conversion, return the default YES_NO_NULL truth value
-    } catch (NumberFormatException nfe) {
-      return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
     }
+  }
+
+  private static TruthValue evaluatePredicateBloomFilter(PredicateLeaf predicate, Object predObj,
+      BloomFilter bloomFilter, boolean hasNull) {
+    switch (predicate.getOperator()) {
+      case NULL_SAFE_EQUALS:
+        // null safe equals does not return *_NULL variant. So set hasNull to false
+        return checkInBloomFilter(bloomFilter, predObj, false);
+      case EQUALS:
+        return checkInBloomFilter(bloomFilter, predObj, hasNull);
+      case IN:
+        for (Object arg : predicate.getLiteralList(PredicateLeaf.FileFormat.ORC)) {
+          // if atleast one value in IN list exist in bloom filter, qualify the row group/stripe
+          TruthValue result = checkInBloomFilter(bloomFilter, arg, hasNull);
+          if (result == TruthValue.YES_NO_NULL || result == TruthValue.YES_NO) {
+            return result;
+          }
+        }
+        return hasNull ? TruthValue.NO_NULL : TruthValue.NO;
+      default:
+        return hasNull ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
+    }
+  }
+
+  private static TruthValue checkInBloomFilter(BloomFilter bf, Object predObj, boolean hasNull) {
+    TruthValue result = hasNull ? TruthValue.NO_NULL : TruthValue.NO;
+
+    if (predObj instanceof Long) {
+      if (bf.testLong(((Long) predObj).longValue())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof Double) {
+      if (bf.testDouble(((Double) predObj).doubleValue())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof String || predObj instanceof Text ||
+        predObj instanceof HiveDecimal || predObj instanceof BigDecimal) {
+      if (bf.testString(predObj.toString())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof Date) {
+      if (bf.testLong(DateWritable.dateToDays((Date) predObj))) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof DateWritable) {
+      if (bf.testLong(((DateWritable) predObj).getDays())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof Timestamp) {
+      if (bf.testLong(((Timestamp) predObj).getTime())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else if (predObj instanceof TimestampWritable) {
+      if (bf.testLong(((TimestampWritable) predObj).getTimestamp().getTime())) {
+        result = TruthValue.YES_NO_NULL;
+      }
+    } else {
+      // if the predicate object is null and if hasNull says there are no nulls then return NO
+      if (predObj == null && !hasNull) {
+        result = TruthValue.NO;
+      } else {
+        result = TruthValue.YES_NO_NULL;
+      }
+    }
+
+    if (result == TruthValue.YES_NO_NULL && !hasNull) {
+      result = TruthValue.YES_NO;
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Bloom filter evaluation: " + result.toString());
+    }
+
+    return result;
   }
 
   private static Object getBaseObjectForComparison(Object predObj, Object statsObj) {
@@ -2567,7 +2700,7 @@ class RecordReaderImpl implements RecordReader {
     if (sarg == null || rowIndexStride == 0) {
       return null;
     }
-    readRowIndex(currentStripe);
+    readRowIndex(currentStripe, sargColumns);
     long rowsInStripe = stripes.get(currentStripe).getNumberOfRows();
     int groupsInStripe = (int) ((rowsInStripe + rowIndexStride - 1) /
         rowIndexStride);
@@ -2578,7 +2711,11 @@ class RecordReaderImpl implements RecordReader {
         if (filterColumns[pred] != -1) {
           OrcProto.ColumnStatistics stats =
               indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
-          leafValues[pred] = evaluatePredicate(stats, sargLeaves.get(pred));
+          OrcProto.BloomFilter bf = null;
+          if (bloomFilterIndices[filterColumns[pred]] != null) {
+            bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
+          }
+          leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Stats = " + stats);
             LOG.debug("Setting " + sargLeaves.get(pred) + " to " +
@@ -3221,7 +3358,7 @@ class RecordReaderImpl implements RecordReader {
     throw new IllegalArgumentException("Seek after the end of reader range");
   }
 
-  OrcProto.RowIndex[] readRowIndex(int stripeIndex) throws IOException {
+  Index readRowIndex(int stripeIndex, boolean[] sargColumns) throws IOException {
     long offset = stripes.get(stripeIndex).getOffset();
     OrcProto.StripeFooter stripeFooter;
     OrcProto.RowIndex[] indexes;
@@ -3233,21 +3370,45 @@ class RecordReaderImpl implements RecordReader {
       stripeFooter = readStripeFooter(stripes.get(stripeIndex));
       indexes = new OrcProto.RowIndex[this.indexes.length];
     }
-    for(OrcProto.Stream stream: stripeFooter.getStreamsList()) {
+    List<OrcProto.Stream> streams = stripeFooter.getStreamsList();
+    for (int i = 0; i < streams.size(); i++) {
+      OrcProto.Stream stream = streams.get(i);
+      OrcProto.Stream nextStream = null;
+      if (i < streams.size() - 1) {
+        nextStream = streams.get(i+1);
+      }
+      int col = stream.getColumn();
+      int len = (int) stream.getLength();
+      // row index stream and bloom filter are interlaced, check if the sarg column contains bloom
+      // filter and combine the io to read row index and bloom filters for that column together
       if (stream.getKind() == OrcProto.Stream.Kind.ROW_INDEX) {
-        int col = stream.getColumn();
+        boolean readBloomFilter = false;
+        if (sargColumns != null && sargColumns[col] &&
+            nextStream.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER) {
+          len += nextStream.getLength();
+          i += 1;
+          readBloomFilter = true;
+        }
         if ((included == null || included[col]) && indexes[col] == null) {
-          byte[] buffer = new byte[(int) stream.getLength()];
+          byte[] buffer = new byte[len];
           file.seek(offset);
           file.readFully(buffer);
+          ByteBuffer[] bb = new ByteBuffer[] {ByteBuffer.wrap(buffer)};
           indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create("index",
-              new ByteBuffer[] {ByteBuffer.wrap(buffer)}, new long[]{0},
-              stream.getLength(), codec, bufferSize));
+              bb, new long[]{0}, stream.getLength(), codec, bufferSize));
+          if (readBloomFilter) {
+            bb[0].position((int) stream.getLength());
+            bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(
+                InStream.create("bloom_filter", bb, new long[]{0}, nextStream.getLength(),
+                    codec, bufferSize));
+          }
         }
       }
-      offset += stream.getLength();
+      offset += len;
     }
-    return indexes;
+
+    Index index = new Index(indexes, bloomFilterIndices);
+    return index;
   }
 
   private void seekToRowEntry(int rowEntry) throws IOException {
@@ -3279,7 +3440,7 @@ class RecordReaderImpl implements RecordReader {
       currentStripe = rightStripe;
       readStripe();
     }
-    readRowIndex(currentStripe);
+    readRowIndex(currentStripe, sargColumns);
 
     // if we aren't to the right row yet, advanance in the stripe.
     advanceToNextRow(rowNumber);

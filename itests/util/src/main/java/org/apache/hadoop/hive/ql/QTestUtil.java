@@ -302,6 +302,7 @@ public class QTestUtil {
     tez,
     spark,
     encrypted,
+    miniSparkOnYarn,
     none;
 
     public static MiniClusterType valueForString(String type) {
@@ -313,6 +314,8 @@ public class QTestUtil {
         return spark;
       } else if (type.equals("encrypted")) {
         return encrypted;
+      } else if (type.equals("miniSparkOnYarn")) {
+        return miniSparkOnYarn;
       } else {
         return none;
       }
@@ -380,6 +383,8 @@ public class QTestUtil {
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
       if (clusterType == MiniClusterType.tez) {
         mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
+      } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
+        mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
       } else {
         mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
       }
@@ -875,7 +880,8 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark)) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
+        || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -935,7 +941,8 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark)) {
+    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
+        || clusterType == MiniClusterType.miniSparkOnYarn)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -1017,7 +1024,7 @@ public class QTestUtil {
       }
       command = "";
     }
-    if (SessionState.get() != null) {
+    if (rc == 0 && SessionState.get() != null) {
       SessionState.get().setLastCommand(null);  // reset
     }
     return rc;

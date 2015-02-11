@@ -273,6 +273,7 @@ public final class FunctionRegistry {
     registerGenericUDF("to_date", GenericUDFDate.class);
     registerUDF("weekofyear", UDFWeekOfYear.class, false);
     registerGenericUDF("last_day", GenericUDFLastDay.class);
+    registerGenericUDF("next_day", GenericUDFNextDay.class);
 
     registerGenericUDF("date_add", GenericUDFDateAdd.class);
     registerGenericUDF("date_sub", GenericUDFDateSub.class);
@@ -306,6 +307,7 @@ public final class FunctionRegistry {
     registerGenericUDF("current_database", UDFCurrentDB.class);
     registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
+    registerGenericUDF("current_user", GenericUDFCurrentUser.class);
 
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);

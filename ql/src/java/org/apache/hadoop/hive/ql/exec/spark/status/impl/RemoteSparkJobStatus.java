@@ -179,7 +179,15 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         if (list != null && list.size() == 1) {
           JavaFutureAction<?> futureAction = list.get(0);
           if (futureAction.isDone()) {
-            jobInfo = getDefaultJobInfo(sparkJobId, JobExecutionStatus.SUCCEEDED);
+            boolean futureSucceed = true;
+            try {
+              futureAction.get();
+            } catch (Exception e) {
+              LOG.error("Failed to run job " + sparkJobId, e);
+              futureSucceed = false;
+            }
+            jobInfo = getDefaultJobInfo(sparkJobId,
+                futureSucceed ? JobExecutionStatus.SUCCEEDED : JobExecutionStatus.FAILED);
           }
         }
       }

@@ -70,6 +70,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.TimestampParser;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
@@ -91,6 +93,7 @@ public class JsonSerDe implements SerDe {
   private JsonFactory jsonFactory = null;
 
   private HCatRecordObjectInspector cachedObjectInspector;
+  private TimestampParser tsParser;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -138,6 +141,8 @@ public class JsonSerDe implements SerDe {
     }
 
     jsonFactory = new JsonFactory();
+    tsParser = new TimestampParser(
+        HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS)));
   }
 
   /**
@@ -300,7 +305,7 @@ public class JsonSerDe implements SerDe {
       val = (valueToken == JsonToken.VALUE_NULL) ? null : Date.valueOf(p.getText());
       break;
     case TIMESTAMP:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : Timestamp.valueOf(p.getText());
+      val = (valueToken == JsonToken.VALUE_NULL) ? null : tsParser.parseTimestamp(p.getText());
       break;
     case DECIMAL:
       val = (valueToken == JsonToken.VALUE_NULL) ? null : HiveDecimal.create(p.getText());
@@ -512,15 +517,20 @@ public class JsonSerDe implements SerDe {
         case DECIMAL:
           sb.append(((HiveDecimalObjectInspector)poi).getPrimitiveJavaObject(o));
           break;
-        case VARCHAR:
-          appendWithQuotes(sb, 
-                  ((HiveVarcharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+        case VARCHAR: {
+          String s = SerDeUtils.escapeString(
+              ((HiveVarcharObjectInspector) poi).getPrimitiveJavaObject(o).toString());
+          appendWithQuotes(sb, s);
           break;
-        case CHAR:
+        }
+        case CHAR: {
           //this should use HiveChar.getPaddedValue() but it's protected; currently (v0.13)
           // HiveChar.toString() returns getPaddedValue()
-          appendWithQuotes(sb, ((HiveCharObjectInspector)poi).getPrimitiveJavaObject(o).toString());
+          String s = SerDeUtils.escapeString(
+              ((HiveCharObjectInspector) poi).getPrimitiveJavaObject(o).toString());
+          appendWithQuotes(sb, s);
           break;
+        }
         default:
           throw new RuntimeException("Unknown primitive type: " + poi.getPrimitiveCategory());
         }

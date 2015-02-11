@@ -238,6 +238,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.partitionCols = partitionCols;
   }
 
+  public boolean isPartitioning() {
+    if (partitionCols != null && !partitionCols.isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
   @Explain(displayName = "tag", normalExplain = false)
   public int getTag() {
     return tag;
@@ -336,6 +343,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     keySerializeInfo.getProperties().setProperty(
         org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER,
         orderStr);
+  }
+
+  public boolean isOrdering() {
+    if (this.getOrder() != null && !this.getOrder().isEmpty()) {
+      return true;
+    }
+    return false;
   }
 
   public List<List<Integer>> getDistinctColumnIndices() {

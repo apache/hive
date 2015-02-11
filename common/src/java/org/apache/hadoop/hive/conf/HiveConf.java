@@ -593,6 +593,8 @@ public class HiveConf extends Configuration {
         "* implies all the keys will get inherited."),
     METASTORE_FILTER_HOOK("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
         "Metastore hook class for filtering the metadata read results"),
+    FIRE_EVENTS_FOR_DML("hive.metastore.dml.events", false, "If true, the metastore will be asked" +
+        " to fire events for DML operations"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
@@ -684,20 +686,6 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
-    HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS("hive.optimize.multigroupby.common.distincts", true,
-        "Whether to optimize a multi-groupby query with the same distinct.\n" +
-        "Consider a query like:\n" +
-        "\n" +
-        "  from src\n" +
-        "    insert overwrite table dest1 select col1, count(distinct colx) group by col1\n" +
-        "    insert overwrite table dest2 select col2, count(distinct colx) group by col2;\n" +
-        "\n" +
-        "With this parameter set to true, first we spray by the distinct value (colx), and then\n" +
-        "perform the 2 groups bys. This makes sense if map-side aggregation is turned off. However,\n" +
-        "with maps-side aggregation, it might be useful in some cases to treat the 2 inserts independently, \n" +
-        "thereby performing the query above in 2MR jobs instead of 3 (due to spraying by distinct key first).\n" +
-        "If this parameter is turned off, we don't consider the fact that the distinct key is the same across\n" +
-        "different MR jobs."),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000,
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
@@ -2028,7 +2016,9 @@ public class HiveConf extends Configuration {
     SPARK_RPC_MAX_MESSAGE_SIZE("hive.spark.client.rpc.max.size", 50 * 1024 * 1024,
       "Maximum message size in bytes for communication between Hive client and remote Spark driver. Default is 50MB."),
     SPARK_RPC_CHANNEL_LOG_LEVEL("hive.spark.client.channel.log.level", null,
-      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}.");
+      "Channel logging level for remote Spark driver.  One of {DEBUG, ERROR, INFO, TRACE, WARN}."),
+    SPARK_RPC_SASL_MECHANISM("hive.spark.client.rpc.sasl.mechanisms", "DIGEST-MD5",
+      "Name of the SASL mechanism to use for authentication.");
 
     public final String varname;
     private final String defaultExpr;
@@ -2268,8 +2258,31 @@ public class HiveConf extends Configuration {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + "of parameters that can't be modified at runtime");
     }
-    isSparkConfigUpdated = name.startsWith("spark");
+    isSparkConfigUpdated = isSparkRelatedConfig(name);
     set(name, value);
+  }
+
+  /**
+   * check whether spark related property is updated, which includes spark configurations,
+   * RSC configurations and yarn configuration in Spark on YARN mode.
+   * @param name
+   * @return
+   */
+  private boolean isSparkRelatedConfig(String name) {
+    boolean result = false;
+    if (name.startsWith("spark")) { // Spark property.
+      result = true;
+    } else if (name.startsWith("yarn")) { // YARN property in Spark on YARN mode.
+      String sparkMaster = get("spark.master");
+      if (sparkMaster != null &&
+        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+        result = true;
+      }
+    } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
+      result = true;
+    }
+
+    return result;
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {

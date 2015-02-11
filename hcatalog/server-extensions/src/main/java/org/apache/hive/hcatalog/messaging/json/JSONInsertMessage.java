@@ -37,7 +37,7 @@ public class JSONInsertMessage extends InsertMessage {
   Long timestamp;
 
   @JsonProperty
-  List<String> partitionValues;
+  List<String> partitionValues, files;
 
   /**
    * Default constructor, needed for Jackson.
@@ -45,13 +45,14 @@ public class JSONInsertMessage extends InsertMessage {
   public JSONInsertMessage() {}
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-                           List<String> partVals, Long timestamp) {
+                           List<String> partVals, List<String> files, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
     this.timestamp = timestamp;
     partitionValues = partVals;
+    this.files = files;
     checkValid();
   }
 
@@ -65,6 +66,11 @@ public class JSONInsertMessage extends InsertMessage {
   @Override
   public List<String> getPartitionValues() {
     return partitionValues;
+  }
+
+  @Override
+  public List<String> getFiles() {
+    return files;
   }
 
   @Override

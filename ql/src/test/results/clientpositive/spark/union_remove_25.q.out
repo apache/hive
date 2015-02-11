@@ -258,18 +258,18 @@ PREHOOK: query: explain
 insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -366,9 +366,9 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -378,9 +378,9 @@ PREHOOK: Output: default@outputtbl2
 POSTHOOK: query: insert overwrite table outputTbl2 partition(ds)
 SELECT *
 FROM (
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)a
   UNION ALL
-  SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500
+  select * from (SELECT key, value, ds from srcpart where ds='2008-04-08' limit 500)b
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -440,17 +440,17 @@ Storage Desc Params:
 PREHOOK: query: explain insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -548,9 +548,9 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -560,9 +560,9 @@ PREHOOK: Output: default@outputtbl3
 POSTHOOK: query: insert overwrite table outputTbl3 partition(ds, hr)
 SELECT *
 FROM (
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)a
   UNION ALL
-  SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000
+  select * from (SELECT key, value, ds, hr from srcpart where ds='2008-04-08' limit 1000)b
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart

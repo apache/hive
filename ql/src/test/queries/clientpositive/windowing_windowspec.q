@@ -34,3 +34,7 @@ select f, sum(f) over (partition by ts order by f range between unbounded preced
 select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7;
 
 select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7;
+
+set hive.cbo.enable=false;
+-- HIVE-9228 
+select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7;

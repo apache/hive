@@ -316,7 +316,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (BaseWork baseWork : sparkWork.getAllWork()) {
           if (baseWork instanceof MapWork) {
             convertMapWork((MapWork) baseWork, false);
-          } else if (baseWork instanceof ReduceWork) {
+          } else if (baseWork instanceof ReduceWork
+              && HiveConf.getBoolVar(pctx.getConf(),
+                  HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED)) {
             convertReduceWork((ReduceWork) baseWork);
           }
         }
@@ -1084,10 +1086,6 @@ public class Vectorizer implements PhysicalPlanResolver {
         return false;
       }
       LOG.info("Reduce GROUP BY mode is " + desc.getMode().name());
-      if (desc.getGroupKeyNotReductionKey()) {
-        LOG.info("Reduce vector mode not supported when group key is not reduction key");
-        return false;
-      }
       if (!aggregatorsOutputIsPrimitive(desc.getAggregators(), isReduce)) {
         LOG.info("Reduce vector mode only supported when aggregate outputs are primitive types");
         return false;

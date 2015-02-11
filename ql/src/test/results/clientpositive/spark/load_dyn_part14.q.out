@@ -36,21 +36,21 @@ value               	string
 PREHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
-  select 'k1' as key, cast(null as string) as value from src limit 2
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
-  select 'k2' as key, '' as value from src limit 2
+  select * from (select 'k2' as key, '' as value from src limit 2)b
   union all 
-  select 'k3' as key, ' ' as value from src limit 2
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
-  select 'k1' as key, cast(null as string) as value from src limit 2
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
-  select 'k2' as key, '' as value from src limit 2
+  select * from (select 'k2' as key, '' as value from src limit 2)b
   union all 
-  select 'k3' as key, ' ' as value from src limit 2
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -175,22 +175,22 @@ STAGE PLANS:
 
 PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
-  select 'k1' as key, cast(null as string) as value from src limit 2
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
-  select 'k2' as key, '' as value from src limit 2
+  select * from (select 'k2' as key, '' as value from src limit 2)b
   union all 
-  select 'k3' as key, ' ' as value from src limit 2
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
-  select 'k1' as key, cast(null as string) as value from src limit 2
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
-  select 'k2' as key, '' as value from src limit 2
+  select * from (select 'k2' as key, '' as value from src limit 2)b
   union all 
-  select 'k3' as key, ' ' as value from src limit 2
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

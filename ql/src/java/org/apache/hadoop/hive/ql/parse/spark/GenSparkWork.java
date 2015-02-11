@@ -34,10 +34,12 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -118,18 +120,12 @@ public class GenSparkWork implements NodeProcessor {
     } else {
       // create a new vertex
       if (context.preceedingWork == null) {
-        if (smbOp != null) {
-          // This logic is for SortMergeBucket MapJoin case.
-          // This MapWork (of big-table, see above..) is later initialized by SparkMapJoinFactory
-          // processor, so don't initialize it here. Just keep track of it in the context,
-          // for later processing.
-          work = utils.createMapWork(context, root, sparkWork, null, true);
-          if (context.smbJoinWorkMap.get(smbOp) != null) {
-            throw new SemanticException("Each SMBMapJoin should be associated only with one Mapwork");
-          }
-          context.smbJoinWorkMap.put(smbOp, (MapWork) work);
-        } else {
+        if (smbOp == null) {
           work = utils.createMapWork(context, root, sparkWork, null);
+        } else {
+          //save work to be initialized later with SMB information.
+          work = utils.createMapWork(context, root, sparkWork, null, true);
+          context.smbMapJoinCtxMap.get(smbOp).mapWork = (MapWork) work;
         }
       } else {
         work = utils.createReduceWork(context, root, sparkWork);
