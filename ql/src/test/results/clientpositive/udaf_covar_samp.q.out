@@ -80,15 +80,15 @@ POSTHOOK: Input: default@covar_tab
 4	0.0
 5	0.0
 6	0.0
-PREHOOK: query: SELECT covar_samp(b, c) FROM covar_tab
+PREHOOK: query: SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT covar_samp(b, c) FROM covar_tab
+POSTHOOK: query: SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
 #### A masked pattern was here ####
-4.833333333333332
+4.83333
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@covar_tab

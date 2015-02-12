@@ -55,8 +55,8 @@ SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
-  AVG(cfloat),
-  STDDEV_POP(cdouble)
+  ROUND(AVG(cfloat), 5),
+  ROUND(STDDEV_POP(cdouble),5)
 FROM parquet_types
 GROUP BY ctinyint
 ORDER BY ctinyint

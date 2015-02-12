@@ -29,5 +29,6 @@ INSERT OVERWRITE TABLE dest1 SELECT
   variance(substr(src.value,5)),
   var_samp(substr(src.value,5));
 
-SELECT c1, c2, c3, c4, c5, c6, c7, ROUND(c8, 5), ROUND(c9, 5) FROM dest1;
+SELECT ROUND(c1, 1), ROUND(c2, 3), ROUND(c3, 5), ROUND(c4, 1), ROUND(c5, 1), ROUND(c6, 5),
+ROUND(c7,5), ROUND(c8, 5), ROUND(c9, 5) FROM dest1;
 
