@@ -184,7 +184,7 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
       Consumer<EncodedColumnBatch<OrcBatchKey>> consumer = (cache == null) ? this.consumer : this;
       EncodedReader stripeReader = null;
       try {
-        orcReader.encodedReader(lowLevelCache, consumer);
+        stripeReader = orcReader.encodedReader(lowLevelCache, consumer);
       } catch (Throwable t) {
         // produceDataFromCache handles its own cleanup.
         consumer.setError(t);
@@ -347,7 +347,6 @@ public class OrcEncodedDataProducer implements EncodedDataProducer<OrcBatchKey> 
 
     /**
      * Reads the metadata for all stripes in the file.
-     * @param stripeReaders Array to preserve the readers used.
      */
     private ArrayList<OrcStripeMetadata> readStripesMetadata(
         OrcFileMetadata metadata, boolean[] globalInc) throws IOException {

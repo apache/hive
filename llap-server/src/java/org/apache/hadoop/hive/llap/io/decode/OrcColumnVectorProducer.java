@@ -23,15 +23,16 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Consumer;
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.orc.OrcBatchKey;
-import org.apache.hadoop.hive.llap.io.decode.orc.streams.ColumnStream;
-import org.apache.hadoop.hive.llap.io.decode.orc.streams.DoubleColumnStream;
-import org.apache.hadoop.hive.llap.io.decode.orc.streams.FloatColumnStream;
-import org.apache.hadoop.hive.llap.io.decode.orc.streams.IntegerColumnStream;
-import org.apache.hadoop.hive.llap.io.decode.orc.streams.StringColumnStream;
+import org.apache.hadoop.hive.llap.io.decode.orc.streams.DoubleStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.streams.FloatStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.streams.IntStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.streams.LongStreamReader;
+import org.apache.hadoop.hive.llap.io.decode.orc.streams.ShortStreamReader;
 import org.apache.hadoop.hive.llap.io.encoded.EncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataProducer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
+import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 
 import com.google.common.collect.Lists;
 
@@ -48,6 +50,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
   private final OrcEncodedDataProducer edp;
   private final OrcMetadataCache metadataCache;
   private ColumnVectorBatch cvb;
+  private boolean skipCorrupt;
 
   public OrcColumnVectorProducer(
       ExecutorService executor, OrcEncodedDataProducer edp, Configuration conf) {
@@ -55,6 +58,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     this.edp = edp;
     this.metadataCache = OrcMetadataCache.getInstance();
     this.cvb = null;
+    this.skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
   }
 
   @Override
@@ -87,7 +91,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       int numCols = batch.columnIxs.length;
-      ColumnStream[] columnStreams = createColumnStreamReaders(numCols, batch, fileMetadata,
+      RecordReaderImpl.TreeReader[] columnStreams = createTreeReaders(numCols, batch, fileMetadata,
           stripeMetadata);
       for (int i = 0; i < maxBatchesRG; i++) {
         if (i == maxBatchesRG - 1) {
@@ -95,7 +99,7 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
         }
 
         for (int idx = 0; idx < batch.columnIxs.length; idx++) {
-          cvb.cols[idx] = columnStreams[idx].nextVector(null, batchSize);
+          cvb.cols[idx] = (ColumnVector) columnStreams[idx].nextVector(null, batchSize);
         }
 
         // we are done reading a batch, send it to consumer for processing
@@ -108,12 +112,12 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
     }
   }
 
-  private ColumnStream[] createColumnStreamReaders(int numCols,
+  private RecordReaderImpl.TreeReader[] createTreeReaders(int numCols,
       EncodedColumnBatch<OrcBatchKey> batch,
       OrcFileMetadata fileMetadata,
       OrcStripeMetadata stripeMetadata) throws IOException {
     String file = batch.batchKey.file;
-    ColumnStream[] columnStreams = new ColumnStream[numCols];
+    RecordReaderImpl.TreeReader[] treeReaders = new RecordReaderImpl.TreeReader[numCols];
 
     for (int i = 0; i < numCols; i++) {
       int colIx = batch.columnIxs[i];
@@ -131,69 +135,109 @@ public class OrcColumnVectorProducer extends ColumnVectorProducer<OrcBatchKey> {
       OrcProto.ColumnEncoding columnEncoding = stripeMetadata.getEncodings().get(colIx);
       ColumnVector cv = null;
 
-      // FIXME: See if the stream buffers are in this same order. What will happen if some stream
-      // does not exist? Will stream buffer be null?
       EncodedColumnBatch.StreamBuffer present = null;
       EncodedColumnBatch.StreamBuffer data = null;
       EncodedColumnBatch.StreamBuffer dictionary = null;
       EncodedColumnBatch.StreamBuffer lengths = null;
       EncodedColumnBatch.StreamBuffer secondary = null;
+      for (EncodedColumnBatch.StreamBuffer streamBuffer : streamBuffers) {
+        switch(streamBuffer.streamKind) {
+          case 0:
+            // PRESENT stream
+            present = streamBuffer;
+            break;
+          case 1:
+            // DATA stream
+            data = streamBuffer;
+            break;
+          case 2:
+            // LENGTH stream
+            lengths = streamBuffer;
+            break;
+          case 3:
+            // DICTIONARY_DATA stream
+            dictionary = streamBuffer;
+            break;
+          case 5:
+            // SECONDARY stream
+            secondary = streamBuffer;
+            break;
+          default:
+            throw new IOException("Unexpected stream kind: " + streamBuffer.streamKind);
+        }
+      }
+
       switch (colType.getKind()) {
         case SHORT:
+          treeReaders[i] = ShortStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncodingKind(columnEncoding.getKind())
+              .build();
+          break;
         case INT:
+          treeReaders[i] = IntStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncodingKind(columnEncoding.getKind())
+              .build();
+          break;
         case LONG:
-          // TODO: EncodedDataProducer should produce stream buffers in enum order of stream kind.
-          // So if a stream does not exist, it should have null instead.
-          if (streamBuffers.length != 2) {
-            present = null;
-            data = streamBuffers[0];
-          } else {
-            present = streamBuffers[0];
-            data = streamBuffers[1];
-          }
-          // FIXME: Creating column stream readers for every row group will be expensive.
-          columnStreams[i] = new IntegerColumnStream(file, colIx, present, data, columnEncoding, codec,
-              bufferSize, rowIndex);
+          treeReaders[i] = LongStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .setColumnEncodingKind(columnEncoding.getKind())
+              .skipCorrupt(skipCorrupt)
+              .build();
           break;
         case FLOAT:
-          if (streamBuffers.length != 2) {
-            present = null;
-            data = streamBuffers[0];
-          } else {
-            present = streamBuffers[0];
-            data = streamBuffers[1];
-          }
-          columnStreams[i] = new FloatColumnStream(file, colIx, present, data, codec, bufferSize,
-              rowIndex);
+          treeReaders[i] = FloatStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .build();
           break;
         case DOUBLE:
-          if (streamBuffers.length != 2) {
-            present = null;
-            data = streamBuffers[0];
-          } else {
-            present = streamBuffers[0];
-            data = streamBuffers[1];
-          }
-          columnStreams[i] = new DoubleColumnStream(file, colIx, present, data, codec, bufferSize,
-              rowIndex);
+          treeReaders[i] = DoubleStreamReader.builder()
+              .setFileName(file)
+              .setColumnIndex(colIx)
+              .setPresentStream(present)
+              .setDataStream(data)
+              .setCompressionCodec(codec)
+              .setBufferSize(bufferSize)
+              .setRowIndex(rowIndex)
+              .build();
           break;
         case CHAR:
         case VARCHAR:
         case STRING:
-          // FIXME: This is hacky! Will never work. Fix it cleanly everywhere. Hopefully encoded
-          // data producer will provide streams in enum order of stream kind
-          present = streamBuffers[0];
-          data = streamBuffers[1];
-          dictionary = streamBuffers[2];
-          lengths = streamBuffers[3];
-          columnStreams[i] = new StringColumnStream(file, colIx, present, data, dictionary, lengths,
-              columnEncoding, codec, bufferSize, rowIndex);
+//          columnStreams[i] = new StringColumnStream(file, colIx, present, data, dictionary, lengths,
+//              columnEncoding, codec, bufferSize, rowIndex);
           break;
         default:
           throw new UnsupportedOperationException("Data type not supported yet! " + colType);
       }
     }
-    return columnStreams;
+    return treeReaders;
   }
 
   private List<OrcProto.Stream> getDataStreams(int colIx, List<OrcProto.Stream> streams) {
