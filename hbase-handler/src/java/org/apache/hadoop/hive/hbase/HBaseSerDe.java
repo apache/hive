@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -51,7 +51,8 @@ import org.apache.hadoop.mapred.JobConf;
     serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
     serdeConstants.ESCAPE_CHAR,
     serdeConstants.SERIALIZATION_ENCODING,
-    LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS,
+    LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS,
+    LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS,
     HBaseSerDe.HBASE_COLUMNS_MAPPING,
     HBaseSerDe.HBASE_TABLE_NAME,
     HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,
@@ -240,7 +241,7 @@ public class HBaseSerDe extends AbstractSerDe {
     return new ColumnMappings(columnsMapping, rowKeyIndex, timestampIndex);
   }
 
-  public LazySimpleSerDe.SerDeParameters getSerdeParams() {
+  public LazySerDeParameters getSerdeParams() {
     return serdeParams.getSerdeParams();
   }
 

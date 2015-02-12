@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -57,7 +57,7 @@ public class AccumuloSerDe implements SerDe {
   public void initialize(Configuration conf, Properties properties) throws SerDeException {
     accumuloSerDeParameters = new AccumuloSerDeParameters(conf, properties, getClass().getName());
 
-    final SerDeParameters serDeParams = accumuloSerDeParameters.getSerDeParameters();
+    final LazySerDeParameters serDeParams = accumuloSerDeParameters.getSerDeParameters();
     final List<ColumnMapping> mappings = accumuloSerDeParameters.getColumnMappings();
     final List<TypeInfo> columnTypes = accumuloSerDeParameters.getHiveColumnTypes();
     final AccumuloRowIdFactory factory = accumuloSerDeParameters.getRowIdFactory();
@@ -83,7 +83,7 @@ public class AccumuloSerDe implements SerDe {
   }
 
   protected ArrayList<ObjectInspector> getColumnObjectInspectors(List<TypeInfo> columnTypes,
-      SerDeParameters serDeParams, List<ColumnMapping> mappings, AccumuloRowIdFactory factory)
+      LazySerDeParameters serDeParams, List<ColumnMapping> mappings, AccumuloRowIdFactory factory)
       throws SerDeException {
     ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
         columnTypes.size());
