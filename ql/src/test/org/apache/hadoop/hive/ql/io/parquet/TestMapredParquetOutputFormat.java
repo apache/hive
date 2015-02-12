@@ -24,7 +24,7 @@ import java.util.Properties;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.ql.io.parquet.write.ParquetRecordWriterWrapper;
-import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Progressable;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class TestMapredParquetOutputFormat {
   @SuppressWarnings("unchecked")
   @Test
   public void testConstructorWithFormat() {
-    new MapredParquetOutputFormat((ParquetOutputFormat<ArrayWritable>) mock(ParquetOutputFormat.class));
+    new MapredParquetOutputFormat((ParquetOutputFormat<ParquetHiveRecord>) mock(ParquetOutputFormat.class));
   }
 
   @Test
@@ -62,7 +62,7 @@ public class TestMapredParquetOutputFormat {
     tableProps.setProperty("columns.types", "int:int");
 
     final Progressable mockProgress = mock(Progressable.class);
-    final ParquetOutputFormat<ArrayWritable> outputFormat = (ParquetOutputFormat<ArrayWritable>) mock(ParquetOutputFormat.class);
+    final ParquetOutputFormat<ParquetHiveRecord> outputFormat = (ParquetOutputFormat<ParquetHiveRecord>) mock(ParquetOutputFormat.class);
 
     JobConf jobConf = new JobConf();
 
@@ -70,7 +70,7 @@ public class TestMapredParquetOutputFormat {
       new MapredParquetOutputFormat(outputFormat) {
         @Override
         protected ParquetRecordWriterWrapper getParquerRecordWriterWrapper(
-            ParquetOutputFormat<ArrayWritable> realOutputFormat,
+            ParquetOutputFormat<ParquetHiveRecord> realOutputFormat,
             JobConf jobConf,
             String finalOutPath,
             Progressable progress,
