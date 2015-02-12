@@ -3434,8 +3434,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: +++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -3495,7 +3495,7 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -3503,8 +3503,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -3514,7 +3514,7 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -4736,9 +4736,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4760,7 +4759,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         value expressions: _col2 (type: double)
@@ -4824,22 +4823,6 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col0 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col1 (type: string), _col2 (type: double)
-                  auto parallelism: false
-            Execution mode: vectorized
-        Reducer 3 
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
@@ -4850,7 +4833,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col2 (type: double)
                     auto parallelism: false
-        Reducer 4 
+        Reducer 3 
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -5333,8 +5316,8 @@ STAGE PLANS:
                     outputColumnNames: _col1, _col2, _col5, _wcol0
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: +++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -5344,7 +5327,7 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
+                expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col0, _col2, _col3, _col6
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
@@ -5734,9 +5717,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -5746,8 +5729,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -5815,8 +5798,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -5832,8 +5815,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6093,9 +6076,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
         Reducer 5 <- Reducer 4 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -6106,8 +6089,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_mfgr (type: string)
-                    sort order: ++
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6173,8 +6156,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6190,8 +6173,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6452,8 +6435,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -6464,8 +6447,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6531,8 +6514,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6804,10 +6787,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
+        Reducer 5 <- Reducer 4 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -6817,8 +6800,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6884,8 +6867,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col2 (type: string)
-                    sort order: ++
+                    key expressions: _col2 (type: string)
+                    sort order: +
                     Map-reduce partition columns: _col2 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -6903,8 +6886,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -6920,8 +6903,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7208,9 +7191,9 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
+        Reducer 4 <- Reducer 3 (SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -7220,8 +7203,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7289,8 +7272,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col2 (type: string)
-                      sort order: ++
+                      key expressions: _col2 (type: string)
+                      sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -7306,8 +7289,8 @@ STAGE PLANS:
                 PTF Operator
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                    sort order: ++++
+                    key expressions: _col2 (type: string), _col1 (type: string)
+                    sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7560,8 +7543,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (SORT, 2)
+        Reducer 3 <- Reducer 2 (SORT, 2)
         Reducer 4 <- Reducer 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
@@ -7572,8 +7555,8 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_name (type: string), p_mfgr (type: string), p_name (type: string)
-                    sort order: ++++
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -7641,8 +7624,8 @@ STAGE PLANS:
                   PTF Operator
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col1 (type: string), _col2 (type: string), _col1 (type: string)
-                      sort order: ++++
+                      key expressions: _col2 (type: string), _col1 (type: string)
+                      sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1

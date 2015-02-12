@@ -11561,9 +11561,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
 
     for (PTFExpressionDef colDef : partColList) {
-      partCols.add(colDef.getExprNode());
-      orderCols.add(colDef.getExprNode());
-      orderString.append('+');
+      ExprNodeDesc exprNode = colDef.getExprNode();
+      if (ExprNodeDescUtils.indexOf(exprNode, partCols) < 0) {
+        partCols.add(exprNode);
+        orderCols.add(exprNode);
+        orderString.append('+');
+      }
     }
 
     /*
@@ -11576,13 +11579,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<OrderExpressionDef> orderColList = tabDef.getOrder().getExpressions();
     for (int i = 0; i < orderColList.size(); i++) {
       OrderExpressionDef colDef = orderColList.get(i);
-      org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = colDef.getOrder();
-      if (order.name().equals("ASC")) {
-        orderString.append('+');
-      } else {
-        orderString.append('-');
+      char orderChar = colDef.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+      int index = ExprNodeDescUtils.indexOf(colDef.getExprNode(), orderCols);
+      if (index >= 0) {
+        orderString.setCharAt(index, orderChar);
+        continue;
       }
       orderCols.add(colDef.getExprNode());
+      orderString.append(orderChar);
     }
   }
 
@@ -11696,20 +11700,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (PartitionExpression partCol : spec.getQueryPartitionSpec().getExpressions()) {
       ExprNodeDesc partExpr = genExprNodeDesc(partCol.getExpression(), inputRR);
-      partCols.add(partExpr);
-      orderCols.add(partExpr);
-      order.append('+');
+      if (ExprNodeDescUtils.indexOf(partExpr, partCols) < 0) {
+        partCols.add(partExpr);
+        orderCols.add(partExpr);
+        order.append('+');
+      }
     }
 
     if (spec.getQueryOrderSpec() != null) {
       for (OrderExpression orderCol : spec.getQueryOrderSpec().getExpressions()) {
-        String orderString = orderCol.getOrder().name();
-        if (orderString.equals("ASC")) {
-          order.append('+');
-        } else {
-          order.append('-');
+        ExprNodeDesc orderExpr = genExprNodeDesc(orderCol.getExpression(), inputRR);
+        char orderChar = orderCol.getOrder() == PTFInvocationSpec.Order.ASC ? '+' : '-';
+        int index = ExprNodeDescUtils.indexOf(orderExpr, orderCols);
+        if (index >= 0) {
+          order.setCharAt(index, orderChar);
+          continue;
         }
         orderCols.add(genExprNodeDesc(orderCol.getExpression(), inputRR));
+        order.append(orderChar);
       }
     }
 

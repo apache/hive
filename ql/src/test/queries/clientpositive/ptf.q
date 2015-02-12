@@ -202,7 +202,7 @@ dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
-order by p_mfgr, p_name
+order by p_mfgr DESC, p_name
 )));
 
 select p_mfgr, p_name, p_size, 
@@ -211,7 +211,7 @@ dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
-order by p_mfgr, p_name
+order by p_mfgr DESC, p_name
 )));
  
 -- 13. testPTFAndWindowingInSubQ
