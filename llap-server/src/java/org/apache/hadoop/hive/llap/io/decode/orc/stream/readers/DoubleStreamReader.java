@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode.orc.streams;
+package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
@@ -29,15 +30,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
+public class DoubleStreamReader extends RecordReaderImpl.DoubleTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private FloatStreamReader(int columnId, InStream present,
+  private DoubleStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
     super(columnId, present, data);
-    this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
     // position the readers based on the specified row index
@@ -93,7 +93,7 @@ public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
       return this;
     }
 
-    public FloatStreamReader build() throws IOException {
+    public DoubleStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -108,12 +108,11 @@ public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
                 dataStream);
       }
 
-      return new FloatStreamReader(columnIndex, present, data, compressionCodec != null, rowIndex);
+      return new DoubleStreamReader(columnIndex, present, data, compressionCodec != null, rowIndex);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
-
 }

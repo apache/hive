@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode.orc.streams;
+package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
@@ -29,15 +30,15 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
+public class IntStreamReader extends RecordReaderImpl.IntTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private LongStreamReader(int columnId, InStream present,
+  private IntStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding.Kind kind, boolean skipCorrupt,
+      OrcProto.ColumnEncoding.Kind kind,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, kind, skipCorrupt);
+    super(columnId, present, data, kind);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -59,7 +60,6 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
     private OrcProto.ColumnEncoding.Kind columnEncodingKind;
-    private boolean skipCorrupt;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -101,12 +101,7 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder skipCorrupt(boolean skipCorrupt) {
-      this.skipCorrupt = skipCorrupt;
-      return this;
-    }
-
-    public LongStreamReader build() throws IOException {
+    public IntStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -121,12 +116,13 @@ public class LongStreamReader extends RecordReaderImpl.LongTreeReader {
                 dataStream);
       }
 
-      return new LongStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncodingKind, skipCorrupt, rowIndex);
+      return new IntStreamReader(columnIndex, present, data,
+          compressionCodec != null, columnEncodingKind, rowIndex);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
+
 }

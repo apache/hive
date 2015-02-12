@@ -614,12 +614,13 @@ public abstract class InStream extends InputStream {
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
+      int startPos = chunk.buffer.byteBuffer.position();
       if (chunk.isCompressed) {
         decompressDirectBuffer(codec, chunk.originalData, chunk.buffer.byteBuffer);
       } else {
         chunk.buffer.byteBuffer.put(chunk.originalData); // Copy uncompressed data to cache.
       }
-      chunk.buffer.byteBuffer.position(0);
+      chunk.buffer.byteBuffer.position(startPos);
       chunk.originalData = null;
     }
 

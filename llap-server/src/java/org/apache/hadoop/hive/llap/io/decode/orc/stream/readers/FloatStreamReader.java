@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode.orc.streams;
+package org.apache.hadoop.hive.llap.io.decode.orc.stream.readers;
 
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.io.api.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.io.decode.orc.stream.StreamUtils;
 import org.apache.hadoop.hive.ql.io.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.InStream;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto;
@@ -29,15 +30,14 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 /**
  *
  */
-public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
+public class FloatStreamReader extends RecordReaderImpl.FloatTreeReader {
   private boolean isFileCompressed;
   private OrcProto.RowIndexEntry rowIndex;
 
-  private ShortStreamReader(int columnId, InStream present,
+  private FloatStreamReader(int columnId, InStream present,
       InStream data, boolean isFileCompressed,
-      OrcProto.ColumnEncoding.Kind kind,
       OrcProto.RowIndexEntry rowIndex) throws IOException {
-    super(columnId, present, data, kind);
+    super(columnId, present, data);
     this.isFileCompressed = isFileCompressed;
     this.rowIndex = rowIndex;
 
@@ -58,7 +58,6 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
     private CompressionCodec compressionCodec;
     private int bufferSize;
     private OrcProto.RowIndexEntry rowIndex;
-    private OrcProto.ColumnEncoding.Kind columnEncodingKind;
 
     public StreamReaderBuilder setFileName(String fileName) {
       this.fileName = fileName;
@@ -95,12 +94,7 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
       return this;
     }
 
-    public StreamReaderBuilder setColumnEncodingKind(OrcProto.ColumnEncoding.Kind kind) {
-      this.columnEncodingKind = kind;
-      return this;
-    }
-
-    public ShortStreamReader build() throws IOException {
+    public FloatStreamReader build() throws IOException {
       InStream present = null;
       if (presentStream != null) {
         present = StreamUtils
@@ -115,12 +109,12 @@ public class ShortStreamReader extends RecordReaderImpl.ShortTreeReader {
                 dataStream);
       }
 
-      return new ShortStreamReader(columnIndex, present, data,
-          compressionCodec != null, columnEncodingKind, rowIndex);
+      return new FloatStreamReader(columnIndex, present, data, compressionCodec != null, rowIndex);
     }
   }
 
   public static StreamReaderBuilder builder() {
     return new StreamReaderBuilder();
   }
+
 }
